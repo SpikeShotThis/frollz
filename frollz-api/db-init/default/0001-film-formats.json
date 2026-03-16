@@ -1,0 +1,67 @@
+[
+    {
+        "_key": "35mm",
+        "format": "35mm",
+        "formFactor": "Roll"
+    },
+    {
+        "_key": "110", 
+        "format": "110",
+        "formFactor": "Roll"
+    },
+    {
+        "_key": "mini",
+        "format": "Mini",
+        "formFactor": "Instant"
+    },
+    {
+        "_key": "wide",
+        "format": "Wide", 
+        "formFactor": "Instant"
+    },
+    {
+        "_key": "square",
+        "format": "Square",
+        "formFactor": "Instant"
+    },
+    {
+        "_key": "120",
+        "format": "120",
+        "formFactor": "Roll"
+    },
+    {
+        "_key": "220",
+        "format": "220", 
+        "formFactor": "Roll"
+    },
+    {
+        "_key": "4x5",
+        "format": "4x5",
+        "formFactor": "Sheet"
+    },
+    {
+        "_key": "8x10",
+        "format": "8x10",
+        "formFactor": "Sheet"
+    },
+    {
+        "_key": "i-type",
+        "format": "I-Type",
+        "formFactor": "Instant"
+    },
+    {
+        "_key": "600",
+        "format": "600",
+        "formFactor": "Instant"
+    },
+    {
+        "_key": "sx-70",
+        "format": "SX-70",
+        "formFactor": "Instant"
+    },
+    {
+        "_key": "go",
+        "format": "GO",
+        "formFactor": "Instant"
+    }
+]

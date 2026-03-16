@@ -1,0 +1,53 @@
+{
+  "rule": {
+    "$schema": "http://json-schema.org/draft-07/schema",
+    "type": "object",
+    "properties": {
+      "brand": {
+        "type": "string",
+        "minLength": 1
+      },
+      "manufacturer": {
+        "type": "string",
+        "minLength": 1
+      },
+      "formatKey": {
+        "type": "string",
+        "description": "Reference to a film_formats document _key",
+        "minLength": 1
+      },
+      "process": {
+        "type": "string",
+        "enum": ["ECN-2", "E-6", "C-41", "Black & White", "Instant"]
+      },
+      "speed": {
+        "type": "integer",
+        "minimum": 1
+      },
+      "tags": {
+        "type": "array",
+        "items": { "type": "string" }
+      },
+      "baseStockKey": {
+        "type": "string",
+        "description": "Reference to another stock _key (used for reformatted cine stocks)"
+      },
+      "boxImageUrl": {
+        "type": "string",
+        "format": "uri"
+      },
+      "createdAt": {
+        "type": "string",
+        "format": "date-time"
+      },
+      "updatedAt": {
+        "type": "string",
+        "format": "date-time"
+      }
+    },
+    "required": ["brand", "manufacturer", "formatKey", "process", "speed", "tags"],
+    "additionalProperties": false
+  },
+  "level": "strict",
+  "message": "Document does not conform to the stocks schema."
+}
