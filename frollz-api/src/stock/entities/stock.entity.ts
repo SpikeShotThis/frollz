@@ -29,9 +29,6 @@ export class Stock {
   @ApiProperty()
   speed: number; // ISO rating
 
-  @ApiProperty({ type: [String] })
-  tags: string[];
-
   @ApiProperty({ required: false })
   boxImageUrl?: string;
 

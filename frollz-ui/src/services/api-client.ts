@@ -1,5 +1,5 @@
 import { api } from './api'
-import type { FilmFormat, Stock, Roll } from '@/types'
+import type { FilmFormat, Stock, Roll, Tag, StockTag } from '@/types'
 
 // Film Format API
 export const filmFormatApi = {
@@ -21,6 +21,27 @@ export const stockApi = {
   update: (key: string, data: Partial<Stock>) => 
     api.patch<Stock>(`/stocks/${key}`, data),
   delete: (key: string) => api.delete(`/stocks/${key}`),
+}
+
+// Tag API
+export const tagApi = {
+  getAll: () => api.get<Tag[]>('/tags'),
+  getById: (key: string) => api.get<Tag>(`/tags/${key}`),
+  create: (data: Omit<Tag, '_key' | 'createdAt'>) =>
+    api.post<Tag>('/tags', data),
+  update: (key: string, data: Partial<Tag>) =>
+    api.patch<Tag>(`/tags/${key}`, data),
+  delete: (key: string) => api.delete(`/tags/${key}`),
+}
+
+// StockTag API
+export const stockTagApi = {
+  getAll: (params?: { stockKey?: string; tagKey?: string }) =>
+    api.get<StockTag[]>('/stock-tags', { params }),
+  getById: (key: string) => api.get<StockTag>(`/stock-tags/${key}`),
+  create: (data: Omit<StockTag, '_key' | 'createdAt'>) =>
+    api.post<StockTag>('/stock-tags', data),
+  delete: (key: string) => api.delete(`/stock-tags/${key}`),
 }
 
 // Roll API

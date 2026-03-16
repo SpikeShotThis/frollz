@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEnum, IsString, IsNumber, IsArray, IsOptional, IsUrl } from 'class-validator';
+import { IsEnum, IsString, IsNumber, IsOptional, IsUrl } from 'class-validator';
 import { Process } from '../entities/stock.entity';
 
 export class CreateStockDto {
@@ -27,11 +27,6 @@ export class CreateStockDto {
   @ApiProperty()
   @IsNumber()
   speed: number;
-
-  @ApiProperty({ type: [String] })
-  @IsArray()
-  @IsString({ each: true })
-  tags: string[];
 
   @ApiProperty({ required: false })
   @IsOptional()

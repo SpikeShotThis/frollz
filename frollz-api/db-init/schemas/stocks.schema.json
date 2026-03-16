@@ -24,10 +24,6 @@
         "type": "integer",
         "minimum": 1
       },
-      "tags": {
-        "type": "array",
-        "items": { "type": "string" }
-      },
       "baseStockKey": {
         "type": "string",
         "description": "Reference to another stock _key (used for reformatted cine stocks)"
@@ -45,7 +41,7 @@
         "format": "date-time"
       }
     },
-    "required": ["brand", "manufacturer", "formatKey", "process", "speed", "tags"],
+    "required": ["brand", "manufacturer", "formatKey", "process", "speed"],
     "additionalProperties": false
   },
   "level": "strict",

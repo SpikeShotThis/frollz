@@ -5,6 +5,8 @@ import { FilmFormatModule } from './film-format/film-format.module';
 import { StockModule } from './stock/stock.module';
 import { RollModule } from './roll/roll.module';
 import { RollStateModule } from './roll-state/roll-state.module';
+import { TagModule } from './tag/tag.module';
+import { StockTagModule } from './stock-tag/stock-tag.module';
 
 @Module({
   imports: [
@@ -16,6 +18,8 @@ import { RollStateModule } from './roll-state/roll-state.module';
     StockModule,
     RollModule,
     RollStateModule,
+    TagModule,
+    StockTagModule,
   ],
 })
 export class AppModule {}

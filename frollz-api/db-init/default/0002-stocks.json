@@ -6,7 +6,6 @@
         "manufacturer": "Kodak",
         "brand": "Portra 400",
         "speed": 400,
-        "tags": ["color", "portrait", "daylight", "professional"],
         "boxImageUrl": "https://example.com/images/kodak-portra-400.jpg"
     },
     {
@@ -16,7 +15,6 @@
         "manufacturer": "Fujifilm",
         "brand": "Superia 400",
         "speed": 400,
-        "tags": ["color", "consumer", "daylight"],
         "boxImageUrl": "https://example.com/images/fuji-superia-400.jpg"
     },
     {
@@ -26,7 +24,6 @@
         "manufacturer": "Kodak",
         "brand": "Tri-X 400",
         "speed": 400,
-        "tags": ["black-white", "street", "classic", "high-contrast"],
         "boxImageUrl": "https://example.com/images/kodak-tri-x-400.jpg"
     },
     {
@@ -36,7 +33,6 @@
         "manufacturer": "Kodak",
         "brand": "Ektar 100",
         "speed": 100,
-        "tags": ["color", "fine-grain", "landscape", "professional"],
         "boxImageUrl": "https://example.com/images/kodak-ektar-100.jpg"
     },
     {
@@ -46,7 +42,6 @@
         "manufacturer": "Fujifilm",
         "brand": "Provia 100F",
         "speed": 100,
-        "tags": ["slide", "transparency", "fine-grain", "professional"],
         "boxImageUrl": "https://example.com/images/fuji-provia-100f.jpg"
     },
     {
@@ -56,7 +51,6 @@
         "manufacturer": "Polaroid",
         "brand": "i-Type Color",
         "speed": 640,
-        "tags": ["instant", "color", "square"],
         "boxImageUrl": "https://example.com/images/polaroid-i-type-color.jpg"
     },
     {
@@ -66,7 +60,6 @@
         "manufacturer": "Fujifilm",
         "brand": "Instax Mini",
         "speed": 800,
-        "tags": ["instant", "color", "mini"],
         "boxImageUrl": "https://example.com/images/fuji-instax-mini.jpg"
     },
     {
@@ -76,7 +69,6 @@
         "manufacturer": "Kodak",
         "brand": "Portra 160",
         "speed": 160,
-        "tags": ["color", "portrait", "large-format", "professional"],
         "boxImageUrl": "https://example.com/images/kodak-portra-160-4x5.jpg"
     },
     {
@@ -86,7 +78,6 @@
         "manufacturer": "Harman",
         "brand": "Phoenix 200",
         "speed": 200,
-        "tags": ["black-white", "experimental", "affordable"],
         "boxImageUrl": "https://example.com/images/harman-phoenix-200.jpg"
     },
     {
@@ -96,7 +87,6 @@
         "manufacturer": "Ilford",
         "brand": "HP5 Plus 400",
         "speed": 400,
-        "tags": ["black-white", "classic", "high-speed", "professional"],
         "boxImageUrl": "https://example.com/images/ilford-hp5-plus.jpg"
     },
     {
@@ -106,7 +96,6 @@
         "manufacturer": "Ilford",
         "brand": "HP5 Plus 400",
         "speed": 400,
-        "tags": ["black-white", "classic", "high-speed", "professional"],
         "boxImageUrl": "https://example.com/images/ilford-hp5-plus-120.jpg"
     },
     {
@@ -116,7 +105,6 @@
         "manufacturer": "Ilford",
         "brand": "FP4 Plus 125",
         "speed": 125,
-        "tags": ["black-white", "fine-grain", "portrait", "professional"],
         "boxImageUrl": "https://example.com/images/ilford-fp4-plus.jpg"
     },
     {
@@ -126,7 +114,6 @@
         "manufacturer": "Ilford",
         "brand": "Delta 400",
         "speed": 400,
-        "tags": ["black-white", "t-grain", "professional", "fine-grain"],
         "boxImageUrl": "https://example.com/images/ilford-delta-400.jpg"
     },
     {
@@ -136,7 +123,6 @@
         "manufacturer": "Ilford",
         "brand": "XP2 Super 400",
         "speed": 400,
-        "tags": ["chromogenic", "black-white", "c41-process"],
         "boxImageUrl": "https://example.com/images/ilford-xp2-super.jpg"
     },
     {
@@ -146,7 +132,6 @@
         "manufacturer": "Ilford",
         "brand": "Pan F Plus 50",
         "speed": 50,
-        "tags": ["black-white", "ultra-fine-grain", "slow-speed", "professional"],
         "boxImageUrl": "https://example.com/images/ilford-pan-f-plus.jpg"
     },
     {
@@ -156,7 +141,6 @@
         "manufacturer": "Eastman Kodak",
         "brand": "Vision3 50D",
         "speed": 50,
-        "tags": ["cinema", "motion-picture", "daylight", "professional"],
         "boxImageUrl": "https://example.com/images/kodak-vision3-50d.jpg"
     },
     {
@@ -166,7 +150,6 @@
         "manufacturer": "Eastman Kodak",
         "brand": "Vision3 200T",
         "speed": 200,
-        "tags": ["cinema", "motion-picture", "tungsten", "professional"],
         "boxImageUrl": "https://example.com/images/kodak-vision3-200t.jpg"
     },
     {
@@ -176,7 +159,6 @@
         "manufacturer": "Eastman Kodak",
         "brand": "Vision3 500T",
         "speed": 500,
-        "tags": ["cinema", "motion-picture", "tungsten", "low-light"],
         "boxImageUrl": "https://example.com/images/kodak-vision3-500t.jpg"
     },
     {
@@ -186,7 +168,6 @@
         "manufacturer": "Kodak Alaris",
         "brand": "Gold 200",
         "speed": 200,
-        "tags": ["color", "consumer", "affordable", "daylight"],
         "boxImageUrl": "https://example.com/images/kodak-gold-200.jpg"
     },
     {
@@ -196,7 +177,6 @@
         "manufacturer": "Kodak Alaris",
         "brand": "ColorPlus 200",
         "speed": 200,
-        "tags": ["color", "consumer", "budget", "daylight"],
         "boxImageUrl": "https://example.com/images/kodak-colorplus-200.jpg"
     },
     {
@@ -206,7 +186,6 @@
         "manufacturer": "Kodak Alaris",
         "brand": "UltraMax 400",
         "speed": 400,
-        "tags": ["color", "consumer", "versatile", "affordable"],
         "boxImageUrl": "https://example.com/images/kodak-ultramax-400.jpg"
     },
     {
@@ -216,7 +195,6 @@
         "manufacturer": "Lucky",
         "brand": "SHD 100",
         "speed": 100,
-        "tags": ["black-white", "chinese", "affordable", "fine-grain"],
         "boxImageUrl": "https://example.com/images/lucky-shd-100.jpg"
     },
     {
@@ -226,7 +204,6 @@
         "manufacturer": "Lucky",
         "brand": "SHD 100",
         "speed": 100,
-        "tags": ["black-white", "chinese", "affordable", "fine-grain"],
         "boxImageUrl": "https://example.com/images/lucky-shd-100-120.jpg"
     },
     {
@@ -236,7 +213,6 @@
         "manufacturer": "Lucky",
         "brand": "Lucky Color 100",
         "speed": 100,
-        "tags": ["color", "chinese", "affordable", "daylight"],
         "boxImageUrl": "https://example.com/images/lucky-color-100.jpg"
     },
     {
@@ -246,7 +222,6 @@
         "manufacturer": "Foma",
         "brand": "Fomapan 100 Classic",
         "speed": 100,
-        "tags": ["black-white", "czech", "affordable", "fine-grain"],
         "boxImageUrl": "https://example.com/images/fomapan-100-classic.jpg"
     },
     {
@@ -256,7 +231,6 @@
         "manufacturer": "Foma",
         "brand": "Fomapan 100 Classic",
         "speed": 100,
-        "tags": ["black-white", "czech", "affordable", "fine-grain"],
         "boxImageUrl": "https://example.com/images/fomapan-100-classic-120.jpg"
     },
     {
@@ -266,7 +240,6 @@
         "manufacturer": "Foma",
         "brand": "Fomapan 200 Creative",
         "speed": 200,
-        "tags": ["black-white", "czech", "affordable", "versatile"],
         "boxImageUrl": "https://example.com/images/fomapan-200-creative.jpg"
     },
     {
@@ -276,7 +249,6 @@
         "manufacturer": "Foma",
         "brand": "Fomapan 400 Action",
         "speed": 400,
-        "tags": ["black-white", "czech", "affordable", "high-speed"],
         "boxImageUrl": "https://example.com/images/fomapan-400-action.jpg"
     },
     {
@@ -286,7 +258,6 @@
         "manufacturer": "Foma",
         "brand": "Fomapan 100 Classic",
         "speed": 100,
-        "tags": ["black-white", "czech", "affordable", "large-format", "fine-grain"],
         "boxImageUrl": "https://example.com/images/fomapan-100-classic-4x5.jpg"
     },
     {
@@ -296,7 +267,6 @@
         "manufacturer": "CineStill",
         "brand": "50D",
         "speed": 50,
-        "tags": ["color", "cinema", "daylight", "fine-grain", "modified"],
         "boxImageUrl": "https://example.com/images/cinestill-50d.jpg"
     },
     {
@@ -306,7 +276,6 @@
         "manufacturer": "CineStill",
         "brand": "800T",
         "speed": 800,
-        "tags": ["color", "cinema", "tungsten", "high-speed", "halation", "modified"],
         "boxImageUrl": "https://example.com/images/cinestill-800t.jpg"
     },
     {
@@ -316,7 +285,6 @@
         "manufacturer": "CineStill",
         "brand": "800T",
         "speed": 800,
-        "tags": ["color", "cinema", "tungsten", "high-speed", "halation", "modified"],
         "boxImageUrl": "https://example.com/images/cinestill-800t-120.jpg"
     },
     {
@@ -326,7 +294,6 @@
         "manufacturer": "CineStill",
         "brand": "400D",
         "speed": 400,
-        "tags": ["color", "cinema", "daylight", "versatile", "modified"],
         "boxImageUrl": "https://example.com/images/cinestill-400d.jpg"
     },
     {
@@ -336,7 +303,6 @@
         "manufacturer": "CineStill",
         "brand": "BwXX",
         "speed": 250,
-        "tags": ["black-white", "cinema", "double-x", "modified", "high-contrast"],
         "boxImageUrl": "https://example.com/images/cinestill-bwxx.jpg"
     }
 ]

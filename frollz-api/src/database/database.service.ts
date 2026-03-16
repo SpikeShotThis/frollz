@@ -31,6 +31,8 @@ export class DatabaseService implements OnModuleInit {
       'stocks',
       'rolls',
       'roll_states',
+      'tags',
+      'stock_tags',
     ];
 
     for (const collectionName of collections) {
@@ -56,6 +58,8 @@ export class DatabaseService implements OnModuleInit {
     const defaultCollections = [
       'film_formats_default',
       'stocks_default',
+      'tags_default',
+      'stock_tags_default',
     ];
 
     for (const collectionName of defaultCollections) {
@@ -81,6 +85,8 @@ export class DatabaseService implements OnModuleInit {
   private readonly seedCollectionMap: Record<string, string> = {
     'film-formats': 'film_formats_default',
     'stocks': 'stocks_default',
+    'tags': 'tags_default',
+    'stock-tags': 'stock_tags_default',
   };
 
   // For each collection, declares which fields are foreign-key references and which
@@ -89,6 +95,10 @@ export class DatabaseService implements OnModuleInit {
     stocks_default: [
       { field: 'formatKey', collection: 'film_formats_default' },
       { field: 'baseStockKey', collection: 'stocks_default' },
+    ],
+    stock_tags_default: [
+      { field: 'tagKey', collection: 'tags_default' },
+      { field: 'stockKey', collection: 'stocks_default' },
     ],
   };
 
@@ -137,7 +147,6 @@ export class DatabaseService implements OnModuleInit {
         const data = raw.map(doc => ({
           ...doc,
           createdAt: doc.createdAt ?? now,
-          updatedAt: doc.updatedAt ?? now,
         }));
 
         await collection.saveAll(data);
@@ -153,6 +162,8 @@ export class DatabaseService implements OnModuleInit {
     const collectionMappings = [
       { main: 'film_formats', default: 'film_formats_default' },
       { main: 'stocks', default: 'stocks_default' },
+      { main: 'tags', default: 'tags_default' },
+      { main: 'stock_tags', default: 'stock_tags_default' },
     ];
 
     for (const mapping of collectionMappings) {

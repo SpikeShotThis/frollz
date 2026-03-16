@@ -50,10 +50,23 @@ export interface Stock {
   baseStock?: string
   baseStockKey?: string
   speed: number
-  tags: string[]
   boxImageUrl?: string
   createdAt?: Date
   updatedAt?: Date
+}
+
+export interface Tag {
+  _key?: string
+  value: string
+  color: string
+  createdAt?: Date
+}
+
+export interface StockTag {
+  _key?: string
+  tagKey: string
+  stockKey: string
+  createdAt?: Date
 }
 
 // Roll Types
