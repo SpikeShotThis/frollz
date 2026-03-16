@@ -9,15 +9,16 @@
     "preview": "vite preview",
     "type-check": "vue-tsc --build --force",
     "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix --ignore-path .gitignore",
-    "format": "prettier --write src/"
+    "format": "prettier --write src/",
+    "test": "vitest run"
   },
   "dependencies": {
-    "vue": "^3.5.30",
-    "vue-router": "^4.2.5",
-    "pinia": "^2.1.7",
-    "axios": "^1.13.6",
     "@headlessui/vue": "^1.7.23",
-    "@heroicons/vue": "^2.2.0"
+    "@heroicons/vue": "^2.2.0",
+    "axios": "^1.13.6",
+    "pinia": "^2.1.7",
+    "vue": "^3.5.30",
+    "vue-router": "^4.2.5"
   },
   "devDependencies": {
     "@rushstack/eslint-patch": "^1.3.3",
@@ -36,6 +37,7 @@
     "tailwindcss": "^3.4.1",
     "typescript": "~5.3.0",
     "vite": "^5.0.11",
+    "vitest": "^4.1.0",
     "vue-tsc": "^1.8.27"
   }
 }
