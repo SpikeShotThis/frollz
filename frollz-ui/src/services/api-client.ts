@@ -16,11 +16,12 @@ export const filmFormatApi = {
 export const stockApi = {
   getAll: () => api.get<Stock[]>('/stocks'),
   getById: (key: string) => api.get<Stock>(`/stocks/${key}`),
-  create: (data: Omit<Stock, '_key' | 'createdAt' | 'updatedAt'>) => 
+  create: (data: Omit<Stock, '_key' | 'createdAt' | 'updatedAt'>) =>
     api.post<Stock>('/stocks', data),
-  update: (key: string, data: Partial<Stock>) => 
+  update: (key: string, data: Partial<Stock>) =>
     api.patch<Stock>(`/stocks/${key}`, data),
   delete: (key: string) => api.delete(`/stocks/${key}`),
+  getBrands: (q: string) => api.get<string[]>('/stocks/brands', { params: { q } }),
 }
 
 // Tag API

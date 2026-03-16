@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, NotFoundException } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, NotFoundException, Query } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { StockService } from './stock.service';
 import { CreateStockDto } from './dto/create-stock.dto';
@@ -22,6 +22,13 @@ export class StockController {
   @ApiResponse({ status: 200, description: 'Stocks retrieved successfully', type: [Stock] })
   findAll(): Promise<Stock[]> {
     return this.stockService.findAll();
+  }
+
+  @Get('brands')
+  @ApiOperation({ summary: 'Get distinct brand names matching a query' })
+  @ApiResponse({ status: 200, description: 'Matching brand names', type: [String] })
+  getBrands(@Query('q') q: string): Promise<string[]> {
+    return this.stockService.getBrands(q ?? '');
   }
 
   @Get(':key')

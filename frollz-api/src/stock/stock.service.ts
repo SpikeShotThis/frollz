@@ -61,12 +61,22 @@ export class StockService {
 
   async remove(key: string): Promise<boolean> {
     const collection = this.databaseService.getCollection('stocks');
-    
+
     try {
       await collection.remove(key);
       return true;
     } catch (error) {
       return false;
     }
+  }
+
+  async getBrands(query: string): Promise<string[]> {
+    const cursor = await this.databaseService.query(
+      `FOR stock IN stocks
+       FILTER CONTAINS(LOWER(stock.brand), LOWER(@query))
+       RETURN DISTINCT stock.brand`,
+      { query },
+    );
+    return await cursor.all();
   }
 }
