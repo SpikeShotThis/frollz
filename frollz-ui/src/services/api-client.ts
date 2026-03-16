@@ -22,6 +22,7 @@ export const stockApi = {
     api.patch<Stock>(`/stocks/${key}`, data),
   delete: (key: string) => api.delete(`/stocks/${key}`),
   getBrands: (q: string) => api.get<string[]>('/stocks/brands', { params: { q } }),
+  getManufacturers: (q: string) => api.get<string[]>('/stocks/manufacturers', { params: { q } }),
 }
 
 // Tag API

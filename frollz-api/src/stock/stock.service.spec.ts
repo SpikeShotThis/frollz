@@ -84,4 +84,55 @@ describe('StockService', () => {
       );
     });
   });
+
+  describe('getManufacturers', () => {
+    it('should query using CONTAINS on manufacturer with the provided query', async () => {
+      mockCursor.all.mockResolvedValue([]);
+
+      await service.getManufacturers('kod');
+
+      expect(databaseService.query).toHaveBeenCalledWith(
+        expect.stringContaining('CONTAINS'),
+        { query: 'kod' },
+      );
+    });
+
+    it('should filter on the manufacturer field', async () => {
+      mockCursor.all.mockResolvedValue([]);
+
+      await service.getManufacturers('kod');
+
+      expect(databaseService.query).toHaveBeenCalledWith(
+        expect.stringContaining('stock.manufacturer'),
+        expect.anything(),
+      );
+    });
+
+    it('should use DISTINCT to avoid duplicate manufacturer names', async () => {
+      mockCursor.all.mockResolvedValue([]);
+
+      await service.getManufacturers('kod');
+
+      expect(databaseService.query).toHaveBeenCalledWith(
+        expect.stringContaining('DISTINCT'),
+        expect.anything(),
+      );
+    });
+
+    it('should return matching manufacturer names from the cursor', async () => {
+      mockCursor.all.mockResolvedValue(['Kodak', 'Konica']);
+
+      const result = await service.getManufacturers('ko');
+
+      expect(result).toEqual(['Kodak', 'Konica']);
+    });
+
+    it('should return an empty array when no manufacturers match', async () => {
+      mockCursor.all.mockResolvedValue([]);
+
+      const result = await service.getManufacturers('zzz');
+
+      expect(result).toEqual([]);
+    });
+  });
 });

@@ -31,6 +31,13 @@ export class StockController {
     return this.stockService.getBrands(q ?? '');
   }
 
+  @Get('manufacturers')
+  @ApiOperation({ summary: 'Get distinct manufacturer names matching a query' })
+  @ApiResponse({ status: 200, description: 'Matching manufacturer names', type: [String] })
+  getManufacturers(@Query('q') q: string): Promise<string[]> {
+    return this.stockService.getManufacturers(q ?? '');
+  }
+
   @Get(':key')
   @ApiOperation({ summary: 'Get a stock by key' })
   @ApiResponse({ status: 200, description: 'Stock retrieved successfully', type: Stock })

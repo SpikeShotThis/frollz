@@ -30,6 +30,7 @@ describe('StockController', () => {
             update: jest.fn(),
             remove: jest.fn(),
             getBrands: jest.fn(),
+            getManufacturers: jest.fn(),
           },
         },
       ],
@@ -63,6 +64,33 @@ describe('StockController', () => {
       service.getBrands.mockResolvedValue([]);
 
       const result = await controller.getBrands('zzz');
+
+      expect(result).toEqual([]);
+    });
+  });
+
+  describe('getManufacturers', () => {
+    it('should return manufacturers from the service', async () => {
+      service.getManufacturers.mockResolvedValue(['Kodak', 'Konica']);
+
+      const result = await controller.getManufacturers('ko');
+
+      expect(service.getManufacturers).toHaveBeenCalledWith('ko');
+      expect(result).toEqual(['Kodak', 'Konica']);
+    });
+
+    it('should pass empty string when q is undefined', async () => {
+      service.getManufacturers.mockResolvedValue([]);
+
+      await controller.getManufacturers(undefined as any);
+
+      expect(service.getManufacturers).toHaveBeenCalledWith('');
+    });
+
+    it('should return an empty array when no manufacturers match', async () => {
+      service.getManufacturers.mockResolvedValue([]);
+
+      const result = await controller.getManufacturers('zzz');
 
       expect(result).toEqual([]);
     });

@@ -35,11 +35,11 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { stockApi } from '@/services/api-client'
 import { buildSuggestions } from '@/utils/brandSuggestions'
 
 const props = defineProps<{
   modelValue: string
+  fetchOptions: (query: string) => Promise<string[]>
 }>()
 
 const emit = defineEmits<{
@@ -51,30 +51,29 @@ const inputValue = computed({
   set: (val: string) => emit('update:modelValue', val),
 })
 
-const dbBrands = ref<string[]>([])
+const dbOptions = ref<string[]>([])
 const isOpen = ref(false)
 const highlightedIndex = ref(-1)
 let debounceTimer: ReturnType<typeof setTimeout> | null = null
 
-const suggestions = computed(() => buildSuggestions(inputValue.value, dbBrands.value))
+const suggestions = computed(() => buildSuggestions(inputValue.value, dbOptions.value))
 
 const onInput = () => {
   isOpen.value = true
   highlightedIndex.value = -1
   if (debounceTimer) clearTimeout(debounceTimer)
-  debounceTimer = setTimeout(() => fetchBrands(), 200)
+  debounceTimer = setTimeout(() => fetchOptions(), 200)
 }
 
-const fetchBrands = async () => {
+const fetchOptions = async () => {
   if (!inputValue.value.trim()) {
-    dbBrands.value = []
+    dbOptions.value = []
     return
   }
   try {
-    const response = await stockApi.getBrands(inputValue.value)
-    dbBrands.value = response.data
+    dbOptions.value = await props.fetchOptions(inputValue.value)
   } catch {
-    dbBrands.value = []
+    dbOptions.value = []
   }
 }
 

@@ -57,8 +57,9 @@
           <div class="space-y-4">
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">Brand <span class="text-red-500">*</span></label>
-              <BrandTypeahead
+              <TypeaheadInput
                 v-model="form.brand"
+                :fetchOptions="(q) => stockApi.getBrands(q).then(r => r.data)"
                 required
                 placeholder="e.g. Portra 400"
                 class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
@@ -66,9 +67,9 @@
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">Manufacturer <span class="text-red-500">*</span></label>
-              <input
+              <TypeaheadInput
                 v-model="form.manufacturer"
-                type="text"
+                :fetchOptions="(q) => stockApi.getManufacturers(q).then(r => r.data)"
                 required
                 placeholder="e.g. Kodak"
                 class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
@@ -164,7 +165,7 @@ import { ref, onMounted, computed } from 'vue'
 import { stockApi, filmFormatApi, tagApi, stockTagApi } from '@/services/api-client'
 import type { Stock, FilmFormat, Tag } from '@/types'
 import { Process } from '@/types'
-import BrandTypeahead from '@/components/BrandTypeahead.vue'
+import TypeaheadInput from '@/components/TypeaheadInput.vue'
 
 const stocks = ref<Stock[]>([])
 const formats = ref<FilmFormat[]>([])

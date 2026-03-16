@@ -79,4 +79,14 @@ export class StockService {
     );
     return await cursor.all();
   }
+
+  async getManufacturers(query: string): Promise<string[]> {
+    const cursor = await this.databaseService.query(
+      `FOR stock IN stocks
+       FILTER CONTAINS(LOWER(stock.manufacturer), LOWER(@query))
+       RETURN DISTINCT stock.manufacturer`,
+      { query },
+    );
+    return await cursor.all();
+  }
 }
