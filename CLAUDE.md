@@ -5,7 +5,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Project Overview
 
 Frollz is a full-stack film photography tracking application — a monorepo with two independently containerized services:
-- **frollz-api**: NestJS REST API (port 3000) backed by ArangoDB
+- **frollz-api**: NestJS REST API (port 3000) backed by PostgreSQL 18
 - **frollz-ui**: Vue 3 SPA (port 5173) served through Nginx
 
 All traffic goes through Nginx on port 80, which proxies `/api/` to the API and `/` to the UI.
@@ -15,7 +15,7 @@ All traffic goes through Nginx on port 80, which proxies `/api/` to the API and 
 ### Docker (primary development workflow)
 
 ```bash
-docker-compose up -d          # Start all services (Nginx, ArangoDB, API, UI)
+docker-compose up -d          # Start all services (Nginx, PostgreSQL, API, UI)
 docker-compose down           # Stop all services
 docker-compose logs -f        # Tail logs
 ```
@@ -65,13 +65,13 @@ If the graph hasn't been indexed yet, run `index_repository` first.
 
 ## Architecture
 
-### Backend (NestJS + ArangoDB)
+### Backend (NestJS + PostgreSQL)
 
 Each domain (film-format, stock, roll, tag, roll-state, stock-tag) is a self-contained NestJS feature module with the structure: `controller / service / module / dto / entities`.
 
-`DatabaseService` is the single point of ArangoDB access — all modules depend on it. It wraps `arangojs`, exposes a `query()` method and `getCollection()` method used by all feature services.
+`DatabaseService` is the single point of PostgreSQL access — all modules depend on it. It wraps `pg`, exposes a `query<T>(sql, params)` method and `execute(sql, params)` method used by all feature services. Tables are created via `CREATE TABLE IF NOT EXISTS` DDL on startup.
 
-JSON Schemas in `frollz-api/db-init/schemas/` are applied at collection creation for DB-level validation. Seed data in `db-init/default/` (numbered 0001–0004) is loaded in order with foreign-key validation before insertion.
+Seed data in `db-init/default/` is loaded into `*_default` shadow tables, then copied to main tables via `INSERT ... ON CONFLICT DO NOTHING`. Can be disabled via `DISABLE_DEFAULT_DATA_IMPORT=true`.
 
 A `ValidationPipe` with `transform: true`, `whitelist: true`, `forbidNonWhitelisted: true` is applied globally. Swagger docs auto-generated at `/api/docs`.
 
@@ -85,14 +85,13 @@ Five routes map to domain views: `/` (dashboard), `/stocks`, `/rolls`, `/formats
 
 | Variable | Service | Default |
 |----------|---------|---------|
-| `ARANGODB_URL` | API | `http://arangodb:8529` |
-| `ARANGODB_DATABASE` | API | — |
-| `ARANGODB_USERNAME` | API | — |
-| `ARANGODB_PASSWORD` | API | — |
+| `POSTGRES_HOST` | API | `postgres` |
+| `POSTGRES_PORT` | API | `5432` |
+| `POSTGRES_DATABASE` | API | `frollz` |
+| `POSTGRES_USER` | API | `frollz` |
+| `POSTGRES_PASSWORD` | API | `frollz` |
 | `PORT` | API | `3000` |
 | `VITE_API_URL` | UI | `/api` (Docker) or `http://localhost:3000` (local) |
-
-ArangoDB web UI available at `http://localhost:8529` (root/rootpassword in dev).
 
 ## Workflow
 

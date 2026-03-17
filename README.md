@@ -4,9 +4,9 @@ A full-stack application for tracking film photography rolls, built with modern 
 
 ## Architecture
 
-- **Backend**: NestJS with TypeScript, ArangoDB database
+- **Backend**: NestJS with TypeScript, PostgreSQL database
 - **Frontend**: Vue.js 3 with TypeScript and Tailwind CSS
-- **Database**: ArangoDB for flexible document storage
+- **Database**: PostgreSQL 18 for relational data storage
 - **Containerization**: Docker and Docker Compose
 
 ## Features
@@ -23,7 +23,7 @@ A full-stack application for tracking film photography rolls, built with modern 
 - Form Factor: Roll, Sheet, Instant, Bulk (100ft/400ft)
 - Format: 35mm, 110, 120, 220, 4x5, 8x10, Instant formats
 
-#### Stocks  
+#### Stocks
 - Process: ECN-2, E-6, C-41, Black & White
 - Manufacturer and brand information
 - ISO speed rating
@@ -32,7 +32,7 @@ A full-stack application for tracking film photography rolls, built with modern 
 
 #### Rolls
 - Unique roll identification
-- State tracking: Frozen → Refrigerated → Shelfed → Loaded → Finished → Developed  
+- State tracking: Frozen → Refrigerated → Shelfed → Loaded → Finished → Developed
 - Acquisition tracking (date, method, source)
 - X-ray exposure tracking
 - Image album integration
@@ -60,7 +60,6 @@ A full-stack application for tracking film photography rolls, built with modern 
    - Frontend: http://localhost:5173
    - API: http://localhost:3000
    - API Documentation: http://localhost:3000/api/docs
-   - ArangoDB Web Interface: http://localhost:8529 (root/rootpassword)
 
 ### Development
 
@@ -73,7 +72,7 @@ npm install
 npm run start:dev
 ```
 
-**Frontend Setup**  
+**Frontend Setup**
 ```bash
 cd frollz-ui
 npm install
@@ -105,7 +104,7 @@ npm run dev
 
 ## Database
 
-The application uses ArangoDB as its primary database. Collections are automatically created on startup:
+The application uses PostgreSQL 18 as its primary database. Tables are automatically created on startup via DDL:
 
 - `film_formats` - Film format specifications
 - `stocks` - Film stock catalog
@@ -117,10 +116,11 @@ The application uses ArangoDB as its primary database. Collections are automatic
 ### Backend (frollz-api)
 ```env
 NODE_ENV=development
-ARANGODB_URL=http://arangodb:8529
-ARANGODB_DATABASE=frollz  
-ARANGODB_USERNAME=root
-ARANGODB_PASSWORD=rootpassword
+POSTGRES_HOST=postgres
+POSTGRES_PORT=5432
+POSTGRES_DATABASE=frollz
+POSTGRES_USER=frollz
+POSTGRES_PASSWORD=frollz
 PORT=3000
 ```
 
@@ -131,8 +131,8 @@ VITE_API_URL=http://localhost:3000
 
 ## Docker Services
 
-- **arangodb**: Database service on port 8529
-- **frollz-api**: Backend API service on port 3000  
+- **postgres**: PostgreSQL 18 database service on port 5432
+- **frollz-api**: Backend API service on port 3000
 - **frollz-ui**: Frontend application on port 5173
 
 ## Contributing

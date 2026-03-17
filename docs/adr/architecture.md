@@ -6,7 +6,7 @@ Frollz is a film photography tracking application. It allows photographers to ma
 ## STACK
 - **Backend:** NestJS (TypeScript) — `frollz-api`
 - **Frontend:** Vue 3 + TypeScript, Tailwind CSS, Vite — `frollz-ui`
-- **Database:** PostgreSQL 15
+- **Database:** PostgreSQL 18
 - **Infrastructure:** Docker Compose, Nginx reverse proxy (root `nginx/` + per-service configs)
 - **Build:** Multi-stage Docker builds per service
 
