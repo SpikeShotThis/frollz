@@ -73,7 +73,7 @@ export interface StockTag {
 export enum RollState {
   FROZEN = 'Frozen',
   REFRIGERATED = 'Refrigerated',
-  SHELFED = 'Shelfed',
+  SHELFED = 'Shelved',
   LOADED = 'Loaded',
   FINISHED = 'Finished',
   DEVELOPED = 'Developed',
@@ -95,6 +95,7 @@ export interface Roll {
   obtainedFrom: string
   expirationDate?: Date
   timesExposedToXrays: number
+  loadedInto?: string
   createdAt?: Date
   updatedAt?: Date
 }
