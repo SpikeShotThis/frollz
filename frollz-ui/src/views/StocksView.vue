@@ -7,6 +7,20 @@
       </button>
     </div>
 
+    <!-- Active Filters -->
+    <div v-if="activeFilters.length > 0" class="flex flex-wrap items-center gap-2 mb-4">
+      <span class="text-sm text-gray-500 font-medium">Filters:</span>
+      <span
+        v-for="(filter, index) in activeFilters"
+        :key="index"
+        class="inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm bg-primary-100 text-primary-800 font-medium"
+      >
+        {{ filter.label }}: {{ filter.value }}
+        <button @click="removeFilter(index)" class="ml-1 text-primary-600 hover:text-primary-900 font-bold leading-none">&times;</button>
+      </span>
+      <button @click="clearFilters" class="text-sm text-gray-500 hover:text-gray-700 underline">Clear all</button>
+    </div>
+
     <div class="bg-white rounded-lg shadow-md">
       <div class="overflow-x-auto">
         <table class="min-w-full">
@@ -38,22 +52,38 @@
           </thead>
           <tbody class="bg-white divide-y divide-gray-200">
             <tr v-for="stock in sortedStocks" :key="stock._key">
-              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ stock.brand }}</td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ stock.manufacturer }}</td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ stock.format }}</td>
+              <td
+                class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 cursor-pointer hover:text-primary-600"
+                @click="addFilter('brand', 'Brand', stock.brand)"
+              >{{ stock.brand }}</td>
+              <td
+                class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 cursor-pointer hover:text-primary-600"
+                @click="addFilter('manufacturer', 'Manufacturer', stock.manufacturer)"
+              >{{ stock.manufacturer }}</td>
+              <td
+                class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 cursor-pointer hover:text-primary-600"
+                @click="addFilter('format', 'Format', stock.format ?? '')"
+              >{{ stock.format }}</td>
               <td class="px-6 py-4 whitespace-nowrap">
-                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
+                <span
+                  class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800 cursor-pointer hover:bg-blue-200"
+                  @click="addFilter('process', 'Process', stock.process)"
+                >
                   {{ stock.process }}
                 </span>
               </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">ISO {{ stock.speed }}</td>
+              <td
+                class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 cursor-pointer hover:text-primary-600"
+                @click="addFilter('speed', 'Speed', String(stock.speed))"
+              >ISO {{ stock.speed }}</td>
               <td class="px-6 py-4 text-sm text-gray-500">
                 <div class="flex flex-wrap gap-1">
                   <span
                     v-for="tag in stockTagMap[stock._key!]"
                     :key="tag._key"
-                    class="px-2 py-1 rounded text-xs font-medium text-white"
+                    class="px-2 py-1 rounded text-xs font-medium text-white cursor-pointer hover:opacity-80"
                     :style="{ backgroundColor: tag.color }"
+                    @click="addFilter('tag', 'Tag', tag.value)"
                   >
                     {{ tag.value }}
                   </span>
@@ -224,6 +254,25 @@ const setSort = (field: SortField) => {
   }
 }
 
+type ActiveFilter = { field: string; label: string; value: string }
+const activeFilters = ref<ActiveFilter[]>([])
+
+const addFilter = (field: string, label: string, value: string) => {
+  if (!value) return
+  const exists = activeFilters.value.some(f => f.field === field && f.value === value)
+  if (!exists) {
+    activeFilters.value.push({ field, label, value })
+  }
+}
+
+const removeFilter = (index: number) => {
+  activeFilters.value.splice(index, 1)
+}
+
+const clearFilters = () => {
+  activeFilters.value = []
+}
+
 const processOptions = Object.values(Process)
 
 const emptyForm = () => ({
@@ -249,19 +298,37 @@ watch(() => form.value.process, () => {
   form.value.formatKeys = []
 })
 
-const sortedStocks = computed(() => {
-  return stocks.value.slice().sort((a, b) => {
-    let result: number
+const filteredAndSortedStocks = computed(() => {
+  let result = stocks.value
+  if (activeFilters.value.length > 0) {
+    result = result.filter(stock => {
+      return activeFilters.value.every(filter => {
+        if (filter.field === 'tag') {
+          const tags = stockTagMap.value[stock._key!] ?? []
+          return tags.some(t => t.value === filter.value)
+        }
+        if (filter.field === 'speed') {
+          return String(stock.speed) === filter.value
+        }
+        return (stock[filter.field as keyof Stock] ?? '') === filter.value
+      })
+    })
+  }
+  return result.slice().sort((a, b) => {
+    let cmp: number
     if (sortField.value === 'speed') {
-      result = (a.speed ?? 0) - (b.speed ?? 0)
+      cmp = (a.speed ?? 0) - (b.speed ?? 0)
     } else {
       const aVal = (a[sortField.value] ?? '').toString().toLowerCase()
       const bVal = (b[sortField.value] ?? '').toString().toLowerCase()
-      result = aVal.localeCompare(bVal)
+      cmp = aVal.localeCompare(bVal)
     }
-    return sortDirection.value === 'asc' ? result : -result
+    return sortDirection.value === 'asc' ? cmp : -cmp
   })
 })
+
+// Keep sortedStocks as an alias for backwards compatibility with tests
+const sortedStocks = filteredAndSortedStocks
 
 const toggleTag = (tagKey: string) => {
   const idx = selectedTagKeys.value.indexOf(tagKey)
