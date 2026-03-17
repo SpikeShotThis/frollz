@@ -50,30 +50,26 @@
               <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                 {{ formatDate(tag.createdAt) }}
               </td>
-              <td class="px-6 py-4 whitespace-nowrap text-right">
+              <td class="px-6 py-4 whitespace-nowrap text-right space-x-2">
                 <template v-if="editingKey === tag._key">
                   <button
                     @click="saveEdit(tag._key!)"
-                    class="text-green-600 hover:text-green-800 mr-3"
-                    title="Save"
-                  >💾</button>
+                    class="px-3 py-1 text-xs font-medium text-white bg-green-600 rounded hover:bg-green-700"
+                  >Save</button>
                   <button
                     @click="cancelEdit"
-                    class="text-gray-500 hover:text-gray-700 text-sm font-medium"
-                    title="Cancel"
+                    class="px-3 py-1 text-xs font-medium text-gray-700 border border-gray-300 rounded hover:bg-gray-50"
                   >Cancel</button>
                 </template>
                 <template v-else>
                   <button
                     @click="startEdit(tag)"
-                    class="text-gray-400 hover:text-primary-600 mr-3"
-                    title="Edit"
-                  >✏️</button>
+                    class="px-3 py-1 text-xs font-medium text-primary-600 border border-primary-300 rounded hover:bg-primary-50"
+                  >Edit</button>
                   <button
                     @click="confirmDelete(tag)"
-                    class="text-gray-400 hover:text-red-600"
-                    title="Delete"
-                  >&times;</button>
+                    class="px-3 py-1 text-xs font-medium text-red-600 border border-red-300 rounded hover:bg-red-50"
+                  >Delete</button>
                 </template>
               </td>
             </tr>
