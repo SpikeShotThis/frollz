@@ -386,7 +386,7 @@ const handleSubmit = async () => {
 
     await loadStocks()
     closeModal()
-  } catch (e) {
+  } catch (_) {
     error.value = 'Failed to add stock. Please try again.'
   } finally {
     submitting.value = false
@@ -419,7 +419,7 @@ const loadStocks = async () => {
     const response = await stockApi.getAll()
     stocks.value = response.data
     await buildStockTagMap()
-  } catch (e) {
+  } catch (_) {
     console.error('Error loading stocks:', e)
   }
 }
@@ -428,7 +428,7 @@ const loadFormats = async () => {
   try {
     const response = await filmFormatApi.getAll()
     formats.value = response.data
-  } catch (e) {
+  } catch (_) {
     console.error('Error loading formats:', e)
   }
 }

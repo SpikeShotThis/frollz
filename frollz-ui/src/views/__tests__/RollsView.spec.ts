@@ -3,7 +3,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { mount, flushPromises } from '@vue/test-utils'
 import { createRouter, createMemoryHistory } from 'vue-router'
 import RollsView from '@/views/RollsView.vue'
-import { rollApi, rollStateApi, stockApi } from '@/services/api-client'
+import { rollApi, stockApi } from '@/services/api-client'
 import { RollState, ObtainmentMethod } from '@/types'
 
 vi.mock('@/services/api-client', () => ({
@@ -13,9 +13,6 @@ vi.mock('@/services/api-client', () => ({
     create: vi.fn(),
     update: vi.fn(),
     transition: vi.fn(),
-  },
-  rollStateApi: {
-    getHistory: vi.fn(),
   },
   stockApi: {
     getAll: vi.fn(),

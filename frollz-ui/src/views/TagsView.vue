@@ -158,7 +158,7 @@ const loadTags = async () => {
   try {
     const response = await tagApi.getAll()
     tags.value = response.data
-  } catch (e) {
+  } catch (_) {
     console.error('Error loading tags:', e)
   }
 }
@@ -177,7 +177,7 @@ const saveEdit = async (key: string) => {
     await tagApi.update(key, { value: editForm.value.value, color: editForm.value.color })
     editingKey.value = null
     await loadTags()
-  } catch (e) {
+  } catch (_) {
     console.error('Error saving tag:', e)
   }
 }
@@ -187,7 +187,7 @@ const confirmDelete = async (tag: Tag) => {
     const response = await stockTagApi.getAll({ tagKey: tag._key })
     deleteStockTagCount.value = response.data.length
     deleteTarget.value = tag
-  } catch (e) {
+  } catch (_) {
     console.error('Error fetching stock-tag count:', e)
   }
 }
@@ -201,7 +201,7 @@ const executeDelete = async () => {
     await tagApi.delete(tag._key!)
     deleteTarget.value = null
     await loadTags()
-  } catch (e) {
+  } catch (_) {
     console.error('Error deleting tag:', e)
   }
 }

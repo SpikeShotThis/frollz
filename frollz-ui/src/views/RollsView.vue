@@ -516,7 +516,7 @@ const loadRolls = async () => {
   try {
     const response = await rollApi.getAll()
     rolls.value = response.data
-  } catch (e) {
+  } catch (_) {
     console.error('Error loading rolls:', e)
   }
 }
@@ -525,7 +525,7 @@ const loadStocks = async () => {
   try {
     const response = await stockApi.getAll()
     stocks.value = response.data
-  } catch (e) {
+  } catch (_) {
     console.error('Error loading stocks:', e)
   }
 }
