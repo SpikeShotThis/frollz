@@ -44,3 +44,4 @@ When the application is running, visit `http://localhost:3000/api/docs` for Swag
 - `ARANGODB_USERNAME` - Database username (default: root)
 - `ARANGODB_PASSWORD` - Database password (default: rootpassword)
 - `PORT` - Application port (default: 3000)
+- `DISABLE_DEFAULT_DATA_IMPORT` - When set to `true` or `1` (case-insensitive), skips loading default seed data and populating main collections on startup (default: `false`)

@@ -11,8 +11,22 @@ export class DatabaseService implements OnModuleInit {
   async onModuleInit() {
     await this.initializeCollections();
     await this.initializeDefaultCollections();
+
+    if (this.isDefaultDataImportDisabled()) {
+      console.log(
+        "Default data import is disabled (DISABLE_DEFAULT_DATA_IMPORT). Skipping seed data load.",
+      );
+      return;
+    }
+
     await this.loadSeedData();
     await this.populateMainCollections();
+  }
+
+  private isDefaultDataImportDisabled(): boolean {
+    const raw = process.env.DISABLE_DEFAULT_DATA_IMPORT ?? "false";
+    const normalized = raw.trim().toLowerCase();
+    return normalized === "true" || normalized === "1";
   }
 
   private loadSchema(collectionName: string): SchemaOptions | undefined {

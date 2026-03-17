@@ -20,7 +20,7 @@ Monorepo with two independently containerized services orchestrated via `docker-
 ## PATTERNS
 - **NestJS feature modules**: Every resource gets its own folder with `module / controller / service / dto / entities`.
 - **Schema-first DB**: ArangoDB collections are validated against JSON Schemas loaded at startup via `DatabaseService.loadSchema`.
-- **Seed data via JSON files**: Default data (film formats, stocks, tags) loaded by `DatabaseService.loadSeedData` on module init.
+- **Seed data via JSON files**: Default data (film formats, stocks, tags) loaded by `DatabaseService.loadSeedData` on module init. Can be disabled via the `DISABLE_DEFAULT_DATA_IMPORT` environment variable (`true`/`1` to skip; defaults to `false`).
 - **Centralized API client**: UI uses a single `api-client.ts` service; views do not call HTTP directly.
 - **State machine for rolls**: `roll-state` module manages roll lifecycle transitions (`RollService.update` / `transition`).
 - **Typeahead utilities**: Brand and speed suggestion logic extracted into pure utility functions (`brandSuggestions.ts`, `speedSuggestions.ts`).

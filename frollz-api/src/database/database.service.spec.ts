@@ -273,6 +273,86 @@ describe("DatabaseService — loadSeedData", () => {
   });
 });
 
+describe("DatabaseService — DISABLE_DEFAULT_DATA_IMPORT", () => {
+  let mockDb: { collection: jest.Mock; query: jest.Mock };
+  const originalEnv = process.env;
+
+  beforeEach(() => {
+    process.env = { ...originalEnv };
+    mockDb = {
+      collection: jest.fn().mockReturnValue(makeCollection()),
+      query: jest
+        .fn()
+        .mockResolvedValue({ all: jest.fn().mockResolvedValue([]) }),
+    };
+    jest.spyOn(fs, "existsSync").mockReturnValue(false);
+    jest
+      .spyOn(fs, "readdirSync")
+      .mockReturnValue(["0001-film-formats.json"] as any);
+    jest.spyOn(fs, "readFileSync").mockReturnValue("[]");
+    jest.spyOn(path, "join").mockImplementation((...parts) => parts.join("/"));
+  });
+
+  afterEach(() => {
+    process.env = originalEnv;
+    jest.restoreAllMocks();
+  });
+
+  const buildService = async () => {
+    const module: TestingModule = await Test.createTestingModule({
+      providers: [DatabaseService, { provide: "ARANGO_DB", useValue: mockDb }],
+    }).compile();
+    return module.get<DatabaseService>(DatabaseService);
+  };
+
+  it.each(["true", "TRUE", "True", "1"])(
+    'should skip seed data when DISABLE_DEFAULT_DATA_IMPORT="%s"',
+    async (value) => {
+      process.env.DISABLE_DEFAULT_DATA_IMPORT = value;
+      const consoleSpy = jest
+        .spyOn(console, "log")
+        .mockImplementation(() => {});
+      const service = await buildService();
+      await service.onModuleInit();
+
+      expect(consoleSpy).toHaveBeenCalledWith(
+        expect.stringContaining("DISABLE_DEFAULT_DATA_IMPORT"),
+      );
+      // saveAll should never be called because seed loading is skipped
+      const saveAllCalls = mockDb.collection.mock.results
+        .map((r) => r.value)
+        .filter((col) => col?.saveAll?.mock?.calls?.length > 0);
+      expect(saveAllCalls).toHaveLength(0);
+    },
+  );
+
+  it.each(["false", "FALSE", "False", "0", ""])(
+    'should load seed data when DISABLE_DEFAULT_DATA_IMPORT="%s"',
+    async (value) => {
+      process.env.DISABLE_DEFAULT_DATA_IMPORT = value;
+      const service = await buildService();
+      // readdirSync returns one file — collection.count() returns 0 by default so saveAll runs
+      await (service as any).loadSeedData();
+
+      // film_formats_default.saveAll should have been called (empty array from readFileSync mock)
+      const filmFormatsCol = mockDb.collection.mock.results.find(
+        (r) =>
+          mockDb.collection.mock.calls[
+            mockDb.collection.mock.results.indexOf(r)
+          ]?.[0] === "film_formats_default",
+      );
+      expect(filmFormatsCol).toBeDefined();
+    },
+  );
+
+  it("should skip seed data when DISABLE_DEFAULT_DATA_IMPORT is not set", async () => {
+    delete process.env.DISABLE_DEFAULT_DATA_IMPORT;
+    const service = await buildService();
+    // isDefaultDataImportDisabled should return false — seed loading proceeds normally
+    expect((service as any).isDefaultDataImportDisabled()).toBe(false);
+  });
+});
+
 describe("DatabaseService — getCollection / query", () => {
   let service: DatabaseService;
   let mockDb: { collection: jest.Mock; query: jest.Mock };

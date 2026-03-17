@@ -40,6 +40,7 @@ services:
       - ARANGODB_USERNAME=root
       - ARANGODB_PASSWORD=rootpassword
       - PORT=3000
+      - DISABLE_DEFAULT_DATA_IMPORT=true
     ports:
       - "3000:3000"
     depends_on:
