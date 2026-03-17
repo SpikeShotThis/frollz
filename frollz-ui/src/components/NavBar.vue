@@ -29,12 +29,19 @@
           >
             Stocks
           </RouterLink>
-          <RouterLink 
-            to="/rolls" 
+          <RouterLink
+            to="/rolls"
             class="nav-link"
             :class="{ 'active': $route.name === 'rolls' }"
           >
             Rolls
+          </RouterLink>
+          <RouterLink
+            to="/tags"
+            class="nav-link"
+            :class="{ 'active': $route.name === 'tags' }"
+          >
+            Tags
           </RouterLink>
         </div>
       </div>
