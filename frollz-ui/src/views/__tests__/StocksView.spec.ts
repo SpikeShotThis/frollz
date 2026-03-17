@@ -286,6 +286,159 @@ describe('StocksView', () => {
     })
   })
 
+  describe('filtering', () => {
+    const multiStocks = [
+      { _key: 'stock-a', brand: 'Portra 400', manufacturer: 'Kodak', format: '35mm', process: Process.C_41, speed: 400 },
+      { _key: 'stock-b', brand: 'HP5 Plus', manufacturer: 'Ilford', format: '35mm', process: Process['Black & White'], speed: 400 },
+      { _key: 'stock-c', brand: 'Velvia 50', manufacturer: 'Fujifilm', format: '120', process: Process.E_6, speed: 50 },
+    ]
+
+    beforeEach(() => {
+      vi.mocked(stockApi.getAll).mockResolvedValue({ data: multiStocks } as any)
+    })
+
+    it('should start with no active filters', async () => {
+      const wrapper = mount(StocksView)
+      await flushPromises()
+      expect((wrapper.vm as any).activeFilters).toEqual([])
+    })
+
+    it('should add a filter via addFilter', async () => {
+      const wrapper = mount(StocksView)
+      await flushPromises()
+      const vm = wrapper.vm as any
+
+      vm.addFilter('manufacturer', 'Manufacturer', 'Kodak')
+      await wrapper.vm.$nextTick()
+
+      expect(vm.activeFilters).toHaveLength(1)
+      expect(vm.activeFilters[0]).toEqual({ field: 'manufacturer', label: 'Manufacturer', value: 'Kodak' })
+    })
+
+    it('should not add duplicate filters for the same field and value', async () => {
+      const wrapper = mount(StocksView)
+      await flushPromises()
+      const vm = wrapper.vm as any
+
+      vm.addFilter('manufacturer', 'Manufacturer', 'Kodak')
+      vm.addFilter('manufacturer', 'Manufacturer', 'Kodak')
+      await wrapper.vm.$nextTick()
+
+      expect(vm.activeFilters).toHaveLength(1)
+    })
+
+    it('should allow multiple filters on different fields', async () => {
+      const wrapper = mount(StocksView)
+      await flushPromises()
+      const vm = wrapper.vm as any
+
+      vm.addFilter('format', 'Format', '35mm')
+      vm.addFilter('manufacturer', 'Manufacturer', 'Kodak')
+      await wrapper.vm.$nextTick()
+
+      expect(vm.activeFilters).toHaveLength(2)
+    })
+
+    it('should filter sortedStocks by active filters', async () => {
+      const wrapper = mount(StocksView)
+      await flushPromises()
+      const vm = wrapper.vm as any
+
+      vm.addFilter('manufacturer', 'Manufacturer', 'Kodak')
+      await wrapper.vm.$nextTick()
+
+      expect(vm.sortedStocks).toHaveLength(1)
+      expect(vm.sortedStocks[0].brand).toBe('Portra 400')
+    })
+
+    it('should apply multiple filters with AND logic', async () => {
+      const wrapper = mount(StocksView)
+      await flushPromises()
+      const vm = wrapper.vm as any
+
+      vm.addFilter('format', 'Format', '35mm')
+      vm.addFilter('speed', 'Speed', '400')
+      await wrapper.vm.$nextTick()
+
+      // Both Portra 400 (Kodak, 35mm, 400) and HP5 Plus (Ilford, 35mm, 400) match
+      expect(vm.sortedStocks).toHaveLength(2)
+    })
+
+    it('should remove a specific filter chip', async () => {
+      const wrapper = mount(StocksView)
+      await flushPromises()
+      const vm = wrapper.vm as any
+
+      vm.addFilter('format', 'Format', '35mm')
+      vm.addFilter('manufacturer', 'Manufacturer', 'Kodak')
+      await wrapper.vm.$nextTick()
+
+      vm.removeFilter(0) // remove format filter
+      await wrapper.vm.$nextTick()
+
+      expect(vm.activeFilters).toHaveLength(1)
+      expect(vm.activeFilters[0].field).toBe('manufacturer')
+    })
+
+    it('should clear all filters', async () => {
+      const wrapper = mount(StocksView)
+      await flushPromises()
+      const vm = wrapper.vm as any
+
+      vm.addFilter('format', 'Format', '35mm')
+      vm.addFilter('manufacturer', 'Manufacturer', 'Kodak')
+      vm.clearFilters()
+      await wrapper.vm.$nextTick()
+
+      expect(vm.activeFilters).toHaveLength(0)
+      expect(vm.sortedStocks).toHaveLength(3)
+    })
+
+    it('should not add filter when value is empty', async () => {
+      const wrapper = mount(StocksView)
+      await flushPromises()
+      const vm = wrapper.vm as any
+
+      vm.addFilter('format', 'Format', '')
+      await wrapper.vm.$nextTick()
+
+      expect(vm.activeFilters).toHaveLength(0)
+    })
+
+    it('should render filter chips with "field: value" label', async () => {
+      const wrapper = mount(StocksView)
+      await flushPromises()
+      const vm = wrapper.vm as any
+
+      vm.addFilter('manufacturer', 'Manufacturer', 'Kodak')
+      await wrapper.vm.$nextTick()
+
+      const chipText = wrapper.find('[data-testid="filter-chip"]')
+        ?? wrapper.findAll('span').find(s => s.text().includes('Manufacturer: Kodak'))
+      expect(wrapper.text()).toContain('Manufacturer: Kodak')
+    })
+
+    it('should show placeholder text when no filters are active', async () => {
+      const wrapper = mount(StocksView)
+      await flushPromises()
+
+      expect(wrapper.text()).toContain('Click any value in the table to filter by that field')
+      expect(wrapper.text()).not.toContain('Clear all')
+    })
+
+    it('should show clear all button and hide placeholder when filters are active', async () => {
+      const wrapper = mount(StocksView)
+      await flushPromises()
+      const vm = wrapper.vm as any
+
+      vm.addFilter('manufacturer', 'Manufacturer', 'Kodak')
+      await wrapper.vm.$nextTick()
+
+      expect(wrapper.text()).toContain('Clear all')
+      expect(wrapper.text()).not.toContain('Click any value in the table to filter by that field')
+    })
+  })
+
   describe('multiple format creation', () => {
     it('should call API with multiple format keys', async () => {
       const mockCreatedStocks = [
