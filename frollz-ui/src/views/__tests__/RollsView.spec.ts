@@ -20,7 +20,7 @@ vi.mock('@/services/api-client', () => ({
 
 const router = createRouter({ history: createMemoryHistory(), routes: [{ path: '/', component: RollsView }] })
 
-const makeRoll = (key: string, state: RollState) => ({
+const makeRoll = (key: string, state: RollState, overrides: Record<string, any> = {}) => ({
   _key: key,
   rollId: `roll-${key}`,
   stockKey: 'stock1',
@@ -29,6 +29,7 @@ const makeRoll = (key: string, state: RollState) => ({
   obtainmentMethod: ObtainmentMethod.PURCHASE,
   obtainedFrom: 'B&H',
   timesExposedToXrays: 0,
+  ...overrides,
 })
 
 describe('RollsView', () => {
@@ -88,6 +89,127 @@ describe('RollsView', () => {
         expect(loadButtons).toHaveLength(0)
       }
     )
+  })
+
+  describe('sorting', () => {
+    const multiRolls = [
+      makeRoll('c', RollState.SHELFED, { rollId: 'roll-c', obtainedFrom: 'Amazon', dateObtained: new Date('2024-03-01'), timesExposedToXrays: 3 }),
+      makeRoll('a', RollState.FROZEN,  { rollId: 'roll-a', obtainedFrom: 'B&H',    dateObtained: new Date('2024-01-01'), timesExposedToXrays: 0 }),
+      makeRoll('b', RollState.LOADED,  { rollId: 'roll-b', obtainedFrom: 'Moment', dateObtained: new Date('2024-02-01'), timesExposedToXrays: 1 }),
+    ]
+
+    beforeEach(() => {
+      vi.mocked(rollApi.getAll).mockResolvedValue({ data: multiRolls } as any)
+    })
+
+    it('should default sort by rollId ascending', async () => {
+      const wrapper = mount(RollsView, { global: { plugins: [router] } })
+      await flushPromises()
+
+      const vm = wrapper.vm as any
+      expect(vm.sortField).toBe('rollId')
+      expect(vm.sortDirection).toBe('asc')
+      expect(vm.filteredRolls.map((r: any) => r.rollId)).toEqual(['roll-a', 'roll-b', 'roll-c'])
+    })
+
+    it('should sort by a different field when setSort is called', async () => {
+      const wrapper = mount(RollsView, { global: { plugins: [router] } })
+      await flushPromises()
+
+      const vm = wrapper.vm as any
+      vm.setSort('obtainedFrom')
+      await wrapper.vm.$nextTick()
+
+      expect(vm.sortField).toBe('obtainedFrom')
+      expect(vm.sortDirection).toBe('asc')
+      expect(vm.filteredRolls.map((r: any) => r.obtainedFrom)).toEqual(['Amazon', 'B&H', 'Moment'])
+    })
+
+    it('should toggle sort direction when the same field is clicked again', async () => {
+      const wrapper = mount(RollsView, { global: { plugins: [router] } })
+      await flushPromises()
+
+      const vm = wrapper.vm as any
+      vm.setSort('rollId') // already rollId/asc → flip to desc
+      await wrapper.vm.$nextTick()
+
+      expect(vm.sortDirection).toBe('desc')
+      expect(vm.filteredRolls.map((r: any) => r.rollId)).toEqual(['roll-c', 'roll-b', 'roll-a'])
+    })
+
+    it('should reset to ascending when switching to a new field', async () => {
+      const wrapper = mount(RollsView, { global: { plugins: [router] } })
+      await flushPromises()
+
+      const vm = wrapper.vm as any
+      vm.setSort('rollId') // flip to desc
+      vm.setSort('obtainedFrom') // new field → asc
+      await wrapper.vm.$nextTick()
+
+      expect(vm.sortField).toBe('obtainedFrom')
+      expect(vm.sortDirection).toBe('asc')
+    })
+
+    it('should sort numerically by timesExposedToXrays', async () => {
+      const wrapper = mount(RollsView, { global: { plugins: [router] } })
+      await flushPromises()
+
+      const vm = wrapper.vm as any
+      vm.setSort('timesExposedToXrays')
+      await wrapper.vm.$nextTick()
+
+      expect(vm.filteredRolls.map((r: any) => r.timesExposedToXrays)).toEqual([0, 1, 3])
+
+      vm.setSort('timesExposedToXrays') // desc
+      await wrapper.vm.$nextTick()
+      expect(vm.filteredRolls.map((r: any) => r.timesExposedToXrays)).toEqual([3, 1, 0])
+    })
+
+    it('should sort chronologically by dateObtained', async () => {
+      const wrapper = mount(RollsView, { global: { plugins: [router] } })
+      await flushPromises()
+
+      const vm = wrapper.vm as any
+      vm.setSort('dateObtained')
+      await wrapper.vm.$nextTick()
+
+      // Compare timestamps to avoid timezone-dependent string formatting
+      const timestamps = vm.filteredRolls.map((r: any) => new Date(r.dateObtained).getTime())
+      expect(timestamps).toEqual([...timestamps].sort((a: number, b: number) => a - b))
+
+      vm.setSort('dateObtained') // desc
+      await wrapper.vm.$nextTick()
+      const timestampsDesc = vm.filteredRolls.map((r: any) => new Date(r.dateObtained).getTime())
+      expect(timestampsDesc).toEqual([...timestampsDesc].sort((a: number, b: number) => b - a))
+    })
+
+    it('should apply darker background on the active sort column header', async () => {
+      const wrapper = mount(RollsView, { global: { plugins: [router] } })
+      await flushPromises()
+
+      const vm = wrapper.vm as any
+      vm.setSort('state')
+      await wrapper.vm.$nextTick()
+
+      const headers = wrapper.findAll('th')
+      expect(headers[1].classes()).toContain('bg-gray-200')
+      expect(headers[0].classes()).not.toContain('bg-gray-200')
+    })
+
+    it('should show sort direction indicator next to the active column', async () => {
+      const wrapper = mount(RollsView, { global: { plugins: [router] } })
+      await flushPromises()
+
+      // Default: rollId asc
+      expect(wrapper.findAll('th')[0].text()).toContain('↑')
+      expect(wrapper.findAll('th')[1].text()).not.toMatch(/[↑↓]/)
+
+      const vm = wrapper.vm as any
+      vm.setSort('rollId') // flip to desc
+      await wrapper.vm.$nextTick()
+
+      expect(wrapper.findAll('th')[0].text()).toContain('↓')
+    })
   })
 
   describe('load modal', () => {

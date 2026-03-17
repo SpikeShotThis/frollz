@@ -26,21 +26,26 @@
         <table class="min-w-full">
           <thead class="bg-gray-50">
             <tr>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Roll ID
-              </th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                State
-              </th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Date Obtained
-              </th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Obtained From
-              </th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                X-Ray Exposures
-              </th>
+              <th
+                @click="setSort('rollId')"
+                :class="['px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer select-none', sortField === 'rollId' ? 'bg-gray-200' : '']"
+              >Roll ID {{ sortField === 'rollId' ? (sortDirection === 'asc' ? '↑' : '↓') : '' }}</th>
+              <th
+                @click="setSort('state')"
+                :class="['px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer select-none', sortField === 'state' ? 'bg-gray-200' : '']"
+              >State {{ sortField === 'state' ? (sortDirection === 'asc' ? '↑' : '↓') : '' }}</th>
+              <th
+                @click="setSort('dateObtained')"
+                :class="['px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer select-none', sortField === 'dateObtained' ? 'bg-gray-200' : '']"
+              >Date Obtained {{ sortField === 'dateObtained' ? (sortDirection === 'asc' ? '↑' : '↓') : '' }}</th>
+              <th
+                @click="setSort('obtainedFrom')"
+                :class="['px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer select-none', sortField === 'obtainedFrom' ? 'bg-gray-200' : '']"
+              >Obtained From {{ sortField === 'obtainedFrom' ? (sortDirection === 'asc' ? '↑' : '↓') : '' }}</th>
+              <th
+                @click="setSort('timesExposedToXrays')"
+                :class="['px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer select-none', sortField === 'timesExposedToXrays' ? 'bg-gray-200' : '']"
+              >X-Ray Exposures {{ sortField === 'timesExposedToXrays' ? (sortDirection === 'asc' ? '↑' : '↓') : '' }}</th>
               <th class="px-6 py-3"></th>
             </tr>
           </thead>
@@ -240,6 +245,19 @@ const error = ref('')
 const rollStateOptions = Object.values(RollState)
 const obtainmentMethodOptions = Object.values(ObtainmentMethod)
 
+type SortField = 'rollId' | 'state' | 'dateObtained' | 'obtainedFrom' | 'timesExposedToXrays'
+const sortField = ref<SortField>('rollId')
+const sortDirection = ref<'asc' | 'desc'>('asc')
+
+const setSort = (field: SortField) => {
+  if (sortField.value === field) {
+    sortDirection.value = sortDirection.value === 'asc' ? 'desc' : 'asc'
+  } else {
+    sortField.value = field
+    sortDirection.value = 'asc'
+  }
+}
+
 const today = new Date().toISOString().slice(0, 10)
 
 const emptyForm = () => ({
@@ -256,8 +274,23 @@ const emptyForm = () => ({
 const form = ref(emptyForm())
 
 const filteredRolls = computed(() => {
-  if (!filterState.value) return rolls.value
-  return rolls.value.filter(roll => roll.state === filterState.value)
+  const base = filterState.value
+    ? rolls.value.filter(roll => roll.state === filterState.value)
+    : rolls.value
+
+  return base.slice().sort((a, b) => {
+    let cmp: number
+    if (sortField.value === 'timesExposedToXrays') {
+      cmp = a.timesExposedToXrays - b.timesExposedToXrays
+    } else if (sortField.value === 'dateObtained') {
+      cmp = new Date(a.dateObtained as string).getTime() - new Date(b.dateObtained as string).getTime()
+    } else {
+      const aVal = (a[sortField.value] ?? '').toString().toLowerCase()
+      const bVal = (b[sortField.value] ?? '').toString().toLowerCase()
+      cmp = aVal.localeCompare(bVal)
+    }
+    return sortDirection.value === 'asc' ? cmp : -cmp
+  })
 })
 
 const sortedStocks = computed(() => {
