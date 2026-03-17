@@ -37,7 +37,9 @@ describe("DatabaseService — loadSeedData", () => {
         }
         return collectionMocks[name];
       }),
-      query: jest.fn().mockResolvedValue({ all: jest.fn().mockResolvedValue([]) }),
+      query: jest
+        .fn()
+        .mockResolvedValue({ all: jest.fn().mockResolvedValue([]) }),
     };
 
     // Stub path.join to return a predictable value so existsSync calls are controllable
