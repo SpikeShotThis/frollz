@@ -39,6 +39,15 @@ export class RollService {
     return { ...roll, _key: result._key };
   }
 
+  async getNextId(): Promise<string> {
+    const cursor = await this.databaseService.query(`
+      RETURN LENGTH(rolls)
+    `);
+    const results = await cursor.all();
+    const count = results[0] as number;
+    return String(count + 1).padStart(5, '0');
+  }
+
   async findAll(): Promise<Roll[]> {
     const cursor = await this.databaseService.query(`
       FOR roll IN rolls

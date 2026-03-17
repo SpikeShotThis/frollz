@@ -2,7 +2,7 @@
   <div>
     <div class="flex justify-between items-center mb-8">
       <h1 class="text-3xl font-bold text-gray-900">Rolls</h1>
-      <button @click="showModal = true" class="bg-primary-600 text-white px-4 py-2 rounded-md hover:bg-primary-700 font-medium">
+      <button @click="openAddRoll()" class="bg-primary-600 text-white px-4 py-2 rounded-md hover:bg-primary-700 font-medium">
         Add Roll
       </button>
     </div>
@@ -77,6 +77,15 @@
         <h2 class="text-xl font-bold text-gray-900 mb-4">Add Roll</h2>
         <form @submit.prevent="handleSubmit">
           <div class="space-y-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Roll ID <span class="text-red-500">*</span></label>
+              <input
+                v-model="form.rollId"
+                type="text"
+                required
+                class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+              />
+            </div>
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">Stock <span class="text-red-500">*</span></label>
               <select
@@ -172,9 +181,12 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
+import { useRoute } from 'vue-router'
 import { rollApi, stockApi } from '@/services/api-client'
 import type { Roll, Stock } from '@/types'
 import { RollState, ObtainmentMethod } from '@/types'
+
+const route = useRoute()
 
 const rolls = ref<Roll[]>([])
 const stocks = ref<Stock[]>([])
@@ -189,6 +201,7 @@ const obtainmentMethodOptions = Object.values(ObtainmentMethod)
 const today = new Date().toISOString().slice(0, 10)
 
 const emptyForm = () => ({
+  rollId: '',
   stockKey: '',
   state: RollState.SHELFED,
   dateObtained: today,
@@ -236,7 +249,7 @@ const handleSubmit = async () => {
   error.value = ''
   try {
     const payload: Omit<Roll, '_key' | 'createdAt' | 'updatedAt'> = {
-      rollId: '',
+      rollId: form.value.rollId,
       stockKey: form.value.stockKey,
       state: form.value.state,
       dateObtained: new Date(form.value.dateObtained),
@@ -275,8 +288,20 @@ const loadStocks = async () => {
   }
 }
 
-onMounted(() => {
-  loadRolls()
-  loadStocks()
+const openAddRoll = async (stockKey?: string) => {
+  const nextId = await rollApi.getNextId()
+  form.value.rollId = nextId.data
+  if (stockKey) {
+    form.value.stockKey = stockKey
+  }
+  showModal.value = true
+}
+
+onMounted(async () => {
+  await Promise.all([loadRolls(), loadStocks()])
+  const stockKey = route.query.stockKey as string | undefined
+  if (stockKey) {
+    await openAddRoll(stockKey)
+  }
 })
 </script>
