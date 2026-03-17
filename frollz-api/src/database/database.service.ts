@@ -1,16 +1,186 @@
 import { Injectable, Inject, OnModuleInit } from "@nestjs/common";
-import { Database } from "arangojs";
-import { SchemaOptions } from "arangojs/collections";
+import { Pool } from "pg";
 import * as fs from "fs";
 import * as path from "path";
+import { randomUUID } from "crypto";
+
+const DDL = `
+  CREATE TABLE IF NOT EXISTS film_formats (
+    id TEXT PRIMARY KEY,
+    form_factor TEXT NOT NULL,
+    format TEXT NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ
+  );
+
+  CREATE TABLE IF NOT EXISTS film_formats_default (
+    id TEXT PRIMARY KEY,
+    form_factor TEXT NOT NULL,
+    format TEXT NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ
+  );
+
+  CREATE TABLE IF NOT EXISTS tags (
+    id TEXT PRIMARY KEY,
+    value TEXT NOT NULL,
+    color TEXT NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+  );
+
+  CREATE TABLE IF NOT EXISTS tags_default (
+    id TEXT PRIMARY KEY,
+    value TEXT NOT NULL,
+    color TEXT NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+  );
+
+  CREATE TABLE IF NOT EXISTS stocks (
+    id TEXT PRIMARY KEY,
+    format_key TEXT REFERENCES film_formats(id),
+    process TEXT NOT NULL,
+    manufacturer TEXT NOT NULL,
+    brand TEXT NOT NULL,
+    base_stock_key TEXT REFERENCES stocks(id),
+    speed INTEGER NOT NULL,
+    box_image_url TEXT,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ
+  );
+
+  CREATE TABLE IF NOT EXISTS stocks_default (
+    id TEXT PRIMARY KEY,
+    format_key TEXT REFERENCES film_formats_default(id),
+    process TEXT NOT NULL,
+    manufacturer TEXT NOT NULL,
+    brand TEXT NOT NULL,
+    base_stock_key TEXT REFERENCES stocks_default(id),
+    speed INTEGER NOT NULL,
+    box_image_url TEXT,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ
+  );
+
+  CREATE TABLE IF NOT EXISTS stock_tags (
+    id TEXT PRIMARY KEY,
+    stock_key TEXT NOT NULL REFERENCES stocks(id),
+    tag_key TEXT NOT NULL REFERENCES tags(id),
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    UNIQUE(stock_key, tag_key)
+  );
+
+  CREATE TABLE IF NOT EXISTS stock_tags_default (
+    id TEXT PRIMARY KEY,
+    stock_key TEXT NOT NULL REFERENCES stocks_default(id),
+    tag_key TEXT NOT NULL REFERENCES tags_default(id),
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    UNIQUE(stock_key, tag_key)
+  );
+
+  CREATE TABLE IF NOT EXISTS rolls (
+    id TEXT PRIMARY KEY,
+    roll_id TEXT NOT NULL,
+    stock_key TEXT NOT NULL REFERENCES stocks(id),
+    state TEXT NOT NULL,
+    images_url TEXT,
+    date_obtained TIMESTAMPTZ NOT NULL,
+    obtainment_method TEXT NOT NULL,
+    obtained_from TEXT NOT NULL,
+    expiration_date TIMESTAMPTZ,
+    times_exposed_to_xrays INTEGER NOT NULL DEFAULT 0,
+    loaded_into TEXT,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ
+  );
+
+  CREATE TABLE IF NOT EXISTS roll_states (
+    id TEXT PRIMARY KEY,
+    state_id TEXT NOT NULL UNIQUE,
+    roll_id TEXT NOT NULL REFERENCES rolls(id),
+    state TEXT NOT NULL,
+    date TIMESTAMPTZ NOT NULL,
+    notes TEXT,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ
+  );
+`;
+
+// Maps seed JSON filename base → { table, columns mapping }
+const SEED_TABLE_MAP: Record<string, { table: string; defaultTable: string }> =
+  {
+    "film-formats": {
+      table: "film_formats",
+      defaultTable: "film_formats_default",
+    },
+    stocks: { table: "stocks", defaultTable: "stocks_default" },
+    tags: { table: "tags", defaultTable: "tags_default" },
+    "stock-tags": { table: "stock_tags", defaultTable: "stock_tags_default" },
+  };
+
+// Maps camelCase JSON field names to snake_case postgres column names per table
+const COLUMN_MAP: Record<string, Record<string, string>> = {
+  film_formats: {
+    formFactor: "form_factor",
+    format: "format",
+    createdAt: "created_at",
+    updatedAt: "updated_at",
+  },
+  film_formats_default: {
+    formFactor: "form_factor",
+    format: "format",
+    createdAt: "created_at",
+    updatedAt: "updated_at",
+  },
+  stocks: {
+    formatKey: "format_key",
+    process: "process",
+    manufacturer: "manufacturer",
+    brand: "brand",
+    baseStockKey: "base_stock_key",
+    speed: "speed",
+    boxImageUrl: "box_image_url",
+    createdAt: "created_at",
+    updatedAt: "updated_at",
+  },
+  stocks_default: {
+    formatKey: "format_key",
+    process: "process",
+    manufacturer: "manufacturer",
+    brand: "brand",
+    baseStockKey: "base_stock_key",
+    speed: "speed",
+    boxImageUrl: "box_image_url",
+    createdAt: "created_at",
+    updatedAt: "updated_at",
+  },
+  tags: {
+    value: "value",
+    color: "color",
+    createdAt: "created_at",
+  },
+  tags_default: {
+    value: "value",
+    color: "color",
+    createdAt: "created_at",
+  },
+  stock_tags: {
+    stockKey: "stock_key",
+    tagKey: "tag_key",
+    createdAt: "created_at",
+  },
+  stock_tags_default: {
+    stockKey: "stock_key",
+    tagKey: "tag_key",
+    createdAt: "created_at",
+  },
+};
 
 @Injectable()
 export class DatabaseService implements OnModuleInit {
-  constructor(@Inject("ARANGO_DB") private readonly db: Database) {}
+  constructor(@Inject("POSTGRES_POOL") private readonly pool: Pool) {}
 
   async onModuleInit() {
-    await this.initializeCollections();
-    await this.initializeDefaultCollections();
+    await this.initializeTables();
 
     if (this.isDefaultDataImportDisabled()) {
       console.log(
@@ -20,7 +190,7 @@ export class DatabaseService implements OnModuleInit {
     }
 
     await this.loadSeedData();
-    await this.populateMainCollections();
+    await this.populateMainTables();
   }
 
   private isDefaultDataImportDisabled(): boolean {
@@ -29,111 +199,37 @@ export class DatabaseService implements OnModuleInit {
     return normalized === "true" || normalized === "1";
   }
 
-  private loadSchema(collectionName: string): SchemaOptions | undefined {
-    // Strip _default suffix so both film_formats and film_formats_default share the same schema
-    const baseName = collectionName.replace(/_default$/, "");
-    const schemaPath = path.join(
-      process.cwd(),
-      "db-init",
-      "schemas",
-      `${baseName}.schema.json`,
-    );
-    if (fs.existsSync(schemaPath)) {
-      return JSON.parse(fs.readFileSync(schemaPath, "utf8")) as SchemaOptions;
-    }
-    return undefined;
+  private async initializeTables() {
+    await this.pool.query(DDL);
+    console.log("Database tables initialized");
   }
 
-  private async initializeCollections() {
-    const collections = [
-      "film_formats",
-      "stocks",
-      "rolls",
-      "roll_states",
-      "tags",
-      "stock_tags",
-    ];
+  async query<T = any>(sql: string, params?: any[]): Promise<T[]> {
+    const result = await this.pool.query(sql, params);
+    return result.rows as T[];
+  }
 
-    for (const collectionName of collections) {
-      try {
-        const collection = this.db.collection(collectionName);
-        const exists = await collection.exists();
-        const schema = this.loadSchema(collectionName);
+  async execute(sql: string, params?: any[]): Promise<void> {
+    await this.pool.query(sql, params);
+  }
 
-        if (!exists) {
-          await collection.create(schema ? { schema } : undefined);
-          console.log(
-            `Created collection: ${collectionName}${schema ? " (with schema)" : ""}`,
-          );
-        } else if (schema) {
-          await collection.properties({ schema });
-          console.log(
-            `Applied schema to existing collection: ${collectionName}`,
-          );
-        }
-      } catch (error) {
-        console.error(`Error creating collection ${collectionName}:`, error);
+  private seedRowToColumns(
+    record: Record<string, unknown>,
+    tableName: string,
+  ): { columns: string[]; values: unknown[] } {
+    const map = COLUMN_MAP[tableName] ?? {};
+    const columns: string[] = ["id"];
+    const values: unknown[] = [(record["_key"] as string) ?? randomUUID()];
+
+    for (const [jsonKey, colName] of Object.entries(map)) {
+      if (record[jsonKey] !== undefined) {
+        columns.push(colName);
+        values.push(record[jsonKey]);
       }
     }
+
+    return { columns, values };
   }
-
-  private async initializeDefaultCollections() {
-    const defaultCollections = [
-      "film_formats_default",
-      "stocks_default",
-      "tags_default",
-      "stock_tags_default",
-    ];
-
-    for (const collectionName of defaultCollections) {
-      try {
-        const collection = this.db.collection(collectionName);
-        const exists = await collection.exists();
-        const schema = this.loadSchema(collectionName);
-
-        if (!exists) {
-          await collection.create(schema ? { schema } : undefined);
-          console.log(
-            `Created default collection: ${collectionName}${schema ? " (with schema)" : ""}`,
-          );
-        } else if (schema) {
-          await collection.properties({ schema });
-          console.log(
-            `Applied schema to existing default collection: ${collectionName}`,
-          );
-        }
-      } catch (error) {
-        console.error(
-          `Error creating default collection ${collectionName}:`,
-          error,
-        );
-      }
-    }
-  }
-
-  // Maps the base filename (after stripping the numeric prefix) to its target _default collection.
-  private readonly seedCollectionMap: Record<string, string> = {
-    "film-formats": "film_formats_default",
-    stocks: "stocks_default",
-    tags: "tags_default",
-    "stock-tags": "stock_tags_default",
-  };
-
-  // For each collection, declares which fields are foreign-key references and which
-  // collection they must resolve against before insertion.
-  private readonly seedReferenceMap: Record<
-    string,
-    { field: string; collection: string }[]
-  > = {
-    stocks_default: [
-      { field: "formatKey", collection: "film_formats_default" },
-      { field: "baseStockKey", collection: "stocks_default" },
-    ],
-    stock_tags_default: [
-      { field: "tagKey", collection: "tags_default" },
-      { field: "stockKey", collection: "stocks_default" },
-    ],
-  };
 
   private async loadSeedData() {
     const defaultDir = path.join(process.cwd(), "db-init", "default");
@@ -141,104 +237,77 @@ export class DatabaseService implements OnModuleInit {
     const files = fs
       .readdirSync(defaultDir)
       .filter((f: string) => /^\d{4}-.+\.json$/.test(f))
-      .sort(); // lexicographic sort respects the 4-digit prefix ordering
+      .sort();
 
     for (const filename of files) {
       const baseName = filename.replace(/^\d{4}-/, "").replace(/\.json$/, "");
-      const collectionName = this.seedCollectionMap[baseName];
+      const mapping = SEED_TABLE_MAP[baseName];
 
-      if (!collectionName) {
-        console.warn(
-          `No collection mapping for seed file: ${filename} — skipping`,
-        );
+      if (!mapping) {
+        console.warn(`No table mapping for seed file: ${filename} — skipping`);
         continue;
       }
 
+      const tableName = mapping.defaultTable;
+
       try {
-        const collection = this.db.collection(collectionName);
-        const { count } = await collection.count();
-        if (count > 0) continue;
+        const countResult = await this.pool.query(
+          `SELECT COUNT(*) FROM ${tableName}`,
+        );
+        if (parseInt(countResult.rows[0].count, 10) > 0) continue;
 
         const filePath = path.join(defaultDir, filename);
-        const now = new Date().toISOString();
         const raw: Record<string, unknown>[] = JSON.parse(
           fs.readFileSync(filePath, "utf8"),
         );
 
-        // Validate all foreign-key references before inserting anything
-        const refs = this.seedReferenceMap[collectionName] ?? [];
-        for (const doc of raw) {
-          for (const ref of refs) {
-            const refKey = doc[ref.field] as string | undefined;
-            if (refKey) {
-              const refCollection = this.db.collection(ref.collection);
-              const exists = await refCollection.documentExists(refKey);
-              if (!exists) {
-                throw new Error(
-                  `Reference error in ${filename}: ${ref.field} "${refKey}" not found in ${ref.collection}`,
-                );
-              }
-            }
-          }
+        const now = new Date().toISOString();
+        for (const record of raw) {
+          if (!record.createdAt) record.createdAt = now;
+          const { columns, values } = this.seedRowToColumns(record, tableName);
+          const placeholders = values.map((_, i) => `$${i + 1}`).join(", ");
+          await this.pool.query(
+            `INSERT INTO ${tableName} (${columns.join(", ")}) VALUES (${placeholders}) ON CONFLICT (id) DO NOTHING`,
+            values,
+          );
         }
 
-        const data = raw.map((doc) => ({
-          ...doc,
-          createdAt: doc.createdAt ?? now,
-        }));
-
-        await collection.saveAll(data);
         console.log(
-          `Loaded ${data.length} records into ${collectionName} from ${filename}`,
+          `Loaded ${raw.length} records into ${tableName} from ${filename}`,
         );
       } catch (error) {
         console.error(`Error loading seed data from ${filename}:`, error);
-        throw error; // re-throw so the app fails fast on bad seed data
+        throw error;
       }
     }
   }
 
-  private async populateMainCollections() {
-    const collectionMappings = [
+  private async populateMainTables() {
+    const mappings = [
       { main: "film_formats", default: "film_formats_default" },
       { main: "stocks", default: "stocks_default" },
       { main: "tags", default: "tags_default" },
       { main: "stock_tags", default: "stock_tags_default" },
     ];
 
-    for (const mapping of collectionMappings) {
+    for (const { main, default: def } of mappings) {
       try {
-        const mainCollection = this.db.collection(mapping.main);
-
-        const mainCount = await mainCollection.count();
-
-        if (mainCount.count === 0) {
-          const cursor = await this.db.query(
-            `FOR doc IN ${mapping.default} RETURN doc`,
-          );
-          const documents = await cursor.all();
-
-          if (documents.length > 0) {
-            await mainCollection.saveAll(documents);
-            console.log(
-              `Populated ${mapping.main} with ${documents.length} records from ${mapping.default}`,
-            );
-          }
-        }
-      } catch (error) {
-        console.error(
-          `Error populating main collection ${mapping.main}:`,
-          error,
+        const countResult = await this.pool.query(
+          `SELECT COUNT(*) FROM ${main}`,
         );
+        if (parseInt(countResult.rows[0].count, 10) > 0) continue;
+
+        await this.pool.query(
+          `INSERT INTO ${main} SELECT * FROM ${def} ON CONFLICT (id) DO NOTHING`,
+        );
+
+        const inserted = await this.pool.query(`SELECT COUNT(*) FROM ${main}`);
+        console.log(
+          `Populated ${main} with ${inserted.rows[0].count} records from ${def}`,
+        );
+      } catch (error) {
+        console.error(`Error populating table ${main}:`, error);
       }
     }
-  }
-
-  getCollection(name: string) {
-    return this.db.collection(name);
-  }
-
-  query(aql: string, bindVars?: any) {
-    return this.db.query(aql, bindVars);
   }
 }

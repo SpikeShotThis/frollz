@@ -13,17 +13,17 @@ services:
       - frollz-network
     restart: unless-stopped
 
-  arangodb:
-    image: arangodb:3.11
-    container_name: frollz-arangodb
+  postgres:
+    image: postgres:18-alpine
+    container_name: frollz-postgres
     environment:
-      - ARANGO_ROOT_PASSWORD=rootpassword
-      - ARANGO_DB=frollz
+      - POSTGRES_DB=frollz
+      - POSTGRES_USER=frollz
+      - POSTGRES_PASSWORD=frollz
     ports:
-      - "8529:8529"
+      - "5432:5432"
     volumes:
-      - arangodb_data:/var/lib/arangodb3
-      - arangodb_apps:/var/lib/arangodb3-apps
+      - postgres_data:/var/lib/postgresql/data
     networks:
       - frollz-network
     restart: unless-stopped
@@ -35,16 +35,17 @@ services:
     container_name: frollz-api
     environment:
       - NODE_ENV=development
-      - ARANGODB_URL=http://arangodb:8529
-      - ARANGODB_DATABASE=frollz
-      - ARANGODB_USERNAME=root
-      - ARANGODB_PASSWORD=rootpassword
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_DATABASE=frollz
+      - POSTGRES_USER=frollz
+      - POSTGRES_PASSWORD=frollz
       - PORT=3000
-      - DISABLE_DEFAULT_DATA_IMPORT=true
+      - DISABLE_DEFAULT_DATA_IMPORT=false
     ports:
       - "3000:3000"
     depends_on:
-      - arangodb
+      - postgres
     volumes:
       - ./frollz-api:/app
       - /app/node_modules
@@ -71,8 +72,7 @@ services:
     restart: unless-stopped
 
 volumes:
-  arangodb_data:
-  arangodb_apps:
+  postgres_data:
 
 networks:
   frollz-network:

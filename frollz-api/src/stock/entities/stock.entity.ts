@@ -33,6 +33,9 @@ export class Stock {
   boxImageUrl?: string;
 
   @ApiProperty({ required: false })
+  format?: string;
+
+  @ApiProperty({ required: false })
   createdAt?: Date;
 
   @ApiProperty({ required: false })

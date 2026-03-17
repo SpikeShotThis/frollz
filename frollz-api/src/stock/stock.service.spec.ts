@@ -3,63 +3,53 @@ import { StockService } from "./stock.service";
 import { DatabaseService } from "../database/database.service";
 import { Process } from "./entities/stock.entity";
 
+const makeDbService = (
+  overrides: Partial<{ query: jest.Mock; execute: jest.Mock }> = {},
+) => ({
+  query: jest.fn().mockResolvedValue([]),
+  execute: jest.fn().mockResolvedValue(undefined),
+  ...overrides,
+});
+
 describe("StockService", () => {
   let service: StockService;
-  let databaseService: { getCollection: jest.Mock; query: jest.Mock };
-
-  const mockCollection = {
-    save: jest.fn(),
-    update: jest.fn(),
-    remove: jest.fn(),
-  };
-
-  const mockCursor = { all: jest.fn() };
+  let db: ReturnType<typeof makeDbService>;
 
   beforeEach(async () => {
+    db = makeDbService();
     const module: TestingModule = await Test.createTestingModule({
-      providers: [
-        StockService,
-        {
-          provide: DatabaseService,
-          useValue: {
-            getCollection: jest.fn().mockReturnValue(mockCollection),
-            query: jest.fn().mockResolvedValue(mockCursor),
-          },
-        },
-      ],
+      providers: [StockService, { provide: DatabaseService, useValue: db }],
     }).compile();
 
     service = module.get<StockService>(StockService);
-    databaseService = module.get(DatabaseService);
   });
 
   afterEach(() => jest.clearAllMocks());
 
   describe("getBrands", () => {
-    it("should query using CONTAINS on brand with the provided query", async () => {
-      mockCursor.all.mockResolvedValue([]);
-
+    it("should query using LIKE on brand with the provided query", async () => {
       await service.getBrands("por");
 
-      expect(databaseService.query).toHaveBeenCalledWith(
-        expect.stringContaining("CONTAINS"),
-        { query: "por" },
+      expect(db.query).toHaveBeenCalledWith(
+        expect.stringContaining("LIKE"),
+        expect.arrayContaining(["%por%"]),
       );
     });
 
     it("should use DISTINCT to avoid duplicate brand names", async () => {
-      mockCursor.all.mockResolvedValue([]);
-
       await service.getBrands("por");
 
-      expect(databaseService.query).toHaveBeenCalledWith(
+      expect(db.query).toHaveBeenCalledWith(
         expect.stringContaining("DISTINCT"),
         expect.anything(),
       );
     });
 
-    it("should return matching brand names from the cursor", async () => {
-      mockCursor.all.mockResolvedValue(["Portra 400", "Portra 800"]);
+    it("should return matching brand names from rows", async () => {
+      db.query.mockResolvedValue([
+        { brand: "Portra 400" },
+        { brand: "Portra 800" },
+      ]);
 
       const result = await service.getBrands("por");
 
@@ -67,72 +57,51 @@ describe("StockService", () => {
     });
 
     it("should return an empty array when no brands match", async () => {
-      mockCursor.all.mockResolvedValue([]);
+      db.query.mockResolvedValue([]);
 
-      const result = await service.getBrands("zzz");
-
-      expect(result).toEqual([]);
+      expect(await service.getBrands("zzz")).toEqual([]);
     });
 
     it("should pass an empty string query when called with empty string", async () => {
-      mockCursor.all.mockResolvedValue([]);
-
       await service.getBrands("");
 
-      expect(databaseService.query).toHaveBeenCalledWith(expect.any(String), {
-        query: "",
-      });
+      expect(db.query).toHaveBeenCalledWith(
+        expect.any(String),
+        expect.arrayContaining(["%%"]),
+      );
     });
   });
 
   describe("getManufacturers", () => {
-    it("should query using CONTAINS on manufacturer with the provided query", async () => {
-      mockCursor.all.mockResolvedValue([]);
-
+    it("should query using LIKE on manufacturer with the provided query", async () => {
       await service.getManufacturers("kod");
 
-      expect(databaseService.query).toHaveBeenCalledWith(
-        expect.stringContaining("CONTAINS"),
-        { query: "kod" },
-      );
-    });
-
-    it("should filter on the manufacturer field", async () => {
-      mockCursor.all.mockResolvedValue([]);
-
-      await service.getManufacturers("kod");
-
-      expect(databaseService.query).toHaveBeenCalledWith(
-        expect.stringContaining("stock.manufacturer"),
-        expect.anything(),
+      expect(db.query).toHaveBeenCalledWith(
+        expect.stringContaining("manufacturer"),
+        expect.arrayContaining(["%kod%"]),
       );
     });
 
     it("should use DISTINCT to avoid duplicate manufacturer names", async () => {
-      mockCursor.all.mockResolvedValue([]);
-
       await service.getManufacturers("kod");
 
-      expect(databaseService.query).toHaveBeenCalledWith(
+      expect(db.query).toHaveBeenCalledWith(
         expect.stringContaining("DISTINCT"),
         expect.anything(),
       );
     });
 
-    it("should return matching manufacturer names from the cursor", async () => {
-      mockCursor.all.mockResolvedValue(["Kodak", "Konica"]);
+    it("should return matching manufacturer names from rows", async () => {
+      db.query.mockResolvedValue([
+        { manufacturer: "Kodak" },
+        { manufacturer: "Konica" },
+      ]);
 
-      const result = await service.getManufacturers("ko");
-
-      expect(result).toEqual(["Kodak", "Konica"]);
+      expect(await service.getManufacturers("ko")).toEqual(["Kodak", "Konica"]);
     });
 
     it("should return an empty array when no manufacturers match", async () => {
-      mockCursor.all.mockResolvedValue([]);
-
-      const result = await service.getManufacturers("zzz");
-
-      expect(result).toEqual([]);
+      expect(await service.getManufacturers("zzz")).toEqual([]);
     });
   });
 
@@ -145,22 +114,13 @@ describe("StockService", () => {
       speed: 400,
     };
 
-    it("should save a stock for each formatKey", async () => {
-      mockCollection.save.mockImplementation((stock: any) =>
-        Promise.resolve({ _key: stock._key }),
-      );
+    it("should execute an INSERT for each formatKey", async () => {
+      await service.createMultipleFormats(dto);
 
-      const results = await service.createMultipleFormats(dto);
-
-      expect(mockCollection.save).toHaveBeenCalledTimes(2);
-      expect(results).toHaveLength(2);
+      expect(db.execute).toHaveBeenCalledTimes(2);
     });
 
     it("should generate _key as {manufacturer}-{brand}-{speed}-{formatKey}", async () => {
-      mockCollection.save.mockImplementation((stock: any) =>
-        Promise.resolve({ _key: stock._key }),
-      );
-
       const results = await service.createMultipleFormats(dto);
 
       expect(results[0]._key).toBe("kodak-portra-400-400-35mm");
@@ -168,25 +128,16 @@ describe("StockService", () => {
     });
 
     it("should lowercase and dasherize manufacturer and brand in the key", async () => {
-      const dtoWithSpaces = {
+      const results = await service.createMultipleFormats({
         ...dto,
         manufacturer: "Fuji Film",
         brand: "Pro 400H",
-      };
-      mockCollection.save.mockImplementation((stock: any) =>
-        Promise.resolve({ _key: stock._key }),
-      );
-
-      const results = await service.createMultipleFormats(dtoWithSpaces);
+      });
 
       expect(results[0]._key).toBe("fuji-film-pro-400h-400-35mm");
     });
 
     it("should set formatKey on each created stock", async () => {
-      mockCollection.save.mockImplementation((stock: any) =>
-        Promise.resolve({ _key: stock._key }),
-      );
-
       const results = await service.createMultipleFormats(dto);
 
       expect(results[0].formatKey).toBe("35mm");
@@ -194,66 +145,43 @@ describe("StockService", () => {
     });
 
     it("should create a single stock when only one formatKey is provided", async () => {
-      const singleFormat = { ...dto, formatKeys: ["35mm"] };
-      mockCollection.save.mockImplementation((stock: any) =>
-        Promise.resolve({ _key: stock._key }),
-      );
+      const results = await service.createMultipleFormats({
+        ...dto,
+        formatKeys: ["35mm"],
+      });
 
-      const results = await service.createMultipleFormats(singleFormat);
-
-      expect(mockCollection.save).toHaveBeenCalledTimes(1);
+      expect(db.execute).toHaveBeenCalledTimes(1);
       expect(results).toHaveLength(1);
     });
   });
 
   describe("getSpeeds", () => {
-    it("should query using CONTAINS on speed with the provided query", async () => {
-      mockCursor.all.mockResolvedValue([]);
-
+    it("should query using LIKE on speed cast to text", async () => {
       await service.getSpeeds("40");
 
-      expect(databaseService.query).toHaveBeenCalledWith(
-        expect.stringContaining("CONTAINS"),
-        { query: "40" },
-      );
-    });
-
-    it("should convert speed to string for matching", async () => {
-      mockCursor.all.mockResolvedValue([]);
-
-      await service.getSpeeds("40");
-
-      expect(databaseService.query).toHaveBeenCalledWith(
-        expect.stringContaining("TO_STRING"),
-        expect.anything(),
+      expect(db.query).toHaveBeenCalledWith(
+        expect.stringContaining("speed::text"),
+        expect.arrayContaining(["%40%"]),
       );
     });
 
     it("should use DISTINCT to avoid duplicate speed values", async () => {
-      mockCursor.all.mockResolvedValue([]);
-
       await service.getSpeeds("40");
 
-      expect(databaseService.query).toHaveBeenCalledWith(
+      expect(db.query).toHaveBeenCalledWith(
         expect.stringContaining("DISTINCT"),
         expect.anything(),
       );
     });
 
-    it("should return matching speeds from the cursor", async () => {
-      mockCursor.all.mockResolvedValue([400, 800]);
+    it("should return matching speeds from rows as numbers", async () => {
+      db.query.mockResolvedValue([{ speed: 400 }, { speed: 800 }]);
 
-      const result = await service.getSpeeds("4");
-
-      expect(result).toEqual([400, 800]);
+      expect(await service.getSpeeds("4")).toEqual([400, 800]);
     });
 
     it("should return an empty array when no speeds match", async () => {
-      mockCursor.all.mockResolvedValue([]);
-
-      const result = await service.getSpeeds("999");
-
-      expect(result).toEqual([]);
+      expect(await service.getSpeeds("999")).toEqual([]);
     });
   });
 });

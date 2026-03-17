@@ -5,134 +5,188 @@ import { CreateStockMultipleFormatsDto } from "./dto/create-stock-multiple-forma
 import { UpdateStockDto } from "./dto/update-stock.dto";
 import { Stock } from "./entities/stock.entity";
 
+function mapStock(row: Record<string, unknown>): Stock {
+  return {
+    _key: row.id as string,
+    formatKey: row.format_key as string,
+    process: row.process as Stock["process"],
+    manufacturer: row.manufacturer as string,
+    brand: row.brand as string,
+    baseStockKey: row.base_stock_key as string | undefined,
+    speed: Number(row.speed),
+    boxImageUrl: row.box_image_url as string | undefined,
+    createdAt: row.created_at ? new Date(row.created_at as string) : undefined,
+    updatedAt: row.updated_at ? new Date(row.updated_at as string) : undefined,
+  };
+}
+
 @Injectable()
 export class StockService {
   constructor(private readonly databaseService: DatabaseService) {}
 
   async create(createStockDto: CreateStockDto): Promise<Stock> {
-    const collection = this.databaseService.getCollection("stocks");
+    const toSlug = (s: string) => s.toLowerCase().replace(/\s+/g, "-");
+    const id = `${toSlug(createStockDto.manufacturer)}-${toSlug(createStockDto.brand)}-${createStockDto.speed}-${createStockDto.formatKey}`;
+    const now = new Date();
 
-    const stock = {
-      ...createStockDto,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
+    await this.databaseService.execute(
+      `INSERT INTO stocks (id, format_key, process, manufacturer, brand, base_stock_key, speed, box_image_url, created_at, updated_at)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
+      [
+        id,
+        createStockDto.formatKey,
+        createStockDto.process,
+        createStockDto.manufacturer,
+        createStockDto.brand,
+        createStockDto.baseStockKey ?? null,
+        createStockDto.speed,
+        createStockDto.boxImageUrl ?? null,
+        now,
+        now,
+      ],
+    );
 
-    const result = await collection.save(stock);
-    return { ...stock, _key: result._key };
+    return { ...createStockDto, _key: id, createdAt: now, updatedAt: now };
   }
 
   async createMultipleFormats(
     dto: CreateStockMultipleFormatsDto,
   ): Promise<Stock[]> {
-    const collection = this.databaseService.getCollection("stocks");
-    const now = new Date();
-
     const toSlug = (s: string) => s.toLowerCase().replace(/\s+/g, "-");
+    const now = new Date();
 
     return Promise.all(
       dto.formatKeys.map(async (formatKey) => {
-        const key = `${toSlug(dto.manufacturer)}-${toSlug(dto.brand)}-${dto.speed}-${formatKey}`;
-        const stock = {
-          _key: key,
+        const id = `${toSlug(dto.manufacturer)}-${toSlug(dto.brand)}-${dto.speed}-${formatKey}`;
+
+        await this.databaseService.execute(
+          `INSERT INTO stocks (id, format_key, process, manufacturer, brand, base_stock_key, speed, box_image_url, created_at, updated_at)
+           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+           ON CONFLICT (id) DO NOTHING`,
+          [
+            id,
+            formatKey,
+            dto.process,
+            dto.manufacturer,
+            dto.brand,
+            dto.baseStockKey ?? null,
+            dto.speed,
+            dto.boxImageUrl ?? null,
+            now,
+            now,
+          ],
+        );
+
+        return {
+          _key: id,
           formatKey,
           process: dto.process,
           manufacturer: dto.manufacturer,
           brand: dto.brand,
-          speed: dto.speed,
           ...(dto.baseStockKey && { baseStockKey: dto.baseStockKey }),
           ...(dto.boxImageUrl && { boxImageUrl: dto.boxImageUrl }),
+          speed: dto.speed,
           createdAt: now,
           updatedAt: now,
         };
-        const result = await collection.save(stock);
-        return { ...stock, _key: result._key };
       }),
     );
   }
 
   async findAll(): Promise<Stock[]> {
-    const cursor = await this.databaseService.query(`
-      FOR stock IN stocks
-      LET fmt = FIRST(FOR f IN film_formats FILTER f._key == stock.formatKey RETURN f)
-      RETURN MERGE(stock, { format: fmt ? fmt.format : stock.format })
-    `);
-
-    return await cursor.all();
+    const rows = await this.databaseService.query(
+      `SELECT s.*, f.format AS format_label
+       FROM stocks s
+       LEFT JOIN film_formats f ON f.id = s.format_key`,
+    );
+    return rows.map((row) => ({
+      ...mapStock(row),
+      format: row.format_label as string | undefined,
+    }));
   }
 
   async findOne(key: string): Promise<Stock | null> {
-    const cursor = await this.databaseService.query(
-      `
-      FOR stock IN stocks
-      FILTER stock._key == @key
-      LET fmt = FIRST(FOR f IN film_formats FILTER f._key == stock.formatKey RETURN f)
-      RETURN MERGE(stock, { format: fmt ? fmt.format : stock.format })
-    `,
-      { key },
+    const rows = await this.databaseService.query(
+      `SELECT s.*, f.format AS format_label
+       FROM stocks s
+       LEFT JOIN film_formats f ON f.id = s.format_key
+       WHERE s.id = $1`,
+      [key],
     );
-
-    const results = await cursor.all();
-    return results.length > 0 ? results[0] : null;
+    if (rows.length === 0) return null;
+    return {
+      ...mapStock(rows[0]),
+      format: rows[0].format_label as string | undefined,
+    };
   }
 
   async update(
     key: string,
     updateStockDto: UpdateStockDto,
   ): Promise<Stock | null> {
-    const collection = this.databaseService.getCollection("stocks");
-
-    const updateData = {
-      ...updateStockDto,
-      updatedAt: new Date(),
+    const fieldMap: Record<string, string> = {
+      formatKey: "format_key",
+      process: "process",
+      manufacturer: "manufacturer",
+      brand: "brand",
+      baseStockKey: "base_stock_key",
+      speed: "speed",
+      boxImageUrl: "box_image_url",
     };
 
-    try {
-      await collection.update(key, updateData);
-      return await this.findOne(key);
-    } catch {
-      return null;
+    const updates: string[] = [];
+    const values: unknown[] = [];
+    let idx = 1;
+
+    for (const [prop, col] of Object.entries(fieldMap)) {
+      if ((updateStockDto as Record<string, unknown>)[prop] !== undefined) {
+        updates.push(`${col} = $${idx++}`);
+        values.push((updateStockDto as Record<string, unknown>)[prop]);
+      }
     }
+
+    if (updates.length === 0) return this.findOne(key);
+
+    updates.push(`updated_at = $${idx++}`);
+    values.push(new Date());
+    values.push(key);
+
+    await this.databaseService.execute(
+      `UPDATE stocks SET ${updates.join(", ")} WHERE id = $${idx}`,
+      values,
+    );
+
+    return this.findOne(key);
   }
 
   async remove(key: string): Promise<boolean> {
-    const collection = this.databaseService.getCollection("stocks");
-
-    try {
-      await collection.remove(key);
-      return true;
-    } catch {
-      return false;
-    }
+    await this.databaseService.execute(`DELETE FROM stocks WHERE id = $1`, [
+      key,
+    ]);
+    return true;
   }
 
   async getBrands(query: string): Promise<string[]> {
-    const cursor = await this.databaseService.query(
-      `FOR stock IN stocks
-       FILTER CONTAINS(LOWER(stock.brand), LOWER(@query))
-       RETURN DISTINCT stock.brand`,
-      { query },
+    const rows = await this.databaseService.query(
+      `SELECT DISTINCT brand FROM stocks WHERE LOWER(brand) LIKE $1 ORDER BY brand`,
+      [`%${query.toLowerCase()}%`],
     );
-    return await cursor.all();
+    return rows.map((r) => r.brand as string);
   }
 
   async getManufacturers(query: string): Promise<string[]> {
-    const cursor = await this.databaseService.query(
-      `FOR stock IN stocks
-       FILTER CONTAINS(LOWER(stock.manufacturer), LOWER(@query))
-       RETURN DISTINCT stock.manufacturer`,
-      { query },
+    const rows = await this.databaseService.query(
+      `SELECT DISTINCT manufacturer FROM stocks WHERE LOWER(manufacturer) LIKE $1 ORDER BY manufacturer`,
+      [`%${query.toLowerCase()}%`],
     );
-    return await cursor.all();
+    return rows.map((r) => r.manufacturer as string);
   }
 
   async getSpeeds(query: string): Promise<number[]> {
-    const cursor = await this.databaseService.query(
-      `FOR stock IN stocks
-       FILTER CONTAINS(TO_STRING(stock.speed), @query)
-       RETURN DISTINCT stock.speed`,
-      { query },
+    const rows = await this.databaseService.query(
+      `SELECT DISTINCT speed FROM stocks WHERE speed::text LIKE $1 ORDER BY speed`,
+      [`%${query}%`],
     );
-    return await cursor.all();
+    return rows.map((r) => Number(r.speed));
   }
 }

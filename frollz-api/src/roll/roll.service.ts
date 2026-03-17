@@ -1,4 +1,5 @@
 import { Injectable, BadRequestException } from "@nestjs/common";
+import { randomUUID } from "crypto";
 import { DatabaseService } from "../database/database.service";
 import { CreateRollDto } from "./dto/create-roll.dto";
 import { UpdateRollDto } from "./dto/update-roll.dto";
@@ -26,6 +27,26 @@ const VALID_TRANSITIONS: Partial<Record<RollState, RollState[]>> = {
   [RollState.RECEIVED]: [RollState.DEVELOPED],
 };
 
+function mapRoll(row: Record<string, unknown>): Roll {
+  return {
+    _key: row.id as string,
+    rollId: row.roll_id as string,
+    stockKey: row.stock_key as string,
+    state: row.state as RollState,
+    imagesUrl: row.images_url as string | undefined,
+    dateObtained: new Date(row.date_obtained as string),
+    obtainmentMethod: row.obtainment_method as Roll["obtainmentMethod"],
+    obtainedFrom: row.obtained_from as string,
+    expirationDate: row.expiration_date
+      ? new Date(row.expiration_date as string)
+      : undefined,
+    timesExposedToXrays: Number(row.times_exposed_to_xrays ?? 0),
+    loadedInto: row.loaded_into as string | undefined,
+    createdAt: row.created_at ? new Date(row.created_at as string) : undefined,
+    updatedAt: row.updated_at ? new Date(row.updated_at as string) : undefined,
+  };
+}
+
 @Injectable()
 export class RollService {
   constructor(
@@ -34,97 +55,132 @@ export class RollService {
   ) {}
 
   async create(createRollDto: CreateRollDto): Promise<Roll> {
-    const collection = this.databaseService.getCollection("rolls");
-
+    const id = randomUUID();
     const dateObtained = createRollDto.dateObtained ?? new Date();
 
     let rollId = createRollDto.rollId;
     if (!rollId) {
-      const stockCursor = await this.databaseService.query(
-        `FOR s IN stocks FILTER s._key == @key RETURN s`,
-        { key: createRollDto.stockKey },
+      const stocks = await this.databaseService.query(
+        `SELECT brand FROM stocks WHERE id = $1`,
+        [createRollDto.stockKey],
       );
-      const stocks = await stockCursor.all();
       const stockName =
         stocks.length > 0
           ? (stocks[0].brand as string).toLowerCase().replace(/\s+/g, "-")
           : "unknown";
-      const datePart = dateObtained.toISOString().slice(0, 10);
+      const datePart = new Date(dateObtained).toISOString().slice(0, 10);
       rollId = `roll-${stockName}-${datePart}`;
     }
 
-    const roll = {
-      ...createRollDto,
-      rollId,
-      dateObtained,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
+    const now = new Date();
 
-    const result = await collection.save(roll);
-    return { ...roll, _key: result._key };
+    await this.databaseService.execute(
+      `INSERT INTO rolls (id, roll_id, stock_key, state, images_url, date_obtained, obtainment_method, obtained_from, expiration_date, times_exposed_to_xrays, loaded_into, created_at, updated_at)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)`,
+      [
+        id,
+        rollId,
+        createRollDto.stockKey,
+        createRollDto.state ?? RollState.ADDED,
+        createRollDto.imagesUrl ?? null,
+        dateObtained,
+        createRollDto.obtainmentMethod,
+        createRollDto.obtainedFrom,
+        createRollDto.expirationDate ?? null,
+        createRollDto.timesExposedToXrays ?? 0,
+        createRollDto.loadedInto ?? null,
+        now,
+        now,
+      ],
+    );
+
+    return {
+      _key: id,
+      rollId,
+      stockKey: createRollDto.stockKey,
+      state: createRollDto.state ?? RollState.ADDED,
+      imagesUrl: createRollDto.imagesUrl,
+      dateObtained: new Date(dateObtained),
+      obtainmentMethod: createRollDto.obtainmentMethod,
+      obtainedFrom: createRollDto.obtainedFrom,
+      expirationDate: createRollDto.expirationDate
+        ? new Date(createRollDto.expirationDate)
+        : undefined,
+      timesExposedToXrays: createRollDto.timesExposedToXrays ?? 0,
+      loadedInto: createRollDto.loadedInto,
+      createdAt: now,
+      updatedAt: now,
+    };
   }
 
   async getNextId(): Promise<string> {
-    const cursor = await this.databaseService.query(`
-      RETURN LENGTH(rolls)
-    `);
-    const results = await cursor.all();
-    const count = results[0] as number;
+    const rows = await this.databaseService.query(
+      `SELECT COUNT(*) AS count FROM rolls`,
+    );
+    const count = Number(rows[0].count);
     return String(count + 1).padStart(5, "0");
   }
 
   async findAll(): Promise<Roll[]> {
-    const cursor = await this.databaseService.query(`
-      FOR roll IN rolls
-      RETURN roll
-    `);
-
-    return await cursor.all();
+    const rows = await this.databaseService.query(`SELECT * FROM rolls`);
+    return rows.map(mapRoll);
   }
 
   async findOne(key: string): Promise<Roll | null> {
-    const cursor = await this.databaseService.query(
-      `
-      FOR roll IN rolls
-      FILTER roll._key == @key
-      RETURN roll
-    `,
-      { key },
+    const rows = await this.databaseService.query(
+      `SELECT * FROM rolls WHERE id = $1`,
+      [key],
     );
-
-    const results = await cursor.all();
-    return results.length > 0 ? results[0] : null;
+    return rows.length > 0 ? mapRoll(rows[0]) : null;
   }
 
   async update(
     key: string,
     updateRollDto: UpdateRollDto,
   ): Promise<Roll | null> {
-    const collection = this.databaseService.getCollection("rolls");
-
-    const updateData = {
-      ...updateRollDto,
-      updatedAt: new Date(),
+    const fieldMap: Record<string, string> = {
+      rollId: "roll_id",
+      stockKey: "stock_key",
+      state: "state",
+      imagesUrl: "images_url",
+      dateObtained: "date_obtained",
+      obtainmentMethod: "obtainment_method",
+      obtainedFrom: "obtained_from",
+      expirationDate: "expiration_date",
+      timesExposedToXrays: "times_exposed_to_xrays",
+      loadedInto: "loaded_into",
     };
 
-    try {
-      await collection.update(key, updateData);
-      return await this.findOne(key);
-    } catch {
-      return null;
+    const updates: string[] = [];
+    const values: unknown[] = [];
+    let idx = 1;
+
+    for (const [prop, col] of Object.entries(fieldMap)) {
+      if ((updateRollDto as Record<string, unknown>)[prop] !== undefined) {
+        updates.push(`${col} = $${idx++}`);
+        values.push((updateRollDto as Record<string, unknown>)[prop]);
+      }
     }
+
+    if (updates.length === 0) return this.findOne(key);
+
+    updates.push(`updated_at = $${idx++}`);
+    values.push(new Date());
+    values.push(key);
+
+    await this.databaseService.execute(
+      `UPDATE rolls SET ${updates.join(", ")} WHERE id = $${idx}`,
+      values,
+    );
+
+    return this.findOne(key);
   }
 
   async remove(key: string): Promise<boolean> {
-    const collection = this.databaseService.getCollection("rolls");
-
-    try {
-      await collection.remove(key);
-      return true;
-    } catch {
-      return false;
-    }
+    await this.databaseService.execute(`DELETE FROM rolls WHERE id = $1`, [
+      key,
+    ]);
+    return true;
   }
 
   async transition(key: string, dto: TransitionRollDto): Promise<Roll | null> {

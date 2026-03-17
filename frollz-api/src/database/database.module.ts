@@ -1,60 +1,43 @@
 import { Module, Global } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
-import { Database } from "arangojs";
+import { Pool } from "pg";
 import { DatabaseService } from "./database.service";
 
 @Global()
 @Module({
   providers: [
     {
-      provide: "ARANGO_DB",
-      useFactory: async (configService: ConfigService) => {
+      provide: "POSTGRES_POOL",
+      useFactory: async (configService: ConfigService): Promise<Pool> => {
         const connectWithRetry = async (
           maxRetries = 5,
           delay = 2000,
-        ): Promise<Database> => {
+        ): Promise<Pool> => {
           for (let attempt = 1; attempt <= maxRetries; attempt++) {
             try {
-              const url = configService.get(
-                "ARANGODB_URL",
-                "http://localhost:8529",
-              );
-              const databaseName = configService.get(
-                "ARANGODB_DATABASE",
-                "frollz",
-              );
-              const username = configService.get("ARANGODB_USERNAME", "root");
-              const password = configService.get(
-                "ARANGODB_PASSWORD",
-                "rootpassword",
-              );
+              const pool = new Pool({
+                host: configService.get("POSTGRES_HOST", "localhost"),
+                port: configService.get<number>("POSTGRES_PORT", 5432),
+                database: configService.get("POSTGRES_DATABASE", "frollz"),
+                user: configService.get("POSTGRES_USER", "frollz"),
+                password: configService.get("POSTGRES_PASSWORD", "frollz"),
+              });
 
-              // Connect to _system first — the target database may not exist yet
-              const systemDb = new Database({ url, databaseName: "_system" });
-              await systemDb.login(username, password);
-
-              const existing = await systemDb.listDatabases();
-              if (!existing.includes(databaseName)) {
-                await systemDb.createDatabase(databaseName);
-                console.log(`Created database: ${databaseName}`);
-              }
-
-              const db = systemDb.database(databaseName);
-              console.log("Successfully connected to ArangoDB");
-              return db;
+              await pool.query("SELECT 1");
+              console.log("Successfully connected to PostgreSQL");
+              return pool;
             } catch (error) {
               console.log(
-                `ArangoDB connection attempt ${attempt}/${maxRetries} failed:`,
+                `PostgreSQL connection attempt ${attempt}/${maxRetries} failed:`,
                 error.message,
               );
 
               if (attempt === maxRetries) {
                 throw new Error(
-                  `Failed to connect to ArangoDB after ${maxRetries} attempts: ${error.message}`,
+                  `Failed to connect to PostgreSQL after ${maxRetries} attempts: ${error.message}`,
                 );
               }
 
-              // Wait before retrying
               await new Promise((resolve) => setTimeout(resolve, delay));
             }
           }
@@ -66,6 +49,6 @@ import { DatabaseService } from "./database.service";
     },
     DatabaseService,
   ],
-  exports: ["ARANGO_DB", DatabaseService],
+  exports: ["POSTGRES_POOL", DatabaseService],
 })
 export class DatabaseModule {}

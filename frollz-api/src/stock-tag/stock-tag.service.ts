@@ -1,78 +1,72 @@
 import { Injectable } from "@nestjs/common";
+import { randomUUID } from "crypto";
 import { DatabaseService } from "../database/database.service";
 import { CreateStockTagDto } from "./dto/create-stock-tag.dto";
 import { StockTag } from "./entities/stock-tag.entity";
+
+function mapStockTag(row: Record<string, unknown>): StockTag {
+  return {
+    _key: row.id as string,
+    stockKey: row.stock_key as string,
+    tagKey: row.tag_key as string,
+    createdAt: row.created_at ? new Date(row.created_at as string) : undefined,
+  };
+}
 
 @Injectable()
 export class StockTagService {
   constructor(private readonly databaseService: DatabaseService) {}
 
   async create(createStockTagDto: CreateStockTagDto): Promise<StockTag> {
-    const collection = this.databaseService.getCollection("stock_tags");
+    const id = randomUUID();
+    const now = new Date();
 
-    const stockTag = {
-      ...createStockTagDto,
-      createdAt: new Date(),
+    await this.databaseService.execute(
+      `INSERT INTO stock_tags (id, stock_key, tag_key, created_at) VALUES ($1, $2, $3, $4)`,
+      [id, createStockTagDto.stockKey, createStockTagDto.tagKey, now],
+    );
+
+    return {
+      _key: id,
+      stockKey: createStockTagDto.stockKey,
+      tagKey: createStockTagDto.tagKey,
+      createdAt: now,
     };
-
-    const result = await collection.save(stockTag);
-    return { ...stockTag, _key: result._key };
   }
 
   async findAll(): Promise<StockTag[]> {
-    const cursor = await this.databaseService.query(`
-      FOR st IN stock_tags
-      RETURN st
-    `);
-    return await cursor.all();
+    const rows = await this.databaseService.query(`SELECT * FROM stock_tags`);
+    return rows.map(mapStockTag);
   }
 
   async findByStock(stockKey: string): Promise<StockTag[]> {
-    const cursor = await this.databaseService.query(
-      `
-      FOR st IN stock_tags
-      FILTER st.stockKey == @stockKey
-      RETURN st
-    `,
-      { stockKey },
+    const rows = await this.databaseService.query(
+      `SELECT * FROM stock_tags WHERE stock_key = $1`,
+      [stockKey],
     );
-    return await cursor.all();
+    return rows.map(mapStockTag);
   }
 
   async findByTag(tagKey: string): Promise<StockTag[]> {
-    const cursor = await this.databaseService.query(
-      `
-      FOR st IN stock_tags
-      FILTER st.tagKey == @tagKey
-      RETURN st
-    `,
-      { tagKey },
+    const rows = await this.databaseService.query(
+      `SELECT * FROM stock_tags WHERE tag_key = $1`,
+      [tagKey],
     );
-    return await cursor.all();
+    return rows.map(mapStockTag);
   }
 
   async findOne(key: string): Promise<StockTag | null> {
-    const cursor = await this.databaseService.query(
-      `
-      FOR st IN stock_tags
-      FILTER st._key == @key
-      RETURN st
-    `,
-      { key },
+    const rows = await this.databaseService.query(
+      `SELECT * FROM stock_tags WHERE id = $1`,
+      [key],
     );
-
-    const results = await cursor.all();
-    return results.length > 0 ? results[0] : null;
+    return rows.length > 0 ? mapStockTag(rows[0]) : null;
   }
 
   async remove(key: string): Promise<boolean> {
-    const collection = this.databaseService.getCollection("stock_tags");
-
-    try {
-      await collection.remove(key);
-      return true;
-    } catch {
-      return false;
-    }
+    await this.databaseService.execute(`DELETE FROM stock_tags WHERE id = $1`, [
+      key,
+    ]);
+    return true;
   }
 }

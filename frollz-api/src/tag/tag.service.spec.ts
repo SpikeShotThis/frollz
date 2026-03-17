@@ -2,158 +2,149 @@ import { Test, TestingModule } from "@nestjs/testing";
 import { TagService } from "./tag.service";
 import { DatabaseService } from "../database/database.service";
 
+const makeDbService = (
+  overrides: Partial<{ query: jest.Mock; execute: jest.Mock }> = {},
+) => ({
+  query: jest.fn().mockResolvedValue([]),
+  execute: jest.fn().mockResolvedValue(undefined),
+  ...overrides,
+});
+
 describe("TagService", () => {
   let service: TagService;
-  let databaseService: { getCollection: jest.Mock; query: jest.Mock };
-
-  const mockCollection = {
-    save: jest.fn(),
-    update: jest.fn(),
-    remove: jest.fn(),
-  };
-
-  const mockCursor = { all: jest.fn() };
+  let db: ReturnType<typeof makeDbService>;
 
   beforeEach(async () => {
+    db = makeDbService();
     const module: TestingModule = await Test.createTestingModule({
-      providers: [
-        TagService,
-        {
-          provide: DatabaseService,
-          useValue: {
-            getCollection: jest.fn().mockReturnValue(mockCollection),
-            query: jest.fn().mockResolvedValue(mockCursor),
-          },
-        },
-      ],
+      providers: [TagService, { provide: DatabaseService, useValue: db }],
     }).compile();
 
     service = module.get<TagService>(TagService);
-    databaseService = module.get(DatabaseService);
   });
 
   afterEach(() => jest.clearAllMocks());
 
   describe("create", () => {
-    it("should save a tag with createdAt and return it with _key", async () => {
-      mockCollection.save.mockResolvedValue({ _key: "color" });
-
+    it("should insert a tag with createdAt and return it with _key", async () => {
       const result = await service.create({ value: "color", color: "#F97316" });
 
-      expect(mockCollection.save).toHaveBeenCalledWith(
-        expect.objectContaining({
-          value: "color",
-          color: "#F97316",
-          createdAt: expect.any(Date),
-        }),
+      expect(db.execute).toHaveBeenCalledWith(
+        expect.stringContaining("INSERT INTO tags"),
+        expect.arrayContaining(["color", "#F97316"]),
       );
-      expect(result).toEqual(
-        expect.objectContaining({
-          _key: "color",
-          value: "color",
-          color: "#F97316",
-        }),
-      );
+      expect(result).toMatchObject({ value: "color", color: "#F97316" });
+      expect(result._key).toBeDefined();
+      expect(result.createdAt).toBeInstanceOf(Date);
     });
 
-    it("should not include updatedAt in the saved document", async () => {
-      mockCollection.save.mockResolvedValue({ _key: "portrait" });
-
-      await service.create({ value: "portrait", color: "#EC4899" });
-
-      const savedDoc = mockCollection.save.mock.calls[0][0];
-      expect(savedDoc).not.toHaveProperty("updatedAt");
+    it("should not include updatedAt in the returned document", async () => {
+      const result = await service.create({
+        value: "portrait",
+        color: "#EC4899",
+      });
+      expect(result).not.toHaveProperty("updatedAt");
     });
   });
 
   describe("findAll", () => {
-    it("should return all tags from the cursor", async () => {
-      const tags = [
-        { _key: "color", value: "color", color: "#F97316" },
-        { _key: "portrait", value: "portrait", color: "#EC4899" },
-      ];
-      mockCursor.all.mockResolvedValue(tags);
+    it("should return all tags mapped from rows", async () => {
+      db.query.mockResolvedValue([
+        {
+          id: "color",
+          value: "color",
+          color: "#F97316",
+          created_at: new Date(),
+        },
+        {
+          id: "portrait",
+          value: "portrait",
+          color: "#EC4899",
+          created_at: new Date(),
+        },
+      ]);
 
       const result = await service.findAll();
 
-      expect(result).toEqual(tags);
+      expect(result).toHaveLength(2);
+      expect(result[0]._key).toBe("color");
+      expect(result[0].value).toBe("color");
     });
 
-    it("should query with SORT tag.value ASC", async () => {
-      mockCursor.all.mockResolvedValue([]);
-
+    it("should query with ORDER BY value ASC", async () => {
       await service.findAll();
 
-      expect(databaseService.query).toHaveBeenCalledWith(
-        expect.stringContaining("SORT tag.value ASC"),
+      expect(db.query).toHaveBeenCalledWith(
+        expect.stringContaining("ORDER BY value ASC"),
       );
     });
   });
 
   describe("findOne", () => {
     it("should return the tag when found", async () => {
-      const tag = { _key: "color", value: "color", color: "#F97316" };
-      mockCursor.all.mockResolvedValue([tag]);
+      db.query.mockResolvedValue([
+        { id: "color", value: "color", color: "#F97316", created_at: null },
+      ]);
 
       const result = await service.findOne("color");
 
-      expect(result).toEqual(tag);
+      expect(result).toMatchObject({
+        _key: "color",
+        value: "color",
+        color: "#F97316",
+      });
     });
 
     it("should return null when not found", async () => {
-      mockCursor.all.mockResolvedValue([]);
-
-      const result = await service.findOne("nonexistent");
-
-      expect(result).toBeNull();
+      db.query.mockResolvedValue([]);
+      expect(await service.findOne("nonexistent")).toBeNull();
     });
 
     it("should filter by the provided key", async () => {
-      mockCursor.all.mockResolvedValue([]);
-
       await service.findOne("color");
 
-      expect(databaseService.query).toHaveBeenCalledWith(
-        expect.stringContaining("tag._key == @key"),
-        { key: "color" },
+      expect(db.query).toHaveBeenCalledWith(
+        expect.stringContaining("WHERE id = $1"),
+        ["color"],
       );
     });
   });
 
   describe("update", () => {
-    it("should update and return the refreshed tag", async () => {
-      const updated = { _key: "color", value: "color", color: "#FFFFFF" };
-      mockCollection.update.mockResolvedValue({});
-      mockCursor.all.mockResolvedValue([updated]);
+    it("should execute UPDATE and return the refreshed tag", async () => {
+      db.query.mockResolvedValueOnce([
+        { id: "color", value: "color", color: "#FFFFFF", created_at: null },
+      ]);
 
       const result = await service.update("color", { color: "#FFFFFF" });
 
-      expect(mockCollection.update).toHaveBeenCalledWith("color", {
-        color: "#FFFFFF",
-      });
-      expect(result).toEqual(updated);
+      expect(db.execute).toHaveBeenCalledWith(
+        expect.stringContaining("UPDATE tags SET"),
+        expect.arrayContaining(["#FFFFFF", "color"]),
+      );
+      expect(result).toMatchObject({ _key: "color", color: "#FFFFFF" });
     });
 
-    it("should return null when update throws", async () => {
-      mockCollection.update.mockRejectedValue(new Error("document not found"));
+    it("should return findOne result even if update has no fields", async () => {
+      db.query.mockResolvedValue([
+        { id: "color", value: "color", color: "#F97316", created_at: null },
+      ]);
 
-      const result = await service.update("nonexistent", { color: "#FFFFFF" });
-
-      expect(result).toBeNull();
+      const result = await service.update("color", {});
+      expect(result).toMatchObject({ _key: "color" });
+      expect(db.execute).not.toHaveBeenCalled();
     });
   });
 
   describe("remove", () => {
-    it("should return true on successful removal", async () => {
-      mockCollection.remove.mockResolvedValue({});
+    it("should execute DELETE and return true", async () => {
+      const result = await service.remove("color");
 
-      expect(await service.remove("color")).toBe(true);
-    });
-
-    it("should return false when removal throws", async () => {
-      mockCollection.remove.mockRejectedValue(new Error("document not found"));
-
-      expect(await service.remove("nonexistent")).toBe(false);
+      expect(db.execute).toHaveBeenCalledWith(
+        expect.stringContaining("DELETE FROM tags"),
+        ["color"],
+      );
+      expect(result).toBe(true);
     });
   });
 });

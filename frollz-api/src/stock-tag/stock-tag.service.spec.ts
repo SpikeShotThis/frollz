@@ -2,162 +2,139 @@ import { Test, TestingModule } from "@nestjs/testing";
 import { StockTagService } from "./stock-tag.service";
 import { DatabaseService } from "../database/database.service";
 
+const makeDbService = (
+  overrides: Partial<{ query: jest.Mock; execute: jest.Mock }> = {},
+) => ({
+  query: jest.fn().mockResolvedValue([]),
+  execute: jest.fn().mockResolvedValue(undefined),
+  ...overrides,
+});
+
+const stockTagRow = (key: string) => ({
+  id: key,
+  stock_key: "kodak-portra-400-35mm",
+  tag_key: "color",
+  created_at: null,
+});
+
 describe("StockTagService", () => {
   let service: StockTagService;
-  let databaseService: { getCollection: jest.Mock; query: jest.Mock };
-
-  const mockCollection = {
-    save: jest.fn(),
-    remove: jest.fn(),
-  };
-
-  const mockCursor = { all: jest.fn() };
+  let db: ReturnType<typeof makeDbService>;
 
   beforeEach(async () => {
+    db = makeDbService();
     const module: TestingModule = await Test.createTestingModule({
-      providers: [
-        StockTagService,
-        {
-          provide: DatabaseService,
-          useValue: {
-            getCollection: jest.fn().mockReturnValue(mockCollection),
-            query: jest.fn().mockResolvedValue(mockCursor),
-          },
-        },
-      ],
+      providers: [StockTagService, { provide: DatabaseService, useValue: db }],
     }).compile();
 
     service = module.get<StockTagService>(StockTagService);
-    databaseService = module.get(DatabaseService);
   });
 
   afterEach(() => jest.clearAllMocks());
 
   describe("create", () => {
-    it("should save a stock-tag with createdAt and return it with _key", async () => {
-      mockCollection.save.mockResolvedValue({ _key: "abc123" });
-
+    it("should insert a stock-tag with createdAt and return it with _key", async () => {
       const result = await service.create({
         stockKey: "kodak-portra-400-35mm",
         tagKey: "color",
       });
 
-      expect(mockCollection.save).toHaveBeenCalledWith(
-        expect.objectContaining({
-          stockKey: "kodak-portra-400-35mm",
-          tagKey: "color",
-          createdAt: expect.any(Date),
-        }),
+      expect(db.execute).toHaveBeenCalledWith(
+        expect.stringContaining("INSERT INTO stock_tags"),
+        expect.arrayContaining(["kodak-portra-400-35mm", "color"]),
       );
-      expect(result._key).toBe("abc123");
+      expect(result._key).toBeDefined();
       expect(result.stockKey).toBe("kodak-portra-400-35mm");
       expect(result.tagKey).toBe("color");
+      expect(result.createdAt).toBeInstanceOf(Date);
     });
 
-    it("should not include updatedAt in the saved document", async () => {
-      mockCollection.save.mockResolvedValue({ _key: "abc123" });
-
-      await service.create({
+    it("should not include updatedAt in the returned document", async () => {
+      const result = await service.create({
         stockKey: "kodak-portra-400-35mm",
         tagKey: "color",
       });
-
-      const savedDoc = mockCollection.save.mock.calls[0][0];
-      expect(savedDoc).not.toHaveProperty("updatedAt");
+      expect(result).not.toHaveProperty("updatedAt");
     });
   });
 
   describe("findAll", () => {
-    it("should return all stock-tag associations", async () => {
-      const stockTags = [
-        { _key: "abc", stockKey: "kodak-portra-400-35mm", tagKey: "color" },
-      ];
-      mockCursor.all.mockResolvedValue(stockTags);
+    it("should return all stock-tag associations mapped from rows", async () => {
+      db.query.mockResolvedValue([stockTagRow("abc")]);
 
       const result = await service.findAll();
 
-      expect(result).toEqual(stockTags);
+      expect(result).toHaveLength(1);
+      expect(result[0]).toMatchObject({
+        _key: "abc",
+        stockKey: "kodak-portra-400-35mm",
+        tagKey: "color",
+      });
     });
   });
 
   describe("findByStock", () => {
-    it("should query filtered by stockKey", async () => {
-      mockCursor.all.mockResolvedValue([]);
-
+    it("should query filtered by stock_key", async () => {
       await service.findByStock("kodak-portra-400-35mm");
 
-      expect(databaseService.query).toHaveBeenCalledWith(
-        expect.stringContaining("st.stockKey == @stockKey"),
-        { stockKey: "kodak-portra-400-35mm" },
+      expect(db.query).toHaveBeenCalledWith(
+        expect.stringContaining("stock_key = $1"),
+        ["kodak-portra-400-35mm"],
       );
     });
 
     it("should return the filtered results", async () => {
-      const stockTags = [
-        { _key: "abc", stockKey: "kodak-portra-400-35mm", tagKey: "color" },
-      ];
-      mockCursor.all.mockResolvedValue(stockTags);
+      db.query.mockResolvedValue([stockTagRow("abc")]);
 
       const result = await service.findByStock("kodak-portra-400-35mm");
 
-      expect(result).toEqual(stockTags);
+      expect(result[0]).toMatchObject({
+        _key: "abc",
+        stockKey: "kodak-portra-400-35mm",
+      });
     });
   });
 
   describe("findByTag", () => {
-    it("should query filtered by tagKey", async () => {
-      mockCursor.all.mockResolvedValue([]);
-
+    it("should query filtered by tag_key", async () => {
       await service.findByTag("color");
 
-      expect(databaseService.query).toHaveBeenCalledWith(
-        expect.stringContaining("st.tagKey == @tagKey"),
-        { tagKey: "color" },
+      expect(db.query).toHaveBeenCalledWith(
+        expect.stringContaining("tag_key = $1"),
+        ["color"],
       );
     });
 
     it("should return the filtered results", async () => {
-      const stockTags = [
-        { _key: "abc", stockKey: "kodak-portra-400-35mm", tagKey: "color" },
-      ];
-      mockCursor.all.mockResolvedValue(stockTags);
+      db.query.mockResolvedValue([stockTagRow("abc")]);
 
       const result = await service.findByTag("color");
 
-      expect(result).toEqual(stockTags);
+      expect(result[0]).toMatchObject({ _key: "abc", tagKey: "color" });
     });
   });
 
   describe("findOne", () => {
     it("should return the stock-tag when found", async () => {
-      const st = {
-        _key: "abc",
-        stockKey: "kodak-portra-400-35mm",
-        tagKey: "color",
-      };
-      mockCursor.all.mockResolvedValue([st]);
+      db.query.mockResolvedValue([stockTagRow("abc")]);
 
-      expect(await service.findOne("abc")).toEqual(st);
+      expect(await service.findOne("abc")).toMatchObject({ _key: "abc" });
     });
 
     it("should return null when not found", async () => {
-      mockCursor.all.mockResolvedValue([]);
-
       expect(await service.findOne("nonexistent")).toBeNull();
     });
   });
 
   describe("remove", () => {
-    it("should return true on successful removal", async () => {
-      mockCollection.remove.mockResolvedValue({});
+    it("should execute DELETE and return true", async () => {
+      const result = await service.remove("abc");
 
-      expect(await service.remove("abc")).toBe(true);
-    });
-
-    it("should return false when removal throws", async () => {
-      mockCollection.remove.mockRejectedValue(new Error("document not found"));
-
-      expect(await service.remove("nonexistent")).toBe(false);
+      expect(db.execute).toHaveBeenCalledWith(
+        expect.stringContaining("DELETE FROM stock_tags"),
+        ["abc"],
+      );
+      expect(result).toBe(true);
     });
   });
 });

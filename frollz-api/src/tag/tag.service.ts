@@ -1,67 +1,82 @@
 import { Injectable } from "@nestjs/common";
+import { randomUUID } from "crypto";
 import { DatabaseService } from "../database/database.service";
 import { CreateTagDto } from "./dto/create-tag.dto";
 import { UpdateTagDto } from "./dto/update-tag.dto";
 import { Tag } from "./entities/tag.entity";
+
+function mapTag(row: Record<string, unknown>): Tag {
+  return {
+    _key: row.id as string,
+    value: row.value as string,
+    color: row.color as string,
+    createdAt: row.created_at ? new Date(row.created_at as string) : undefined,
+  };
+}
 
 @Injectable()
 export class TagService {
   constructor(private readonly databaseService: DatabaseService) {}
 
   async create(createTagDto: CreateTagDto): Promise<Tag> {
-    const collection = this.databaseService.getCollection("tags");
+    const id = randomUUID();
+    const now = new Date();
 
-    const tag = {
-      ...createTagDto,
-      createdAt: new Date(),
+    await this.databaseService.execute(
+      `INSERT INTO tags (id, value, color, created_at) VALUES ($1, $2, $3, $4)`,
+      [id, createTagDto.value, createTagDto.color, now],
+    );
+
+    return {
+      _key: id,
+      value: createTagDto.value,
+      color: createTagDto.color,
+      createdAt: now,
     };
-
-    const result = await collection.save(tag);
-    return { ...tag, _key: result._key };
   }
 
   async findAll(): Promise<Tag[]> {
-    const cursor = await this.databaseService.query(`
-      FOR tag IN tags
-      SORT tag.value ASC
-      RETURN tag
-    `);
-    return await cursor.all();
+    const rows = await this.databaseService.query(
+      `SELECT * FROM tags ORDER BY value ASC`,
+    );
+    return rows.map(mapTag);
   }
 
   async findOne(key: string): Promise<Tag | null> {
-    const cursor = await this.databaseService.query(
-      `
-      FOR tag IN tags
-      FILTER tag._key == @key
-      RETURN tag
-    `,
-      { key },
+    const rows = await this.databaseService.query(
+      `SELECT * FROM tags WHERE id = $1`,
+      [key],
     );
-
-    const results = await cursor.all();
-    return results.length > 0 ? results[0] : null;
+    return rows.length > 0 ? mapTag(rows[0]) : null;
   }
 
   async update(key: string, updateTagDto: UpdateTagDto): Promise<Tag | null> {
-    const collection = this.databaseService.getCollection("tags");
+    const updates: string[] = [];
+    const values: unknown[] = [];
+    let idx = 1;
 
-    try {
-      await collection.update(key, updateTagDto);
-      return await this.findOne(key);
-    } catch {
-      return null;
+    if (updateTagDto.value !== undefined) {
+      updates.push(`value = $${idx++}`);
+      values.push(updateTagDto.value);
     }
+    if (updateTagDto.color !== undefined) {
+      updates.push(`color = $${idx++}`);
+      values.push(updateTagDto.color);
+    }
+
+    if (updates.length === 0) return this.findOne(key);
+
+    values.push(key);
+    await this.databaseService.execute(
+      `UPDATE tags SET ${updates.join(", ")} WHERE id = $${idx}`,
+      values,
+    );
+
+    return this.findOne(key);
   }
 
   async remove(key: string): Promise<boolean> {
-    const collection = this.databaseService.getCollection("tags");
-
-    try {
-      await collection.remove(key);
-      return true;
-    } catch {
-      return false;
-    }
+    await this.databaseService.execute(`DELETE FROM tags WHERE id = $1`, [key]);
+    return true;
   }
 }
