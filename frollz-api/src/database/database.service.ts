@@ -1,6 +1,6 @@
 import { Injectable, Inject, OnModuleInit } from "@nestjs/common";
 import { Database } from "arangojs";
-import { SchemaOptions } from "arangojs/collection";
+import { SchemaOptions } from "arangojs/collections";
 import * as fs from "fs";
 import * as path from "path";
 
