@@ -7,18 +7,23 @@
       </button>
     </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-      <div class="relative">
-        <select v-model="filterState" class="w-full border border-gray-300 rounded-md px-3 py-2">
-          <option value="">All States</option>
-          <option value="Frozen">Frozen</option>
-          <option value="Refrigerated">Refrigerated</option>
-          <option value="Shelved">Shelved</option>
-          <option value="Loaded">Loaded</option>
-          <option value="Finished">Finished</option>
-          <option value="Developed">Developed</option>
-        </select>
-      </div>
+    <!-- Active Filters -->
+    <div class="flex flex-wrap items-center gap-2 mb-4 min-h-[2rem]">
+      <span class="text-sm text-gray-500 font-medium">Filters:</span>
+      <span v-if="activeFilters.length === 0" class="text-sm text-gray-400 italic">
+        Click any value in the table to filter by that field
+      </span>
+      <template v-else>
+        <span
+          v-for="(filter, index) in activeFilters"
+          :key="index"
+          class="inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm bg-primary-100 text-primary-800 font-medium"
+        >
+          {{ filter.label }}: {{ filter.value }}
+          <button @click="removeFilter(index)" class="ml-1 text-primary-600 hover:text-primary-900 font-bold leading-none">&times;</button>
+        </span>
+        <button @click="clearFilters" class="text-sm text-gray-500 hover:text-gray-700 underline">Clear all</button>
+      </template>
     </div>
 
     <div class="bg-white rounded-lg shadow-md">
@@ -51,26 +56,29 @@
           </thead>
           <tbody class="bg-white divide-y divide-gray-200">
             <tr v-for="roll in filteredRolls" :key="roll._key">
-              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                {{ roll.rollId }}
-              </td>
+              <td
+                class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 cursor-pointer hover:text-primary-600"
+                @click="addFilter('rollId', 'Roll ID', roll.rollId)"
+              >{{ roll.rollId }}</td>
               <td class="px-6 py-4 whitespace-nowrap">
                 <span
-                  class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full"
+                  class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full cursor-pointer hover:opacity-80"
                   :class="getStateColor(roll.state)"
-                >
-                  {{ roll.state }}
-                </span>
+                  @click="addFilter('state', 'State', roll.state)"
+                >{{ roll.state }}</span>
               </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                {{ formatDate(roll.dateObtained) }}
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                {{ roll.obtainedFrom }}
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                {{ roll.timesExposedToXrays }}
-              </td>
+              <td
+                class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 cursor-pointer hover:text-primary-600"
+                @click="addFilter('dateObtained', 'Date Obtained', formatDate(roll.dateObtained))"
+              >{{ formatDate(roll.dateObtained) }}</td>
+              <td
+                class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 cursor-pointer hover:text-primary-600"
+                @click="addFilter('obtainedFrom', 'Obtained From', roll.obtainedFrom)"
+              >{{ roll.obtainedFrom }}</td>
+              <td
+                class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 cursor-pointer hover:text-primary-600"
+                @click="addFilter('timesExposedToXrays', 'X-Ray Exposures', String(roll.timesExposedToXrays))"
+              >{{ roll.timesExposedToXrays }}</td>
               <td class="px-6 py-4 whitespace-nowrap text-right">
                 <button
                   v-if="canLoad(roll.state)"
@@ -237,8 +245,25 @@ const route = useRoute()
 
 const rolls = ref<Roll[]>([])
 const stocks = ref<Stock[]>([])
-const filterState = ref('')
 const showModal = ref(false)
+
+type ActiveFilter = { field: string; label: string; value: string }
+const activeFilters = ref<ActiveFilter[]>([])
+
+const addFilter = (field: string, label: string, value: string) => {
+  if (!value) return
+  if (!activeFilters.value.some(f => f.field === field && f.value === value)) {
+    activeFilters.value.push({ field, label, value })
+  }
+}
+
+const removeFilter = (index: number) => {
+  activeFilters.value.splice(index, 1)
+}
+
+const clearFilters = () => {
+  activeFilters.value = []
+}
 const submitting = ref(false)
 const error = ref('')
 
@@ -274,9 +299,15 @@ const emptyForm = () => ({
 const form = ref(emptyForm())
 
 const filteredRolls = computed(() => {
-  const base = filterState.value
-    ? rolls.value.filter(roll => roll.state === filterState.value)
-    : rolls.value
+  const base = activeFilters.value.length === 0
+    ? rolls.value
+    : rolls.value.filter(roll =>
+        activeFilters.value.every(f => {
+          if (f.field === 'dateObtained') return formatDate(roll.dateObtained) === f.value
+          if (f.field === 'timesExposedToXrays') return String(roll.timesExposedToXrays) === f.value
+          return (roll[f.field as keyof Roll] ?? '') === f.value
+        })
+      )
 
   return base.slice().sort((a, b) => {
     let cmp: number

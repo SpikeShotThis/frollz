@@ -52,15 +52,139 @@ describe('RollsView', () => {
       expect(wrapper.text()).toContain('Shelved')
       expect(wrapper.text()).not.toContain('Shelfed')
     })
+  })
 
-    it('should use "Shelved" in the filter dropdown', async () => {
+  describe('filtering', () => {
+    const multiRolls = [
+      makeRoll('r1', RollState.FROZEN,  { rollId: 'roll-r1', obtainedFrom: 'B&H',    timesExposedToXrays: 0 }),
+      makeRoll('r2', RollState.LOADED,  { rollId: 'roll-r2', obtainedFrom: 'Moment', timesExposedToXrays: 2 }),
+      makeRoll('r3', RollState.SHELFED, { rollId: 'roll-r3', obtainedFrom: 'B&H',    timesExposedToXrays: 0 }),
+    ]
+
+    beforeEach(() => {
+      vi.mocked(rollApi.getAll).mockResolvedValue({ data: multiRolls } as any)
+    })
+
+    it('should start with no active filters and show placeholder', async () => {
       const wrapper = mount(RollsView, { global: { plugins: [router] } })
       await flushPromises()
 
-      const options = wrapper.findAll('option')
-      const labels = options.map(o => o.text())
-      expect(labels).toContain('Shelved')
-      expect(labels).not.toContain('Shelfed')
+      const vm = wrapper.vm as any
+      expect(vm.activeFilters).toEqual([])
+      expect(wrapper.text()).toContain('Click any value in the table to filter by that field')
+    })
+
+    it('should add a filter via addFilter', async () => {
+      const wrapper = mount(RollsView, { global: { plugins: [router] } })
+      await flushPromises()
+
+      const vm = wrapper.vm as any
+      vm.addFilter('state', 'State', 'Frozen')
+      await wrapper.vm.$nextTick()
+
+      expect(vm.activeFilters).toHaveLength(1)
+      expect(vm.activeFilters[0]).toEqual({ field: 'state', label: 'State', value: 'Frozen' })
+    })
+
+    it('should filter filteredRolls by an active filter', async () => {
+      const wrapper = mount(RollsView, { global: { plugins: [router] } })
+      await flushPromises()
+
+      const vm = wrapper.vm as any
+      vm.addFilter('state', 'State', 'Frozen')
+      await wrapper.vm.$nextTick()
+
+      expect(vm.filteredRolls).toHaveLength(1)
+      expect(vm.filteredRolls[0].state).toBe('Frozen')
+    })
+
+    it('should apply multiple filters with AND logic', async () => {
+      const wrapper = mount(RollsView, { global: { plugins: [router] } })
+      await flushPromises()
+
+      const vm = wrapper.vm as any
+      vm.addFilter('obtainedFrom', 'Obtained From', 'B&H')
+      vm.addFilter('timesExposedToXrays', 'X-Ray Exposures', '0')
+      await wrapper.vm.$nextTick()
+
+      // r1 (Frozen, B&H, 0) and r3 (Shelved, B&H, 0) both match
+      expect(vm.filteredRolls).toHaveLength(2)
+    })
+
+    it('should not add duplicate filters', async () => {
+      const wrapper = mount(RollsView, { global: { plugins: [router] } })
+      await flushPromises()
+
+      const vm = wrapper.vm as any
+      vm.addFilter('state', 'State', 'Frozen')
+      vm.addFilter('state', 'State', 'Frozen')
+      await wrapper.vm.$nextTick()
+
+      expect(vm.activeFilters).toHaveLength(1)
+    })
+
+    it('should remove a specific filter chip', async () => {
+      const wrapper = mount(RollsView, { global: { plugins: [router] } })
+      await flushPromises()
+
+      const vm = wrapper.vm as any
+      vm.addFilter('state', 'State', 'Frozen')
+      vm.addFilter('obtainedFrom', 'Obtained From', 'B&H')
+      vm.removeFilter(0)
+      await wrapper.vm.$nextTick()
+
+      expect(vm.activeFilters).toHaveLength(1)
+      expect(vm.activeFilters[0].field).toBe('obtainedFrom')
+    })
+
+    it('should clear all filters', async () => {
+      const wrapper = mount(RollsView, { global: { plugins: [router] } })
+      await flushPromises()
+
+      const vm = wrapper.vm as any
+      vm.addFilter('state', 'State', 'Frozen')
+      vm.addFilter('obtainedFrom', 'Obtained From', 'B&H')
+      vm.clearFilters()
+      await wrapper.vm.$nextTick()
+
+      expect(vm.activeFilters).toHaveLength(0)
+      expect(vm.filteredRolls).toHaveLength(3)
+    })
+
+    it('should show chips with "field: value" format and hide placeholder', async () => {
+      const wrapper = mount(RollsView, { global: { plugins: [router] } })
+      await flushPromises()
+
+      const vm = wrapper.vm as any
+      vm.addFilter('state', 'State', 'Frozen')
+      await wrapper.vm.$nextTick()
+
+      expect(wrapper.text()).toContain('State: Frozen')
+      expect(wrapper.text()).not.toContain('Click any value in the table to filter by that field')
+    })
+
+    it('should show Clear all button only when filters are active', async () => {
+      const wrapper = mount(RollsView, { global: { plugins: [router] } })
+      await flushPromises()
+
+      expect(wrapper.text()).not.toContain('Clear all')
+
+      const vm = wrapper.vm as any
+      vm.addFilter('state', 'State', 'Frozen')
+      await wrapper.vm.$nextTick()
+
+      expect(wrapper.text()).toContain('Clear all')
+    })
+
+    it('should not add a filter when value is empty', async () => {
+      const wrapper = mount(RollsView, { global: { plugins: [router] } })
+      await flushPromises()
+
+      const vm = wrapper.vm as any
+      vm.addFilter('obtainedFrom', 'Obtained From', '')
+      await wrapper.vm.$nextTick()
+
+      expect(vm.activeFilters).toHaveLength(0)
     })
   })
 
