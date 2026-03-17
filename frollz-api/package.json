@@ -26,7 +26,7 @@
     "@nestjs/platform-express": "^11.0.0",
     "@nestjs/config": "^4.0.3",
     "@nestjs/swagger": "^11.0.0",
-    "arangojs": "^8.8.1",
+    "arangojs": "^10.2.2",
     "class-validator": "^0.15.1",
     "class-transformer": "^0.5.1",
     "reflect-metadata": "^0.1.13",
