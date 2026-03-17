@@ -64,9 +64,6 @@ services:
       - "5173:5173"
     depends_on:
       - frollz-api
-    volumes:
-      - ./frollz-ui:/app
-      - /app/node_modules
     networks:
       - frollz-network
     command: npm run dev
