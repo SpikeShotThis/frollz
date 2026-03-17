@@ -20,6 +20,10 @@ const VALID_TRANSITIONS: Partial<Record<RollState, RollState[]>> = {
   [RollState.REFRIGERATED]: [RollState.SHELFED, RollState.ADDED],
   [RollState.SHELFED]: [RollState.LOADED],
   [RollState.LOADED]: [RollState.FINISHED, RollState.SHELFED],
+  [RollState.FINISHED]: [RollState.SENT_FOR_DEVELOPMENT, RollState.LOADED],
+  [RollState.SENT_FOR_DEVELOPMENT]: [RollState.DEVELOPED, RollState.FINISHED],
+  [RollState.DEVELOPED]: [RollState.RECEIVED, RollState.SENT_FOR_DEVELOPMENT],
+  [RollState.RECEIVED]: [RollState.DEVELOPED],
 };
 
 @Injectable()

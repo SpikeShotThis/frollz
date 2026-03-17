@@ -382,6 +382,10 @@ const VALID_TRANSITIONS: Partial<Record<RollState, RollState[]>> = {
   [RollState.REFRIGERATED]: [RollState.SHELFED, RollState.ADDED],
   [RollState.SHELFED]: [RollState.LOADED],
   [RollState.LOADED]: [RollState.FINISHED, RollState.SHELFED],
+  [RollState.FINISHED]: [RollState.SENT_FOR_DEVELOPMENT, RollState.LOADED],
+  [RollState.SENT_FOR_DEVELOPMENT]: [RollState.DEVELOPED, RollState.FINISHED],
+  [RollState.DEVELOPED]: [RollState.RECEIVED, RollState.SENT_FOR_DEVELOPMENT],
+  [RollState.RECEIVED]: [RollState.DEVELOPED],
 }
 
 const getValidTransitions = (state: RollState): RollState[] => {
@@ -395,6 +399,9 @@ const TRANSITION_BUTTON_COLORS: Partial<Record<RollState, string>> = {
   [RollState.SHELFED]: 'text-gray-600 border-gray-400 hover:bg-gray-50',
   [RollState.LOADED]: 'text-yellow-700 border-yellow-400 hover:bg-yellow-50',
   [RollState.FINISHED]: 'text-green-700 border-green-400 hover:bg-green-50',
+  [RollState.SENT_FOR_DEVELOPMENT]: 'text-orange-700 border-orange-400 hover:bg-orange-50',
+  [RollState.DEVELOPED]: 'text-purple-700 border-purple-400 hover:bg-purple-50',
+  [RollState.RECEIVED]: 'text-indigo-700 border-indigo-400 hover:bg-indigo-50',
 }
 
 const getTransitionButtonColor = (state: RollState): string => {
@@ -466,7 +473,9 @@ const getStateColor = (state: RollState) => {
     Shelved: 'bg-gray-100 text-gray-800',
     Loaded: 'bg-yellow-100 text-yellow-800',
     Finished: 'bg-green-100 text-green-800',
+    'Sent For Development': 'bg-orange-100 text-orange-800',
     Developed: 'bg-purple-100 text-purple-800',
+    Received: 'bg-indigo-100 text-indigo-800',
   }
   return colors[state] || 'bg-gray-100 text-gray-800'
 }

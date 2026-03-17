@@ -7,7 +7,9 @@ export enum RollState {
   SHELFED = "Shelved",
   LOADED = "Loaded",
   FINISHED = "Finished",
+  SENT_FOR_DEVELOPMENT = "Sent For Development",
   DEVELOPED = "Developed",
+  RECEIVED = "Received",
 }
 
 export enum ObtainmentMethod {

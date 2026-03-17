@@ -215,18 +215,48 @@ describe('RollsView', () => {
       expect(buttonTexts).toContain(RollState.SHELFED)
     })
 
-    it.each([RollState.FINISHED, RollState.DEVELOPED])(
-      'should show no transition buttons for terminal state %s',
-      async (state) => {
-        vi.mocked(rollApi.getAll).mockResolvedValue({ data: [makeRoll('r1', state)] } as any)
+    it('should show Sent For Development and Loaded buttons for a Finished roll', async () => {
+      vi.mocked(rollApi.getAll).mockResolvedValue({ data: [makeRoll('r1', RollState.FINISHED)] } as any)
 
-        const wrapper = mount(RollsView, { global: { plugins: [router] } })
-        await flushPromises()
+      const wrapper = mount(RollsView, { global: { plugins: [router] } })
+      await flushPromises()
 
-        const vm = wrapper.vm as any
-        expect(vm.getValidTransitions(state)).toHaveLength(0)
-      }
-    )
+      const vm = wrapper.vm as any
+      expect(vm.getValidTransitions(RollState.FINISHED)).toContain(RollState.SENT_FOR_DEVELOPMENT)
+      expect(vm.getValidTransitions(RollState.FINISHED)).toContain(RollState.LOADED)
+    })
+
+    it('should show Developed and Finished buttons for a Sent For Development roll', async () => {
+      vi.mocked(rollApi.getAll).mockResolvedValue({ data: [makeRoll('r1', RollState.SENT_FOR_DEVELOPMENT)] } as any)
+
+      const wrapper = mount(RollsView, { global: { plugins: [router] } })
+      await flushPromises()
+
+      const vm = wrapper.vm as any
+      expect(vm.getValidTransitions(RollState.SENT_FOR_DEVELOPMENT)).toContain(RollState.DEVELOPED)
+      expect(vm.getValidTransitions(RollState.SENT_FOR_DEVELOPMENT)).toContain(RollState.FINISHED)
+    })
+
+    it('should show Received and Sent For Development buttons for a Developed roll', async () => {
+      vi.mocked(rollApi.getAll).mockResolvedValue({ data: [makeRoll('r1', RollState.DEVELOPED)] } as any)
+
+      const wrapper = mount(RollsView, { global: { plugins: [router] } })
+      await flushPromises()
+
+      const vm = wrapper.vm as any
+      expect(vm.getValidTransitions(RollState.DEVELOPED)).toContain(RollState.RECEIVED)
+      expect(vm.getValidTransitions(RollState.DEVELOPED)).toContain(RollState.SENT_FOR_DEVELOPMENT)
+    })
+
+    it('should show only Developed button for a Received roll (reversal only)', async () => {
+      vi.mocked(rollApi.getAll).mockResolvedValue({ data: [makeRoll('r1', RollState.RECEIVED)] } as any)
+
+      const wrapper = mount(RollsView, { global: { plugins: [router] } })
+      await flushPromises()
+
+      const vm = wrapper.vm as any
+      expect(vm.getValidTransitions(RollState.RECEIVED)).toEqual([RollState.DEVELOPED])
+    })
   })
 
   describe('sorting', () => {

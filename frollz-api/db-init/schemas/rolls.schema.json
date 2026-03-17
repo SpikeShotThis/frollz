@@ -15,7 +15,7 @@
       },
       "state": {
         "type": "string",
-        "enum": ["Added", "Frozen", "Refrigerated", "Shelved", "Loaded", "Finished", "Developed"]
+        "enum": ["Added", "Frozen", "Refrigerated", "Shelved", "Loaded", "Finished", "Sent For Development", "Developed", "Received"]
       },
       "dateObtained": {
         "type": "string",
