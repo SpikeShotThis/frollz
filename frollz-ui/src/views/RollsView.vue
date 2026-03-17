@@ -1,7 +1,7 @@
 <template>
   <div>
     <div class="flex justify-between items-center mb-8">
-      <h1 class="text-3xl font-bold text-gray-900">Rolls</h1>
+      <h1 class="text-3xl font-bold text-gray-900 dark:text-gray-100">Rolls</h1>
       <button @click="openAddRoll()" class="bg-primary-600 text-white px-4 py-2 rounded-md hover:bg-primary-700 font-medium">
         Add Roll
       </button>
@@ -9,55 +9,55 @@
 
     <!-- Active Filters -->
     <div class="flex flex-wrap items-center gap-2 mb-4 min-h-[2rem]">
-      <span class="text-sm text-gray-500 font-medium">Filters:</span>
-      <span v-if="activeFilters.length === 0" class="text-sm text-gray-400 italic">
+      <span class="text-sm text-gray-500 dark:text-gray-400 font-medium">Filters:</span>
+      <span v-if="activeFilters.length === 0" class="text-sm text-gray-400 dark:text-gray-500 italic">
         Click any value in the table to filter by that field
       </span>
       <template v-else>
         <span
           v-for="(filter, index) in activeFilters"
           :key="index"
-          class="inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm bg-primary-100 text-primary-800 font-medium"
+          class="inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm bg-primary-100 dark:bg-primary-900 text-primary-800 dark:text-primary-200 font-medium"
         >
           {{ filter.label }}: {{ filter.value }}
-          <button @click="removeFilter(index)" class="ml-1 text-primary-600 hover:text-primary-900 font-bold leading-none">&times;</button>
+          <button @click="removeFilter(index)" class="ml-1 text-primary-600 dark:text-primary-400 hover:text-primary-900 dark:hover:text-primary-200 font-bold leading-none">&times;</button>
         </span>
-        <button @click="clearFilters" class="text-sm text-gray-500 hover:text-gray-700 underline">Clear all</button>
+        <button @click="clearFilters" class="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 underline">Clear all</button>
       </template>
     </div>
 
-    <div class="bg-white rounded-lg shadow-md">
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md">
       <div class="overflow-x-auto">
         <table class="min-w-full">
-          <thead class="bg-gray-50">
+          <thead class="bg-gray-50 dark:bg-gray-700">
             <tr>
               <th
                 @click="setSort('rollId')"
-                :class="['px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer select-none', sortField === 'rollId' ? 'bg-gray-200' : '']"
+                :class="['px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer select-none', sortField === 'rollId' ? 'bg-gray-200 dark:bg-gray-600' : '']"
               >Roll ID {{ sortField === 'rollId' ? (sortDirection === 'asc' ? '↑' : '↓') : '' }}</th>
               <th
                 @click="setSort('state')"
-                :class="['px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer select-none', sortField === 'state' ? 'bg-gray-200' : '']"
+                :class="['px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer select-none', sortField === 'state' ? 'bg-gray-200 dark:bg-gray-600' : '']"
               >State {{ sortField === 'state' ? (sortDirection === 'asc' ? '↑' : '↓') : '' }}</th>
               <th
                 @click="setSort('dateObtained')"
-                :class="['px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer select-none', sortField === 'dateObtained' ? 'bg-gray-200' : '']"
+                :class="['px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer select-none', sortField === 'dateObtained' ? 'bg-gray-200 dark:bg-gray-600' : '']"
               >Date Obtained {{ sortField === 'dateObtained' ? (sortDirection === 'asc' ? '↑' : '↓') : '' }}</th>
               <th
                 @click="setSort('obtainedFrom')"
-                :class="['px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer select-none', sortField === 'obtainedFrom' ? 'bg-gray-200' : '']"
+                :class="['px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer select-none', sortField === 'obtainedFrom' ? 'bg-gray-200 dark:bg-gray-600' : '']"
               >Obtained From {{ sortField === 'obtainedFrom' ? (sortDirection === 'asc' ? '↑' : '↓') : '' }}</th>
               <th
                 @click="setSort('timesExposedToXrays')"
-                :class="['px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer select-none', sortField === 'timesExposedToXrays' ? 'bg-gray-200' : '']"
+                :class="['px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer select-none', sortField === 'timesExposedToXrays' ? 'bg-gray-200 dark:bg-gray-600' : '']"
               >X-Ray Exposures {{ sortField === 'timesExposedToXrays' ? (sortDirection === 'asc' ? '↑' : '↓') : '' }}</th>
               <th class="px-6 py-3"></th>
             </tr>
           </thead>
-          <tbody class="bg-white divide-y divide-gray-200">
+          <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
             <tr v-for="roll in filteredRolls" :key="roll._key">
               <td
-                class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 cursor-pointer hover:text-primary-600"
+                class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100 cursor-pointer hover:text-primary-600 dark:hover:text-primary-400"
                 @click="addFilter('rollId', 'Roll ID', roll.rollId)"
               >{{ roll.rollId }}</td>
               <td class="px-6 py-4 whitespace-nowrap">
@@ -68,15 +68,15 @@
                 >{{ roll.state }}</span>
               </td>
               <td
-                class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 cursor-pointer hover:text-primary-600"
+                class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 cursor-pointer hover:text-primary-600 dark:hover:text-primary-400"
                 @click="addFilter('dateObtained', 'Date Obtained', formatDate(roll.dateObtained))"
               >{{ formatDate(roll.dateObtained) }}</td>
               <td
-                class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 cursor-pointer hover:text-primary-600"
+                class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 cursor-pointer hover:text-primary-600 dark:hover:text-primary-400"
                 @click="addFilter('obtainedFrom', 'Obtained From', roll.obtainedFrom)"
               >{{ roll.obtainedFrom }}</td>
               <td
-                class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 cursor-pointer hover:text-primary-600"
+                class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 cursor-pointer hover:text-primary-600 dark:hover:text-primary-400"
                 @click="addFilter('timesExposedToXrays', 'X-Ray Exposures', String(roll.timesExposedToXrays))"
               >{{ roll.timesExposedToXrays }}</td>
               <td class="px-6 py-4 whitespace-nowrap text-right">
@@ -92,7 +92,7 @@
                   <!-- History button -->
                   <button
                     @click="openHistoryModal(roll)"
-                    class="px-3 py-1 text-xs font-medium text-gray-600 border border-gray-300 rounded hover:bg-gray-50"
+                    class="px-3 py-1 text-xs font-medium text-gray-600 dark:text-gray-400 border border-gray-300 dark:border-gray-600 rounded hover:bg-gray-50 dark:hover:bg-gray-700"
                     title="View state history"
                   >History</button>
                 </div>
@@ -104,30 +104,30 @@
     </div>
 
     <!-- Transition Modal -->
-    <div v-if="transitionTarget" class="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50">
-      <div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-md">
-        <h2 class="text-xl font-bold text-gray-900 mb-1">Transition Roll</h2>
-        <p class="text-sm text-gray-500 mb-4">
-          Moving <span class="font-medium text-gray-700">{{ transitionTarget.roll.rollId }}</span>
+    <div v-if="transitionTarget" class="fixed inset-0 bg-gray-500 bg-opacity-75 dark:bg-gray-900 dark:bg-opacity-80 flex items-center justify-center z-50">
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-md">
+        <h2 class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-1">Transition Roll</h2>
+        <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">
+          Moving <span class="font-medium text-gray-700 dark:text-gray-300">{{ transitionTarget.roll.rollId }}</span>
           from <span class="font-medium">{{ transitionTarget.roll.state }}</span>
           to <span class="font-medium">{{ transitionTarget.targetState }}</span>
         </p>
         <form @submit.prevent="handleTransition">
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Notes (optional)</label>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Notes (optional)</label>
             <textarea
               v-model="transitionNotes"
               rows="3"
               placeholder="Add any notes about this transition..."
-              class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+              class="w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500"
             ></textarea>
           </div>
-          <div v-if="transitionError" class="mt-3 text-sm text-red-600">{{ transitionError }}</div>
+          <div v-if="transitionError" class="mt-3 text-sm text-red-600 dark:text-red-400">{{ transitionError }}</div>
           <div class="flex justify-end gap-3 mt-6">
             <button
               type="button"
               @click="closeTransitionModal"
-              class="px-4 py-2 border border-gray-300 rounded-md text-sm text-gray-700 hover:bg-gray-50"
+              class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
             >Cancel</button>
             <button
               type="submit"
@@ -140,52 +140,52 @@
     </div>
 
     <!-- History Modal -->
-    <div v-if="historyTarget" class="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50">
-      <div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-lg max-h-screen overflow-y-auto">
+    <div v-if="historyTarget" class="fixed inset-0 bg-gray-500 bg-opacity-75 dark:bg-gray-900 dark:bg-opacity-80 flex items-center justify-center z-50">
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-lg max-h-screen overflow-y-auto">
         <div class="flex justify-between items-center mb-4">
-          <h2 class="text-xl font-bold text-gray-900">State History</h2>
-          <button @click="closeHistoryModal" class="text-gray-400 hover:text-gray-600 text-2xl leading-none">&times;</button>
+          <h2 class="text-xl font-bold text-gray-900 dark:text-gray-100">State History</h2>
+          <button @click="closeHistoryModal" class="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 text-2xl leading-none">&times;</button>
         </div>
-        <p class="text-sm text-gray-500 mb-4">{{ historyTarget.rollId }}</p>
-        <div v-if="historyLoading" class="text-sm text-gray-400 py-4 text-center">Loading...</div>
-        <div v-else-if="historyEntries.length === 0" class="text-sm text-gray-400 py-4 text-center">No history recorded yet.</div>
-        <ol v-else class="relative border-l border-gray-200 ml-3">
+        <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">{{ historyTarget.rollId }}</p>
+        <div v-if="historyLoading" class="text-sm text-gray-400 dark:text-gray-500 py-4 text-center">Loading...</div>
+        <div v-else-if="historyEntries.length === 0" class="text-sm text-gray-400 dark:text-gray-500 py-4 text-center">No history recorded yet.</div>
+        <ol v-else class="relative border-l border-gray-200 dark:border-gray-700 ml-3">
           <li v-for="entry in historyEntries" :key="entry.stateId" class="mb-6 ml-4">
-            <div class="absolute -left-1.5 w-3 h-3 rounded-full border border-white" :class="getStateColor(entry.state).replace('text-', 'bg-').split(' ')[0]"></div>
+            <div class="absolute -left-1.5 w-3 h-3 rounded-full border border-white dark:border-gray-800" :class="getStateColor(entry.state).replace('text-', 'bg-').split(' ')[0]"></div>
             <div class="flex items-center gap-2">
               <span
                 class="px-2 text-xs leading-5 font-semibold rounded-full"
                 :class="getStateColor(entry.state)"
               >{{ entry.state }}</span>
-              <time class="text-xs text-gray-400">{{ formatDateTime(entry.date) }}</time>
+              <time class="text-xs text-gray-400 dark:text-gray-500">{{ formatDateTime(entry.date) }}</time>
             </div>
-            <p v-if="entry.notes" class="mt-1 text-sm text-gray-600">{{ entry.notes }}</p>
+            <p v-if="entry.notes" class="mt-1 text-sm text-gray-600 dark:text-gray-400">{{ entry.notes }}</p>
           </li>
         </ol>
       </div>
     </div>
 
     <!-- Add Roll Modal -->
-    <div v-if="showModal" class="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50">
-      <div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-lg max-h-screen overflow-y-auto">
-        <h2 class="text-xl font-bold text-gray-900 mb-4">Add Roll</h2>
+    <div v-if="showModal" class="fixed inset-0 bg-gray-500 bg-opacity-75 dark:bg-gray-900 dark:bg-opacity-80 flex items-center justify-center z-50">
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-lg max-h-screen overflow-y-auto">
+        <h2 class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4">Add Roll</h2>
         <form @submit.prevent="handleSubmit">
           <div class="space-y-4">
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Roll ID <span class="text-red-500">*</span></label>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Roll ID <span class="text-red-500">*</span></label>
               <input
                 v-model="form.rollId"
                 type="text"
                 required
-                class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+                class="w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
               />
             </div>
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Stock <span class="text-red-500">*</span></label>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Stock <span class="text-red-500">*</span></label>
               <select
                 v-model="form.stockKey"
                 required
-                class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+                class="w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
               >
                 <option value="" disabled>Select a stock</option>
                 <option v-for="stock in sortedStocks" :key="stock._key" :value="stock._key">
@@ -194,68 +194,68 @@
               </select>
             </div>
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Initial State <span class="text-red-500">*</span></label>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Initial State <span class="text-red-500">*</span></label>
               <select
                 v-model="form.state"
                 required
-                class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+                class="w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
               >
                 <option v-for="s in rollStateOptions" :key="s" :value="s">{{ s }}</option>
               </select>
             </div>
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Date Obtained <span class="text-red-500">*</span></label>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Date Obtained <span class="text-red-500">*</span></label>
               <input
                 v-model="form.dateObtained"
                 type="date"
                 required
-                class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+                class="w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
               />
             </div>
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Obtainment Method <span class="text-red-500">*</span></label>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Obtainment Method <span class="text-red-500">*</span></label>
               <select
                 v-model="form.obtainmentMethod"
                 required
-                class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+                class="w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
               >
                 <option v-for="m in obtainmentMethodOptions" :key="m" :value="m">{{ m }}</option>
               </select>
             </div>
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Obtained From <span class="text-red-500">*</span></label>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Obtained From <span class="text-red-500">*</span></label>
               <input
                 v-model="form.obtainedFrom"
                 type="text"
                 required
                 placeholder="e.g. B&H Photo"
-                class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+                class="w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500"
               />
             </div>
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Expiration Date</label>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Expiration Date</label>
               <input
                 v-model="form.expirationDate"
                 type="date"
-                class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+                class="w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
               />
             </div>
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Times Exposed to X-Rays</label>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Times Exposed to X-Rays</label>
               <input
                 v-model.number="form.timesExposedToXrays"
                 type="number"
                 min="0"
-                class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+                class="w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
               />
             </div>
           </div>
-          <div v-if="error" class="mt-4 text-sm text-red-600">{{ error }}</div>
+          <div v-if="error" class="mt-4 text-sm text-red-600 dark:text-red-400">{{ error }}</div>
           <div class="flex justify-end gap-3 mt-6">
             <button
               type="button"
               @click="closeModal"
-              class="px-4 py-2 border border-gray-300 rounded-md text-sm text-gray-700 hover:bg-gray-50"
+              class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
             >
               Cancel
             </button>
@@ -353,7 +353,7 @@ const filteredRolls = computed(() => {
     if (sortField.value === 'timesExposedToXrays') {
       cmp = a.timesExposedToXrays - b.timesExposedToXrays
     } else if (sortField.value === 'dateObtained') {
-      cmp = new Date(a.dateObtained as string).getTime() - new Date(b.dateObtained as string).getTime()
+      cmp = new Date(a.dateObtained).getTime() - new Date(b.dateObtained).getTime()
     } else {
       const aVal = (a[sortField.value] ?? '').toString().toLowerCase()
       const bVal = (b[sortField.value] ?? '').toString().toLowerCase()
@@ -393,19 +393,19 @@ const getValidTransitions = (state: RollState): RollState[] => {
 }
 
 const TRANSITION_BUTTON_COLORS: Partial<Record<RollState, string>> = {
-  [RollState.ADDED]: 'text-gray-600 border-gray-400 hover:bg-gray-50',
-  [RollState.FROZEN]: 'text-blue-700 border-blue-400 hover:bg-blue-50',
-  [RollState.REFRIGERATED]: 'text-cyan-700 border-cyan-400 hover:bg-cyan-50',
-  [RollState.SHELFED]: 'text-gray-600 border-gray-400 hover:bg-gray-50',
-  [RollState.LOADED]: 'text-yellow-700 border-yellow-400 hover:bg-yellow-50',
-  [RollState.FINISHED]: 'text-green-700 border-green-400 hover:bg-green-50',
-  [RollState.SENT_FOR_DEVELOPMENT]: 'text-orange-700 border-orange-400 hover:bg-orange-50',
-  [RollState.DEVELOPED]: 'text-purple-700 border-purple-400 hover:bg-purple-50',
-  [RollState.RECEIVED]: 'text-indigo-700 border-indigo-400 hover:bg-indigo-50',
+  [RollState.ADDED]: 'text-gray-600 border-gray-400 hover:bg-gray-50 dark:text-gray-300 dark:border-gray-500 dark:hover:bg-gray-700',
+  [RollState.FROZEN]: 'text-blue-700 border-blue-400 hover:bg-blue-50 dark:text-blue-400 dark:border-blue-500 dark:hover:bg-blue-900/30',
+  [RollState.REFRIGERATED]: 'text-cyan-700 border-cyan-400 hover:bg-cyan-50 dark:text-cyan-400 dark:border-cyan-500 dark:hover:bg-cyan-900/30',
+  [RollState.SHELFED]: 'text-gray-600 border-gray-400 hover:bg-gray-50 dark:text-gray-300 dark:border-gray-500 dark:hover:bg-gray-700',
+  [RollState.LOADED]: 'text-yellow-700 border-yellow-400 hover:bg-yellow-50 dark:text-yellow-400 dark:border-yellow-500 dark:hover:bg-yellow-900/30',
+  [RollState.FINISHED]: 'text-green-700 border-green-400 hover:bg-green-50 dark:text-green-400 dark:border-green-500 dark:hover:bg-green-900/30',
+  [RollState.SENT_FOR_DEVELOPMENT]: 'text-orange-700 border-orange-400 hover:bg-orange-50 dark:text-orange-400 dark:border-orange-500 dark:hover:bg-orange-900/30',
+  [RollState.DEVELOPED]: 'text-purple-700 border-purple-400 hover:bg-purple-50 dark:text-purple-400 dark:border-purple-500 dark:hover:bg-purple-900/30',
+  [RollState.RECEIVED]: 'text-indigo-700 border-indigo-400 hover:bg-indigo-50 dark:text-indigo-400 dark:border-indigo-500 dark:hover:bg-indigo-900/30',
 }
 
 const getTransitionButtonColor = (state: RollState): string => {
-  return TRANSITION_BUTTON_COLORS[state] ?? 'text-gray-600 border-gray-300 hover:bg-gray-50'
+  return TRANSITION_BUTTON_COLORS[state] ?? 'text-gray-600 border-gray-300 hover:bg-gray-50 dark:text-gray-300 dark:border-gray-500 dark:hover:bg-gray-700'
 }
 
 // Transition modal
@@ -467,17 +467,17 @@ const closeHistoryModal = () => {
 
 const getStateColor = (state: RollState) => {
   const colors: Record<string, string> = {
-    Added: 'bg-orange-100 text-orange-800',
-    Frozen: 'bg-blue-100 text-blue-800',
-    Refrigerated: 'bg-cyan-100 text-cyan-800',
-    Shelved: 'bg-gray-100 text-gray-800',
-    Loaded: 'bg-yellow-100 text-yellow-800',
-    Finished: 'bg-green-100 text-green-800',
-    'Sent For Development': 'bg-orange-100 text-orange-800',
-    Developed: 'bg-purple-100 text-purple-800',
-    Received: 'bg-indigo-100 text-indigo-800',
+    Added: 'bg-orange-100 text-orange-800 dark:bg-orange-900/50 dark:text-orange-200',
+    Frozen: 'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-200',
+    Refrigerated: 'bg-cyan-100 text-cyan-800 dark:bg-cyan-900/50 dark:text-cyan-200',
+    Shelved: 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200',
+    Loaded: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-200',
+    Finished: 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-200',
+    'Sent For Development': 'bg-orange-100 text-orange-800 dark:bg-orange-900/50 dark:text-orange-200',
+    Developed: 'bg-purple-100 text-purple-800 dark:bg-purple-900/50 dark:text-purple-200',
+    Received: 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/50 dark:text-indigo-200',
   }
-  return colors[state] || 'bg-gray-100 text-gray-800'
+  return colors[state] || 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'
 }
 
 const closeModal = () => {
@@ -516,8 +516,8 @@ const loadRolls = async () => {
   try {
     const response = await rollApi.getAll()
     rolls.value = response.data
-  } catch (_) {
-    console.error('Error loading rolls:', e)
+  } catch (err) {
+    console.error('Error loading rolls:', err)
   }
 }
 
@@ -525,8 +525,8 @@ const loadStocks = async () => {
   try {
     const response = await stockApi.getAll()
     stocks.value = response.data
-  } catch (_) {
-    console.error('Error loading stocks:', e)
+  } catch (err) {
+    console.error('Error loading stocks:', err)
   }
 }
 

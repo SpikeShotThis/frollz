@@ -15,7 +15,7 @@
     />
     <ul
       v-if="isOpen && suggestions.length > 0"
-      class="absolute z-10 mt-1 w-full bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-auto"
+      class="absolute z-10 mt-1 w-full bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-md shadow-lg max-h-60 overflow-auto"
     >
       <li
         v-for="(suggestion, i) in suggestions"
@@ -24,8 +24,8 @@
         class="px-3 py-2 text-sm cursor-pointer"
         :class="
           i === highlightedIndex
-            ? 'bg-primary-50 text-primary-700'
-            : 'text-gray-900 hover:bg-gray-50'
+            ? 'bg-primary-50 text-primary-700 dark:bg-primary-900 dark:text-primary-200'
+            : 'text-gray-900 hover:bg-gray-50 dark:text-gray-100 dark:hover:bg-gray-600'
         "
       >
         {{ suggestion }}

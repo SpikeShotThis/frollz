@@ -1,43 +1,43 @@
 <template>
   <div>
     <div class="flex justify-between items-center mb-8">
-      <h1 class="text-3xl font-bold text-gray-900">Tags</h1>
+      <h1 class="text-3xl font-bold text-gray-900 dark:text-gray-100">Tags</h1>
     </div>
 
-    <div class="bg-white rounded-lg shadow-md">
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md">
       <div class="overflow-x-auto">
         <table class="min-w-full">
-          <thead class="bg-gray-50">
+          <thead class="bg-gray-50 dark:bg-gray-700">
             <tr>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Color</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Value</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Color</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Value</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Created</th>
               <th class="px-6 py-3"></th>
             </tr>
           </thead>
-          <tbody class="bg-white divide-y divide-gray-200">
+          <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
             <tr v-for="tag in paginatedTags" :key="tag._key">
               <td class="px-6 py-4 whitespace-nowrap">
                 <template v-if="editingKey === tag._key">
                   <input
                     v-model="editForm.color"
                     type="color"
-                    class="h-8 w-16 rounded cursor-pointer border border-gray-300"
+                    class="h-8 w-16 rounded cursor-pointer border border-gray-300 dark:border-gray-600"
                   />
                 </template>
                 <template v-else>
                   <span
-                    class="inline-block w-6 h-6 rounded-full border border-gray-200"
+                    class="inline-block w-6 h-6 rounded-full border border-gray-200 dark:border-gray-600"
                     :style="{ backgroundColor: tag.color }"
                   ></span>
                 </template>
               </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
                 <template v-if="editingKey === tag._key">
                   <input
                     v-model="editForm.value"
                     type="text"
-                    class="border border-gray-300 rounded-md px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+                    class="border border-gray-300 dark:border-gray-600 rounded-md px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                   />
                 </template>
                 <template v-else>
@@ -47,7 +47,7 @@
                   >{{ tag.value }}</span>
                 </template>
               </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                 {{ formatDate(tag.createdAt) }}
               </td>
               <td class="px-6 py-4 whitespace-nowrap text-right space-x-2">
@@ -58,57 +58,57 @@
                   >Save</button>
                   <button
                     @click="cancelEdit"
-                    class="px-3 py-1 text-xs font-medium text-gray-700 border border-gray-300 rounded hover:bg-gray-50"
+                    class="px-3 py-1 text-xs font-medium text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded hover:bg-gray-50 dark:hover:bg-gray-700"
                   >Cancel</button>
                 </template>
                 <template v-else>
                   <button
                     @click="startEdit(tag)"
-                    class="px-3 py-1 text-xs font-medium text-primary-600 border border-primary-300 rounded hover:bg-primary-50"
+                    class="px-3 py-1 text-xs font-medium text-primary-600 dark:text-primary-400 border border-primary-300 dark:border-primary-600 rounded hover:bg-primary-50 dark:hover:bg-primary-900/30"
                   >Edit</button>
                   <button
                     @click="confirmDelete(tag)"
-                    class="px-3 py-1 text-xs font-medium text-red-600 border border-red-300 rounded hover:bg-red-50"
+                    class="px-3 py-1 text-xs font-medium text-red-600 dark:text-red-400 border border-red-300 dark:border-red-600 rounded hover:bg-red-50 dark:hover:bg-red-900/30"
                   >Delete</button>
                 </template>
               </td>
             </tr>
             <tr v-if="tags.length === 0">
-              <td colspan="4" class="px-6 py-8 text-center text-sm text-gray-400">No tags found.</td>
+              <td colspan="4" class="px-6 py-8 text-center text-sm text-gray-400 dark:text-gray-500">No tags found.</td>
             </tr>
           </tbody>
         </table>
       </div>
 
       <!-- Pagination -->
-      <div v-if="totalPages > 1" class="flex items-center justify-between px-6 py-3 border-t border-gray-200">
-        <span class="text-sm text-gray-500">
+      <div v-if="totalPages > 1" class="flex items-center justify-between px-6 py-3 border-t border-gray-200 dark:border-gray-700">
+        <span class="text-sm text-gray-500 dark:text-gray-400">
           Page {{ currentPage }} of {{ totalPages }}
         </span>
         <div class="flex gap-2">
           <button
             @click="currentPage--"
             :disabled="currentPage === 1"
-            class="px-3 py-1 text-sm border border-gray-300 rounded-md disabled:opacity-40 hover:bg-gray-50"
+            class="px-3 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded-md disabled:opacity-40 hover:bg-gray-50 dark:hover:bg-gray-700 dark:text-gray-300"
           >Previous</button>
           <button
             @click="currentPage++"
             :disabled="currentPage === totalPages"
-            class="px-3 py-1 text-sm border border-gray-300 rounded-md disabled:opacity-40 hover:bg-gray-50"
+            class="px-3 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded-md disabled:opacity-40 hover:bg-gray-50 dark:hover:bg-gray-700 dark:text-gray-300"
           >Next</button>
         </div>
       </div>
     </div>
 
     <!-- Delete Confirmation Modal -->
-    <div v-if="deleteTarget" class="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50">
-      <div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-md">
-        <h2 class="text-lg font-bold text-gray-900 mb-3">Delete Tag</h2>
-        <p class="text-sm text-gray-700 mb-2">
+    <div v-if="deleteTarget" class="fixed inset-0 bg-gray-500 bg-opacity-75 dark:bg-gray-900 dark:bg-opacity-80 flex items-center justify-center z-50">
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-md">
+        <h2 class="text-lg font-bold text-gray-900 dark:text-gray-100 mb-3">Delete Tag</h2>
+        <p class="text-sm text-gray-700 dark:text-gray-300 mb-2">
           Are you sure you want to delete the tag
           <span class="font-semibold">{{ deleteTarget.value }}</span>?
         </p>
-        <p class="text-sm text-gray-700 mb-6">
+        <p class="text-sm text-gray-700 dark:text-gray-300 mb-6">
           This tag has
           <span class="font-semibold">{{ deleteStockTagCount }}</span>
           stock association{{ deleteStockTagCount === 1 ? '' : 's' }}.
@@ -117,7 +117,7 @@
         <div class="flex justify-end gap-3">
           <button
             @click="deleteTarget = null"
-            class="px-4 py-2 border border-gray-300 rounded-md text-sm text-gray-700 hover:bg-gray-50"
+            class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
           >Cancel</button>
           <button
             @click="executeDelete"
@@ -158,8 +158,8 @@ const loadTags = async () => {
   try {
     const response = await tagApi.getAll()
     tags.value = response.data
-  } catch (_) {
-    console.error('Error loading tags:', e)
+  } catch (err) {
+    console.error('Error loading tags:', err)
   }
 }
 
@@ -177,8 +177,8 @@ const saveEdit = async (key: string) => {
     await tagApi.update(key, { value: editForm.value.value, color: editForm.value.color })
     editingKey.value = null
     await loadTags()
-  } catch (_) {
-    console.error('Error saving tag:', e)
+  } catch (err) {
+    console.error('Error saving tag:', err)
   }
 }
 
@@ -187,8 +187,8 @@ const confirmDelete = async (tag: Tag) => {
     const response = await stockTagApi.getAll({ tagKey: tag._key })
     deleteStockTagCount.value = response.data.length
     deleteTarget.value = tag
-  } catch (_) {
-    console.error('Error fetching stock-tag count:', e)
+  } catch (err) {
+    console.error('Error fetching stock-tag count:', err)
   }
 }
 
@@ -201,8 +201,8 @@ const executeDelete = async () => {
     await tagApi.delete(tag._key!)
     deleteTarget.value = null
     await loadTags()
-  } catch (_) {
-    console.error('Error deleting tag:', e)
+  } catch (err) {
+    console.error('Error deleting tag:', err)
   }
 }
 
