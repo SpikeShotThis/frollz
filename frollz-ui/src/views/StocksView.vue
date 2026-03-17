@@ -18,6 +18,7 @@
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Process</th>
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Speed</th>
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tags</th>
+              <th class="px-6 py-3"></th>
             </tr>
           </thead>
           <tbody class="bg-white divide-y divide-gray-200">
@@ -42,6 +43,13 @@
                     {{ tag.value }}
                   </span>
                 </div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-right">
+                <button
+                  @click="createRoll(stock._key!)"
+                  class="text-primary-600 hover:text-primary-800 font-bold text-lg leading-none"
+                  title="Add roll from this stock"
+                >+</button>
               </td>
             </tr>
           </tbody>
@@ -169,11 +177,14 @@
 
 <script setup lang="ts">
 import { ref, onMounted, computed, watch } from 'vue'
+import { useRouter } from 'vue-router'
 import { stockApi, filmFormatApi, tagApi, stockTagApi } from '@/services/api-client'
 import type { Stock, FilmFormat, Tag } from '@/types'
 import { Process, FormFactor } from '@/types'
 import TypeaheadInput from '@/components/TypeaheadInput.vue'
 import SpeedTypeaheadInput from '@/components/SpeedTypeaheadInput.vue'
+
+const router = useRouter()
 
 const stocks = ref<Stock[]>([])
 const formats = ref<FilmFormat[]>([])
@@ -227,6 +238,10 @@ const toggleTag = (tagKey: string) => {
   } else {
     selectedTagKeys.value.splice(idx, 1)
   }
+}
+
+const createRoll = (stockKey: string) => {
+  router.push({ name: 'rolls', query: { stockKey } })
 }
 
 const closeModal = () => {

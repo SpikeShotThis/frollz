@@ -59,9 +59,10 @@ export const stockTagApi = {
 export const rollApi = {
   getAll: () => api.get<Roll[]>('/rolls'),
   getById: (key: string) => api.get<Roll>(`/rolls/${key}`),
-  create: (data: Omit<Roll, '_key' | 'createdAt' | 'updatedAt'>) => 
+  getNextId: () => api.get<string>('/rolls/next-id'),
+  create: (data: Omit<Roll, '_key' | 'createdAt' | 'updatedAt'>) =>
     api.post<Roll>('/rolls', data),
-  update: (key: string, data: Partial<Roll>) => 
+  update: (key: string, data: Partial<Roll>) =>
     api.patch<Roll>(`/rolls/${key}`, data),
   delete: (key: string) => api.delete(`/rolls/${key}`),
 }

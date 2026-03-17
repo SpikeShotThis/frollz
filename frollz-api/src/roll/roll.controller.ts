@@ -17,6 +17,13 @@ export class RollController {
     return this.rollService.create(createRollDto);
   }
 
+  @Get('next-id')
+  @ApiOperation({ summary: 'Get the next roll ID' })
+  @ApiResponse({ status: 200, description: 'Next roll ID' })
+  getNextId(): Promise<string> {
+    return this.rollService.getNextId();
+  }
+
   @Get()
   @ApiOperation({ summary: 'Get all rolls' })
   @ApiResponse({ status: 200, description: 'Rolls retrieved successfully', type: [Roll] })
