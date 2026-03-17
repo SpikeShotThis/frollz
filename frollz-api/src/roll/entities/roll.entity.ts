@@ -3,7 +3,7 @@ import { ApiProperty } from '@nestjs/swagger';
 export enum RollState {
   FROZEN = 'Frozen',
   REFRIGERATED = 'Refrigerated',
-  SHELFED = 'Shelfed',
+  SHELFED = 'Shelved',
   LOADED = 'Loaded',
   FINISHED = 'Finished',
   DEVELOPED = 'Developed',
@@ -44,6 +44,9 @@ export class Roll {
 
   @ApiProperty({ default: 0 })
   timesExposedToXrays: number;
+
+  @ApiProperty({ required: false })
+  loadedInto?: string;
 
   @ApiProperty({ required: false })
   createdAt?: Date;

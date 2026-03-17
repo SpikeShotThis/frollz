@@ -45,4 +45,9 @@ export class CreateRollDto {
   @ApiProperty({ default: 0 })
   @IsNumber()
   timesExposedToXrays: number;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsString()
+  loadedInto?: string;
 }

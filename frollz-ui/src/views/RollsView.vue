@@ -13,7 +13,7 @@
           <option value="">All States</option>
           <option value="Frozen">Frozen</option>
           <option value="Refrigerated">Refrigerated</option>
-          <option value="Shelfed">Shelfed</option>
+          <option value="Shelved">Shelved</option>
           <option value="Loaded">Loaded</option>
           <option value="Finished">Finished</option>
           <option value="Developed">Developed</option>
@@ -41,6 +41,7 @@
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 X-Ray Exposures
               </th>
+              <th class="px-6 py-3"></th>
             </tr>
           </thead>
           <tbody class="bg-white divide-y divide-gray-200">
@@ -65,9 +66,50 @@
               <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                 {{ roll.timesExposedToXrays }}
               </td>
+              <td class="px-6 py-4 whitespace-nowrap text-right">
+                <button
+                  v-if="canLoad(roll.state)"
+                  @click="openLoadModal(roll)"
+                  class="px-3 py-1 text-xs font-medium text-yellow-700 border border-yellow-400 rounded hover:bg-yellow-50"
+                >Load</button>
+              </td>
             </tr>
           </tbody>
         </table>
+      </div>
+    </div>
+
+    <!-- Load Roll Modal -->
+    <div v-if="loadTarget" class="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50">
+      <div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-md">
+        <h2 class="text-xl font-bold text-gray-900 mb-4">Load Roll</h2>
+        <form @submit.prevent="handleLoad">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">
+              What will this roll be loaded into? <span class="text-red-500">*</span>
+            </label>
+            <input
+              v-model="loadedInto"
+              type="text"
+              required
+              placeholder="e.g. Nikon F3"
+              class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+            />
+          </div>
+          <div v-if="loadError" class="mt-3 text-sm text-red-600">{{ loadError }}</div>
+          <div class="flex justify-end gap-3 mt-6">
+            <button
+              type="button"
+              @click="closeLoadModal"
+              class="px-4 py-2 border border-gray-300 rounded-md text-sm text-gray-700 hover:bg-gray-50"
+            >Cancel</button>
+            <button
+              type="submit"
+              :disabled="loadSubmitting"
+              class="px-4 py-2 bg-yellow-600 text-white rounded-md text-sm hover:bg-yellow-700 disabled:opacity-50"
+            >{{ loadSubmitting ? 'Loading...' : 'Load' }}</button>
+          </div>
+        </form>
       </div>
     </div>
 
@@ -226,11 +268,48 @@ const formatDate = (date: Date | string) => {
   return new Date(date as string).toLocaleDateString()
 }
 
+const LOADABLE_STATES = new Set([RollState.FROZEN, RollState.REFRIGERATED, RollState.SHELFED])
+
+const canLoad = (state: RollState) => LOADABLE_STATES.has(state)
+
+const loadTarget = ref<Roll | null>(null)
+const loadedInto = ref('')
+const loadSubmitting = ref(false)
+const loadError = ref('')
+
+const openLoadModal = (roll: Roll) => {
+  loadTarget.value = roll
+  loadedInto.value = ''
+  loadError.value = ''
+}
+
+const closeLoadModal = () => {
+  loadTarget.value = null
+}
+
+const handleLoad = async () => {
+  if (!loadTarget.value) return
+  loadSubmitting.value = true
+  loadError.value = ''
+  try {
+    await rollApi.update(loadTarget.value._key!, {
+      state: RollState.LOADED,
+      loadedInto: loadedInto.value,
+    })
+    closeLoadModal()
+    await loadRolls()
+  } catch (e) {
+    loadError.value = 'Failed to load roll. Please try again.'
+  } finally {
+    loadSubmitting.value = false
+  }
+}
+
 const getStateColor = (state: RollState) => {
   const colors: Record<string, string> = {
     Frozen: 'bg-blue-100 text-blue-800',
     Refrigerated: 'bg-cyan-100 text-cyan-800',
-    Shelfed: 'bg-gray-100 text-gray-800',
+    Shelved: 'bg-gray-100 text-gray-800',
     Loaded: 'bg-yellow-100 text-yellow-800',
     Finished: 'bg-green-100 text-green-800',
     Developed: 'bg-purple-100 text-purple-800',
