@@ -1,14 +1,10 @@
 import { api } from './api'
 import type { FilmFormat, Stock, Roll, Tag, StockTag } from '@/types'
+import { Process } from '@/types'
 
-interface CreateStockMultipleFormatsPayload {
+type CreateStockMultipleFormatsPayload = Pick<Stock, 'brand' | 'manufacturer' | 'speed' | 'baseStockKey' | 'boxImageUrl'> & {
   formatKeys: string[]
-  process: string
-  manufacturer: string
-  brand: string
-  speed: number
-  baseStockKey?: string
-  boxImageUrl?: string
+  process: Process
 }
 
 // Film Format API

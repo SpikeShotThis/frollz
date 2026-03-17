@@ -1,9 +1,9 @@
 // @vitest-environment jsdom
 import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { mount } from '@vue/test-utils'
+import { mount, flushPromises } from '@vue/test-utils'
 import StocksView from '@/views/StocksView.vue'
 import { stockApi, filmFormatApi, tagApi, stockTagApi } from '@/services/api-client'
-import { Process } from '@/types'
+import { Process, FormFactor } from '@/types'
 
 // Mock the API modules
 vi.mock('@/services/api-client', () => ({
@@ -61,11 +61,8 @@ describe('StocksView', () => {
   describe('component mounting', () => {
     it('should mount successfully and load data', async () => {
       const wrapper = mount(StocksView)
-      
-      // Wait for component to load
-      await wrapper.vm.$nextTick()
-      await new Promise(resolve => setTimeout(resolve, 0))
-      
+      await flushPromises()
+
       expect(stockApi.getAll).toHaveBeenCalled()
       expect(filmFormatApi.getAll).toHaveBeenCalled()
     })
@@ -74,46 +71,38 @@ describe('StocksView', () => {
   describe('format filtering', () => {
     it('should return empty array when no process is selected', async () => {
       const wrapper = mount(StocksView)
-      await wrapper.vm.$nextTick()
-      await new Promise(resolve => setTimeout(resolve, 0))
-      await wrapper.vm.$nextTick()
+      await flushPromises()
 
-      const vm = wrapper.vm as any
-      expect(vm.filteredFormats).toEqual([])
+      expect((wrapper.vm as any).filteredFormats).toEqual([])
     })
 
     it('should return only instant formats when Instant process is selected', async () => {
       const wrapper = mount(StocksView)
-      await wrapper.vm.$nextTick()
-      await new Promise(resolve => setTimeout(resolve, 0))
-      await wrapper.vm.$nextTick()
+      await flushPromises()
 
       const vm = wrapper.vm as any
       vm.form.process = Process.INSTANT
       await wrapper.vm.$nextTick()
 
-      expect(vm.filteredFormats.every((f: any) => f.formFactor === 'Instant')).toBe(true)
+      expect(vm.filteredFormats.every((f: any) => f.formFactor === FormFactor.INSTANT)).toBe(true)
       expect(vm.filteredFormats).toHaveLength(2)
     })
 
     it('should return only non-instant formats when a non-instant process is selected', async () => {
       const wrapper = mount(StocksView)
-      await wrapper.vm.$nextTick()
-      await new Promise(resolve => setTimeout(resolve, 0))
-      await wrapper.vm.$nextTick()
+      await flushPromises()
 
       const vm = wrapper.vm as any
       vm.form.process = Process.C_41
       await wrapper.vm.$nextTick()
 
-      expect(vm.filteredFormats.every((f: any) => f.formFactor !== 'Instant')).toBe(true)
+      expect(vm.filteredFormats.every((f: any) => f.formFactor !== FormFactor.INSTANT)).toBe(true)
       expect(vm.filteredFormats).toHaveLength(2)
     })
 
     it('should clear selected formatKeys when process changes', async () => {
       const wrapper = mount(StocksView)
-      await wrapper.vm.$nextTick()
-      await new Promise(resolve => setTimeout(resolve, 0))
+      await flushPromises()
 
       const vm = wrapper.vm as any
       vm.form.process = Process.C_41
@@ -121,8 +110,7 @@ describe('StocksView', () => {
       await wrapper.vm.$nextTick()
 
       vm.form.process = Process.INSTANT
-      await wrapper.vm.$nextTick()
-      await new Promise(resolve => setTimeout(resolve, 0))
+      await flushPromises()
 
       expect(vm.form.formatKeys).toEqual([])
     })

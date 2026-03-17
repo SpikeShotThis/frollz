@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { NotFoundException } from '@nestjs/common';
 import { StockController } from './stock.controller';
 import { StockService } from './stock.service';
+import { Process } from './entities/stock.entity';
 
 describe('StockController', () => {
   let controller: StockController;
@@ -47,13 +48,13 @@ describe('StockController', () => {
   describe('createMultipleFormats', () => {
     const dto = {
       formatKeys: ['35mm', '120'],
-      process: 'C-41' as any,
+      process: Process.C_41,
       manufacturer: 'Kodak',
       brand: 'Portra 400',
       speed: 400,
     };
 
-    it('should return the created stocks from the service', async () => {
+    it('should delegate to the service and return its result', async () => {
       const createdStocks = [
         { ...mockStock, _key: 'kodak-portra-400-400-35mm' },
         { ...mockStock, _key: 'kodak-portra-400-400-120', formatKey: '120' },
@@ -64,14 +65,6 @@ describe('StockController', () => {
 
       expect(service.createMultipleFormats).toHaveBeenCalledWith(dto);
       expect(result).toEqual(createdStocks);
-    });
-
-    it('should pass the dto directly to the service', async () => {
-      service.createMultipleFormats.mockResolvedValue([]);
-
-      await controller.createMultipleFormats(dto);
-
-      expect(service.createMultipleFormats).toHaveBeenCalledWith(dto);
     });
   });
 

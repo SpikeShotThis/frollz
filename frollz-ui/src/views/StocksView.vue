@@ -171,7 +171,7 @@
 import { ref, onMounted, computed, watch } from 'vue'
 import { stockApi, filmFormatApi, tagApi, stockTagApi } from '@/services/api-client'
 import type { Stock, FilmFormat, Tag } from '@/types'
-import { Process } from '@/types'
+import { Process, FormFactor } from '@/types'
 import TypeaheadInput from '@/components/TypeaheadInput.vue'
 import SpeedTypeaheadInput from '@/components/SpeedTypeaheadInput.vue'
 
@@ -201,9 +201,9 @@ const form = ref(emptyForm())
 const filteredFormats = computed(() => {
   if (!form.value.process) return []
   if (form.value.process === Process.INSTANT) {
-    return formats.value.filter(f => f.formFactor === 'Instant')
+    return formats.value.filter(f => f.formFactor === FormFactor.INSTANT)
   }
-  return formats.value.filter(f => f.formFactor !== 'Instant')
+  return formats.value.filter(f => f.formFactor !== FormFactor.INSTANT)
 })
 
 watch(() => form.value.process, () => {

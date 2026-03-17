@@ -26,25 +26,27 @@ export class StockService {
     const collection = this.databaseService.getCollection('stocks');
     const now = new Date();
 
-    const results: Stock[] = [];
-    for (const formatKey of dto.formatKeys) {
-      const key = `${dto.manufacturer.toLowerCase().replace(/\s+/g, '-')}-${dto.brand.toLowerCase().replace(/\s+/g, '-')}-${dto.speed}-${formatKey}`;
-      const stock = {
-        _key: key,
-        formatKey,
-        process: dto.process,
-        manufacturer: dto.manufacturer,
-        brand: dto.brand,
-        speed: dto.speed,
-        ...(dto.baseStockKey && { baseStockKey: dto.baseStockKey }),
-        ...(dto.boxImageUrl && { boxImageUrl: dto.boxImageUrl }),
-        createdAt: now,
-        updatedAt: now,
-      };
-      const result = await collection.save(stock);
-      results.push({ ...stock, _key: result._key });
-    }
-    return results;
+    const toSlug = (s: string) => s.toLowerCase().replace(/\s+/g, '-');
+
+    return Promise.all(
+      dto.formatKeys.map(async (formatKey) => {
+        const key = `${toSlug(dto.manufacturer)}-${toSlug(dto.brand)}-${dto.speed}-${formatKey}`;
+        const stock = {
+          _key: key,
+          formatKey,
+          process: dto.process,
+          manufacturer: dto.manufacturer,
+          brand: dto.brand,
+          speed: dto.speed,
+          ...(dto.baseStockKey && { baseStockKey: dto.baseStockKey }),
+          ...(dto.boxImageUrl && { boxImageUrl: dto.boxImageUrl }),
+          createdAt: now,
+          updatedAt: now,
+        };
+        const result = await collection.save(stock);
+        return { ...stock, _key: result._key };
+      }),
+    );
   }
 
   async findAll(): Promise<Stock[]> {
