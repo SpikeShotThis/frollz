@@ -21,6 +21,12 @@ export class RollStateHistory {
   notes?: string;
 
   @ApiProperty({ required: false })
+  metadata?: Record<string, unknown>;
+
+  @ApiProperty({ required: false })
+  isErrorCorrection?: boolean;
+
+  @ApiProperty({ required: false })
   createdAt?: Date;
 
   @ApiProperty({ required: false })

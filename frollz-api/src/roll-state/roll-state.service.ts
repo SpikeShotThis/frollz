@@ -12,6 +12,12 @@ function mapRollState(row: Record<string, unknown>): RollStateHistory {
     state: row.state as RollStateHistory["state"],
     date: new Date(row.date as string),
     notes: row.notes as string | undefined,
+    metadata: row.metadata
+      ? typeof row.metadata === 'string'
+        ? JSON.parse(row.metadata)
+        : row.metadata
+      : undefined,
+    isErrorCorrection: (row.is_error_correction as boolean) ?? false,
     createdAt: row.created_at ? new Date(row.created_at as string) : undefined,
     updatedAt: row.updated_at ? new Date(row.updated_at as string) : undefined,
   };
@@ -28,9 +34,20 @@ export class RollStateService {
     const date = dto.date ?? now;
 
     await this.databaseService.execute(
-      `INSERT INTO roll_states (id, state_id, roll_id, state, date, notes, created_at, updated_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-      [id, stateId, dto.rollKey, dto.state, date, dto.notes ?? null, now, now],
+      `INSERT INTO roll_states (id, state_id, roll_id, state, date, notes, metadata, is_error_correction, created_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        id,
+        stateId,
+        dto.rollKey,
+        dto.state,
+        date,
+        dto.notes ?? null,
+        dto.metadata != null ? JSON.stringify(dto.metadata) : null,
+        dto.isErrorCorrection ?? false,
+        now,
+        now,
+      ],
     );
 
     return {
@@ -40,6 +57,8 @@ export class RollStateService {
       state: dto.state,
       date,
       notes: dto.notes,
+      metadata: dto.metadata,
+      isErrorCorrection: dto.isErrorCorrection ?? false,
       createdAt: now,
       updatedAt: now,
     };

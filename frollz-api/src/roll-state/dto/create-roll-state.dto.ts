@@ -4,6 +4,8 @@ import {
   IsString,
   IsOptional,
   IsDate,
+  IsObject,
+  IsBoolean,
   MaxLength,
 } from "class-validator";
 import { Type } from "class-transformer";
@@ -30,4 +32,14 @@ export class CreateRollStateDto {
   @IsString()
   @MaxLength(1000)
   notes?: string;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsObject()
+  metadata?: Record<string, unknown>;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsBoolean()
+  isErrorCorrection?: boolean;
 }
