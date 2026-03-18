@@ -165,13 +165,13 @@
                   </label>
                 </div>
                 <label class="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400 cursor-pointer">
-                  <input v-model="metadatanegativesReceived" type="checkbox" class="rounded" />
+                  <input v-model="metadataNegativesReceived" type="checkbox" class="rounded" />
                   Negatives received
                 </label>
-                <div v-if="metadatanegativesReceived" class="pl-5">
+                <div v-if="metadataNegativesReceived" class="pl-5">
                   <label class="block text-xs text-gray-600 dark:text-gray-400">
                     Negatives date
-                    <input v-model="metadataNegatviesDate" type="date" class="mt-1 w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100" />
+                    <input v-model="metadataNegativesDate" type="date" class="mt-1 w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100" />
                   </label>
                 </div>
               </div>
@@ -321,8 +321,8 @@ const metadataDate = ref('')
 const metadataScansReceived = ref(false)
 const metadataScansUrl = ref('')
 const metadataScansDate = ref('')
-const metadatanegativesReceived = ref(false)
-const metadataNegatviesDate = ref('')
+const metadataNegativesReceived = ref(false)
+const metadataNegativesDate = ref('')
 
 const DELIVERY_METHODS = ['Drop off', 'Mail in'] as const
 const PROCESSES_REQUESTED = ['C-41', 'E-6', 'Black & White', 'Instant'] as const
@@ -443,8 +443,8 @@ const handleTransition = (targetState: RollState) => {
     metadataScansReceived.value = false
     metadataScansUrl.value = ''
     metadataScansDate.value = todayISO()
-    metadatanegativesReceived.value = false
-    metadataNegatviesDate.value = todayISO()
+    metadataNegativesReceived.value = false
+    metadataNegativesDate.value = todayISO()
     return
   }
   void executeTransition(targetState)
@@ -488,9 +488,9 @@ const submitMetadataTransition = () => {
     metadata.scansDate = metadataScansDate.value || todayISO()
     if (metadataScansUrl.value.trim()) metadata.scansUrl = metadataScansUrl.value.trim()
   }
-  if (metadatanegativesReceived.value) {
+  if (metadataNegativesReceived.value) {
     metadata.negativesReceived = true
-    metadata.negativesDate = metadataNegatviesDate.value || todayISO()
+    metadata.negativesDate = metadataNegativesDate.value || todayISO()
   }
   void executeTransition(target, undefined, Object.keys(metadata).length > 0 ? metadata : undefined, date)
 }
