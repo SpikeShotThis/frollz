@@ -342,12 +342,6 @@ const metadataScansDate = ref('')
 const metadatanegativesReceived = ref(false)
 const metadataNegatviesDate = ref('')
 
-const metadataScansReceived = ref(false)
-const metadataScansUrl = ref('')
-const metadataScansDate = ref('')
-const metadatanegativesReceived = ref(false)
-const metadataNegatviesDate = ref('')
-
 const DELIVERY_METHODS = ['Drop off', 'Mail in'] as const
 const PROCESSES_REQUESTED = ['C-41', 'E-6', 'Black & White', 'Instant'] as const
 
