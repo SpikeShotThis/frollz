@@ -50,11 +50,24 @@ export interface EmulsionTag {
   tagId: number
 }
 
-// FilmTag (replaces RollTag)
-export interface FilmTag {
-  id: number
-  filmId: number
-  tagId: number
+export interface RollTag {
+  _key?: string
+  tagKey: string
+  rollKey: string
+  createdAt?: Date
+}
+
+// Roll Types
+export enum RollState {
+  ADDED = 'Added',
+  FROZEN = 'Frozen',
+  REFRIGERATED = 'Refrigerated',
+  SHELVED = 'Shelved',
+  LOADED = 'Loaded',
+  FINISHED = 'Finished',
+  SENT_FOR_DEVELOPMENT = 'Sent For Development',
+  DEVELOPED = 'Developed',
+  RECEIVED = 'Received',
 }
 
 export interface FilmStateMetadataField {

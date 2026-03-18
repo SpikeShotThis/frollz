@@ -1,5 +1,10 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import { nextTick } from 'vue'
+import Dashboard from '@/views/Dashboard.vue'
+import StocksView from '@/views/StocksView.vue'
+import RollsView from '@/views/RollsView.vue'
+import RollDetailView from '@/views/RollDetailView.vue'
+import FilmFormatsView from '@/views/FilmFormatsView.vue'
+import TagsView from '@/views/TagsView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -26,6 +31,11 @@ const router = createRouter({
       path: '/films/:key',
       name: 'film-detail',
       component: () => import('@/views/FilmDetailView.vue')
+    },
+    {
+      path: '/rolls/:key',
+      name: 'roll-detail',
+      component: RollDetailView
     },
     {
       path: '/formats',
