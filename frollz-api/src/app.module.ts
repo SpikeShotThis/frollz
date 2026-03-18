@@ -1,16 +1,26 @@
-import { Module } from '@nestjs/common';
-import { APP_GUARD } from '@nestjs/core';
-import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
-import { DatabaseModule } from './infrastructure/persistence/database.module';
-import { SharedModule } from './modules/shared/shared.module';
-import { EmulsionModule } from './modules/emulsion/emulsion.module';
-import { FilmModule } from './modules/film/film.module';
-import { FilmStateModule } from './modules/film-state/film-state.module';
-import { TransitionModule } from './modules/transition/transition.module';
+import { Module } from "@nestjs/common";
+import { ConfigModule } from "@nestjs/config";
+import { ThrottlerModule, ThrottlerGuard } from "@nestjs/throttler";
+import { APP_GUARD } from "@nestjs/core";
+import { DatabaseModule } from "./database/database.module";
+import { FilmFormatModule } from "./film-format/film-format.module";
+import { StockModule } from "./stock/stock.module";
+import { RollModule } from "./roll/roll.module";
+import { RollStateModule } from "./roll-state/roll-state.module";
+import { TagModule } from "./tag/tag.module";
+import { StockTagModule } from "./stock-tag/stock-tag.module";
 
 @Module({
   imports: [
-    ThrottlerModule.forRoot([{ ttl: 60_000, limit: 200 }]),
+    ConfigModule.forRoot({
+      isGlobal: true,
+    }),
+    ThrottlerModule.forRoot([
+      {
+        ttl: 60000,
+        limit: 100,
+      },
+    ]),
     DatabaseModule,
     SharedModule,
     EmulsionModule,
@@ -18,6 +28,11 @@ import { TransitionModule } from './modules/transition/transition.module';
     FilmStateModule,
     TransitionModule,
   ],
-  providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
+  providers: [
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
+    },
+  ],
 })
 export class AppModule {}
