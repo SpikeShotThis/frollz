@@ -25,9 +25,10 @@ export class CreateRollDto {
   @MaxLength(255)
   stockKey: string;
 
-  @ApiProperty({ enum: RollState })
+  @ApiProperty({ enum: RollState, required: false, default: RollState.ADDED })
+  @IsOptional()
   @IsEnum(RollState)
-  state: RollState;
+  state?: RollState;
 
   @ApiProperty({ required: false })
   @IsOptional()
