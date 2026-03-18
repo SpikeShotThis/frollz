@@ -122,6 +122,9 @@ export interface Roll {
   expirationDate?: Date
   timesExposedToXrays: number
   loadedInto?: string
+  stockName?: string
+  stockSpeed?: number
+  formatName?: string
   createdAt?: Date
   updatedAt?: Date
 }

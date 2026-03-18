@@ -36,6 +36,14 @@
                 :class="['px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer select-none', sortField === 'rollId' ? 'bg-gray-200 dark:bg-gray-600' : '']"
               >Roll ID {{ sortField === 'rollId' ? (sortDirection === 'asc' ? '↑' : '↓') : '' }}</th>
               <th
+                @click="setSort('stockName')"
+                :class="['px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer select-none', sortField === 'stockName' ? 'bg-gray-200 dark:bg-gray-600' : '']"
+              >Stock {{ sortField === 'stockName' ? (sortDirection === 'asc' ? '↑' : '↓') : '' }}</th>
+              <th
+                @click="setSort('formatName')"
+                :class="['px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer select-none', sortField === 'formatName' ? 'bg-gray-200 dark:bg-gray-600' : '']"
+              >Format {{ sortField === 'formatName' ? (sortDirection === 'asc' ? '↑' : '↓') : '' }}</th>
+              <th
                 @click="setSort('state')"
                 :class="['px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer select-none', sortField === 'state' ? 'bg-gray-200 dark:bg-gray-600' : '']"
               >State {{ sortField === 'state' ? (sortDirection === 'asc' ? '↑' : '↓') : '' }}</th>
@@ -60,6 +68,14 @@
                 class="px-6 py-4 whitespace-nowrap text-sm font-medium text-primary-600 dark:text-primary-400 cursor-pointer hover:underline"
                 @click="$router.push({ name: 'roll-detail', params: { key: roll._key } })"
               >{{ roll.rollId }}</td>
+              <td
+                class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 cursor-pointer hover:text-primary-600 dark:hover:text-primary-400"
+                @click="roll.stockName && addFilter('stockName', 'Stock', roll.stockName)"
+              >{{ roll.stockName ?? '—' }}</td>
+              <td
+                class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 cursor-pointer hover:text-primary-600 dark:hover:text-primary-400"
+                @click="roll.formatName && addFilter('formatName', 'Format', roll.formatName)"
+              >{{ roll.formatName ?? '—' }}</td>
               <td class="px-6 py-4 whitespace-nowrap">
                 <span
                   class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full cursor-pointer hover:opacity-80"
@@ -235,7 +251,7 @@ const error = ref('')
 const rollStateOptions = Object.values(RollState)
 const obtainmentMethodOptions = Object.values(ObtainmentMethod)
 
-type SortField = 'rollId' | 'state' | 'dateObtained' | 'obtainedFrom' | 'timesExposedToXrays'
+type SortField = 'rollId' | 'stockName' | 'formatName' | 'state' | 'dateObtained' | 'obtainedFrom' | 'timesExposedToXrays'
 const sortField = ref<SortField>('rollId')
 const sortDirection = ref<'asc' | 'desc'>('asc')
 

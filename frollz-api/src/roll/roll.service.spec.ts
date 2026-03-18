@@ -261,6 +261,43 @@ describe("RollService", () => {
     });
   });
 
+  describe("findAll / findOne", () => {
+    const rollRow = {
+      id: "roll-uuid",
+      roll_id: "roll-00001",
+      stock_key: "stock-1",
+      state: RollState.ADDED,
+      date_obtained: new Date().toISOString(),
+      obtainment_method: "Purchase",
+      obtained_from: "B&H",
+      times_exposed_to_xrays: 0,
+      expiration_date: null,
+      images_url: null,
+      loaded_into: null,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      stock_name: "Kodak Gold 200",
+      stock_speed: 200,
+      format_name: "35mm",
+    };
+
+    it("should map stock_name, stock_speed, and format_name from the joined query", async () => {
+      db.query.mockResolvedValueOnce([rollRow]);
+      const rolls = await service.findAll();
+      expect(rolls[0].stockName).toBe("Kodak Gold 200");
+      expect(rolls[0].stockSpeed).toBe(200);
+      expect(rolls[0].formatName).toBe("35mm");
+    });
+
+    it("should return null fields when join yields no stock", async () => {
+      db.query.mockResolvedValueOnce([{ ...rollRow, stock_name: null, stock_speed: null, format_name: null }]);
+      const rolls = await service.findAll();
+      expect(rolls[0].stockName).toBeUndefined();
+      expect(rolls[0].stockSpeed).toBeUndefined();
+      expect(rolls[0].formatName).toBeUndefined();
+    });
+  });
+
   describe("transition to SENT_FOR_DEVELOPMENT", () => {
     const finishedRollRow = {
       id: "roll-uuid",

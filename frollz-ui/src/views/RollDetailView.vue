@@ -27,6 +27,14 @@
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
           <h2 class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-4">Details</h2>
           <dl class="space-y-3">
+            <div v-if="roll.stockName" class="flex justify-between text-sm">
+              <dt class="text-gray-500 dark:text-gray-400">Stock</dt>
+              <dd class="text-gray-900 dark:text-gray-100">{{ roll.stockName }}<span v-if="roll.stockSpeed" class="text-gray-500 dark:text-gray-400"> ISO {{ roll.stockSpeed }}</span></dd>
+            </div>
+            <div v-if="roll.formatName" class="flex justify-between text-sm">
+              <dt class="text-gray-500 dark:text-gray-400">Format</dt>
+              <dd class="text-gray-900 dark:text-gray-100">{{ roll.formatName }}</dd>
+            </div>
             <div class="flex justify-between text-sm">
               <dt class="text-gray-500 dark:text-gray-400">Date Obtained</dt>
               <dd class="text-gray-900 dark:text-gray-100">{{ formatDate(roll.dateObtained) }}</dd>
@@ -167,32 +175,6 @@
                   </label>
                 </div>
               </div>
-              <div v-if="pendingMetadataTransition === RollState.RECEIVED" class="space-y-3">
-                <label class="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400 cursor-pointer">
-                  <input v-model="metadataScansReceived" type="checkbox" class="rounded" />
-                  Scans received
-                </label>
-                <div v-if="metadataScansReceived" class="pl-5 space-y-2">
-                  <label class="block text-xs text-gray-600 dark:text-gray-400">
-                    Scans date
-                    <input v-model="metadataScansDate" type="date" class="mt-1 w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100" />
-                  </label>
-                  <label class="block text-xs text-gray-600 dark:text-gray-400">
-                    Scans URL — optional
-                    <input v-model="metadataScansUrl" type="url" placeholder="https://…" class="mt-1 w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100" />
-                  </label>
-                </div>
-                <label class="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400 cursor-pointer">
-                  <input v-model="metadatanegativesReceived" type="checkbox" class="rounded" />
-                  Negatives received
-                </label>
-                <div v-if="metadatanegativesReceived" class="pl-5">
-                  <label class="block text-xs text-gray-600 dark:text-gray-400">
-                    Negatives date
-                    <input v-model="metadataNegatviesDate" type="date" class="mt-1 w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100" />
-                  </label>
-                </div>
-              </div>
               <div class="flex gap-2 mt-3">
                 <button
                   @click="submitMetadataTransition"
@@ -288,7 +270,7 @@
               >{{ entry.state }}</span>
               <span v-if="entry.direction === 'backward'" class="text-xs text-orange-600 dark:text-orange-400">{{ entry.isErrorCorrection ? '↩ error correction' : '↩ backward' }}</span>
               <span v-if="entry.direction === 'initial'" class="text-xs text-gray-400 dark:text-gray-500">initial</span>
-              <time class="text-xs text-gray-400 dark:text-gray-500">{{ formatDateTime(entry.date) }}</time>
+              <time class="text-xs text-gray-400 dark:text-gray-500">{{ formatDate(entry.date) }}</time>
             </div>
             <p v-if="entry.notes" class="mt-1 text-sm text-gray-600 dark:text-gray-400">{{ entry.notes }}</p>
             <p v-if="entry.metadata?.temperature != null" class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ entry.metadata.temperature }}{{ temperatureUnit }}</p>
@@ -441,7 +423,6 @@ const getStateColor = (state: RollState) => {
 }
 
 const formatDate = (date: Date | string) => new Date(date as string).toLocaleDateString()
-const formatDateTime = (date: Date | string) => new Date(date as string).toLocaleString()
 
 const handleTransition = (targetState: RollState) => {
   if (!roll.value) return
@@ -452,7 +433,7 @@ const handleTransition = (targetState: RollState) => {
   if (STATES_REQUIRING_METADATA.has(targetState)) {
     pendingMetadataTransition.value = targetState
     metadataTemperature.value = String(TEMPERATURE_DEFAULTS[targetState] ?? '')
-    metadataShotISO.value = ''
+    metadataShotISO.value = targetState === RollState.FINISHED && roll.value?.stockSpeed ? String(roll.value.stockSpeed) : ''
     metadataLabName.value = ''
     metadataDeliveryMethod.value = ''
     metadataProcessRequested.value = ''
@@ -487,7 +468,12 @@ const submitMetadataTransition = () => {
   const temp = metadataTemperature.value !== '' ? parseFloat(metadataTemperature.value) : undefined
   const shotISO = metadataShotISO.value !== '' ? parseFloat(metadataShotISO.value) : undefined
   const pushPullStops = metadataPushPullStops.value !== '' ? parseInt(metadataPushPullStops.value, 10) : undefined
-  const date = STATES_WITH_DATE_CAPTURE.has(target) ? metadataDate.value : undefined
+  let date: string | undefined
+  if (STATES_WITH_DATE_CAPTURE.has(target) && metadataDate.value) {
+    const [year, month, day] = metadataDate.value.split('-').map(Number)
+    const now = new Date()
+    date = new Date(year, month - 1, day, now.getHours(), now.getMinutes(), now.getSeconds()).toISOString()
+  }
   pendingMetadataTransition.value = null
 
   const metadata: Record<string, unknown> = {}

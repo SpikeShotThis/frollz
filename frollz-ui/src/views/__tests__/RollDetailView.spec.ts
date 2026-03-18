@@ -245,7 +245,7 @@ describe('RollDetailView', () => {
       await flushPromises()
 
       expect(rollApi.transition).toHaveBeenCalledWith(
-        'r1', RollState.FROZEN, '2026-01-10', undefined, undefined, { temperature: -20 },
+        'r1', RollState.FROZEN, expect.stringContaining('2026-01-10'), undefined, undefined, { temperature: -20 },
       )
     })
 
@@ -268,7 +268,7 @@ describe('RollDetailView', () => {
       await flushPromises()
 
       expect(rollApi.transition).toHaveBeenCalledWith(
-        'r1', RollState.FROZEN, '2026-01-10', undefined, undefined, undefined,
+        'r1', RollState.FROZEN, expect.stringContaining('2026-01-10'), undefined, undefined, undefined,
       )
     })
 
@@ -305,7 +305,7 @@ describe('RollDetailView', () => {
       await flushPromises()
 
       expect(rollApi.transition).toHaveBeenCalledWith(
-        'r1', RollState.FINISHED, '2026-02-14', undefined, undefined, { shotISO: 800 },
+        'r1', RollState.FINISHED, expect.stringContaining('2026-02-14'), undefined, undefined, { shotISO: 800 },
       )
     })
 
@@ -326,7 +326,7 @@ describe('RollDetailView', () => {
       await flushPromises()
 
       expect(rollApi.transition).toHaveBeenCalledWith(
-        'r1', RollState.FINISHED, '2026-02-14', undefined, undefined, undefined,
+        'r1', RollState.FINISHED, expect.stringContaining('2026-02-14'), undefined, undefined, undefined,
       )
     })
 
@@ -383,7 +383,7 @@ describe('RollDetailView', () => {
       await flushPromises()
 
       expect(rollApi.transition).toHaveBeenCalledWith(
-        'r1', RollState.SENT_FOR_DEVELOPMENT, '2026-03-01', undefined, undefined,
+        'r1', RollState.SENT_FOR_DEVELOPMENT, expect.stringContaining('2026-03-01'), undefined, undefined,
         expect.objectContaining({ labName: 'The Darkroom', deliveryMethod: 'Mail in', processRequested: 'C-41' }),
       )
     })
@@ -479,7 +479,7 @@ describe('RollDetailView', () => {
       await confirmBtn!.trigger('click')
       await flushPromises()
 
-      expect(rollApi.transition).toHaveBeenCalledWith('r1', RollState.LOADED, '2026-01-15', undefined, undefined, undefined)
+      expect(rollApi.transition).toHaveBeenCalledWith('r1', RollState.LOADED, expect.stringContaining('2026-01-15'), undefined, undefined, undefined)
       expect(rollApi.getById).toHaveBeenCalledTimes(2)
     })
 

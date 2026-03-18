@@ -311,7 +311,7 @@ describe('RollsView', () => {
       await wrapper.vm.$nextTick()
 
       const headers = wrapper.findAll('th')
-      expect(headers[1].classes()).toContain('bg-gray-200')
+      expect(headers[3].classes()).toContain('bg-gray-200')
       expect(headers[0].classes()).not.toContain('bg-gray-200')
     })
 

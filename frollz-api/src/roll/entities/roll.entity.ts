@@ -52,6 +52,15 @@ export class Roll {
   loadedInto?: string;
 
   @ApiProperty({ required: false })
+  stockName?: string;
+
+  @ApiProperty({ required: false })
+  stockSpeed?: number;
+
+  @ApiProperty({ required: false })
+  formatName?: string;
+
+  @ApiProperty({ required: false })
   createdAt?: Date;
 
   @ApiProperty({ required: false })

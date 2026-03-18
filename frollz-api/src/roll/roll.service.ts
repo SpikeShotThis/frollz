@@ -49,6 +49,13 @@ const VALID_TRANSITIONS: Partial<Record<RollState, RollState[]>> =
     ]),
   ) as Partial<Record<RollState, RollState[]>>;
 
+const ROLLS_WITH_STOCK_QUERY = `
+  SELECT r.*, s.brand AS stock_name, s.speed AS stock_speed, f.format AS format_name
+  FROM rolls r
+  LEFT JOIN stocks s ON r.stock_key = s.id
+  LEFT JOIN film_formats f ON s.format_key = f.id
+`;
+
 function mapRoll(row: Record<string, unknown>): Roll {
   return {
     _key: row.id as string,
@@ -64,6 +71,9 @@ function mapRoll(row: Record<string, unknown>): Roll {
       : undefined,
     timesExposedToXrays: Number(row.times_exposed_to_xrays ?? 0),
     loadedInto: row.loaded_into as string | undefined,
+    stockName: (row.stock_name as string | null) ?? undefined,
+    stockSpeed: row.stock_speed != null ? Number(row.stock_speed) : undefined,
+    formatName: (row.format_name as string | null) ?? undefined,
     createdAt: row.created_at ? new Date(row.created_at as string) : undefined,
     updatedAt: row.updated_at ? new Date(row.updated_at as string) : undefined,
   };
@@ -226,13 +236,13 @@ export class RollService implements OnModuleInit {
   }
 
   async findAll(): Promise<Roll[]> {
-    const rows = await this.databaseService.query(`SELECT * FROM rolls`);
+    const rows = await this.databaseService.query(ROLLS_WITH_STOCK_QUERY);
     return rows.map(mapRoll);
   }
 
   async findOne(key: string): Promise<Roll | null> {
     const rows = await this.databaseService.query(
-      `SELECT * FROM rolls WHERE id = ?`,
+      `${ROLLS_WITH_STOCK_QUERY} WHERE r.id = ?`,
       [key],
     );
     return rows.length > 0 ? mapRoll(rows[0]) : null;
