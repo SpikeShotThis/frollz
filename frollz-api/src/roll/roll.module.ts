@@ -3,9 +3,10 @@ import { RollService } from "./roll.service";
 import { RollController } from "./roll.controller";
 import { RollStateModule } from "../roll-state/roll-state.module";
 import { RollTagModule } from "../roll-tag/roll-tag.module";
+import { TransitionModule } from "../transition/transition.module";
 
 @Module({
-  imports: [RollStateModule, RollTagModule],
+  imports: [RollStateModule, RollTagModule, TransitionModule],
   controllers: [RollController],
   providers: [RollService],
   exports: [RollService],

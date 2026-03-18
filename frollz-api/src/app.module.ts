@@ -10,6 +10,7 @@ import { RollStateModule } from "./roll-state/roll-state.module";
 import { TagModule } from "./tag/tag.module";
 import { StockTagModule } from "./stock-tag/stock-tag.module";
 import { RollTagModule } from "./roll-tag/roll-tag.module";
+import { TransitionModule } from "./transition/transition.module";
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import { RollTagModule } from "./roll-tag/roll-tag.module";
     TagModule,
     StockTagModule,
     RollTagModule,
+    TransitionModule,
   ],
   providers: [
     {

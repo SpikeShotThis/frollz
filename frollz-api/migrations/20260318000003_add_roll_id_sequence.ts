@@ -19,7 +19,7 @@ export async function up(knex: Knex): Promise<void> {
       'roll_id_seq',
       GREATEST(
         (SELECT COALESCE(MAX(roll_id::bigint), 0) FROM rolls WHERE roll_id ~ '^[0-9]+$'),
-        nextval('roll_id_seq') - 1
+        1
       )
     )
   `);

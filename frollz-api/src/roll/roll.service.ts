@@ -7,47 +7,7 @@ import { TransitionRollDto } from "./dto/transition-roll.dto";
 import { Roll, RollState } from "./entities/roll.entity";
 import { RollStateService } from "../roll-state/roll-state.service";
 import { RollTagService } from "../roll-tag/roll-tag.service";
-
-const FORWARD_TRANSITIONS: Partial<Record<RollState, RollState[]>> = {
-  [RollState.ADDED]: [
-    RollState.FROZEN,
-    RollState.REFRIGERATED,
-    RollState.SHELVED,
-  ],
-  [RollState.FROZEN]: [RollState.REFRIGERATED, RollState.SHELVED],
-  [RollState.REFRIGERATED]: [RollState.SHELVED],
-  [RollState.SHELVED]: [RollState.LOADED],
-  [RollState.LOADED]: [RollState.FINISHED],
-  [RollState.FINISHED]: [RollState.SENT_FOR_DEVELOPMENT],
-  [RollState.SENT_FOR_DEVELOPMENT]: [RollState.DEVELOPED],
-  [RollState.DEVELOPED]: [RollState.RECEIVED],
-};
-
-const BACKWARD_TRANSITIONS: Partial<Record<RollState, RollState[]>> = {
-  [RollState.FROZEN]: [RollState.ADDED],
-  [RollState.REFRIGERATED]: [RollState.FROZEN, RollState.ADDED],
-  [RollState.SHELVED]: [RollState.REFRIGERATED, RollState.FROZEN],
-  [RollState.LOADED]: [
-    RollState.SHELVED,
-    RollState.REFRIGERATED,
-    RollState.FROZEN,
-  ],
-  [RollState.FINISHED]: [RollState.LOADED],
-  [RollState.SENT_FOR_DEVELOPMENT]: [RollState.FINISHED],
-  [RollState.DEVELOPED]: [RollState.SENT_FOR_DEVELOPMENT],
-  [RollState.RECEIVED]: [RollState.DEVELOPED],
-};
-
-const VALID_TRANSITIONS: Partial<Record<RollState, RollState[]>> =
-  Object.fromEntries(
-    Object.values(RollState).map((state) => [
-      state,
-      [
-        ...(FORWARD_TRANSITIONS[state as RollState] ?? []),
-        ...(BACKWARD_TRANSITIONS[state as RollState] ?? []),
-      ],
-    ]),
-  ) as Partial<Record<RollState, RollState[]>>;
+import { TransitionService } from "../transition/transition.service";
 
 const ROLLS_WITH_STOCK_QUERY = `
   SELECT r.*, s.brand AS stock_name, s.speed AS stock_speed, f.format AS format_name
@@ -85,6 +45,7 @@ export class RollService implements OnModuleInit {
     private readonly databaseService: DatabaseService,
     private readonly rollStateService: RollStateService,
     private readonly rollTagService: RollTagService,
+    private readonly transitionService: TransitionService,
   ) {}
 
   async onModuleInit() {
@@ -302,8 +263,11 @@ export class RollService implements OnModuleInit {
     const roll = await this.findOne(key);
     if (!roll) return null;
 
-    const allowed = VALID_TRANSITIONS[roll.state];
-    if (!allowed || !allowed.includes(dto.targetState)) {
+    const valid = await this.transitionService.isValidTransition(
+      roll.state,
+      dto.targetState,
+    );
+    if (!valid) {
       throw new BadRequestException(
         `Cannot transition from ${roll.state} to ${dto.targetState}`,
       );

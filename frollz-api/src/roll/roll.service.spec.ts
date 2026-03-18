@@ -5,6 +5,7 @@ import { DatabaseService } from "../database/database.service";
 import { RollStateService } from "../roll-state/roll-state.service";
 import { RollTagService } from "../roll-tag/roll-tag.service";
 import { RollState } from "./entities/roll.entity";
+import { TransitionService } from "../transition/transition.service";
 
 const makeDbService = (
   overrides: Partial<{ query: jest.Mock; execute: jest.Mock }> = {},
@@ -23,22 +24,29 @@ const makeRollTagService = () => ({
   syncAutoTag: jest.fn().mockResolvedValue(undefined),
 });
 
+const makeTransitionService = () => ({
+  isValidTransition: jest.fn().mockResolvedValue(true),
+});
+
 describe("RollService", () => {
   let service: RollService;
   let db: ReturnType<typeof makeDbService>;
   let rollStateService: ReturnType<typeof makeRollStateService>;
   let rollTagService: ReturnType<typeof makeRollTagService>;
+  let transitionService: ReturnType<typeof makeTransitionService>;
 
   beforeEach(async () => {
     db = makeDbService();
     rollStateService = makeRollStateService();
     rollTagService = makeRollTagService();
+    transitionService = makeTransitionService();
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         RollService,
         { provide: DatabaseService, useValue: db },
         { provide: RollStateService, useValue: rollStateService },
         { provide: RollTagService, useValue: rollTagService },
+        { provide: TransitionService, useValue: transitionService },
       ],
     }).compile();
 
@@ -168,7 +176,8 @@ describe("RollService", () => {
       );
     });
 
-    it("should reject invalid forward transitions", async () => {
+    it("should reject invalid transitions when TransitionService returns false", async () => {
+      transitionService.isValidTransition.mockResolvedValueOnce(false);
       await expect(
         service.transition("roll-uuid", { targetState: RollState.FINISHED }),
       ).rejects.toThrow(BadRequestException);
@@ -179,6 +188,10 @@ describe("RollService", () => {
         service.transition("roll-uuid", { targetState: RollState.FROZEN }),
       ).resolves.not.toThrow();
 
+      expect(transitionService.isValidTransition).toHaveBeenCalledWith(
+        RollState.SHELVED,
+        RollState.FROZEN,
+      );
       expect(rollStateService.create).toHaveBeenCalledWith(
         expect.objectContaining({ state: RollState.FROZEN }),
       );
