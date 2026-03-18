@@ -18,8 +18,8 @@ export default defineConfig({
       // Proxy /api to the API service — allows the UI dev server to reach the
       // API without CORS issues. API_PROXY_TARGET is set by docker-compose.dev.yml;
       // falls back to localhost for running outside Docker.
-      "/api": {
-        target: process.env.API_PROXY_TARGET || "http://localhost:3000",
+      '/api': {
+        target: process.env.API_PROXY_TARGET || 'http://localhost:3000',
         changeOrigin: true,
       },
     },
