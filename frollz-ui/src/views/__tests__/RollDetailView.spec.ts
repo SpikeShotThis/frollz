@@ -3,9 +3,9 @@ import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { mount, flushPromises } from '@vue/test-utils'
 import { createRouter, createMemoryHistory } from 'vue-router'
 import RollDetailView from '@/views/RollDetailView.vue'
-import { rollApi, rollStateApi, rollTagApi, tagApi } from '@/services/api-client'
+import { rollApi, rollStateApi, rollTagApi, tagApi, transitionApi } from '@/services/api-client'
 import { RollState } from '@/types'
-import type { Roll, RollStateHistory, Tag, RollTag } from '@/types'
+import type { Roll, RollStateHistory, Tag, RollTag, TransitionGraph, TransitionEdge } from '@/types'
 
 vi.mock('@/services/api-client', () => ({
   rollApi: {
@@ -23,7 +23,60 @@ vi.mock('@/services/api-client', () => ({
   tagApi: {
     getAll: vi.fn(),
   },
+  transitionApi: {
+    getGraph: vi.fn(),
+  },
 }))
+
+const edge = (
+  id: string,
+  fromState: string,
+  toState: string,
+  transitionType: 'FORWARD' | 'BACKWARD',
+  requiresDate: boolean,
+  metadata: TransitionEdge['metadata'] = [],
+): TransitionEdge => ({ id, fromState, toState, transitionType, requiresDate, metadata })
+
+const makeGraph = (): TransitionGraph => ({
+  states: ['Added', 'Frozen', 'Refrigerated', 'Shelved', 'Loaded', 'Finished', 'Sent For Development', 'Developed', 'Received'],
+  transitions: [
+    // FORWARD
+    edge('e1',  'Added',                'Frozen',               'FORWARD', true,  [{ field: 'temperature', fieldType: 'number', defaultValue: null, isRequired: false }]),
+    edge('e2',  'Added',                'Refrigerated',         'FORWARD', true,  [{ field: 'temperature', fieldType: 'number', defaultValue: null, isRequired: false }]),
+    edge('e3',  'Added',                'Shelved',              'FORWARD', true,  [{ field: 'temperature', fieldType: 'number', defaultValue: null, isRequired: false }]),
+    edge('e4',  'Frozen',               'Refrigerated',         'FORWARD', true,  [{ field: 'temperature', fieldType: 'number', defaultValue: null, isRequired: false }]),
+    edge('e5',  'Frozen',               'Shelved',              'FORWARD', true,  [{ field: 'temperature', fieldType: 'number', defaultValue: null, isRequired: false }]),
+    edge('e6',  'Refrigerated',         'Shelved',              'FORWARD', true,  [{ field: 'temperature', fieldType: 'number', defaultValue: null, isRequired: false }]),
+    edge('e7',  'Shelved',              'Loaded',               'FORWARD', true,  []),
+    edge('e8',  'Loaded',               'Finished',             'FORWARD', true,  [{ field: 'shotISO', fieldType: 'number', defaultValue: null, isRequired: false }]),
+    edge('e9',  'Finished',             'Sent For Development', 'FORWARD', true,  [
+      { field: 'labName',           fieldType: 'string',  defaultValue: null, isRequired: false },
+      { field: 'deliveryMethod',    fieldType: 'string',  defaultValue: null, isRequired: false },
+      { field: 'processRequested',  fieldType: 'string',  defaultValue: null, isRequired: false },
+      { field: 'pushPullStops',     fieldType: 'number',  defaultValue: null, isRequired: false },
+    ]),
+    edge('e10', 'Sent For Development', 'Developed',            'FORWARD', true,  []),
+    edge('e11', 'Developed',            'Received',             'FORWARD', false, [
+      { field: 'scansReceived',     fieldType: 'boolean', defaultValue: null, isRequired: false },
+      { field: 'scansUrl',          fieldType: 'string',  defaultValue: null, isRequired: false },
+      { field: 'negativesReceived', fieldType: 'boolean', defaultValue: null, isRequired: false },
+      { field: 'negativesDate',     fieldType: 'date',    defaultValue: null, isRequired: false },
+    ]),
+    // BACKWARD
+    edge('e12', 'Frozen',               'Added',                'BACKWARD', false, []),
+    edge('e13', 'Refrigerated',         'Frozen',               'BACKWARD', false, []),
+    edge('e14', 'Refrigerated',         'Added',                'BACKWARD', false, []),
+    edge('e15', 'Shelved',              'Refrigerated',         'BACKWARD', false, []),
+    edge('e16', 'Shelved',              'Frozen',               'BACKWARD', false, []),
+    edge('e17', 'Loaded',               'Shelved',              'BACKWARD', false, []),
+    edge('e18', 'Loaded',               'Refrigerated',         'BACKWARD', false, []),
+    edge('e19', 'Loaded',               'Frozen',               'BACKWARD', false, []),
+    edge('e20', 'Finished',             'Loaded',               'BACKWARD', false, []),
+    edge('e21', 'Sent For Development', 'Finished',             'BACKWARD', false, []),
+    edge('e22', 'Developed',            'Sent For Development', 'BACKWARD', false, []),
+    edge('e23', 'Received',             'Developed',            'BACKWARD', false, []),
+  ],
+})
 
 const router = createRouter({
   history: createMemoryHistory(),
@@ -89,6 +142,7 @@ describe('RollDetailView', () => {
     vi.mocked(rollApi.transition).mockResolvedValue({ data: makeRoll() } as any)
     vi.mocked(rollTagApi.create).mockResolvedValue({ data: makeRollTag('rt-new', 't1') } as any)
     vi.mocked(rollTagApi.delete).mockResolvedValue({} as any)
+    vi.mocked(transitionApi.getGraph).mockResolvedValue({ data: makeGraph() } as any)
   })
 
   describe('data loading', () => {
