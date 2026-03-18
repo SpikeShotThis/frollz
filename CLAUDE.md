@@ -82,7 +82,7 @@ Each domain (film-format, stock, roll, tag, roll-state, stock-tag) is a self-con
 
 `DatabaseService` is the single point of PostgreSQL access — all modules depend on it. It wraps `pg`, exposes a `query<T>(sql, params)` method and `execute(sql, params)` method used by all feature services. Tables are created via `CREATE TABLE IF NOT EXISTS` DDL on startup.
 
-Seed data in `db-init/default/` is loaded into `*_default` shadow tables, then copied to main tables via `INSERT ... ON CONFLICT DO NOTHING`. Can be disabled via `DISABLE_DEFAULT_DATA_IMPORT=true`.
+Default seed data is embedded in Knex migrations and loaded into `*_default` shadow tables on first run. Two tiers: **system data** (e.g. auto-managed tags: `expired`, `pushed`, `pulled`, `cross-processed`) is always copied to main tables on startup; **convenience data** (film formats, stocks, tags, stock-tags) is only copied when `DISABLE_DEFAULT_DATA_IMPORT` is not set.
 
 A `ValidationPipe` with `transform: true`, `whitelist: true`, `forbidNonWhitelisted: true` is applied globally. Swagger docs auto-generated at `/api/docs`.
 
