@@ -106,7 +106,11 @@ export class RollService implements OnModuleInit {
     );
     if (stocks.length === 0) return;
     const isCrossProcessed = processRequested !== stocks[0].process;
-    await this.rollTagService.syncAutoTag(rollKey, "cross-processed", isCrossProcessed);
+    await this.rollTagService.syncAutoTag(
+      rollKey,
+      "cross-processed",
+      isCrossProcessed,
+    );
   }
 
   private async syncPushPullTags(
@@ -188,7 +192,11 @@ export class RollService implements OnModuleInit {
       date: now,
     });
 
-    await this.syncExpiredTag(id, createRollDto.expirationDate, new Date(dateObtained));
+    await this.syncExpiredTag(
+      id,
+      createRollDto.expirationDate,
+      new Date(dateObtained),
+    );
 
     return {
       _key: id,
@@ -270,7 +278,11 @@ export class RollService implements OnModuleInit {
 
     const updated = await this.findOne(key);
     if (updated) {
-      await this.syncExpiredTag(key, updated.expirationDate, updated.dateObtained);
+      await this.syncExpiredTag(
+        key,
+        updated.expirationDate,
+        updated.dateObtained,
+      );
     }
     return updated;
   }
@@ -294,7 +306,7 @@ export class RollService implements OnModuleInit {
     await this.rollStateService.create({
       rollKey: key,
       state: dto.targetState,
-      date: new Date(),
+      date: dto.date ? new Date(dto.date) : new Date(),
       notes: dto.notes,
       isErrorCorrection: dto.isErrorCorrection,
       metadata: dto.metadata,
@@ -306,7 +318,9 @@ export class RollService implements OnModuleInit {
     }
 
     if (dto.targetState === RollState.SENT_FOR_DEVELOPMENT) {
-      const processRequested = dto.metadata?.processRequested as string | undefined;
+      const processRequested = dto.metadata?.processRequested as
+        | string
+        | undefined;
       await this.syncCrossProcessedTag(key, roll.stockKey, processRequested);
     }
 

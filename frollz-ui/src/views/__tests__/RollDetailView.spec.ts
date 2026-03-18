@@ -243,7 +243,7 @@ describe('RollDetailView', () => {
       await flushPromises()
 
       expect(rollApi.transition).toHaveBeenCalledWith(
-        'r1', RollState.FROZEN, undefined, undefined, { temperature: -20 },
+        'r1', RollState.FROZEN, undefined, undefined, undefined, { temperature: -20 },
       )
     })
 
@@ -264,7 +264,7 @@ describe('RollDetailView', () => {
       await flushPromises()
 
       expect(rollApi.transition).toHaveBeenCalledWith(
-        'r1', RollState.FROZEN, undefined, undefined, undefined,
+        'r1', RollState.FROZEN, undefined, undefined, undefined, undefined,
       )
     })
 
@@ -299,7 +299,7 @@ describe('RollDetailView', () => {
       await flushPromises()
 
       expect(rollApi.transition).toHaveBeenCalledWith(
-        'r1', RollState.FINISHED, undefined, undefined, { shotISO: 800 },
+        'r1', RollState.FINISHED, undefined, undefined, undefined, { shotISO: 800 },
       )
     })
 
@@ -317,7 +317,7 @@ describe('RollDetailView', () => {
       await flushPromises()
 
       expect(rollApi.transition).toHaveBeenCalledWith(
-        'r1', RollState.FINISHED, undefined, undefined, undefined,
+        'r1', RollState.FINISHED, undefined, undefined, undefined, undefined,
       )
     })
 
@@ -373,7 +373,7 @@ describe('RollDetailView', () => {
       await flushPromises()
 
       expect(rollApi.transition).toHaveBeenCalledWith(
-        'r1', RollState.SENT_FOR_DEVELOPMENT, undefined, undefined,
+        'r1', RollState.SENT_FOR_DEVELOPMENT, undefined, undefined, undefined,
         expect.objectContaining({ labName: 'The Darkroom', deliveryMethod: 'Mail in', processRequested: 'C-41' }),
       )
     })
@@ -411,7 +411,7 @@ describe('RollDetailView', () => {
       await flushPromises()
 
       expect(rollApi.transition).toHaveBeenCalledWith(
-        'r1', RollState.RECEIVED, undefined, undefined,
+        'r1', RollState.RECEIVED, undefined, undefined, undefined,
         expect.objectContaining({ scansReceived: true, scansDate: '2026-03-18' }),
       )
     })
@@ -430,7 +430,7 @@ describe('RollDetailView', () => {
       await flushPromises()
 
       expect(rollApi.transition).toHaveBeenCalledWith(
-        'r1', RollState.RECEIVED, undefined, undefined, undefined,
+        'r1', RollState.RECEIVED, undefined, undefined, undefined, undefined,
       )
     })
 
@@ -460,7 +460,16 @@ describe('RollDetailView', () => {
       await loadedBtn!.trigger('click')
       await flushPromises()
 
-      expect(rollApi.transition).toHaveBeenCalledWith('r1', RollState.LOADED, undefined, undefined, undefined)
+      // LOADED now requires a metadata form with a date
+      const vm = wrapper.vm as any
+      vm.metadataDate = '2026-01-15'
+      await wrapper.vm.$nextTick()
+
+      const confirmBtn = wrapper.findAll('button').find(b => b.text() === 'Confirm')
+      await confirmBtn!.trigger('click')
+      await flushPromises()
+
+      expect(rollApi.transition).toHaveBeenCalledWith('r1', RollState.LOADED, '2026-01-15', undefined, undefined, undefined)
       expect(rollApi.getById).toHaveBeenCalledTimes(2)
     })
 
@@ -490,7 +499,7 @@ describe('RollDetailView', () => {
       await yesBtn!.trigger('click')
       await flushPromises()
 
-      expect(rollApi.transition).toHaveBeenCalledWith('r1', expect.any(String), undefined, true, undefined)
+      expect(rollApi.transition).toHaveBeenCalledWith('r1', expect.any(String), undefined, undefined, true, undefined)
     })
 
     it('should call transition with isErrorCorrection=false when No is clicked', async () => {
@@ -506,7 +515,7 @@ describe('RollDetailView', () => {
       await noBtn!.trigger('click')
       await flushPromises()
 
-      expect(rollApi.transition).toHaveBeenCalledWith('r1', expect.any(String), undefined, false, undefined)
+      expect(rollApi.transition).toHaveBeenCalledWith('r1', expect.any(String), undefined, undefined, false, undefined)
     })
 
     it('should dismiss the prompt without transitioning when Cancel is clicked', async () => {

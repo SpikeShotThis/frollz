@@ -85,8 +85,8 @@ export const rollApi = {
   update: (key: string, data: Partial<Roll>) =>
     api.patch<Roll>(`/rolls/${key}`, data),
   delete: (key: string) => api.delete(`/rolls/${key}`),
-  transition: (key: string, targetState: string, notes?: string, isErrorCorrection?: boolean, metadata?: Record<string, unknown>) =>
-    api.post<Roll>(`/rolls/${key}/transition`, { targetState, notes, isErrorCorrection, metadata }),
+  transition: (key: string, targetState: string, date?: string, notes?: string, isErrorCorrection?: boolean, metadata?: Record<string, unknown>) =>
+    api.post<Roll>(`/rolls/${key}/transition`, { targetState, date, notes, isErrorCorrection, metadata }),
 }
 
 // FilmState API (replaces rollStateApi)

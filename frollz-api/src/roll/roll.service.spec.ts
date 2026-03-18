@@ -236,6 +236,29 @@ describe("RollService", () => {
         expect.objectContaining({ metadata: undefined }),
       );
     });
+
+    it("should use the provided date for the state history entry", async () => {
+      await service.transition("roll-uuid", {
+        targetState: RollState.LOADED,
+        date: "2026-01-15",
+      });
+
+      expect(rollStateService.create).toHaveBeenCalledWith(
+        expect.objectContaining({ date: new Date("2026-01-15") }),
+      );
+    });
+
+    it("should default date to now when not provided", async () => {
+      const before = new Date();
+      await service.transition("roll-uuid", {
+        targetState: RollState.LOADED,
+      });
+      const after = new Date();
+
+      const call = (rollStateService.create as jest.Mock).mock.calls[0][0];
+      expect(call.date.getTime()).toBeGreaterThanOrEqual(before.getTime());
+      expect(call.date.getTime()).toBeLessThanOrEqual(after.getTime());
+    });
   });
 
   describe("transition to SENT_FOR_DEVELOPMENT", () => {
@@ -263,10 +286,18 @@ describe("RollService", () => {
 
       await service.transition("roll-uuid", {
         targetState: RollState.SENT_FOR_DEVELOPMENT,
-        metadata: { labName: "The Darkroom", deliveryMethod: "Mail in", processRequested: "E-6" },
+        metadata: {
+          labName: "The Darkroom",
+          deliveryMethod: "Mail in",
+          processRequested: "E-6",
+        },
       });
 
-      expect(rollTagService.syncAutoTag).toHaveBeenCalledWith("roll-uuid", "cross-processed", true);
+      expect(rollTagService.syncAutoTag).toHaveBeenCalledWith(
+        "roll-uuid",
+        "cross-processed",
+        true,
+      );
     });
 
     it("should not apply cross-processed tag when processRequested matches stock process", async () => {
@@ -277,10 +308,18 @@ describe("RollService", () => {
 
       await service.transition("roll-uuid", {
         targetState: RollState.SENT_FOR_DEVELOPMENT,
-        metadata: { labName: "The Darkroom", deliveryMethod: "Mail in", processRequested: "C-41" },
+        metadata: {
+          labName: "The Darkroom",
+          deliveryMethod: "Mail in",
+          processRequested: "C-41",
+        },
       });
 
-      expect(rollTagService.syncAutoTag).toHaveBeenCalledWith("roll-uuid", "cross-processed", false);
+      expect(rollTagService.syncAutoTag).toHaveBeenCalledWith(
+        "roll-uuid",
+        "cross-processed",
+        false,
+      );
     });
 
     it("should not call syncCrossProcessedTag when processRequested is absent", async () => {
@@ -328,8 +367,16 @@ describe("RollService", () => {
         metadata: { shotISO: 800 },
       });
 
-      expect(rollTagService.syncAutoTag).toHaveBeenCalledWith("roll-uuid", "pushed", true);
-      expect(rollTagService.syncAutoTag).toHaveBeenCalledWith("roll-uuid", "pulled", false);
+      expect(rollTagService.syncAutoTag).toHaveBeenCalledWith(
+        "roll-uuid",
+        "pushed",
+        true,
+      );
+      expect(rollTagService.syncAutoTag).toHaveBeenCalledWith(
+        "roll-uuid",
+        "pulled",
+        false,
+      );
     });
 
     it("should apply pulled tag when shotISO < stock speed", async () => {
@@ -343,8 +390,16 @@ describe("RollService", () => {
         metadata: { shotISO: 200 },
       });
 
-      expect(rollTagService.syncAutoTag).toHaveBeenCalledWith("roll-uuid", "pushed", false);
-      expect(rollTagService.syncAutoTag).toHaveBeenCalledWith("roll-uuid", "pulled", true);
+      expect(rollTagService.syncAutoTag).toHaveBeenCalledWith(
+        "roll-uuid",
+        "pushed",
+        false,
+      );
+      expect(rollTagService.syncAutoTag).toHaveBeenCalledWith(
+        "roll-uuid",
+        "pulled",
+        true,
+      );
     });
 
     it("should remove both tags when shotISO equals stock speed", async () => {
@@ -358,8 +413,16 @@ describe("RollService", () => {
         metadata: { shotISO: 400 },
       });
 
-      expect(rollTagService.syncAutoTag).toHaveBeenCalledWith("roll-uuid", "pushed", false);
-      expect(rollTagService.syncAutoTag).toHaveBeenCalledWith("roll-uuid", "pulled", false);
+      expect(rollTagService.syncAutoTag).toHaveBeenCalledWith(
+        "roll-uuid",
+        "pushed",
+        false,
+      );
+      expect(rollTagService.syncAutoTag).toHaveBeenCalledWith(
+        "roll-uuid",
+        "pulled",
+        false,
+      );
     });
 
     it("should remove both tags when no shotISO provided", async () => {
@@ -372,8 +435,16 @@ describe("RollService", () => {
         targetState: RollState.FINISHED,
       });
 
-      expect(rollTagService.syncAutoTag).toHaveBeenCalledWith("roll-uuid", "pushed", false);
-      expect(rollTagService.syncAutoTag).toHaveBeenCalledWith("roll-uuid", "pulled", false);
+      expect(rollTagService.syncAutoTag).toHaveBeenCalledWith(
+        "roll-uuid",
+        "pushed",
+        false,
+      );
+      expect(rollTagService.syncAutoTag).toHaveBeenCalledWith(
+        "roll-uuid",
+        "pulled",
+        false,
+      );
     });
 
     it("should not call syncPushPullTags when transitioning to a non-FINISHED state", async () => {

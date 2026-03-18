@@ -1,6 +1,7 @@
 import { ApiProperty } from "@nestjs/swagger";
 import {
   IsBoolean,
+  IsDateString,
   IsEnum,
   IsObject,
   IsOptional,
@@ -13,6 +14,11 @@ export class TransitionRollDto {
   @ApiProperty({ enum: RollState })
   @IsEnum(RollState)
   targetState: RollState;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsDateString()
+  date?: string;
 
   @ApiProperty({ required: false })
   @IsOptional()

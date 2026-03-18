@@ -13,7 +13,7 @@ function mapRollState(row: Record<string, unknown>): RollStateHistory {
     date: new Date(row.date as string),
     notes: row.notes as string | undefined,
     metadata: row.metadata
-      ? typeof row.metadata === 'string'
+      ? typeof row.metadata === "string"
         ? JSON.parse(row.metadata)
         : row.metadata
       : undefined,
