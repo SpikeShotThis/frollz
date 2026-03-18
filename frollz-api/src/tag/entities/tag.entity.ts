@@ -17,6 +17,9 @@ export class Tag {
   isStockScoped?: boolean;
 
   @ApiProperty({ required: false })
+  isSystem?: boolean;
+
+  @ApiProperty({ required: false })
   createdAt?: Date;
 
   @ApiProperty({ required: false })

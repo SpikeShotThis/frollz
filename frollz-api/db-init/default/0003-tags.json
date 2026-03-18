@@ -35,8 +35,8 @@
     { "_key": "modified",       "value": "modified",       "color": "#7C3AED", "isRollScoped": true, "isStockScoped": true },
     { "_key": "halation",       "value": "halation",       "color": "#FCA5A5", "isRollScoped": true, "isStockScoped": true },
     { "_key": "double-x",       "value": "double-x",       "color": "#D97706", "isRollScoped": true, "isStockScoped": true },
-    { "_key": "expired",         "value": "expired",         "color": "#9CA3AF", "isRollScoped": true, "isStockScoped": false },
-    { "_key": "pushed",          "value": "pushed",           "color": "#A78BFA", "isRollScoped": true, "isStockScoped": false },
-    { "_key": "pulled",          "value": "pulled",           "color": "#5EEAD4", "isRollScoped": true, "isStockScoped": false },
-    { "_key": "cross-processed", "value": "cross-processed",  "color": "#FB923C", "isRollScoped": true, "isStockScoped": false }
+    { "_key": "expired",         "value": "expired",         "color": "#9CA3AF", "isRollScoped": true, "isStockScoped": false, "isSystem": true },
+    { "_key": "pushed",          "value": "pushed",           "color": "#A78BFA", "isRollScoped": true, "isStockScoped": false, "isSystem": true },
+    { "_key": "pulled",          "value": "pulled",           "color": "#5EEAD4", "isRollScoped": true, "isStockScoped": false, "isSystem": true },
+    { "_key": "cross-processed", "value": "cross-processed",  "color": "#FB923C", "isRollScoped": true, "isStockScoped": false, "isSystem": true }
 ]

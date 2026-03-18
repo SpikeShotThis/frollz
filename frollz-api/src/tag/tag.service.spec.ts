@@ -1,4 +1,4 @@
-import { ConflictException } from "@nestjs/common";
+import { ConflictException, ForbiddenException } from "@nestjs/common";
 import { Test, TestingModule } from "@nestjs/testing";
 import { TagService } from "./tag.service";
 import { DatabaseService } from "../database/database.service";
@@ -235,6 +235,7 @@ describe("TagService", () => {
   describe("remove", () => {
     it("should return true when the record is deleted", async () => {
       db.query
+        .mockResolvedValueOnce([{ is_system: false }]) // system check — not a system tag
         .mockResolvedValueOnce([]) // no stock_tag dependents
         .mockResolvedValueOnce([]) // no roll_tag dependents
         .mockResolvedValueOnce([{ id: "color" }]); // DELETE RETURNING
@@ -249,6 +250,7 @@ describe("TagService", () => {
 
     it("should return false when the record does not exist", async () => {
       db.query
+        .mockResolvedValueOnce([]) // system check — tag not found (no row)
         .mockResolvedValueOnce([]) // no stock_tag dependents
         .mockResolvedValueOnce([]) // no roll_tag dependents
         .mockResolvedValueOnce([]); // DELETE RETURNING — nothing deleted
@@ -257,14 +259,25 @@ describe("TagService", () => {
       expect(result).toBe(false);
     });
 
+    it("should throw ForbiddenException when attempting to delete a system tag", async () => {
+      db.query.mockResolvedValueOnce([{ is_system: true }]); // system check — is a system tag
+
+      await expect(service.remove("expired")).rejects.toThrow(
+        ForbiddenException,
+      );
+    });
+
     it("should throw ConflictException when stock_tags reference the tag", async () => {
-      db.query.mockResolvedValueOnce([{ id: "st-1" }]); // stock_tag dependent found
+      db.query
+        .mockResolvedValueOnce([{ is_system: false }]) // system check — not a system tag
+        .mockResolvedValueOnce([{ id: "st-1" }]); // stock_tag dependent found
 
       await expect(service.remove("color")).rejects.toThrow(ConflictException);
     });
 
     it("should throw ConflictException when roll_tags reference the tag", async () => {
       db.query
+        .mockResolvedValueOnce([{ is_system: false }]) // system check — not a system tag
         .mockResolvedValueOnce([]) // no stock_tag dependents
         .mockResolvedValueOnce([{ id: "rt-1" }]); // roll_tag dependent found
 

@@ -41,6 +41,7 @@ const BASE_COLUMN_MAP: Record<string, Record<string, string>> = {
     color: "color",
     isRollScoped: "is_roll_scoped",
     isStockScoped: "is_stock_scoped",
+    isSystem: "is_system",
     createdAt: "created_at",
     updatedAt: "updated_at",
   },

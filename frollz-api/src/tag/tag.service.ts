@@ -1,4 +1,8 @@
-import { ConflictException, Injectable } from "@nestjs/common";
+import {
+  ConflictException,
+  ForbiddenException,
+  Injectable,
+} from "@nestjs/common";
 import { randomUUID } from "crypto";
 import { DatabaseService } from "../database/database.service";
 import { CreateTagDto } from "./dto/create-tag.dto";
@@ -12,6 +16,7 @@ function mapTag(row: Record<string, unknown>): Tag {
     color: row.color as string,
     isRollScoped: row.is_roll_scoped as boolean | undefined,
     isStockScoped: row.is_stock_scoped as boolean | undefined,
+    isSystem: row.is_system as boolean | undefined,
     createdAt: row.created_at ? new Date(row.created_at as string) : undefined,
     updatedAt: row.updated_at ? new Date(row.updated_at as string) : undefined,
   };
@@ -100,6 +105,13 @@ export class TagService {
   }
 
   async remove(key: string): Promise<boolean> {
+    const systemCheck = await this.databaseService.query<{
+      is_system: boolean;
+    }>(`SELECT is_system FROM tags WHERE id = ? LIMIT 1`, [key]);
+    if (systemCheck.length > 0 && systemCheck[0].is_system) {
+      throw new ForbiddenException("Cannot delete a system-managed tag");
+    }
+
     const stockTagDependents = await this.databaseService.query<{ id: string }>(
       `SELECT id FROM stock_tags WHERE tag_key = ? LIMIT 1`,
       [key],
