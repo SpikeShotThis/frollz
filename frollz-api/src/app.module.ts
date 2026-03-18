@@ -1,6 +1,7 @@
 import { Module } from "@nestjs/common";
 import { ConfigModule } from "@nestjs/config";
 import { ThrottlerModule, ThrottlerGuard } from "@nestjs/throttler";
+import { ThrottleLimits } from "./common/throttle-limits";
 import { APP_GUARD } from "@nestjs/core";
 import { DatabaseModule } from "./database/database.module";
 import { FilmFormatModule } from "./film-format/film-format.module";
@@ -17,12 +18,7 @@ import { TransitionModule } from "./transition/transition.module";
     ConfigModule.forRoot({
       isGlobal: true,
     }),
-    ThrottlerModule.forRoot([
-      {
-        ttl: 60000,
-        limit: 100,
-      },
-    ]),
+    ThrottlerModule.forRoot([ThrottleLimits._100_REQUESTS_PER_MINUTE]),
     DatabaseModule,
     FilmFormatModule,
     StockModule,

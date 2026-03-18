@@ -8,6 +8,8 @@ import {
   Delete,
   NotFoundException,
 } from "@nestjs/common";
+import { Throttle } from "@nestjs/throttler";
+import { ThrottleLimits } from "../common/throttle-limits";
 import { ApiTags, ApiOperation, ApiResponse } from "@nestjs/swagger";
 import { RollService } from "./roll.service";
 import { CreateRollDto } from "./dto/create-roll.dto";
@@ -21,6 +23,7 @@ export class RollController {
   constructor(private readonly rollService: RollService) {}
 
   @Post()
+  @Throttle({ default: ThrottleLimits._20_REQUESTS_PER_MINUTE })
   @ApiOperation({ summary: "Create a new roll" })
   @ApiResponse({
     status: 201,
@@ -66,6 +69,7 @@ export class RollController {
   }
 
   @Patch(":key")
+  @Throttle({ default: ThrottleLimits._20_REQUESTS_PER_MINUTE })
   @ApiOperation({ summary: "Update a roll" })
   @ApiResponse({
     status: 200,
@@ -85,6 +89,7 @@ export class RollController {
   }
 
   @Delete(":key")
+  @Throttle({ default: ThrottleLimits._20_REQUESTS_PER_MINUTE })
   @ApiOperation({ summary: "Delete a roll" })
   @ApiResponse({ status: 200, description: "Roll deleted successfully" })
   @ApiResponse({ status: 404, description: "Roll not found" })
@@ -97,6 +102,7 @@ export class RollController {
   }
 
   @Post(":key/transition")
+  @Throttle({ default: ThrottleLimits._20_REQUESTS_PER_MINUTE })
   @ApiOperation({ summary: "Transition a roll to a new storage state" })
   @ApiResponse({
     status: 200,

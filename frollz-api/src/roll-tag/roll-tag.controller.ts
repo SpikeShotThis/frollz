@@ -8,6 +8,8 @@ import {
   NotFoundException,
   Query,
 } from "@nestjs/common";
+import { Throttle } from "@nestjs/throttler";
+import { ThrottleLimits } from "../common/throttle-limits";
 import { ApiTags, ApiOperation, ApiResponse, ApiQuery } from "@nestjs/swagger";
 import { RollTagService } from "./roll-tag.service";
 import { CreateRollTagDto } from "./dto/create-roll-tag.dto";
@@ -19,6 +21,7 @@ export class RollTagController {
   constructor(private readonly rollTagService: RollTagService) {}
 
   @Post()
+  @Throttle({ default: ThrottleLimits._20_REQUESTS_PER_MINUTE })
   @ApiOperation({ summary: "Associate a tag with a roll" })
   @ApiResponse({
     status: 201,
@@ -66,6 +69,7 @@ export class RollTagController {
   }
 
   @Delete(":key")
+  @Throttle({ default: ThrottleLimits._20_REQUESTS_PER_MINUTE })
   @ApiOperation({ summary: "Remove a roll-tag association" })
   @ApiResponse({ status: 200, description: "RollTag deleted successfully" })
   @ApiResponse({ status: 404, description: "RollTag not found" })

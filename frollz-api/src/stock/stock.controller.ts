@@ -9,6 +9,8 @@ import {
   NotFoundException,
   Query,
 } from "@nestjs/common";
+import { Throttle } from "@nestjs/throttler";
+import { ThrottleLimits } from "../common/throttle-limits";
 import { ApiTags, ApiOperation, ApiQuery, ApiResponse } from "@nestjs/swagger";
 import { StockService } from "./stock.service";
 import { CreateStockDto } from "./dto/create-stock.dto";
@@ -22,6 +24,7 @@ export class StockController {
   constructor(private readonly stockService: StockService) {}
 
   @Post()
+  @Throttle({ default: ThrottleLimits._20_REQUESTS_PER_MINUTE })
   @ApiOperation({ summary: "Create a new stock" })
   @ApiResponse({
     status: 201,
@@ -33,6 +36,7 @@ export class StockController {
   }
 
   @Post("bulk")
+  @Throttle({ default: ThrottleLimits._10_REQUESTS_PER_MINUTE })
   @ApiOperation({ summary: "Create stocks for multiple formats at once" })
   @ApiResponse({
     status: 201,
@@ -57,6 +61,7 @@ export class StockController {
   }
 
   @Get("brands")
+  @Throttle({ default: ThrottleLimits._30_REQUESTS_PER_MINUTE })
   @ApiOperation({ summary: "Get distinct brand names matching a query" })
   @ApiQuery({
     name: "q",
@@ -73,6 +78,7 @@ export class StockController {
   }
 
   @Get("manufacturers")
+  @Throttle({ default: ThrottleLimits._30_REQUESTS_PER_MINUTE })
   @ApiOperation({ summary: "Get distinct manufacturer names matching a query" })
   @ApiQuery({
     name: "q",
@@ -89,6 +95,7 @@ export class StockController {
   }
 
   @Get("speeds")
+  @Throttle({ default: ThrottleLimits._30_REQUESTS_PER_MINUTE })
   @ApiOperation({ summary: "Get distinct speed values matching a query" })
   @ApiQuery({
     name: "q",
@@ -121,6 +128,7 @@ export class StockController {
   }
 
   @Patch(":key")
+  @Throttle({ default: ThrottleLimits._20_REQUESTS_PER_MINUTE })
   @ApiOperation({ summary: "Update a stock" })
   @ApiResponse({
     status: 200,
@@ -140,6 +148,7 @@ export class StockController {
   }
 
   @Delete(":key")
+  @Throttle({ default: ThrottleLimits._20_REQUESTS_PER_MINUTE })
   @ApiOperation({ summary: "Delete a stock" })
   @ApiResponse({ status: 200, description: "Stock deleted successfully" })
   @ApiResponse({ status: 404, description: "Stock not found" })
