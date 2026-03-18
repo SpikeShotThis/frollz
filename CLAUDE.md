@@ -48,9 +48,9 @@ npm run test            # Vitest unit tests
 
 ## Codebase Memory MCP
 
-The `codebase-memory-mcp` server is installed and should be used for structural code exploration. It indexes the codebase into a knowledge graph, making it far more token-efficient than file scanning.
+The `codebase-memory-mcp` server is installed, connected, and **must be used** for all structural code exploration. The graph is automatically kept up-to-date after every file edit. Always prefer graph queries — they are faster and more accurate than file scanning.
 
-**Prefer graph queries over Grep/Bash for structural questions.**
+**ALWAYS use MCP tools instead of Grep/Glob/Read for any structural question** (finding functions, tracing calls, understanding architecture, impact analysis, etc.). Only fall back to Read/Grep for viewing raw file content that the graph doesn't expose.
 
 Key tools:
 - `get_architecture` — start here for codebase orientation (entry points, hotspots, clusters)
@@ -61,7 +61,7 @@ Key tools:
 - `query_graph` — Cypher-like queries for complex relationship analysis
 - `search_code` — regex text search across files (replaces grep)
 
-If the graph hasn't been indexed yet, run `index_repository` first.
+The graph is always current — no need to run `index_repository` manually.
 
 ## Architecture
 
@@ -105,7 +105,12 @@ Five routes map to domain views: `/` (dashboard), `/stocks`, `/rolls`, `/formats
 
 ### Review Checklist (after every code change)
 
+- Before modifying existing functionality, run `detect_changes` to understand blast radius and identify affected callers
 - All modified code has unit tests and all tests pass
 - All code passes linting rules (`npm run lint`)
 - Code has been simplified with readability in mind
 - `docs/adr/architecture.md` is updated to reflect any architectural changes, so context can be quickly rebuilt in future sessions
+
+### Context Preservation
+
+If the session is compacted mid-task, a summary is automatically written to `/tmp/claude-frollz-state.md`. Read this file at the start of a resumed session to restore context.

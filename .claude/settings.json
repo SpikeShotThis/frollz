@@ -1,5 +1,62 @@
 {
   "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "timeout": 60,
+            "statusMessage": "Updating codebase-memory-mcp...",
+            "command": "codebase-memory-mcp update 2>&1 || true"
+          },
+          {
+            "type": "command",
+            "timeout": 60,
+            "statusMessage": "Syncing codebase knowledge graph...",
+            "command": "codebase-memory-mcp cli index_repository '{\"repository_path\": \"/home/spike/Code/frollz\", \"incremental\": true}' 2>/dev/null || true"
+          }
+        ]
+      }
+    ],
+    "PreCompact": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo '{\"hookSpecificOutput\": {\"hookEventName\": \"PreCompact\", \"additionalContext\": \"Before compacting: write a brief summary to /tmp/claude-frollz-state.md covering (1) the task you are working on, (2) what has been completed, (3) what remains, (4) key decisions made. This restores context after compaction.\"}}'"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "timeout": 30,
+            "statusMessage": "Updating codebase knowledge graph...",
+            "command": "codebase-memory-mcp cli index_repository '{\"repository_path\": \"/home/spike/Code/frollz\", \"incremental\": true}' 2>/dev/null || true"
+          },
+          {
+            "type": "command",
+            "asyncRewake": true,
+            "command": "f=$(jq -r '.tool_input.file_path // .tool_response.filePath'); if echo \"$f\" | grep -q 'frollz-api/'; then cd /home/spike/Code/frollz/frollz-api && npm test -- --passWithNoTests 2>&1 | tail -10 || exit 2; elif echo \"$f\" | grep -q 'frollz-ui/'; then cd /home/spike/Code/frollz/frollz-ui && npm test 2>&1 | tail -10 || exit 2; fi"
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "timeout": 60,
+            "statusMessage": "Resyncing codebase knowledge graph after pull...",
+            "command": "cmd=$(jq -r '.tool_input.command'); if echo \"$cmd\" | grep -qE '^git pull'; then codebase-memory-mcp cli index_repository '{\"repository_path\": \"/home/spike/Code/frollz\", \"incremental\": true}' 2>/dev/null || true; fi"
+          }
+        ]
+      }
+    ],
     "PreToolUse": [
       {
         "matcher": "Bash",
