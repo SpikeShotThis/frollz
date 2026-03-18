@@ -1,5 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsEnum, IsOptional, IsString } from "class-validator";
+import { IsEnum, IsOptional, IsString, MaxLength } from "class-validator";
 import { RollState } from "../entities/roll.entity";
 
 export class TransitionRollDto {
@@ -10,5 +10,6 @@ export class TransitionRollDto {
   @ApiProperty({ required: false })
   @IsOptional()
   @IsString()
+  @MaxLength(1000)
   notes?: string;
 }

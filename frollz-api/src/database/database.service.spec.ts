@@ -1,4 +1,5 @@
 import { Test, TestingModule } from "@nestjs/testing";
+import { Logger } from "@nestjs/common";
 import * as fs from "fs";
 import * as path from "path";
 import { DatabaseService } from "./database.service";
@@ -93,7 +94,9 @@ describe("DatabaseService — loadSeedData", () => {
 
     it("should warn and skip files with no collection mapping", async () => {
       readdirSyncSpy.mockReturnValue(["0001-unknown-type.json"] as any);
-      const warnSpy = jest.spyOn(console, "warn").mockImplementation(() => {});
+      const warnSpy = jest
+        .spyOn(Logger.prototype, "warn")
+        .mockImplementation(() => {});
 
       await (service as any).loadSeedData();
 
@@ -212,8 +215,8 @@ describe("DatabaseService — DISABLE_DEFAULT_DATA_IMPORT", () => {
     'should skip seed data when DISABLE_DEFAULT_DATA_IMPORT="%s"',
     async (value) => {
       process.env.DISABLE_DEFAULT_DATA_IMPORT = value;
-      const consoleSpy = jest
-        .spyOn(console, "log")
+      const logSpy = jest
+        .spyOn(Logger.prototype, "log")
         .mockImplementation(() => {});
 
       const { knex } = await buildService();
@@ -232,7 +235,7 @@ describe("DatabaseService — DISABLE_DEFAULT_DATA_IMPORT", () => {
       const service = module.get<DatabaseService>(DatabaseService);
       await service.onModuleInit();
 
-      expect(consoleSpy).toHaveBeenCalledWith(
+      expect(logSpy).toHaveBeenCalledWith(
         expect.stringContaining("DISABLE_DEFAULT_DATA_IMPORT"),
       );
       expect(insertCalls).toHaveLength(0);

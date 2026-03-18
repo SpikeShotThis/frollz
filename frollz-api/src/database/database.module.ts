@@ -1,8 +1,10 @@
-import { Module, Global } from "@nestjs/common";
+import { Module, Global, Logger } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { knex, Knex } from "knex";
 import * as path from "path";
 import { DatabaseService } from "./database.service";
+
+const logger = new Logger("DatabaseModule");
 
 @Global()
 @Module({
@@ -32,12 +34,11 @@ import { DatabaseService } from "./database.service";
               });
 
               await instance.raw("SELECT 1");
-              console.log("Successfully connected to PostgreSQL");
+              logger.log("Successfully connected to PostgreSQL");
               return instance;
             } catch (error) {
-              console.log(
-                `PostgreSQL connection attempt ${attempt}/${maxRetries} failed:`,
-                error.message,
+              logger.warn(
+                `PostgreSQL connection attempt ${attempt}/${maxRetries} failed: ${error.message}`,
               );
 
               if (attempt === maxRetries) {
@@ -49,6 +50,9 @@ import { DatabaseService } from "./database.service";
               await new Promise((resolve) => setTimeout(resolve, delay));
             }
           }
+          throw new Error(
+            `Failed to connect to PostgreSQL after ${maxRetries} attempts`,
+          );
         };
 
         return connectWithRetry();

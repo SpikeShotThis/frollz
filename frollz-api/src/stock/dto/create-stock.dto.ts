@@ -1,10 +1,20 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsEnum, IsString, IsNumber, IsOptional, IsUrl } from "class-validator";
+import {
+  IsEnum,
+  IsString,
+  IsInt,
+  IsOptional,
+  IsUrl,
+  MaxLength,
+  Min,
+  Max,
+} from "class-validator";
 import { Process } from "../entities/stock.entity";
 
 export class CreateStockDto {
   @ApiProperty()
   @IsString()
+  @MaxLength(255)
   formatKey: string;
 
   @ApiProperty({ enum: Process })
@@ -13,23 +23,29 @@ export class CreateStockDto {
 
   @ApiProperty()
   @IsString()
+  @MaxLength(100)
   manufacturer: string;
 
   @ApiProperty()
   @IsString()
+  @MaxLength(100)
   brand: string;
 
   @ApiProperty({ required: false })
   @IsOptional()
   @IsString()
+  @MaxLength(255)
   baseStockKey?: string;
 
   @ApiProperty()
-  @IsNumber()
+  @IsInt()
+  @Min(1)
+  @Max(25600)
   speed: number;
 
   @ApiProperty({ required: false })
   @IsOptional()
   @IsUrl()
+  @MaxLength(2048)
   boxImageUrl?: string;
 }

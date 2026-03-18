@@ -1,4 +1,4 @@
-import { Injectable, Inject, OnModuleInit } from "@nestjs/common";
+import { Injectable, Inject, OnModuleInit, Logger } from "@nestjs/common";
 import { Knex } from "knex";
 import * as fs from "fs";
 import * as path from "path";
@@ -76,14 +76,16 @@ const COLUMN_MAP: Record<string, Record<string, string>> = {
 
 @Injectable()
 export class DatabaseService implements OnModuleInit {
+  private readonly logger = new Logger(DatabaseService.name);
+
   constructor(@Inject("KNEX_CONNECTION") private readonly knex: Knex) {}
 
   async onModuleInit() {
     await this.knex.migrate.latest();
-    console.log("Database migrations applied");
+    this.logger.log("Database migrations applied");
 
     if (this.isDefaultDataImportDisabled()) {
-      console.log(
+      this.logger.log(
         "Default data import is disabled (DISABLE_DEFAULT_DATA_IMPORT). Skipping seed data load.",
       );
       return;
@@ -139,7 +141,9 @@ export class DatabaseService implements OnModuleInit {
       const mapping = SEED_TABLE_MAP[baseName];
 
       if (!mapping) {
-        console.warn(`No table mapping for seed file: ${filename} — skipping`);
+        this.logger.warn(
+          `No table mapping for seed file: ${filename} — skipping`,
+        );
         continue;
       }
 
@@ -167,11 +171,11 @@ export class DatabaseService implements OnModuleInit {
           );
         }
 
-        console.log(
+        this.logger.log(
           `Loaded ${raw.length} records into ${tableName} from ${filename}`,
         );
       } catch (error) {
-        console.error(`Error loading seed data from ${filename}:`, error);
+        this.logger.error(`Error loading seed data from ${filename}:`, error);
         throw error;
       }
     }
@@ -195,11 +199,11 @@ export class DatabaseService implements OnModuleInit {
         );
 
         const inserted = await this.knex.raw(`SELECT COUNT(*) FROM ${main}`);
-        console.log(
+        this.logger.log(
           `Populated ${main} with ${inserted.rows[0].count} records from ${def}`,
         );
       } catch (error) {
-        console.error(`Error populating table ${main}:`, error);
+        this.logger.error(`Error populating table ${main}:`, error);
       }
     }
   }
