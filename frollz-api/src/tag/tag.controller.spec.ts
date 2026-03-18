@@ -7,7 +7,13 @@ describe("TagController", () => {
   let controller: TagController;
   let service: jest.Mocked<TagService>;
 
-  const mockTag = { _key: "color", value: "color", color: "#F97316" };
+  const mockTag = {
+    _key: "color",
+    value: "color",
+    color: "#F97316",
+    isRollScoped: true,
+    isStockScoped: true,
+  };
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -46,6 +52,31 @@ describe("TagController", () => {
         color: "#F97316",
       });
       expect(result).toEqual(mockTag);
+    });
+
+    it("should pass isRollScoped and isStockScoped to service", async () => {
+      const scopedTag = {
+        ...mockTag,
+        isRollScoped: false,
+        isStockScoped: true,
+      };
+      service.create.mockResolvedValue(scopedTag);
+
+      const result = await controller.create({
+        value: "color",
+        color: "#F97316",
+        isRollScoped: false,
+        isStockScoped: true,
+      });
+
+      expect(service.create).toHaveBeenCalledWith({
+        value: "color",
+        color: "#F97316",
+        isRollScoped: false,
+        isStockScoped: true,
+      });
+      expect(result.isRollScoped).toBe(false);
+      expect(result.isStockScoped).toBe(true);
     });
   });
 
@@ -88,6 +119,18 @@ describe("TagController", () => {
         color: "#FFFFFF",
       });
       expect(result).toEqual(updated);
+    });
+
+    it("should pass scope fields to service on update", async () => {
+      const updated = { ...mockTag, isRollScoped: false };
+      service.update.mockResolvedValue(updated);
+
+      const result = await controller.update("color", { isRollScoped: false });
+
+      expect(service.update).toHaveBeenCalledWith("color", {
+        isRollScoped: false,
+      });
+      expect(result.isRollScoped).toBe(false);
     });
 
     it("should throw NotFoundException when tag does not exist", async () => {

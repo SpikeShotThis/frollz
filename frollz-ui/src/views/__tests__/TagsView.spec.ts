@@ -18,9 +18,9 @@ vi.mock('@/services/api-client', () => ({
 
 describe('TagsView', () => {
   const mockTags = [
-    { _key: 'tag1', value: 'Color', color: '#ff0000', createdAt: new Date('2024-01-01') },
-    { _key: 'tag2', value: 'BW', color: '#000000', createdAt: new Date('2024-02-01') },
-    { _key: 'tag3', value: 'Slide', color: '#0000ff', createdAt: new Date('2024-03-01') },
+    { _key: 'tag1', value: 'Color', color: '#ff0000', isRollScoped: true, isStockScoped: true, createdAt: new Date('2024-01-01') },
+    { _key: 'tag2', value: 'BW', color: '#000000', isRollScoped: false, isStockScoped: true, createdAt: new Date('2024-02-01') },
+    { _key: 'tag3', value: 'Slide', color: '#0000ff', isRollScoped: true, isStockScoped: false, createdAt: new Date('2024-03-01') },
   ]
 
   beforeEach(() => {
@@ -102,7 +102,39 @@ describe('TagsView', () => {
 
       await vm.saveEdit('tag1')
 
-      expect(tagApi.update).toHaveBeenCalledWith('tag1', { value: 'Updated', color: '#123456' })
+      expect(tagApi.update).toHaveBeenCalledWith('tag1', {
+        value: 'Updated',
+        color: '#123456',
+        isRollScoped: true,
+        isStockScoped: true,
+      })
+    })
+
+    it('should populate editForm with tag scope values on startEdit', async () => {
+      const wrapper = mount(TagsView)
+      await flushPromises()
+
+      const vm = wrapper.vm as any
+      vm.startEdit(mockTags[1]) // BW: isRollScoped=false, isStockScoped=true
+      await wrapper.vm.$nextTick()
+
+      expect(vm.editForm.isRollScoped).toBe(false)
+      expect(vm.editForm.isStockScoped).toBe(true)
+    })
+
+    it('should include isRollScoped and isStockScoped in save payload', async () => {
+      vi.mocked(tagApi.update).mockResolvedValue({ data: {} } as any)
+      const wrapper = mount(TagsView)
+      await flushPromises()
+
+      const vm = wrapper.vm as any
+      vm.startEdit(mockTags[2]) // Slide: isRollScoped=true, isStockScoped=false
+      await vm.saveEdit('tag3')
+
+      expect(tagApi.update).toHaveBeenCalledWith('tag3', expect.objectContaining({
+        isRollScoped: true,
+        isStockScoped: false,
+      }))
     })
 
     it('should exit edit mode after saving', async () => {

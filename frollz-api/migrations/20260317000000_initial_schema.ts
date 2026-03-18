@@ -6,7 +6,10 @@ export async function up(knex: Knex): Promise<void> {
       table.text("id").primary();
       table.text("form_factor").notNullable();
       table.text("format").notNullable();
-      table.timestamp("created_at", { useTz: true }).notNullable().defaultTo(knex.fn.now());
+      table
+        .timestamp("created_at", { useTz: true })
+        .notNullable()
+        .defaultTo(knex.fn.now());
       table.timestamp("updated_at", { useTz: true });
     });
   }
@@ -16,7 +19,10 @@ export async function up(knex: Knex): Promise<void> {
       table.text("id").primary();
       table.text("form_factor").notNullable();
       table.text("format").notNullable();
-      table.timestamp("created_at", { useTz: true }).notNullable().defaultTo(knex.fn.now());
+      table
+        .timestamp("created_at", { useTz: true })
+        .notNullable()
+        .defaultTo(knex.fn.now());
       table.timestamp("updated_at", { useTz: true });
     });
   }
@@ -26,7 +32,10 @@ export async function up(knex: Knex): Promise<void> {
       table.text("id").primary();
       table.text("value").notNullable();
       table.text("color").notNullable();
-      table.timestamp("created_at", { useTz: true }).notNullable().defaultTo(knex.fn.now());
+      table
+        .timestamp("created_at", { useTz: true })
+        .notNullable()
+        .defaultTo(knex.fn.now());
     });
   }
 
@@ -35,7 +44,10 @@ export async function up(knex: Knex): Promise<void> {
       table.text("id").primary();
       table.text("value").notNullable();
       table.text("color").notNullable();
-      table.timestamp("created_at", { useTz: true }).notNullable().defaultTo(knex.fn.now());
+      table
+        .timestamp("created_at", { useTz: true })
+        .notNullable()
+        .defaultTo(knex.fn.now());
     });
   }
 
@@ -49,7 +61,10 @@ export async function up(knex: Knex): Promise<void> {
       table.text("base_stock_key").references("id").inTable("stocks");
       table.integer("speed").notNullable();
       table.text("box_image_url");
-      table.timestamp("created_at", { useTz: true }).notNullable().defaultTo(knex.fn.now());
+      table
+        .timestamp("created_at", { useTz: true })
+        .notNullable()
+        .defaultTo(knex.fn.now());
       table.timestamp("updated_at", { useTz: true });
     });
   }
@@ -64,7 +79,10 @@ export async function up(knex: Knex): Promise<void> {
       table.text("base_stock_key").references("id").inTable("stocks_default");
       table.integer("speed").notNullable();
       table.text("box_image_url");
-      table.timestamp("created_at", { useTz: true }).notNullable().defaultTo(knex.fn.now());
+      table
+        .timestamp("created_at", { useTz: true })
+        .notNullable()
+        .defaultTo(knex.fn.now());
       table.timestamp("updated_at", { useTz: true });
     });
   }
@@ -74,7 +92,10 @@ export async function up(knex: Knex): Promise<void> {
       table.text("id").primary();
       table.text("stock_key").notNullable().references("id").inTable("stocks");
       table.text("tag_key").notNullable().references("id").inTable("tags");
-      table.timestamp("created_at", { useTz: true }).notNullable().defaultTo(knex.fn.now());
+      table
+        .timestamp("created_at", { useTz: true })
+        .notNullable()
+        .defaultTo(knex.fn.now());
       table.unique(["stock_key", "tag_key"]);
     });
   }
@@ -82,9 +103,20 @@ export async function up(knex: Knex): Promise<void> {
   if (!(await knex.schema.hasTable("stock_tags_default"))) {
     await knex.schema.createTable("stock_tags_default", (table) => {
       table.text("id").primary();
-      table.text("stock_key").notNullable().references("id").inTable("stocks_default");
-      table.text("tag_key").notNullable().references("id").inTable("tags_default");
-      table.timestamp("created_at", { useTz: true }).notNullable().defaultTo(knex.fn.now());
+      table
+        .text("stock_key")
+        .notNullable()
+        .references("id")
+        .inTable("stocks_default");
+      table
+        .text("tag_key")
+        .notNullable()
+        .references("id")
+        .inTable("tags_default");
+      table
+        .timestamp("created_at", { useTz: true })
+        .notNullable()
+        .defaultTo(knex.fn.now());
       table.unique(["stock_key", "tag_key"]);
     });
   }
@@ -102,7 +134,10 @@ export async function up(knex: Knex): Promise<void> {
       table.timestamp("expiration_date", { useTz: true });
       table.integer("times_exposed_to_xrays").notNullable().defaultTo(0);
       table.text("loaded_into");
-      table.timestamp("created_at", { useTz: true }).notNullable().defaultTo(knex.fn.now());
+      table
+        .timestamp("created_at", { useTz: true })
+        .notNullable()
+        .defaultTo(knex.fn.now());
       table.timestamp("updated_at", { useTz: true });
     });
   }
@@ -115,7 +150,10 @@ export async function up(knex: Knex): Promise<void> {
       table.text("state").notNullable();
       table.timestamp("date", { useTz: true }).notNullable();
       table.text("notes");
-      table.timestamp("created_at", { useTz: true }).notNullable().defaultTo(knex.fn.now());
+      table
+        .timestamp("created_at", { useTz: true })
+        .notNullable()
+        .defaultTo(knex.fn.now());
       table.timestamp("updated_at", { useTz: true });
     });
   }

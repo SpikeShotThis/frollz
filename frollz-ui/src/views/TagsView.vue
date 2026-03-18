@@ -11,6 +11,8 @@
             <tr>
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Color</th>
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Value</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Roll Scope</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Stock Scope</th>
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Created</th>
               <th class="px-6 py-3"></th>
             </tr>
@@ -48,6 +50,24 @@
                 </template>
               </td>
               <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                <input
+                  type="checkbox"
+                  :checked="editingKey === tag._key ? editForm.isRollScoped : tag.isRollScoped"
+                  :disabled="editingKey !== tag._key"
+                  @change="editingKey === tag._key && (editForm.isRollScoped = ($event.target as HTMLInputElement).checked)"
+                  class="h-4 w-4 text-primary-600 border-gray-300 dark:border-gray-600 rounded"
+                />
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                <input
+                  type="checkbox"
+                  :checked="editingKey === tag._key ? editForm.isStockScoped : tag.isStockScoped"
+                  :disabled="editingKey !== tag._key"
+                  @change="editingKey === tag._key && (editForm.isStockScoped = ($event.target as HTMLInputElement).checked)"
+                  class="h-4 w-4 text-primary-600 border-gray-300 dark:border-gray-600 rounded"
+                />
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                 {{ formatDate(tag.createdAt) }}
               </td>
               <td class="px-6 py-4 whitespace-nowrap text-right space-x-2">
@@ -74,7 +94,7 @@
               </td>
             </tr>
             <tr v-if="tags.length === 0">
-              <td colspan="4" class="px-6 py-8 text-center text-sm text-gray-400 dark:text-gray-500">No tags found.</td>
+              <td colspan="6" class="px-6 py-8 text-center text-sm text-gray-400 dark:text-gray-500">No tags found.</td>
             </tr>
           </tbody>
         </table>
@@ -140,7 +160,7 @@ const tags = ref<Tag[]>([])
 const currentPage = ref(1)
 
 const editingKey = ref<string | null>(null)
-const editForm = ref({ value: '', color: '#000000' })
+const editForm = ref({ value: '', color: '#000000', isRollScoped: true, isStockScoped: true })
 
 const deleteTarget = ref<Tag | null>(null)
 const deleteStockTagCount = ref(0)
@@ -165,7 +185,12 @@ const loadTags = async () => {
 
 const startEdit = (tag: Tag) => {
   editingKey.value = tag._key!
-  editForm.value = { value: tag.value, color: tag.color }
+  editForm.value = {
+    value: tag.value,
+    color: tag.color,
+    isRollScoped: tag.isRollScoped ?? true,
+    isStockScoped: tag.isStockScoped ?? true,
+  }
 }
 
 const cancelEdit = () => {
@@ -174,7 +199,12 @@ const cancelEdit = () => {
 
 const saveEdit = async (key: string) => {
   try {
-    await tagApi.update(key, { value: editForm.value.value, color: editForm.value.color })
+    await tagApi.update(key, {
+      value: editForm.value.value,
+      color: editForm.value.color,
+      isRollScoped: editForm.value.isRollScoped,
+      isStockScoped: editForm.value.isStockScoped,
+    })
     editingKey.value = null
     await loadTags()
   } catch (err) {
