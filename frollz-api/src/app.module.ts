@@ -1,5 +1,8 @@
+import { existsSync } from "fs";
+import { join } from "path";
 import { Module } from "@nestjs/common";
 import { ConfigModule } from "@nestjs/config";
+import { ServeStaticModule } from "@nestjs/serve-static";
 import { ThrottlerModule, ThrottlerGuard } from "@nestjs/throttler";
 import { ThrottleLimits } from "./common/throttle-limits";
 import { APP_GUARD } from "@nestjs/core";
@@ -13,8 +16,21 @@ import { StockTagModule } from "./stock-tag/stock-tag.module";
 import { RollTagModule } from "./roll-tag/roll-tag.module";
 import { TransitionModule } from "./transition/transition.module";
 
+// Serve the Vue SPA from /app/public when running in the combined production
+// container. Skipped automatically in dev (the directory won't exist).
+const publicPath = join(__dirname, "..", "public");
+const serveStaticModules = existsSync(publicPath)
+  ? [
+      ServeStaticModule.forRoot({
+        rootPath: publicPath,
+        exclude: ["/api/(.*)"],
+      }),
+    ]
+  : [];
+
 @Module({
   imports: [
+    ...serveStaticModules,
     ConfigModule.forRoot({
       isGlobal: true,
     }),

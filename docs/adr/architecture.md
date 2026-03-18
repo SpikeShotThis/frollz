@@ -7,15 +7,18 @@ Frollz is a film photography tracking application. It allows photographers to ma
 - **Backend:** NestJS (TypeScript) — `frollz-api`
 - **Frontend:** Vue 3 + TypeScript, Tailwind CSS, Vite — `frollz-ui`
 - **Database:** PostgreSQL 18
-- **Infrastructure:** Docker Compose, Nginx reverse proxy (root `nginx/` + per-service configs)
-- **Build:** Multi-stage Docker builds per service
+- **Infrastructure:** Docker Compose; single combined production container (API + UI); separate containers for development
+- **Build:** Multi-stage root `Dockerfile` (ui-build → api-build → production)
 
 ## ARCHITECTURE
-Monorepo with two independently containerized services orchestrated via `docker-compose.yml`:
+Monorepo deployed as a single container in production. The combined image contains the NestJS API and the built Vue SPA; NestJS serves both. PostgreSQL runs as a separate container. No nginx is involved — users are expected to place a reverse proxy (Nginx Proxy Manager, Traefik, Caddy, etc.) in front for HTTPS termination.
 
-- **frollz-api**: NestJS REST API. Each domain (`roll`, `roll-state`, `stock`, `stock-tag`, `tag`, `film-format`) is a self-contained NestJS feature module with `controller / service / module / dto / entities` structure. A shared `DatabaseService` wraps all PostgreSQL access via Knex — `query<T>(sql, params): Promise<T[]>` and `execute(sql, params): Promise<void>` are the public API used by all feature services. Schema and default seed data are managed via Knex migrations in `frollz-api/migrations/`; seed migrations populate `*_default` shadow tables, which are then copied to main tables on startup.
+**Production** (`docker-compose.yml`): two services — `frollz` (combined container) + `postgres`.
+
+**Development** (`docker-compose.dev.yml`): three services — `frollz-api` (NestJS watch mode), `frollz-ui` (Vite dev server with HMR), `postgres`. The Vite dev server proxies `/api` requests to the API container via `server.proxy` in `vite.config.ts`, eliminating the need for a separate routing layer.
+
+- **frollz-api**: NestJS REST API. Each domain (`roll`, `roll-state`, `stock`, `stock-tag`, `tag`, `film-format`) is a self-contained NestJS feature module with `controller / service / module / dto / entities` structure. A shared `DatabaseService` wraps all PostgreSQL access via Knex — `query<T>(sql, params): Promise<T[]>` and `execute(sql, params): Promise<void>` are the public API used by all feature services. Schema and default seed data are managed via Knex migrations in `frollz-api/migrations/`; seed migrations populate `*_default` shadow tables, which are then copied to main tables on startup. In the combined production container, `ServeStaticModule` serves the Vue SPA from `/app/public` for all non-`/api` routes.
 - **frollz-ui**: Vue 3 SPA. Views are per-domain. A centralized `api-client.ts` service handles all HTTP communication with the API. Shared UI utilities include typeahead suggestion builders for brands and speeds.
-- **Nginx** acts as the reverse proxy routing traffic between services.
 
 ## PATTERNS
 - **NestJS feature modules**: Every resource gets its own folder with `module / controller / service / dto / entities`.
@@ -34,11 +37,12 @@ Monorepo with two independently containerized services orchestrated via `docker-
 ## TRADEOFFS
 - **PostgreSQL over document DB**: Relational model fits the well-defined film stock metadata domain well. Familiar SQL and strong tooling outweigh the flexibility of a document DB for this use case. Knex used as a lightweight query builder and migration runner — enough structure to stay safe without the weight of a full ORM.
 - **NestJS module boilerplate**: Strong conventions improve navigability at the cost of verbosity for simple resources.
-- **Docker Compose for orchestration**: Simple for local development; would need migration to Kubernetes or similar for production scaling.
+- **Single combined container**: Simplifies self-hosted deployment to a single `docker-compose.yml` with two services. Trades some separation of concerns for a dramatically simpler user-facing deployment story. The dev workflow retains separate containers with HMR via `docker-compose.dev.yml`.
+- **No nginx in the application**: Security headers previously set in nginx are now applied by `helmet` in `main.ts`. TLS termination is delegated to the user's reverse proxy (NPM, Traefik, Caddy, etc.) — this is the same model used by comparable self-hosted applications.
 - **Monorepo without shared packages**: API and UI types are duplicated (e.g., `frollz-ui/src/types/index.ts` mirrors API entities) rather than shared via a workspace package.
 
 ## PHILOSOPHY
 - Domain-driven module organization: code is grouped by business concept, not technical layer.
 - Separation of concerns: API owns persistence and business logic; UI owns presentation only.
 - Schema-first data integrity: database schemas enforced at the DB layer, not just application layer.
-- Keep infrastructure simple: Docker Compose + Nginx over more complex orchestration.
+- Keep infrastructure simple: single combined container over multi-service orchestration for production.

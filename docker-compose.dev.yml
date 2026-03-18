@@ -1,0 +1,80 @@
+# Development environment — API and UI run as separate containers with hot
+# reloading. The Vite dev server proxies /api to the API container, so no
+# nginx reverse proxy is needed.
+#
+# Usage:
+#   docker-compose -f docker-compose.dev.yml up -d
+
+services:
+  frollz-api:
+    build:
+      context: ./frollz-api
+      dockerfile: Dockerfile
+      target: development
+    container_name: frollz-api
+    environment:
+      - NODE_ENV=development
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_DATABASE=${POSTGRES_DATABASE}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - PORT=3000
+      - DISABLE_DEFAULT_DATA_IMPORT=false
+    ports:
+      - "3000:3000"
+    depends_on:
+      - postgres
+    volumes:
+      - ./frollz-api:/app
+      - /app/node_modules
+    networks:
+      - frollz-network
+    command: npm run start:dev
+    restart: unless-stopped
+
+  frollz-ui:
+    build:
+      context: ./frollz-ui
+      dockerfile: Dockerfile
+      target: development
+    container_name: frollz-ui
+    environment:
+      - VITE_API_URL=/api
+      # Vite proxy target — routes /api requests from the browser to the API
+      # container via Docker internal networking (not exposed to the host).
+      - API_PROXY_TARGET=http://frollz-api:3000
+    ports:
+      - "5173:5173"
+    depends_on:
+      - frollz-api
+    volumes:
+      - ./frollz-ui:/app
+      - /app/node_modules
+    networks:
+      - frollz-network
+    command: npm run dev
+    restart: unless-stopped
+
+  postgres:
+    image: postgres:18-alpine
+    container_name: frollz-postgres
+    environment:
+      - POSTGRES_DB=${POSTGRES_DATABASE}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - PGDATA=/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - frollz-network
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+
+networks:
+  frollz-network:
+    driver: bridge
