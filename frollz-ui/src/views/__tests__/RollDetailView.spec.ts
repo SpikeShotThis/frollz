@@ -268,6 +268,59 @@ describe('RollDetailView', () => {
       )
     })
 
+    it('should show shot ISO field (not temperature) when clicking Finished', async () => {
+      vi.mocked(rollApi.getById).mockResolvedValue({ data: makeRoll({ state: RollState.LOADED }) } as any)
+      const wrapper = await mountView()
+
+      const buttons = wrapper.findAll('button')
+      const finishedBtn = buttons.find(b => b.text() === 'Finished')
+      await finishedBtn!.trigger('click')
+      await flushPromises()
+
+      expect(wrapper.text()).toContain('Shot ISO')
+      expect(wrapper.text()).not.toContain('temperature')
+      expect(rollApi.transition).not.toHaveBeenCalled()
+    })
+
+    it('should include shotISO in metadata when confirming FINISHED', async () => {
+      vi.mocked(rollApi.getById).mockResolvedValue({ data: makeRoll({ state: RollState.LOADED }) } as any)
+      const wrapper = await mountView()
+
+      const buttons = wrapper.findAll('button')
+      const finishedBtn = buttons.find(b => b.text() === 'Finished')
+      await finishedBtn!.trigger('click')
+      await flushPromises()
+
+      const input = wrapper.find('input[type="number"]')
+      await input.setValue('800')
+
+      const confirmBtn = wrapper.findAll('button').find(b => b.text() === 'Confirm')
+      await confirmBtn!.trigger('click')
+      await flushPromises()
+
+      expect(rollApi.transition).toHaveBeenCalledWith(
+        'r1', RollState.FINISHED, undefined, undefined, { shotISO: 800 },
+      )
+    })
+
+    it('should transition FINISHED with no metadata when shotISO is left blank', async () => {
+      vi.mocked(rollApi.getById).mockResolvedValue({ data: makeRoll({ state: RollState.LOADED }) } as any)
+      const wrapper = await mountView()
+
+      const buttons = wrapper.findAll('button')
+      const finishedBtn = buttons.find(b => b.text() === 'Finished')
+      await finishedBtn!.trigger('click')
+      await flushPromises()
+
+      const confirmBtn = wrapper.findAll('button').find(b => b.text() === 'Confirm')
+      await confirmBtn!.trigger('click')
+      await flushPromises()
+
+      expect(rollApi.transition).toHaveBeenCalledWith(
+        'r1', RollState.FINISHED, undefined, undefined, undefined,
+      )
+    })
+
     it('should dismiss metadata form without transitioning when Cancel is clicked', async () => {
       vi.mocked(rollApi.getById).mockResolvedValue({ data: makeRoll({ state: RollState.ADDED }) } as any)
       const wrapper = await mountView()

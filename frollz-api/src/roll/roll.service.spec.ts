@@ -237,4 +237,95 @@ describe("RollService", () => {
       );
     });
   });
+
+  describe("transition to FINISHED", () => {
+    const loadedRollRow = {
+      id: "roll-uuid",
+      roll_id: "roll-00001",
+      stock_key: "stock-1",
+      state: RollState.LOADED,
+      images_url: null,
+      date_obtained: new Date().toISOString(),
+      obtainment_method: "Purchase",
+      obtained_from: "B&H",
+      expiration_date: null,
+      times_exposed_to_xrays: 0,
+      loaded_into: null,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    };
+
+    it("should apply pushed tag when shotISO > stock speed", async () => {
+      db.query
+        .mockResolvedValueOnce([loadedRollRow]) // findOne
+        .mockResolvedValueOnce([{ speed: 400 }]) // syncPushPullTags stock query
+        .mockResolvedValueOnce([loadedRollRow]); // update findOne
+
+      await service.transition("roll-uuid", {
+        targetState: RollState.FINISHED,
+        metadata: { shotISO: 800 },
+      });
+
+      expect(rollTagService.syncAutoTag).toHaveBeenCalledWith("roll-uuid", "pushed", true);
+      expect(rollTagService.syncAutoTag).toHaveBeenCalledWith("roll-uuid", "pulled", false);
+    });
+
+    it("should apply pulled tag when shotISO < stock speed", async () => {
+      db.query
+        .mockResolvedValueOnce([loadedRollRow])
+        .mockResolvedValueOnce([{ speed: 400 }])
+        .mockResolvedValueOnce([loadedRollRow]);
+
+      await service.transition("roll-uuid", {
+        targetState: RollState.FINISHED,
+        metadata: { shotISO: 200 },
+      });
+
+      expect(rollTagService.syncAutoTag).toHaveBeenCalledWith("roll-uuid", "pushed", false);
+      expect(rollTagService.syncAutoTag).toHaveBeenCalledWith("roll-uuid", "pulled", true);
+    });
+
+    it("should remove both tags when shotISO equals stock speed", async () => {
+      db.query
+        .mockResolvedValueOnce([loadedRollRow])
+        .mockResolvedValueOnce([{ speed: 400 }])
+        .mockResolvedValueOnce([loadedRollRow]);
+
+      await service.transition("roll-uuid", {
+        targetState: RollState.FINISHED,
+        metadata: { shotISO: 400 },
+      });
+
+      expect(rollTagService.syncAutoTag).toHaveBeenCalledWith("roll-uuid", "pushed", false);
+      expect(rollTagService.syncAutoTag).toHaveBeenCalledWith("roll-uuid", "pulled", false);
+    });
+
+    it("should remove both tags when no shotISO provided", async () => {
+      db.query
+        .mockResolvedValueOnce([loadedRollRow])
+        .mockResolvedValueOnce([{ speed: 400 }])
+        .mockResolvedValueOnce([loadedRollRow]);
+
+      await service.transition("roll-uuid", {
+        targetState: RollState.FINISHED,
+      });
+
+      expect(rollTagService.syncAutoTag).toHaveBeenCalledWith("roll-uuid", "pushed", false);
+      expect(rollTagService.syncAutoTag).toHaveBeenCalledWith("roll-uuid", "pulled", false);
+    });
+
+    it("should not call syncPushPullTags for non-FINISHED transitions", async () => {
+      db.query.mockResolvedValue([loadedRollRow]);
+
+      await service.transition("roll-uuid", {
+        targetState: RollState.FINISHED,
+      });
+
+      // Only pushed/pulled calls — expired is from update's syncExpiredTag
+      const pushPullCalls = rollTagService.syncAutoTag.mock.calls.filter(
+        ([, tag]) => tag === "pushed" || tag === "pulled",
+      );
+      expect(pushPullCalls.length).toBe(2);
+    });
+  });
 });

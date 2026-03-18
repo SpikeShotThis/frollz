@@ -94,6 +94,24 @@ export class RollService implements OnModuleInit {
     }
   }
 
+  private async syncPushPullTags(
+    rollKey: string,
+    stockKey: string,
+    shotISO?: number,
+  ): Promise<void> {
+    const stocks = await this.databaseService.query<{ speed: number }>(
+      `SELECT speed FROM stocks WHERE id = ?`,
+      [stockKey],
+    );
+    const stockSpeed = stocks.length > 0 ? Number(stocks[0].speed) : undefined;
+
+    const pushed = !!(shotISO && stockSpeed && shotISO > stockSpeed);
+    const pulled = !!(shotISO && stockSpeed && shotISO < stockSpeed);
+
+    await this.rollTagService.syncAutoTag(rollKey, "pushed", pushed);
+    await this.rollTagService.syncAutoTag(rollKey, "pulled", pulled);
+  }
+
   private async syncExpiredTag(
     rollKey: string,
     expirationDate?: Date | null,
@@ -266,6 +284,11 @@ export class RollService implements OnModuleInit {
       isErrorCorrection: dto.isErrorCorrection,
       metadata: dto.metadata,
     });
+
+    if (dto.targetState === RollState.FINISHED) {
+      const shotISO = dto.metadata?.shotISO as number | undefined;
+      await this.syncPushPullTags(key, roll.stockKey, shotISO);
+    }
 
     return this.update(key, { state: dto.targetState });
   }

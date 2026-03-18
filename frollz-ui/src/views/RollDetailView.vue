@@ -79,11 +79,20 @@
             <!-- Storage state metadata form -->
             <div v-if="pendingMetadataTransition" class="border border-blue-300 dark:border-blue-600 rounded-md p-3 bg-blue-50 dark:bg-blue-900/20">
               <p class="text-sm font-medium text-blue-800 dark:text-blue-200 mb-3">{{ pendingMetadataTransition }} details</p>
-              <label class="block text-xs text-gray-600 dark:text-gray-400">
+              <label v-if="pendingMetadataTransition !== RollState.FINISHED" class="block text-xs text-gray-600 dark:text-gray-400">
                 Storage temperature ({{ temperatureUnit }}) — optional
                 <input
                   v-model="metadataTemperature"
                   type="number"
+                  class="mt-1 w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                />
+              </label>
+              <label v-if="pendingMetadataTransition === RollState.FINISHED" class="block text-xs text-gray-600 dark:text-gray-400">
+                Shot ISO — optional
+                <input
+                  v-model="metadataShotISO"
+                  type="number"
+                  placeholder="e.g. 400"
                   class="mt-1 w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                 />
               </label>
@@ -186,6 +195,7 @@
             </div>
             <p v-if="entry.notes" class="mt-1 text-sm text-gray-600 dark:text-gray-400">{{ entry.notes }}</p>
             <p v-if="entry.metadata?.temperature != null" class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ entry.metadata.temperature }}{{ temperatureUnit }}</p>
+            <p v-if="entry.metadata?.shotISO != null" class="mt-1 text-xs text-gray-500 dark:text-gray-400">Shot at ISO {{ entry.metadata.shotISO }}</p>
           </li>
         </ol>
       </div>
@@ -213,8 +223,9 @@ const transitionSubmitting = ref(false)
 const pendingTransition = ref<RollState | null>(null)
 const pendingMetadataTransition = ref<RollState | null>(null)
 const metadataTemperature = ref('')
+const metadataShotISO = ref('')
 
-const STATES_REQUIRING_METADATA = new Set([RollState.FROZEN, RollState.REFRIGERATED, RollState.SHELVED])
+const STATES_REQUIRING_METADATA = new Set([RollState.FROZEN, RollState.REFRIGERATED, RollState.SHELVED, RollState.FINISHED])
 const isImperial = navigator.language === 'en-US'
 const temperatureUnit = isImperial ? '°F' : '°C'
 const TEMPERATURE_DEFAULTS: Partial<Record<RollState, number>> = {
@@ -318,6 +329,7 @@ const handleTransition = (targetState: RollState) => {
   if (STATES_REQUIRING_METADATA.has(targetState)) {
     pendingMetadataTransition.value = targetState
     metadataTemperature.value = String(TEMPERATURE_DEFAULTS[targetState] ?? '')
+    metadataShotISO.value = ''
     return
   }
   void executeTransition(targetState)
@@ -327,8 +339,13 @@ const submitMetadataTransition = () => {
   if (!pendingMetadataTransition.value) return
   const target = pendingMetadataTransition.value
   const temp = metadataTemperature.value !== '' ? parseFloat(metadataTemperature.value) : undefined
+  const shotISO = metadataShotISO.value !== '' ? parseFloat(metadataShotISO.value) : undefined
   pendingMetadataTransition.value = null
-  void executeTransition(target, undefined, temp != null ? { temperature: temp } : undefined)
+
+  const metadata: Record<string, unknown> = {}
+  if (temp != null) metadata.temperature = temp
+  if (shotISO != null) metadata.shotISO = shotISO
+  void executeTransition(target, undefined, Object.keys(metadata).length > 0 ? metadata : undefined)
 }
 
 const confirmTransition = (isErrorCorrection: boolean) => {
