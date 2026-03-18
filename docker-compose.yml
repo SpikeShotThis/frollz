@@ -29,13 +29,58 @@ services:
     image: postgres:18-alpine
     container_name: frollz-postgres
     environment:
-      - POSTGRES_DB=${DATABASE_NAME}
-      - POSTGRES_USER=${DATABASE_USER}
-      - POSTGRES_PASSWORD=${DATABASE_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DATABASE}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    ports:
+      - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql
     networks:
       - frollz-network
+    restart: unless-stopped
+
+  frollz-api:
+    build:
+      context: ./frollz-api
+      dockerfile: Dockerfile
+    container_name: frollz-api
+    environment:
+      - NODE_ENV=development
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_DATABASE=${POSTGRES_DATABASE}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - PORT=3000
+      - DISABLE_DEFAULT_DATA_IMPORT=false
+    ports:
+      - "3000:3000"
+    depends_on:
+      - postgres
+    volumes:
+      - ./frollz-api:/app
+      - /app/node_modules
+    networks:
+      - frollz-network
+    command: npm run start:dev
+    restart: unless-stopped
+
+  frollz-ui:
+    build:
+      context: ./frollz-ui
+      dockerfile: Dockerfile
+      target: development
+    container_name: frollz-ui
+    environment:
+      - VITE_API_URL=/api
+    ports:
+      - "5173:5173"
+    depends_on:
+      - frollz-api
+    networks:
+      - frollz-network
+    command: npm run dev
     restart: unless-stopped
 
 volumes:

@@ -114,6 +114,8 @@ git config core.hooksPath .githooks
 
 This activates the pre-commit hook at `.githooks/pre-commit`, which runs UI lint, UI type-check, UI tests, API lint, API tests, and Semgrep SAST before every commit. This mirrors CI exactly — if the hook passes, CI will pass.
 
+Before starting the stack, copy `.env.example` to `.env` and fill in values. `docker-compose.yml` does not supply defaults — startup will fail if these variables are not set.
+
 ### GitHub Issues
 
 **Before starting any work on a new issue, always run these steps in order — no exceptions:**
