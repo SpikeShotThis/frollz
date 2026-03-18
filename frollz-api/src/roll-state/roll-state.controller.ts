@@ -23,7 +23,8 @@ export class RollStateController {
   findByRollKey(
     @Query("rollKey") rollKey: string,
   ): Promise<RollStateHistory[]> {
-    if (!rollKey) throw new BadRequestException("rollKey query parameter is required");
+    if (!rollKey)
+      throw new BadRequestException("rollKey query parameter is required");
     return this.rollStateService.findByRollKey(rollKey);
   }
 }
