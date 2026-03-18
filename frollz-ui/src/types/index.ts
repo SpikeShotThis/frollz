@@ -99,6 +99,7 @@ export interface RollStateHistory {
   state: RollState
   date: Date
   notes?: string
+  isErrorCorrection?: boolean
   createdAt?: Date
   updatedAt?: Date
 }

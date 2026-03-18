@@ -67,7 +67,7 @@
                 v-for="targetState in validTransitions"
                 :key="targetState"
                 @click="handleTransition(targetState)"
-                :disabled="transitionSubmitting"
+                :disabled="transitionSubmitting || !!pendingTransition"
                 class="px-3 py-1 text-xs font-medium border rounded disabled:opacity-50"
                 :class="isBackwardTransition(roll.state, targetState)
                   ? 'text-orange-700 border-orange-400 hover:bg-orange-50 dark:text-orange-400 dark:border-orange-500 dark:hover:bg-orange-900/30'
@@ -75,6 +75,27 @@
               >
                 {{ isBackwardTransition(roll.state, targetState) ? '↩ ' : '' }}{{ targetState }}
               </button>
+            </div>
+            <!-- Error correction prompt -->
+            <div v-if="pendingTransition" class="border border-orange-300 dark:border-orange-600 rounded-md p-3 bg-orange-50 dark:bg-orange-900/20">
+              <p class="text-sm text-orange-800 dark:text-orange-200 mb-2">Was this done to correct an error?</p>
+              <div class="flex gap-2">
+                <button
+                  @click="confirmTransition(true)"
+                  :disabled="transitionSubmitting"
+                  class="px-3 py-1 text-xs font-medium bg-orange-600 text-white rounded hover:bg-orange-700 disabled:opacity-50"
+                >Yes</button>
+                <button
+                  @click="confirmTransition(false)"
+                  :disabled="transitionSubmitting"
+                  class="px-3 py-1 text-xs font-medium border border-gray-400 dark:border-gray-500 text-gray-700 dark:text-gray-300 rounded hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50"
+                >No</button>
+                <button
+                  @click="pendingTransition = null"
+                  :disabled="transitionSubmitting"
+                  class="px-3 py-1 text-xs font-medium text-gray-500 dark:text-gray-400 hover:underline disabled:opacity-50"
+                >Cancel</button>
+              </div>
             </div>
             <div>
               <textarea
@@ -135,7 +156,7 @@
                 class="px-2 text-xs leading-5 font-semibold rounded-full"
                 :class="getStateColor(entry.state)"
               >{{ entry.state }}</span>
-              <span v-if="entry.direction === 'backward'" class="text-xs text-orange-600 dark:text-orange-400">↩ correction</span>
+              <span v-if="entry.direction === 'backward'" class="text-xs text-orange-600 dark:text-orange-400">{{ entry.isErrorCorrection ? '↩ error correction' : '↩ backward' }}</span>
               <span v-if="entry.direction === 'initial'" class="text-xs text-gray-400 dark:text-gray-500">initial</span>
               <time class="text-xs text-gray-400 dark:text-gray-500">{{ formatDateTime(entry.date) }}</time>
             </div>
@@ -164,6 +185,7 @@ const loading = ref(true)
 const transitionNotes = ref('')
 const transitionError = ref('')
 const transitionSubmitting = ref(false)
+const pendingTransition = ref<RollState | null>(null)
 
 const FORWARD_TRANSITIONS: Partial<Record<RollState, RollState[]>> = {
   [RollState.ADDED]: [RollState.FROZEN, RollState.REFRIGERATED, RollState.SHELVED],
@@ -251,12 +273,28 @@ const getStateColor = (state: RollState) => {
 const formatDate = (date: Date | string) => new Date(date as string).toLocaleDateString()
 const formatDateTime = (date: Date | string) => new Date(date as string).toLocaleString()
 
-const handleTransition = async (targetState: RollState) => {
+const handleTransition = (targetState: RollState) => {
+  if (!roll.value) return
+  if (isBackwardTransition(roll.value.state, targetState)) {
+    pendingTransition.value = targetState
+    return
+  }
+  void executeTransition(targetState)
+}
+
+const confirmTransition = (isErrorCorrection: boolean) => {
+  if (!pendingTransition.value) return
+  const target = pendingTransition.value
+  pendingTransition.value = null
+  void executeTransition(target, isErrorCorrection)
+}
+
+const executeTransition = async (targetState: RollState, isErrorCorrection?: boolean) => {
   if (!roll.value) return
   transitionSubmitting.value = true
   transitionError.value = ''
   try {
-    await rollApi.transition(roll.value._key!, targetState, transitionNotes.value || undefined)
+    await rollApi.transition(roll.value._key!, targetState, transitionNotes.value || undefined, isErrorCorrection)
     transitionNotes.value = ''
     await loadData()
   } catch {

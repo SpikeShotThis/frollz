@@ -137,4 +137,44 @@ describe("RollTagService", () => {
       expect(result).toBe(true);
     });
   });
+
+  describe("syncAutoTag", () => {
+    it("should insert a roll-tag when shouldApply is true and tag is not present", async () => {
+      db.query.mockResolvedValue([]); // no existing association
+
+      await service.syncAutoTag("roll-1", "expired", true);
+
+      expect(db.execute).toHaveBeenCalledWith(
+        expect.stringContaining("INSERT INTO roll_tags"),
+        expect.arrayContaining(["roll-1", "expired"]),
+      );
+    });
+
+    it("should not insert when shouldApply is true and tag already exists", async () => {
+      db.query.mockResolvedValue([{ id: "existing" }]);
+
+      await service.syncAutoTag("roll-1", "expired", true);
+
+      expect(db.execute).not.toHaveBeenCalled();
+    });
+
+    it("should delete the roll-tag when shouldApply is false and tag is present", async () => {
+      db.query.mockResolvedValue([{ id: "existing" }]);
+
+      await service.syncAutoTag("roll-1", "expired", false);
+
+      expect(db.execute).toHaveBeenCalledWith(
+        expect.stringContaining("DELETE FROM roll_tags"),
+        ["roll-1", "expired"],
+      );
+    });
+
+    it("should do nothing when shouldApply is false and tag is not present", async () => {
+      db.query.mockResolvedValue([]);
+
+      await service.syncAutoTag("roll-1", "expired", false);
+
+      expect(db.execute).not.toHaveBeenCalled();
+    });
+  });
 });

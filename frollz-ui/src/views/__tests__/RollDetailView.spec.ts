@@ -146,7 +146,7 @@ describe('RollDetailView', () => {
       expect(wrapper.text()).not.toContain('correction')
     })
 
-    it('should classify backward transitions with correction label', async () => {
+    it('should label backward transitions as "↩ backward" when not an error correction', async () => {
       vi.mocked(rollApi.getById).mockResolvedValue({ data: makeRoll({ state: RollState.ADDED }) } as any)
       vi.mocked(rollStateApi.getHistory).mockResolvedValue({
         data: makeHistory([
@@ -156,7 +156,20 @@ describe('RollDetailView', () => {
         ]),
       } as any)
       const wrapper = await mountView()
-      expect(wrapper.text()).toContain('correction')
+      expect(wrapper.text()).toContain('↩ backward')
+    })
+
+    it('should label backward transitions as "↩ error correction" when isErrorCorrection is true', async () => {
+      vi.mocked(rollApi.getById).mockResolvedValue({ data: makeRoll({ state: RollState.ADDED }) } as any)
+      vi.mocked(rollStateApi.getHistory).mockResolvedValue({
+        data: makeHistory([
+          { state: RollState.ADDED, date: new Date('2024-01-01') },
+          { state: RollState.FROZEN, date: new Date('2024-01-02') },
+          { state: RollState.ADDED, date: new Date('2024-01-03'), isErrorCorrection: true } as any,
+        ]),
+      } as any)
+      const wrapper = await mountView()
+      expect(wrapper.text()).toContain('↩ error correction')
     })
 
     it('should display history newest first', async () => {
@@ -199,7 +212,7 @@ describe('RollDetailView', () => {
       expect(backwardBtn).toBeTruthy()
     })
 
-    it('should call rollApi.transition and reload on transition click', async () => {
+    it('should call rollApi.transition and reload on forward transition click', async () => {
       vi.mocked(rollApi.getById).mockResolvedValue({ data: makeRoll({ state: RollState.SHELVED }) } as any)
       const wrapper = await mountView()
 
@@ -208,8 +221,70 @@ describe('RollDetailView', () => {
       await loadedBtn!.trigger('click')
       await flushPromises()
 
-      expect(rollApi.transition).toHaveBeenCalledWith('r1', RollState.LOADED, undefined)
+      expect(rollApi.transition).toHaveBeenCalledWith('r1', RollState.LOADED, undefined, undefined)
       expect(rollApi.getById).toHaveBeenCalledTimes(2)
+    })
+
+    it('should show error correction prompt when backward transition is clicked', async () => {
+      vi.mocked(rollApi.getById).mockResolvedValue({ data: makeRoll({ state: RollState.SHELVED }) } as any)
+      const wrapper = await mountView()
+
+      const buttons = wrapper.findAll('button')
+      const backwardBtn = buttons.find(b => b.text().startsWith('↩'))
+      await backwardBtn!.trigger('click')
+      await flushPromises()
+
+      expect(wrapper.text()).toContain('Was this done to correct an error?')
+      expect(rollApi.transition).not.toHaveBeenCalled()
+    })
+
+    it('should call transition with isErrorCorrection=true when Yes is clicked', async () => {
+      vi.mocked(rollApi.getById).mockResolvedValue({ data: makeRoll({ state: RollState.SHELVED }) } as any)
+      const wrapper = await mountView()
+
+      const buttons = wrapper.findAll('button')
+      const backwardBtn = buttons.find(b => b.text().startsWith('↩'))
+      await backwardBtn!.trigger('click')
+      await flushPromises()
+
+      const yesBtn = wrapper.findAll('button').find(b => b.text() === 'Yes')
+      await yesBtn!.trigger('click')
+      await flushPromises()
+
+      expect(rollApi.transition).toHaveBeenCalledWith('r1', expect.any(String), undefined, true)
+    })
+
+    it('should call transition with isErrorCorrection=false when No is clicked', async () => {
+      vi.mocked(rollApi.getById).mockResolvedValue({ data: makeRoll({ state: RollState.SHELVED }) } as any)
+      const wrapper = await mountView()
+
+      const buttons = wrapper.findAll('button')
+      const backwardBtn = buttons.find(b => b.text().startsWith('↩'))
+      await backwardBtn!.trigger('click')
+      await flushPromises()
+
+      const noBtn = wrapper.findAll('button').find(b => b.text() === 'No')
+      await noBtn!.trigger('click')
+      await flushPromises()
+
+      expect(rollApi.transition).toHaveBeenCalledWith('r1', expect.any(String), undefined, false)
+    })
+
+    it('should dismiss the prompt without transitioning when Cancel is clicked', async () => {
+      vi.mocked(rollApi.getById).mockResolvedValue({ data: makeRoll({ state: RollState.SHELVED }) } as any)
+      const wrapper = await mountView()
+
+      const buttons = wrapper.findAll('button')
+      const backwardBtn = buttons.find(b => b.text().startsWith('↩'))
+      await backwardBtn!.trigger('click')
+      await flushPromises()
+
+      const cancelBtn = wrapper.findAll('button').find(b => b.text() === 'Cancel')
+      await cancelBtn!.trigger('click')
+      await flushPromises()
+
+      expect(rollApi.transition).not.toHaveBeenCalled()
+      expect(wrapper.text()).not.toContain('Was this done to correct an error?')
     })
   })
 

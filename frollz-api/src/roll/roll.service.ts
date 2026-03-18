@@ -1,4 +1,4 @@
-import { Injectable, BadRequestException } from "@nestjs/common";
+import { Injectable, BadRequestException, OnModuleInit } from "@nestjs/common";
 import { randomUUID } from "crypto";
 import { DatabaseService } from "../database/database.service";
 import { CreateRollDto } from "./dto/create-roll.dto";
@@ -6,6 +6,7 @@ import { UpdateRollDto } from "./dto/update-roll.dto";
 import { TransitionRollDto } from "./dto/transition-roll.dto";
 import { Roll, RollState } from "./entities/roll.entity";
 import { RollStateService } from "../roll-state/roll-state.service";
+import { RollTagService } from "../roll-tag/roll-tag.service";
 
 const FORWARD_TRANSITIONS: Partial<Record<RollState, RollState[]>> = {
   [RollState.ADDED]: [
@@ -69,11 +70,42 @@ function mapRoll(row: Record<string, unknown>): Roll {
 }
 
 @Injectable()
-export class RollService {
+export class RollService implements OnModuleInit {
   constructor(
     private readonly databaseService: DatabaseService,
     private readonly rollStateService: RollStateService,
+    private readonly rollTagService: RollTagService,
   ) {}
+
+  async onModuleInit() {
+    const rows = await this.databaseService.query<{
+      id: string;
+      expiration_date: string;
+      date_obtained: string;
+    }>(
+      `SELECT id, expiration_date, date_obtained FROM rolls WHERE expiration_date IS NOT NULL`,
+    );
+    for (const row of rows) {
+      await this.syncExpiredTag(
+        row.id,
+        new Date(row.expiration_date),
+        new Date(row.date_obtained),
+      );
+    }
+  }
+
+  private async syncExpiredTag(
+    rollKey: string,
+    expirationDate?: Date | null,
+    dateObtained?: Date | null,
+  ): Promise<void> {
+    const shouldTag = !!(
+      expirationDate &&
+      dateObtained &&
+      new Date(expirationDate) < new Date(dateObtained)
+    );
+    await this.rollTagService.syncAutoTag(rollKey, "expired", shouldTag);
+  }
 
   async create(createRollDto: CreateRollDto): Promise<Roll> {
     const id = randomUUID();
@@ -122,6 +154,8 @@ export class RollService {
       state: initialState,
       date: now,
     });
+
+    await this.syncExpiredTag(id, createRollDto.expirationDate, new Date(dateObtained));
 
     return {
       _key: id,
@@ -201,7 +235,11 @@ export class RollService {
       values,
     );
 
-    return this.findOne(key);
+    const updated = await this.findOne(key);
+    if (updated) {
+      await this.syncExpiredTag(key, updated.expirationDate, updated.dateObtained);
+    }
+    return updated;
   }
 
   async remove(key: string): Promise<boolean> {
@@ -225,6 +263,7 @@ export class RollService {
       state: dto.targetState,
       date: new Date(),
       notes: dto.notes,
+      isErrorCorrection: dto.isErrorCorrection,
     });
 
     return this.update(key, { state: dto.targetState });

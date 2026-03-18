@@ -69,4 +69,23 @@ export class RollTagService {
     ]);
     return true;
   }
+
+  async syncAutoTag(
+    rollKey: string,
+    tagId: string,
+    shouldApply: boolean,
+  ): Promise<void> {
+    const existing = await this.databaseService.query(
+      `SELECT id FROM roll_tags WHERE roll_key = ? AND tag_key = ?`,
+      [rollKey, tagId],
+    );
+    if (shouldApply && existing.length === 0) {
+      await this.create({ rollKey, tagKey: tagId });
+    } else if (!shouldApply && existing.length > 0) {
+      await this.databaseService.execute(
+        `DELETE FROM roll_tags WHERE roll_key = ? AND tag_key = ?`,
+        [rollKey, tagId],
+      );
+    }
+  }
 }

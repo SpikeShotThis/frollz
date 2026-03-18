@@ -3,6 +3,7 @@ import { BadRequestException } from "@nestjs/common";
 import { RollService } from "./roll.service";
 import { DatabaseService } from "../database/database.service";
 import { RollStateService } from "../roll-state/roll-state.service";
+import { RollTagService } from "../roll-tag/roll-tag.service";
 import { RollState } from "./entities/roll.entity";
 
 const makeDbService = (
@@ -18,19 +19,26 @@ const makeRollStateService = () => ({
   findByRollKey: jest.fn().mockResolvedValue([]),
 });
 
+const makeRollTagService = () => ({
+  syncAutoTag: jest.fn().mockResolvedValue(undefined),
+});
+
 describe("RollService", () => {
   let service: RollService;
   let db: ReturnType<typeof makeDbService>;
   let rollStateService: ReturnType<typeof makeRollStateService>;
+  let rollTagService: ReturnType<typeof makeRollTagService>;
 
   beforeEach(async () => {
     db = makeDbService();
     rollStateService = makeRollStateService();
+    rollTagService = makeRollTagService();
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         RollService,
         { provide: DatabaseService, useValue: db },
         { provide: RollStateService, useValue: rollStateService },
+        { provide: RollTagService, useValue: rollTagService },
       ],
     }).compile();
 
@@ -87,6 +95,44 @@ describe("RollService", () => {
       const roll = await service.create(baseDto);
 
       expect(roll.state).toBe(RollState.ADDED);
+    });
+
+    it("should apply expired auto-tag when expirationDate is before dateObtained", async () => {
+      await service.create({
+        ...baseDto,
+        expirationDate: new Date("2023-01-01"),
+        dateObtained: new Date("2024-01-01"),
+      });
+
+      expect(rollTagService.syncAutoTag).toHaveBeenCalledWith(
+        expect.any(String),
+        "expired",
+        true,
+      );
+    });
+
+    it("should not apply expired auto-tag when expirationDate is after dateObtained", async () => {
+      await service.create({
+        ...baseDto,
+        expirationDate: new Date("2025-01-01"),
+        dateObtained: new Date("2024-01-01"),
+      });
+
+      expect(rollTagService.syncAutoTag).toHaveBeenCalledWith(
+        expect.any(String),
+        "expired",
+        false,
+      );
+    });
+
+    it("should not apply expired auto-tag when no expirationDate is provided", async () => {
+      await service.create(baseDto);
+
+      expect(rollTagService.syncAutoTag).toHaveBeenCalledWith(
+        expect.any(String),
+        "expired",
+        false,
+      );
     });
   });
 
@@ -146,6 +192,27 @@ describe("RollService", () => {
 
       expect(rollStateService.create).toHaveBeenCalledWith(
         expect.objectContaining({ notes: "loading into Leica M6" }),
+      );
+    });
+
+    it("should pass isErrorCorrection to the state history entry", async () => {
+      await service.transition("roll-uuid", {
+        targetState: RollState.FROZEN,
+        isErrorCorrection: true,
+      });
+
+      expect(rollStateService.create).toHaveBeenCalledWith(
+        expect.objectContaining({ isErrorCorrection: true }),
+      );
+    });
+
+    it("should pass isErrorCorrection: undefined when not set", async () => {
+      await service.transition("roll-uuid", {
+        targetState: RollState.LOADED,
+      });
+
+      expect(rollStateService.create).toHaveBeenCalledWith(
+        expect.objectContaining({ isErrorCorrection: undefined }),
       );
     });
   });
