@@ -1,5 +1,5 @@
 import { api } from './api'
-import type { FilmFormat, Stock, Roll, RollStateHistory, Tag, StockTag, RollTag } from '@/types'
+import type { FilmFormat, Stock, Roll, RollStateHistory, Tag, StockTag, RollTag, TransitionGraph } from '@/types'
 import { Process } from '@/types'
 
 // Format API (replaces filmFormatApi)
@@ -88,15 +88,13 @@ export const rollApi = {
     api.post<Roll>(`/rolls/${key}/transition`, { targetState, date, notes, isErrorCorrection, metadata }),
 }
 
-// FilmState API (replaces rollStateApi)
-export const filmStateApi = {
-  getByFilmId: (filmId: number) =>
-    api.get<FilmState[]>('/film-states', { params: { filmId } }),
-}
-
 // Transition API
 export const transitionApi = {
-  getProfiles: () => api.get<TransitionProfile[]>('/transitions/profiles'),
-  getGraph: (profile = 'standard') =>
-    api.get<TransitionGraph>('/transitions', { params: { profile } }),
+  getGraph: () => api.get<TransitionGraph>('/transitions'),
+}
+
+// Roll State History API
+export const rollStateApi = {
+  getHistory: (rollKey: string) =>
+    api.get<RollStateHistory[]>('/roll-states', { params: { rollKey } }),
 }

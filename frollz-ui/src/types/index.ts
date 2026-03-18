@@ -70,32 +70,32 @@ export enum RollState {
   RECEIVED = 'Received',
 }
 
-export interface FilmStateMetadataField {
-  id: number
-  name: string
+export interface TransitionMetadataField {
+  field: string
   fieldType: string
-  allowMultiple: boolean
+  defaultValue: string | null
+  isRequired: boolean
 }
 
-export interface FilmStateMetadata {
-  id: number
-  filmStateId: number
-  transitionStateMetadataId: number
-  value: string | string[] | null
-  transitionStateMetadata?: {
-    id: number
-    fieldId: number
-    transitionStateId: number
-    defaultValue: string | null
-    field?: FilmStateMetadataField
-  }
+export interface TransitionEdge {
+  id: string
+  fromState: string
+  toState: string
+  transitionType: string
+  requiresDate: boolean
+  metadata: TransitionMetadataField[]
 }
 
-// FilmState (replaces RollStateHistory)
-export interface FilmState {
-  id: number
-  filmId: number
-  stateId: number
+export interface TransitionGraph {
+  states: string[]
+  transitions: TransitionEdge[]
+}
+
+export interface RollStateHistory {
+  _key?: string
+  stateId: string
+  rollId: string
+  state: RollState
   date: Date
   notes?: string
   isErrorCorrection?: boolean

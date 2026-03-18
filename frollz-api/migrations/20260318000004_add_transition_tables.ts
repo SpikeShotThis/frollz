@@ -160,7 +160,7 @@ export async function up(knex: Knex): Promise<void> {
       from_state_id: stateId("Finished"),
       to_state_id: stateId("Sent For Development"),
       transition_type_id: fwd,
-      requires_date: false,
+      requires_date: true,
     },
     {
       from_state_id: stateId("Sent For Development"),

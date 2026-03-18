@@ -87,7 +87,7 @@
             <!-- Storage state metadata form -->
             <div v-if="pendingMetadataTransition" class="border border-blue-300 dark:border-blue-600 rounded-md p-3 bg-blue-50 dark:bg-blue-900/20">
               <p class="text-sm font-medium text-blue-800 dark:text-blue-200 mb-3">{{ pendingMetadataTransition }} details</p>
-              <label v-if="STATES_WITH_DATE_CAPTURE.has(pendingMetadataTransition!)" class="block text-xs text-gray-600 dark:text-gray-400 mb-2">
+              <label v-if="requiresDateCapture(pendingMetadataTransition!)" class="block text-xs text-gray-600 dark:text-gray-400 mb-2">
                 Date <span class="text-red-500">*</span>
                 <input v-model="metadataDate" type="date" class="mt-1 w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100" />
               </label>
@@ -293,8 +293,8 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
-import { rollApi, rollStateApi, rollTagApi, tagApi } from '@/services/api-client'
-import type { Roll, RollStateHistory, Tag, RollTag } from '@/types'
+import { rollApi, rollStateApi, rollTagApi, tagApi, transitionApi } from '@/services/api-client'
+import type { Roll, RollStateHistory, Tag, RollTag, TransitionGraph } from '@/types'
 import { RollState } from '@/types'
 
 const route = useRoute()
@@ -329,8 +329,6 @@ const PROCESSES_REQUESTED = ['C-41', 'E-6', 'ECN-2', 'Black & White', 'Instant']
 
 const todayISO = () => new Date().toISOString().slice(0, 10)
 
-const STATES_REQUIRING_METADATA = new Set([RollState.FROZEN, RollState.REFRIGERATED, RollState.SHELVED, RollState.LOADED, RollState.FINISHED, RollState.SENT_FOR_DEVELOPMENT, RollState.DEVELOPED, RollState.RECEIVED])
-const STATES_WITH_DATE_CAPTURE = new Set([RollState.FROZEN, RollState.REFRIGERATED, RollState.SHELVED, RollState.LOADED, RollState.FINISHED, RollState.SENT_FOR_DEVELOPMENT, RollState.DEVELOPED])
 const isImperial = navigator.language === 'en-US'
 const temperatureUnit = isImperial ? '°F' : '°C'
 const TEMPERATURE_DEFAULTS: Partial<Record<RollState, number>> = {
@@ -339,44 +337,35 @@ const TEMPERATURE_DEFAULTS: Partial<Record<RollState, number>> = {
   [RollState.SHELVED]: isImperial ? 65 : 18,
 }
 
-const FORWARD_TRANSITIONS: Partial<Record<RollState, RollState[]>> = {
-  [RollState.ADDED]: [RollState.FROZEN, RollState.REFRIGERATED, RollState.SHELVED],
-  [RollState.FROZEN]: [RollState.REFRIGERATED, RollState.SHELVED],
-  [RollState.REFRIGERATED]: [RollState.SHELVED],
-  [RollState.SHELVED]: [RollState.LOADED],
-  [RollState.LOADED]: [RollState.FINISHED],
-  [RollState.FINISHED]: [RollState.SENT_FOR_DEVELOPMENT],
-  [RollState.SENT_FOR_DEVELOPMENT]: [RollState.DEVELOPED],
-  [RollState.DEVELOPED]: [RollState.RECEIVED],
-}
-
-const BACKWARD_TRANSITIONS: Partial<Record<RollState, RollState[]>> = {
-  [RollState.FROZEN]: [RollState.ADDED],
-  [RollState.REFRIGERATED]: [RollState.FROZEN, RollState.ADDED],
-  [RollState.SHELVED]: [RollState.REFRIGERATED, RollState.FROZEN],
-  [RollState.LOADED]: [RollState.SHELVED, RollState.REFRIGERATED, RollState.FROZEN],
-  [RollState.FINISHED]: [RollState.LOADED],
-  [RollState.SENT_FOR_DEVELOPMENT]: [RollState.FINISHED],
-  [RollState.DEVELOPED]: [RollState.SENT_FOR_DEVELOPMENT],
-  [RollState.RECEIVED]: [RollState.DEVELOPED],
-}
-
-const VALID_TRANSITIONS: Partial<Record<RollState, RollState[]>> = Object.fromEntries(
-  Object.values(RollState).map((state) => [
-    state,
-    [
-      ...(FORWARD_TRANSITIONS[state] ?? []),
-      ...(BACKWARD_TRANSITIONS[state] ?? []),
-    ],
-  ]),
-) as Partial<Record<RollState, RollState[]>>
+const transitionGraph = ref<TransitionGraph>({ states: [], transitions: [] })
 
 const isBackwardTransition = (from: RollState, to: RollState): boolean =>
-  (BACKWARD_TRANSITIONS[from] ?? []).includes(to)
+  transitionGraph.value.transitions.some(
+    t => t.fromState === from && t.toState === to && t.transitionType === 'BACKWARD',
+  )
 
 const validTransitions = computed(() =>
-  roll.value ? (VALID_TRANSITIONS[roll.value.state] ?? []) : [],
+  roll.value
+    ? transitionGraph.value.transitions
+        .filter(t => t.fromState === roll.value!.state)
+        .map(t => t.toState as RollState)
+    : [],
 )
+
+const getTransitionEdge = (targetState: RollState) =>
+  transitionGraph.value.transitions.find(
+    t => t.fromState === roll.value?.state && t.toState === targetState,
+  )
+
+const requiresMetadataForm = (targetState: RollState): boolean => {
+  const t = getTransitionEdge(targetState)
+  return !!t && (t.metadata.length > 0 || t.requiresDate)
+}
+
+const requiresDateCapture = (targetState: RollState): boolean => {
+  const t = getTransitionEdge(targetState)
+  return !!t && t.requiresDate
+}
 
 const tagByKey = computed(() => {
   const map: Record<string, Tag> = {}
@@ -430,7 +419,7 @@ const handleTransition = (targetState: RollState) => {
     pendingTransition.value = targetState
     return
   }
-  if (STATES_REQUIRING_METADATA.has(targetState)) {
+  if (requiresMetadataForm(targetState)) {
     pendingMetadataTransition.value = targetState
     metadataTemperature.value = String(TEMPERATURE_DEFAULTS[targetState] ?? '')
     metadataShotISO.value = targetState === RollState.FINISHED && roll.value?.stockSpeed ? String(roll.value.stockSpeed) : ''
@@ -460,7 +449,7 @@ const submitMetadataTransition = () => {
     if (!metadataProcessRequested.value) { metadataFormError.value = 'Process is required.'; return }
   }
 
-  if (STATES_WITH_DATE_CAPTURE.has(target) && !metadataDate.value) {
+  if (requiresDateCapture(target) && !metadataDate.value) {
     metadataFormError.value = 'Date is required.'
     return
   }
@@ -469,7 +458,7 @@ const submitMetadataTransition = () => {
   const shotISO = metadataShotISO.value !== '' ? parseFloat(metadataShotISO.value) : undefined
   const pushPullStops = metadataPushPullStops.value !== '' ? parseInt(metadataPushPullStops.value, 10) : undefined
   let date: string | undefined
-  if (STATES_WITH_DATE_CAPTURE.has(target) && metadataDate.value) {
+  if (requiresDateCapture(target) && metadataDate.value) {
     const [year, month, day] = metadataDate.value.split('-').map(Number)
     const now = new Date()
     date = new Date(year, month - 1, day, now.getHours(), now.getMinutes(), now.getSeconds()).toISOString()
@@ -557,7 +546,11 @@ const loadData = async () => {
 
 onMounted(async () => {
   try {
-    await loadData()
+    const [graphRes] = await Promise.all([
+      transitionApi.getGraph(),
+      loadData(),
+    ])
+    transitionGraph.value = graphRes.data
   } finally {
     loading.value = false
   }
