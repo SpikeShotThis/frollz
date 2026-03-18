@@ -16,6 +16,7 @@ import { StockService } from "./stock.service";
 import { CreateStockDto } from "./dto/create-stock.dto";
 import { CreateStockMultipleFormatsDto } from "./dto/create-stock-multiple-formats.dto";
 import { UpdateStockDto } from "./dto/update-stock.dto";
+import { TypeaheadQueryDto } from "./dto/typeahead-query.dto";
 import { Stock } from "./entities/stock.entity";
 
 @ApiTags("stocks")
@@ -73,7 +74,7 @@ export class StockController {
     description: "Matching brand names",
     type: [String],
   })
-  getBrands(@Query("q") q: string): Promise<string[]> {
+  getBrands(@Query() { q }: TypeaheadQueryDto): Promise<string[]> {
     return this.stockService.getBrands(q ?? "");
   }
 
@@ -90,7 +91,7 @@ export class StockController {
     description: "Matching manufacturer names",
     type: [String],
   })
-  getManufacturers(@Query("q") q: string): Promise<string[]> {
+  getManufacturers(@Query() { q }: TypeaheadQueryDto): Promise<string[]> {
     return this.stockService.getManufacturers(q ?? "");
   }
 
@@ -107,7 +108,7 @@ export class StockController {
     description: "Matching speed values",
     type: [Number],
   })
-  getSpeeds(@Query("q") q: string): Promise<number[]> {
+  getSpeeds(@Query() { q }: TypeaheadQueryDto): Promise<number[]> {
     return this.stockService.getSpeeds(q ?? "");
   }
 
