@@ -235,6 +235,8 @@ describe('RollDetailView', () => {
       await frozenBtn!.trigger('click')
       await flushPromises()
 
+      const vm = wrapper.vm as any
+      vm.metadataDate = '2026-01-10'
       const input = wrapper.find('input[type="number"]')
       await input.setValue('-20')
 
@@ -243,7 +245,7 @@ describe('RollDetailView', () => {
       await flushPromises()
 
       expect(rollApi.transition).toHaveBeenCalledWith(
-        'r1', RollState.FROZEN, undefined, undefined, undefined, { temperature: -20 },
+        'r1', RollState.FROZEN, '2026-01-10', undefined, undefined, { temperature: -20 },
       )
     })
 
@@ -256,6 +258,8 @@ describe('RollDetailView', () => {
       await frozenBtn!.trigger('click')
       await flushPromises()
 
+      const vm = wrapper.vm as any
+      vm.metadataDate = '2026-01-10'
       const input = wrapper.find('input[type="number"]')
       await input.setValue('')
 
@@ -264,7 +268,7 @@ describe('RollDetailView', () => {
       await flushPromises()
 
       expect(rollApi.transition).toHaveBeenCalledWith(
-        'r1', RollState.FROZEN, undefined, undefined, undefined, undefined,
+        'r1', RollState.FROZEN, '2026-01-10', undefined, undefined, undefined,
       )
     })
 
@@ -291,6 +295,8 @@ describe('RollDetailView', () => {
       await finishedBtn!.trigger('click')
       await flushPromises()
 
+      const vm = wrapper.vm as any
+      vm.metadataDate = '2026-02-14'
       const input = wrapper.find('input[type="number"]')
       await input.setValue('800')
 
@@ -299,7 +305,7 @@ describe('RollDetailView', () => {
       await flushPromises()
 
       expect(rollApi.transition).toHaveBeenCalledWith(
-        'r1', RollState.FINISHED, undefined, undefined, undefined, { shotISO: 800 },
+        'r1', RollState.FINISHED, '2026-02-14', undefined, undefined, { shotISO: 800 },
       )
     })
 
@@ -312,12 +318,15 @@ describe('RollDetailView', () => {
       await finishedBtn!.trigger('click')
       await flushPromises()
 
+      const vm = wrapper.vm as any
+      vm.metadataDate = '2026-02-14'
+
       const confirmBtn = wrapper.findAll('button').find(b => b.text() === 'Confirm')
       await confirmBtn!.trigger('click')
       await flushPromises()
 
       expect(rollApi.transition).toHaveBeenCalledWith(
-        'r1', RollState.FINISHED, undefined, undefined, undefined, undefined,
+        'r1', RollState.FINISHED, '2026-02-14', undefined, undefined, undefined,
       )
     })
 
@@ -363,6 +372,7 @@ describe('RollDetailView', () => {
       await flushPromises()
 
       const vm = wrapper.vm as any
+      vm.metadataDate = '2026-03-01'
       vm.metadataLabName = 'The Darkroom'
       vm.metadataDeliveryMethod = 'Mail in'
       vm.metadataProcessRequested = 'C-41'
@@ -373,7 +383,7 @@ describe('RollDetailView', () => {
       await flushPromises()
 
       expect(rollApi.transition).toHaveBeenCalledWith(
-        'r1', RollState.SENT_FOR_DEVELOPMENT, undefined, undefined, undefined,
+        'r1', RollState.SENT_FOR_DEVELOPMENT, '2026-03-01', undefined, undefined,
         expect.objectContaining({ labName: 'The Darkroom', deliveryMethod: 'Mail in', processRequested: 'C-41' }),
       )
     })
