@@ -79,8 +79,7 @@ export const rollTagApi = {
 export const rollApi = {
   getAll: () => api.get<Roll[]>('/rolls'),
   getById: (key: string) => api.get<Roll>(`/rolls/${key}`),
-  getNextId: () => api.get<string>('/rolls/next-id'),
-  create: (data: Omit<Roll, '_key' | 'createdAt' | 'updatedAt'>) =>
+  create: (data: Omit<Roll, '_key' | 'rollId' | 'createdAt' | 'updatedAt'>) =>
     api.post<Roll>('/rolls', data),
   update: (key: string, data: Partial<Roll>) =>
     api.patch<Roll>(`/rolls/${key}`, data),
