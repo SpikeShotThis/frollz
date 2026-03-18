@@ -66,7 +66,8 @@ export class DatabaseService implements OnModuleInit {
     for (const { main, default: def } of mappings) {
       try {
         await this.knex.raw(
-          `INSERT INTO ${main} SELECT * FROM ${def} ON CONFLICT (id) DO NOTHING`,
+          "INSERT INTO ?? SELECT * FROM ?? ON CONFLICT (id) DO NOTHING",
+          [main, def],
         );
         this.logger.log(`Populated ${main} from ${def}`);
       } catch (error) {

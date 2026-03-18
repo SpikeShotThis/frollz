@@ -33,14 +33,17 @@ describe("DatabaseService — onModuleInit", () => {
 
     expect(knex.migrate.latest).toHaveBeenCalled();
 
-    const rawCalls: string[] = knex.raw.mock.calls.map(
-      ([sql]: [string]) => sql,
+    const rawCalls: [string, string[] | undefined][] = knex.raw.mock.calls.map(
+      ([sql, params]: [string, string[] | undefined]) => [sql, params],
     );
-    expect(rawCalls.some((s) => /is_system = true/.test(s))).toBe(true);
-    expect(rawCalls.some((s) => /INSERT INTO film_formats/.test(s))).toBe(true);
-    expect(rawCalls.some((s) => /INSERT INTO stocks/.test(s))).toBe(true);
-    expect(rawCalls.some((s) => /INSERT INTO tags/.test(s))).toBe(true);
-    expect(rawCalls.some((s) => /INSERT INTO stock_tags/.test(s))).toBe(true);
+    expect(rawCalls.some(([sql]) => /is_system = true/.test(sql))).toBe(true);
+    const tableInserts = rawCalls.filter(([sql]) =>
+      /INSERT INTO \?\?/.test(sql),
+    );
+    expect(tableInserts.some(([, p]) => p?.[0] === "film_formats")).toBe(true);
+    expect(tableInserts.some(([, p]) => p?.[0] === "stocks")).toBe(true);
+    expect(tableInserts.some(([, p]) => p?.[0] === "tags")).toBe(true);
+    expect(tableInserts.some(([, p]) => p?.[0] === "stock_tags")).toBe(true);
   });
 
   it("should always populate system tags even when DISABLE_DEFAULT_DATA_IMPORT is set", async () => {
@@ -53,13 +56,14 @@ describe("DatabaseService — onModuleInit", () => {
 
     await service.onModuleInit();
 
-    const rawCalls: string[] = knex.raw.mock.calls.map(
-      ([sql]: [string]) => sql,
+    const rawCalls: [string, string[] | undefined][] = knex.raw.mock.calls.map(
+      ([sql, params]: [string, string[] | undefined]) => [sql, params],
     );
-    expect(rawCalls.some((s) => /is_system = true/.test(s))).toBe(true);
-    expect(rawCalls.some((s) => /INSERT INTO film_formats/.test(s))).toBe(
-      false,
+    expect(rawCalls.some(([sql]) => /is_system = true/.test(sql))).toBe(true);
+    const tableInserts = rawCalls.filter(([sql]) =>
+      /INSERT INTO \?\?/.test(sql),
     );
+    expect(tableInserts.some(([, p]) => p?.[0] === "film_formats")).toBe(false);
     expect(logSpy).toHaveBeenCalledWith(
       expect.stringContaining("DISABLE_DEFAULT_DATA_IMPORT"),
     );
