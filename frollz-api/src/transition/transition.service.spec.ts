@@ -125,21 +125,32 @@ describe("TransitionService", () => {
     });
   });
 
-  describe("isValidTransition", () => {
-    it("should return true when the transition exists in the DB", async () => {
-      db.query.mockResolvedValueOnce([{ id: "edge-1" }]);
-      const result = await service.isValidTransition("Shelved", "Loaded");
-      expect(result).toBe(true);
+  describe("getTransitionEdge", () => {
+    it("should return the edge with metadata when transition exists", async () => {
+      db.query.mockResolvedValueOnce([FROZEN_EDGE]);
+      const edge = await service.getTransitionEdge("Added", "Frozen");
+      expect(edge).not.toBeNull();
+      expect(edge!.fromState).toBe("Added");
+      expect(edge!.toState).toBe("Frozen");
+      expect(edge!.metadata).toHaveLength(1);
+      expect(edge!.metadata[0].field).toBe("temperature");
       expect(db.query).toHaveBeenCalledWith(
         expect.stringContaining("WHERE fs.name = ? AND ts.name = ?"),
-        ["Shelved", "Loaded"],
+        ["Added", "Frozen"],
       );
     });
 
-    it("should return false when no matching transition row exists", async () => {
+    it("should return an edge with empty metadata when no fields exist", async () => {
+      db.query.mockResolvedValueOnce([LOADED_EDGE]);
+      const edge = await service.getTransitionEdge("Shelved", "Loaded");
+      expect(edge).not.toBeNull();
+      expect(edge!.metadata).toEqual([]);
+    });
+
+    it("should return null when no matching transition exists", async () => {
       db.query.mockResolvedValueOnce([]);
-      const result = await service.isValidTransition("Shelved", "Received");
-      expect(result).toBe(false);
+      const edge = await service.getTransitionEdge("Shelved", "Received");
+      expect(edge).toBeNull();
     });
   });
 });

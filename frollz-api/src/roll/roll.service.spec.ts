@@ -6,6 +6,7 @@ import { RollStateService } from "../roll-state/roll-state.service";
 import { RollTagService } from "../roll-tag/roll-tag.service";
 import { RollState } from "./entities/roll.entity";
 import { TransitionService } from "../transition/transition.service";
+import type { TransitionEdge } from "../transition/entities/transition.entity";
 
 const makeDbService = (
   overrides: Partial<{ query: jest.Mock; execute: jest.Mock }> = {},
@@ -24,8 +25,18 @@ const makeRollTagService = () => ({
   syncAutoTag: jest.fn().mockResolvedValue(undefined),
 });
 
+const makeEdge = (overrides: Partial<TransitionEdge> = {}): TransitionEdge => ({
+  id: "edge-1",
+  fromState: RollState.SHELVED,
+  toState: RollState.LOADED,
+  transitionType: "FORWARD",
+  requiresDate: true,
+  metadata: [],
+  ...overrides,
+});
+
 const makeTransitionService = () => ({
-  isValidTransition: jest.fn().mockResolvedValue(true),
+  getTransitionEdge: jest.fn().mockResolvedValue(makeEdge()),
 });
 
 describe("RollService", () => {
@@ -176,19 +187,22 @@ describe("RollService", () => {
       );
     });
 
-    it("should reject invalid transitions when TransitionService returns false", async () => {
-      transitionService.isValidTransition.mockResolvedValueOnce(false);
+    it("should reject invalid transitions when TransitionService returns null", async () => {
+      transitionService.getTransitionEdge.mockResolvedValueOnce(null);
       await expect(
         service.transition("roll-uuid", { targetState: RollState.FINISHED }),
       ).rejects.toThrow(BadRequestException);
     });
 
     it("should allow valid backward transitions", async () => {
+      transitionService.getTransitionEdge.mockResolvedValueOnce(
+        makeEdge({ fromState: RollState.SHELVED, toState: RollState.FROZEN }),
+      );
       await expect(
         service.transition("roll-uuid", { targetState: RollState.FROZEN }),
       ).resolves.not.toThrow();
 
-      expect(transitionService.isValidTransition).toHaveBeenCalledWith(
+      expect(transitionService.getTransitionEdge).toHaveBeenCalledWith(
         RollState.SHELVED,
         RollState.FROZEN,
       );
@@ -229,7 +243,19 @@ describe("RollService", () => {
       );
     });
 
-    it("should pass metadata to the state history entry", async () => {
+    it("should pass validated metadata to the state history entry", async () => {
+      transitionService.getTransitionEdge.mockResolvedValueOnce(
+        makeEdge({
+          metadata: [
+            {
+              field: "temperature",
+              fieldType: "number",
+              defaultValue: null,
+              isRequired: false,
+            },
+          ],
+        }),
+      );
       await service.transition("roll-uuid", {
         targetState: RollState.LOADED,
         metadata: { temperature: -18 },
@@ -240,7 +266,72 @@ describe("RollService", () => {
       );
     });
 
-    it("should pass metadata: undefined when not set", async () => {
+    it("should strip unknown metadata keys not defined on the edge", async () => {
+      transitionService.getTransitionEdge.mockResolvedValueOnce(
+        makeEdge({
+          metadata: [
+            {
+              field: "temperature",
+              fieldType: "number",
+              defaultValue: null,
+              isRequired: false,
+            },
+          ],
+        }),
+      );
+      await service.transition("roll-uuid", {
+        targetState: RollState.LOADED,
+        metadata: { temperature: -18, __proto__: "evil", unknownKey: "bad" },
+      });
+
+      expect(rollStateService.create).toHaveBeenCalledWith(
+        expect.objectContaining({ metadata: { temperature: -18 } }),
+      );
+    });
+
+    it("should throw when a metadata value is not a primitive", async () => {
+      transitionService.getTransitionEdge.mockResolvedValueOnce(
+        makeEdge({
+          metadata: [
+            {
+              field: "temperature",
+              fieldType: "number",
+              defaultValue: null,
+              isRequired: false,
+            },
+          ],
+        }),
+      );
+      await expect(
+        service.transition("roll-uuid", {
+          targetState: RollState.LOADED,
+          metadata: { temperature: { nested: "object" } },
+        }),
+      ).rejects.toThrow(BadRequestException);
+    });
+
+    it("should throw when a required metadata field is missing", async () => {
+      transitionService.getTransitionEdge.mockResolvedValueOnce(
+        makeEdge({
+          metadata: [
+            {
+              field: "processRequested",
+              fieldType: "string",
+              defaultValue: null,
+              isRequired: true,
+            },
+          ],
+        }),
+      );
+      await expect(
+        service.transition("roll-uuid", {
+          targetState: RollState.LOADED,
+          metadata: {},
+        }),
+      ).rejects.toThrow(BadRequestException);
+    });
+
+    it("should pass metadata: undefined when edge has no metadata fields", async () => {
       await service.transition("roll-uuid", {
         targetState: RollState.LOADED,
       });
@@ -330,7 +421,39 @@ describe("RollService", () => {
       updated_at: new Date().toISOString(),
     };
 
+    const sentForDevEdge = makeEdge({
+      fromState: RollState.FINISHED,
+      toState: RollState.SENT_FOR_DEVELOPMENT,
+      metadata: [
+        {
+          field: "labName",
+          fieldType: "string",
+          defaultValue: null,
+          isRequired: false,
+        },
+        {
+          field: "deliveryMethod",
+          fieldType: "string",
+          defaultValue: null,
+          isRequired: false,
+        },
+        {
+          field: "processRequested",
+          fieldType: "string",
+          defaultValue: null,
+          isRequired: false,
+        },
+        {
+          field: "pushPullStops",
+          fieldType: "number",
+          defaultValue: null,
+          isRequired: false,
+        },
+      ],
+    });
+
     it("should apply cross-processed tag when processRequested differs from stock process", async () => {
+      transitionService.getTransitionEdge.mockResolvedValueOnce(sentForDevEdge);
       db.query
         .mockResolvedValueOnce([finishedRollRow])
         .mockResolvedValueOnce([{ process: "C-41" }])
@@ -353,6 +476,7 @@ describe("RollService", () => {
     });
 
     it("should not apply cross-processed tag when processRequested matches stock process", async () => {
+      transitionService.getTransitionEdge.mockResolvedValueOnce(sentForDevEdge);
       db.query
         .mockResolvedValueOnce([finishedRollRow])
         .mockResolvedValueOnce([{ process: "C-41" }])
@@ -375,6 +499,7 @@ describe("RollService", () => {
     });
 
     it("should not call syncCrossProcessedTag when processRequested is absent", async () => {
+      transitionService.getTransitionEdge.mockResolvedValueOnce(sentForDevEdge);
       db.query
         .mockResolvedValueOnce([finishedRollRow])
         .mockResolvedValueOnce([finishedRollRow]);
@@ -408,7 +533,21 @@ describe("RollService", () => {
       updated_at: new Date().toISOString(),
     };
 
+    const finishedEdge = makeEdge({
+      fromState: RollState.LOADED,
+      toState: RollState.FINISHED,
+      metadata: [
+        {
+          field: "shotISO",
+          fieldType: "number",
+          defaultValue: null,
+          isRequired: false,
+        },
+      ],
+    });
+
     it("should apply pushed tag when shotISO > stock speed", async () => {
+      transitionService.getTransitionEdge.mockResolvedValueOnce(finishedEdge);
       db.query
         .mockResolvedValueOnce([loadedRollRow]) // findOne
         .mockResolvedValueOnce([{ speed: 400 }]) // syncPushPullTags stock query
@@ -432,6 +571,7 @@ describe("RollService", () => {
     });
 
     it("should apply pulled tag when shotISO < stock speed", async () => {
+      transitionService.getTransitionEdge.mockResolvedValueOnce(finishedEdge);
       db.query
         .mockResolvedValueOnce([loadedRollRow])
         .mockResolvedValueOnce([{ speed: 400 }])
@@ -455,6 +595,7 @@ describe("RollService", () => {
     });
 
     it("should remove both tags when shotISO equals stock speed", async () => {
+      transitionService.getTransitionEdge.mockResolvedValueOnce(finishedEdge);
       db.query
         .mockResolvedValueOnce([loadedRollRow])
         .mockResolvedValueOnce([{ speed: 400 }])
@@ -478,6 +619,7 @@ describe("RollService", () => {
     });
 
     it("should remove both tags when no shotISO provided", async () => {
+      transitionService.getTransitionEdge.mockResolvedValueOnce(finishedEdge);
       db.query
         .mockResolvedValueOnce([loadedRollRow])
         .mockResolvedValueOnce([{ speed: 400 }])
@@ -500,6 +642,7 @@ describe("RollService", () => {
     });
 
     it("should not call syncPushPullTags when transitioning to a non-FINISHED state", async () => {
+      transitionService.getTransitionEdge.mockResolvedValueOnce(finishedEdge);
       db.query.mockResolvedValue([loadedRollRow]);
 
       await service.transition("roll-uuid", {

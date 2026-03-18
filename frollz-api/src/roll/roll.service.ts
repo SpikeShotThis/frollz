@@ -8,6 +8,7 @@ import { Roll, RollState } from "./entities/roll.entity";
 import { RollStateService } from "../roll-state/roll-state.service";
 import { RollTagService } from "../roll-tag/roll-tag.service";
 import { TransitionService } from "../transition/transition.service";
+import { TransitionMetadataField } from "../transition/entities/transition.entity";
 
 const ROLLS_WITH_STOCK_QUERY = `
   SELECT r.*, s.brand AS stock_name, s.speed AS stock_speed, f.format AS format_name
@@ -263,15 +264,17 @@ export class RollService implements OnModuleInit {
     const roll = await this.findOne(key);
     if (!roll) return null;
 
-    const valid = await this.transitionService.isValidTransition(
+    const edge = await this.transitionService.getTransitionEdge(
       roll.state,
       dto.targetState,
     );
-    if (!valid) {
+    if (!edge) {
       throw new BadRequestException(
         `Cannot transition from ${roll.state} to ${dto.targetState}`,
       );
     }
+
+    const metadata = this.validateAndStripMetadata(dto.metadata, edge.metadata);
 
     await this.rollStateService.create({
       rollKey: key,
@@ -279,21 +282,55 @@ export class RollService implements OnModuleInit {
       date: dto.date ? new Date(dto.date) : new Date(),
       notes: dto.notes,
       isErrorCorrection: dto.isErrorCorrection,
-      metadata: dto.metadata,
+      metadata,
     });
 
     if (dto.targetState === RollState.FINISHED) {
-      const shotISO = dto.metadata?.shotISO as number | undefined;
+      const shotISO = metadata?.shotISO as number | undefined;
       await this.syncPushPullTags(key, roll.stockKey, shotISO);
     }
 
     if (dto.targetState === RollState.SENT_FOR_DEVELOPMENT) {
-      const processRequested = dto.metadata?.processRequested as
-        | string
-        | undefined;
+      const processRequested = metadata?.processRequested as string | undefined;
       await this.syncCrossProcessedTag(key, roll.stockKey, processRequested);
     }
 
     return this.update(key, { state: dto.targetState });
+  }
+
+  private validateAndStripMetadata(
+    incoming: Record<string, unknown> | undefined,
+    expectedFields: TransitionMetadataField[],
+  ): Record<string, string | number | boolean> | undefined {
+    if (expectedFields.length === 0) return undefined;
+
+    const result: Record<string, string | number | boolean> = {};
+
+    for (const field of expectedFields) {
+      const value = incoming?.[field.field];
+
+      if (value === undefined || value === null) {
+        if (field.isRequired) {
+          throw new BadRequestException(
+            `Metadata field '${field.field}' is required`,
+          );
+        }
+        continue;
+      }
+
+      if (
+        typeof value !== "string" &&
+        typeof value !== "number" &&
+        typeof value !== "boolean"
+      ) {
+        throw new BadRequestException(
+          `Metadata field '${field.field}' must be a string, number, or boolean`,
+        );
+      }
+
+      result[field.field] = value;
+    }
+
+    return Object.keys(result).length > 0 ? result : undefined;
   }
 }

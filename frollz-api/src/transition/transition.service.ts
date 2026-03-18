@@ -18,6 +18,25 @@ interface TransitionRow {
   is_required: boolean | null;
 }
 
+const TRANSITION_SELECT = `
+  SELECT
+    t.id,
+    fs.name AS from_state,
+    ts.name AS to_state,
+    tt.name AS transition_type,
+    t.requires_date,
+    tm.field,
+    tmft.name AS field_type,
+    tm.default_value,
+    tm.is_required
+  FROM transitions t
+  JOIN transition_states fs ON t.from_state_id = fs.id
+  JOIN transition_states ts ON t.to_state_id = ts.id
+  JOIN transition_types tt ON t.transition_type_id = tt.id
+  LEFT JOIN transition_metadata tm ON tm.transition_id = t.id
+  LEFT JOIN transition_metadata_field_types tmft ON tm.field_type_id = tmft.id
+`;
+
 @Injectable()
 export class TransitionService {
   constructor(private readonly databaseService: DatabaseService) {}
@@ -27,31 +46,33 @@ export class TransitionService {
       this.databaseService.query<{ name: string }>(
         `SELECT name FROM transition_states ORDER BY name`,
       ),
-      this.databaseService.query<TransitionRow>(`
-        SELECT
-          t.id,
-          fs.name AS from_state,
-          ts.name AS to_state,
-          tt.name AS transition_type,
-          t.requires_date,
-          tm.field,
-          tmft.name AS field_type,
-          tm.default_value,
-          tm.is_required
-        FROM transitions t
-        JOIN transition_states fs ON t.from_state_id = fs.id
-        JOIN transition_states ts ON t.to_state_id = ts.id
-        JOIN transition_types tt ON t.transition_type_id = tt.id
-        LEFT JOIN transition_metadata tm ON tm.transition_id = t.id
-        LEFT JOIN transition_metadata_field_types tmft ON tm.field_type_id = tmft.id
-        ORDER BY t.id, tm.field
-      `),
+      this.databaseService.query<TransitionRow>(
+        `${TRANSITION_SELECT} ORDER BY t.id, tm.field`,
+      ),
     ]);
 
-    const states = stateRows.map((r) => r.name);
+    return {
+      states: stateRows.map((r) => r.name),
+      transitions: this.buildEdges(transitionRows),
+    };
+  }
 
+  async getTransitionEdge(
+    fromState: string,
+    toState: string,
+  ): Promise<TransitionEdge | null> {
+    const rows = await this.databaseService.query<TransitionRow>(
+      `${TRANSITION_SELECT} WHERE fs.name = ? AND ts.name = ? ORDER BY tm.field`,
+      [fromState, toState],
+    );
+
+    if (rows.length === 0) return null;
+    return this.buildEdges(rows)[0];
+  }
+
+  private buildEdges(rows: TransitionRow[]): TransitionEdge[] {
     const edgeMap = new Map<string, TransitionEdge>();
-    for (const row of transitionRows) {
+    for (const row of rows) {
       if (!edgeMap.has(row.id)) {
         edgeMap.set(row.id, {
           id: row.id,
@@ -72,22 +93,6 @@ export class TransitionService {
         edgeMap.get(row.id)!.metadata.push(metaField);
       }
     }
-
-    return { states, transitions: Array.from(edgeMap.values()) };
-  }
-
-  async isValidTransition(
-    fromState: string,
-    toState: string,
-  ): Promise<boolean> {
-    const rows = await this.databaseService.query<{ id: string }>(
-      `SELECT t.id
-       FROM transitions t
-       JOIN transition_states fs ON t.from_state_id = fs.id
-       JOIN transition_states ts ON t.to_state_id = ts.id
-       WHERE fs.name = ? AND ts.name = ?`,
-      [fromState, toState],
-    );
-    return rows.length > 0;
+    return Array.from(edgeMap.values());
   }
 }
