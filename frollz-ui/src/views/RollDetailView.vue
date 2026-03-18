@@ -167,6 +167,32 @@
                   </label>
                 </div>
               </div>
+              <div v-if="pendingMetadataTransition === RollState.RECEIVED" class="space-y-3">
+                <label class="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400 cursor-pointer">
+                  <input v-model="metadataScansReceived" type="checkbox" class="rounded" />
+                  Scans received
+                </label>
+                <div v-if="metadataScansReceived" class="pl-5 space-y-2">
+                  <label class="block text-xs text-gray-600 dark:text-gray-400">
+                    Scans date
+                    <input v-model="metadataScansDate" type="date" class="mt-1 w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100" />
+                  </label>
+                  <label class="block text-xs text-gray-600 dark:text-gray-400">
+                    Scans URL — optional
+                    <input v-model="metadataScansUrl" type="url" placeholder="https://…" class="mt-1 w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100" />
+                  </label>
+                </div>
+                <label class="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400 cursor-pointer">
+                  <input v-model="metadatanegativesReceived" type="checkbox" class="rounded" />
+                  Negatives received
+                </label>
+                <div v-if="metadatanegativesReceived" class="pl-5">
+                  <label class="block text-xs text-gray-600 dark:text-gray-400">
+                    Negatives date
+                    <input v-model="metadataNegatviesDate" type="date" class="mt-1 w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100" />
+                  </label>
+                </div>
+              </div>
               <div class="flex gap-2 mt-3">
                 <button
                   @click="submitMetadataTransition"
@@ -309,6 +335,12 @@ const metadataProcessRequested = ref('')
 const metadataPushPullStops = ref('')
 const metadataFormError = ref('')
 const metadataDate = ref('')
+
+const metadataScansReceived = ref(false)
+const metadataScansUrl = ref('')
+const metadataScansDate = ref('')
+const metadatanegativesReceived = ref(false)
+const metadataNegatviesDate = ref('')
 
 const metadataScansReceived = ref(false)
 const metadataScansUrl = ref('')
