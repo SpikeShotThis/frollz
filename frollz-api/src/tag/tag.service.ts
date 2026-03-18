@@ -10,7 +10,10 @@ function mapTag(row: Record<string, unknown>): Tag {
     _key: row.id as string,
     value: row.value as string,
     color: row.color as string,
+    isRollScoped: row.is_roll_scoped as boolean | undefined,
+    isStockScoped: row.is_stock_scoped as boolean | undefined,
     createdAt: row.created_at ? new Date(row.created_at as string) : undefined,
+    updatedAt: row.updated_at ? new Date(row.updated_at as string) : undefined,
   };
 }
 
@@ -21,16 +24,27 @@ export class TagService {
   async create(createTagDto: CreateTagDto): Promise<Tag> {
     const id = randomUUID();
     const now = new Date();
+    const isRollScoped = createTagDto.isRollScoped ?? true;
+    const isStockScoped = createTagDto.isStockScoped ?? true;
 
     await this.databaseService.execute(
-      `INSERT INTO tags (id, value, color, created_at) VALUES (?, ?, ?, ?)`,
-      [id, createTagDto.value, createTagDto.color, now],
+      `INSERT INTO tags (id, value, color, is_roll_scoped, is_stock_scoped, created_at) VALUES (?, ?, ?, ?, ?, ?)`,
+      [
+        id,
+        createTagDto.value,
+        createTagDto.color,
+        isRollScoped,
+        isStockScoped,
+        now,
+      ],
     );
 
     return {
       _key: id,
       value: createTagDto.value,
       color: createTagDto.color,
+      isRollScoped,
+      isStockScoped,
       createdAt: now,
     };
   }
@@ -62,10 +76,21 @@ export class TagService {
       updates.push(`color = ?`);
       values.push(updateTagDto.color);
     }
+    if (updateTagDto.isRollScoped !== undefined) {
+      updates.push(`is_roll_scoped = ?`);
+      values.push(updateTagDto.isRollScoped);
+    }
+    if (updateTagDto.isStockScoped !== undefined) {
+      updates.push(`is_stock_scoped = ?`);
+      values.push(updateTagDto.isStockScoped);
+    }
 
     if (updates.length === 0) return this.findOne(key);
 
+    updates.push(`updated_at = ?`);
+    values.push(new Date());
     values.push(key);
+
     await this.databaseService.execute(
       `UPDATE tags SET ${updates.join(", ")} WHERE id = ?`,
       values,

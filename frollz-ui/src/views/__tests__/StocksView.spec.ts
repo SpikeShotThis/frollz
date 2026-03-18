@@ -437,6 +437,39 @@ describe('StocksView', () => {
     })
   })
 
+  describe('stock-scoped tag filtering', () => {
+    const mixedTags = [
+      { _key: 'tag1', value: 'Color', color: '#ff0000', isRollScoped: true, isStockScoped: true },
+      { _key: 'tag2', value: 'BW', color: '#000000', isRollScoped: true, isStockScoped: false },
+      { _key: 'tag3', value: 'Slide', color: '#0000ff', isRollScoped: false, isStockScoped: true },
+    ]
+
+    it('should only include tags with isStockScoped=true in stockScopedTags', async () => {
+      vi.mocked(tagApi.getAll).mockResolvedValue({ data: mixedTags } as any)
+
+      const wrapper = mount(StocksView)
+      await flushPromises()
+
+      const vm = wrapper.vm as any
+      expect(vm.stockScopedTags).toHaveLength(2)
+      expect(vm.stockScopedTags.map((t: any) => t._key)).toEqual(['tag1', 'tag3'])
+    })
+
+    it('should not show non-stock-scoped tags in the add stock modal', async () => {
+      vi.mocked(tagApi.getAll).mockResolvedValue({ data: mixedTags } as any)
+
+      const wrapper = mount(StocksView)
+      await flushPromises()
+
+      const vm = wrapper.vm as any
+      vm.showModal = true
+      await wrapper.vm.$nextTick()
+
+      // BW tag has isStockScoped=false and should not be present
+      expect(vm.stockScopedTags.some((t: any) => t.value === 'BW')).toBe(false)
+    })
+  })
+
   describe('multiple format creation', () => {
     it('should call API with multiple format keys', async () => {
       const mockCreatedStocks = [

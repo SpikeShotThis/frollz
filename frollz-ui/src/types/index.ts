@@ -59,7 +59,10 @@ export interface Tag {
   _key?: string
   value: string
   color: string
+  isRollScoped?: boolean
+  isStockScoped?: boolean
   createdAt?: Date
+  updatedAt?: Date
 }
 
 export interface StockTag {

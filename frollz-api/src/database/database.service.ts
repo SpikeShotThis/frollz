@@ -55,12 +55,18 @@ const COLUMN_MAP: Record<string, Record<string, string>> = {
   tags: {
     value: "value",
     color: "color",
+    isRollScoped: "is_roll_scoped",
+    isStockScoped: "is_stock_scoped",
     createdAt: "created_at",
+    updatedAt: "updated_at",
   },
   tags_default: {
     value: "value",
     color: "color",
+    isRollScoped: "is_roll_scoped",
+    isStockScoped: "is_stock_scoped",
     createdAt: "created_at",
+    updatedAt: "updated_at",
   },
   stock_tags: {
     stockKey: "stock_key",

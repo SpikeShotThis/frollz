@@ -38,6 +38,29 @@ describe("TagService", () => {
       expect(result.createdAt).toBeInstanceOf(Date);
     });
 
+    it("should default isRollScoped and isStockScoped to true when not provided", async () => {
+      const result = await service.create({ value: "color", color: "#F97316" });
+
+      expect(result.isRollScoped).toBe(true);
+      expect(result.isStockScoped).toBe(true);
+    });
+
+    it("should respect explicit isRollScoped and isStockScoped values", async () => {
+      const result = await service.create({
+        value: "roll-only",
+        color: "#F97316",
+        isRollScoped: true,
+        isStockScoped: false,
+      });
+
+      expect(result.isRollScoped).toBe(true);
+      expect(result.isStockScoped).toBe(false);
+      expect(db.execute).toHaveBeenCalledWith(
+        expect.stringContaining("is_roll_scoped"),
+        expect.arrayContaining([true, false]),
+      );
+    });
+
     it("should not include updatedAt in the returned document", async () => {
       const result = await service.create({
         value: "portrait",
@@ -54,12 +77,16 @@ describe("TagService", () => {
           id: "color",
           value: "color",
           color: "#F97316",
+          is_roll_scoped: true,
+          is_stock_scoped: true,
           created_at: new Date(),
         },
         {
           id: "portrait",
           value: "portrait",
           color: "#EC4899",
+          is_roll_scoped: false,
+          is_stock_scoped: true,
           created_at: new Date(),
         },
       ]);
@@ -69,6 +96,8 @@ describe("TagService", () => {
       expect(result).toHaveLength(2);
       expect(result[0]._key).toBe("color");
       expect(result[0].value).toBe("color");
+      expect(result[0].isRollScoped).toBe(true);
+      expect(result[1].isRollScoped).toBe(false);
     });
 
     it("should query with ORDER BY value ASC", async () => {
@@ -83,7 +112,14 @@ describe("TagService", () => {
   describe("findOne", () => {
     it("should return the tag when found", async () => {
       db.query.mockResolvedValue([
-        { id: "color", value: "color", color: "#F97316", created_at: null },
+        {
+          id: "color",
+          value: "color",
+          color: "#F97316",
+          is_roll_scoped: true,
+          is_stock_scoped: false,
+          created_at: null,
+        },
       ]);
 
       const result = await service.findOne("color");
@@ -92,6 +128,8 @@ describe("TagService", () => {
         _key: "color",
         value: "color",
         color: "#F97316",
+        isRollScoped: true,
+        isStockScoped: false,
       });
     });
 
@@ -113,7 +151,14 @@ describe("TagService", () => {
   describe("update", () => {
     it("should execute UPDATE and return the refreshed tag", async () => {
       db.query.mockResolvedValueOnce([
-        { id: "color", value: "color", color: "#FFFFFF", created_at: null },
+        {
+          id: "color",
+          value: "color",
+          color: "#FFFFFF",
+          is_roll_scoped: true,
+          is_stock_scoped: true,
+          created_at: null,
+        },
       ]);
 
       const result = await service.update("color", { color: "#FFFFFF" });
@@ -125,9 +170,59 @@ describe("TagService", () => {
       expect(result).toMatchObject({ _key: "color", color: "#FFFFFF" });
     });
 
+    it("should include updated_at in UPDATE when fields are changed", async () => {
+      db.query.mockResolvedValueOnce([
+        {
+          id: "color",
+          value: "color",
+          color: "#F97316",
+          is_roll_scoped: true,
+          is_stock_scoped: true,
+          created_at: null,
+          updated_at: new Date(),
+        },
+      ]);
+
+      await service.update("color", { color: "#FFFFFF" });
+
+      const [sql, values] = db.execute.mock.calls[0];
+      expect(sql).toContain("updated_at");
+      expect(values).toContainEqual(expect.any(Date));
+    });
+
+    it("should update isRollScoped and isStockScoped", async () => {
+      db.query.mockResolvedValueOnce([
+        {
+          id: "color",
+          value: "color",
+          color: "#F97316",
+          is_roll_scoped: false,
+          is_stock_scoped: true,
+          created_at: null,
+        },
+      ]);
+
+      await service.update("color", {
+        isRollScoped: false,
+        isStockScoped: true,
+      });
+
+      expect(db.execute).toHaveBeenCalledWith(
+        expect.stringContaining("is_roll_scoped"),
+        expect.arrayContaining([false, true]),
+      );
+    });
+
     it("should return findOne result even if update has no fields", async () => {
       db.query.mockResolvedValue([
-        { id: "color", value: "color", color: "#F97316", created_at: null },
+        {
+          id: "color",
+          value: "color",
+          color: "#F97316",
+          is_roll_scoped: true,
+          is_stock_scoped: true,
+          created_at: null,
+        },
       ]);
 
       const result = await service.update("color", {});

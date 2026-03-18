@@ -179,7 +179,7 @@
               <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Tags</label>
               <div class="flex flex-wrap gap-2 p-2 border border-gray-300 dark:border-gray-600 rounded-md min-h-[2.5rem] bg-white dark:bg-gray-700">
                 <button
-                  v-for="tag in allTags"
+                  v-for="tag in stockScopedTags"
                   :key="tag._key"
                   type="button"
                   @click="toggleTag(tag._key!)"
@@ -290,6 +290,8 @@ const emptyForm = () => ({
 })
 
 const form = ref(emptyForm())
+
+const stockScopedTags = computed(() => allTags.value.filter(t => t.isStockScoped))
 
 const filteredFormats = computed(() => {
   if (!form.value.process) return []

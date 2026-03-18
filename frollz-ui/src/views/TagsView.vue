@@ -11,6 +11,8 @@
             <tr>
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Color</th>
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Value</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Roll Scope</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Stock Scope</th>
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Created</th>
               <th class="px-6 py-3"></th>
             </tr>
@@ -48,6 +50,24 @@
                 </template>
               </td>
               <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                <input
+                  type="checkbox"
+                  :checked="editingKey === tag._key ? editForm.isRollScoped : tag.isRollScoped"
+                  :disabled="editingKey !== tag._key"
+                  @change="editingKey === tag._key && (editForm.isRollScoped = ($event.target as HTMLInputElement).checked)"
+                  class="h-4 w-4 text-primary-600 border-gray-300 dark:border-gray-600 rounded"
+                />
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                <input
+                  type="checkbox"
+                  :checked="editingKey === tag._key ? editForm.isStockScoped : tag.isStockScoped"
+                  :disabled="editingKey !== tag._key"
+                  @change="editingKey === tag._key && (editForm.isStockScoped = ($event.target as HTMLInputElement).checked)"
+                  class="h-4 w-4 text-primary-600 border-gray-300 dark:border-gray-600 rounded"
+                />
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                 {{ formatDate(tag.createdAt) }}
               </td>
               <td class="px-6 py-4 whitespace-nowrap text-right space-x-2">
@@ -74,7 +94,7 @@
               </td>
             </tr>
             <tr v-if="tags.length === 0">
-              <td colspan="4" class="px-6 py-8 text-center text-sm text-gray-400 dark:text-gray-500">No tags found.</td>
+              <td colspan="6" class="px-6 py-8 text-center text-sm text-gray-400 dark:text-gray-500">No tags found.</td>
             </tr>
           </tbody>
         </table>
@@ -96,6 +116,29 @@
             :disabled="currentPage === totalPages"
             class="px-3 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded-md disabled:opacity-40 hover:bg-gray-50 dark:hover:bg-gray-700 dark:text-gray-300"
           >Next</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Stock Scope Removal Warning Modal -->
+    <div v-if="scopeChangeWarning" class="fixed inset-0 bg-gray-500 bg-opacity-75 dark:bg-gray-900 dark:bg-opacity-80 flex items-center justify-center z-50">
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-md">
+        <h2 class="text-lg font-bold text-gray-900 dark:text-gray-100 mb-3">Remove Stock Scope</h2>
+        <p class="text-sm text-gray-700 dark:text-gray-300 mb-6">
+          This tag is currently assigned to
+          <span class="font-semibold">{{ scopeChangeWarning.count }}</span>
+          stock{{ scopeChangeWarning.count === 1 ? '' : 's' }}.
+          Removing the stock scope will remove this tag from all of them.
+        </p>
+        <div class="flex justify-end gap-3">
+          <button
+            @click="cancelScopeChange"
+            class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+          >Cancel</button>
+          <button
+            @click="confirmScopeChange"
+            class="px-4 py-2 bg-red-600 text-white rounded-md text-sm hover:bg-red-700"
+          >Confirm</button>
         </div>
       </div>
     </div>
@@ -140,10 +183,12 @@ const tags = ref<Tag[]>([])
 const currentPage = ref(1)
 
 const editingKey = ref<string | null>(null)
-const editForm = ref({ value: '', color: '#000000' })
+const editForm = ref({ value: '', color: '#000000', isRollScoped: true, isStockScoped: true })
 
 const deleteTarget = ref<Tag | null>(null)
 const deleteStockTagCount = ref(0)
+
+const scopeChangeWarning = ref<{ tagKey: string; count: number } | null>(null)
 
 const totalPages = computed(() => Math.max(1, Math.ceil(tags.value.length / PAGE_SIZE)))
 
@@ -165,7 +210,12 @@ const loadTags = async () => {
 
 const startEdit = (tag: Tag) => {
   editingKey.value = tag._key!
-  editForm.value = { value: tag.value, color: tag.color }
+  editForm.value = {
+    value: tag.value,
+    color: tag.color,
+    isRollScoped: tag.isRollScoped ?? true,
+    isStockScoped: tag.isStockScoped ?? true,
+  }
 }
 
 const cancelEdit = () => {
@@ -173,13 +223,53 @@ const cancelEdit = () => {
 }
 
 const saveEdit = async (key: string) => {
+  const original = tags.value.find(t => t._key === key)
+  if (original?.isStockScoped && !editForm.value.isStockScoped) {
+    try {
+      const response = await stockTagApi.getAll({ tagKey: key })
+      scopeChangeWarning.value = { tagKey: key, count: response.data.length }
+    } catch (err) {
+      console.error('Error fetching stock-tag count:', err)
+    }
+    return
+  }
   try {
-    await tagApi.update(key, { value: editForm.value.value, color: editForm.value.color })
+    await tagApi.update(key, {
+      value: editForm.value.value,
+      color: editForm.value.color,
+      isRollScoped: editForm.value.isRollScoped,
+      isStockScoped: editForm.value.isStockScoped,
+    })
     editingKey.value = null
     await loadTags()
   } catch (err) {
     console.error('Error saving tag:', err)
   }
+}
+
+const confirmScopeChange = async () => {
+  if (!scopeChangeWarning.value) return
+  const key = scopeChangeWarning.value.tagKey
+  try {
+    await tagApi.update(key, {
+      value: editForm.value.value,
+      color: editForm.value.color,
+      isRollScoped: editForm.value.isRollScoped,
+      isStockScoped: editForm.value.isStockScoped,
+    })
+    const response = await stockTagApi.getAll({ tagKey: key })
+    await Promise.all(response.data.map(st => stockTagApi.delete(st._key!)))
+    scopeChangeWarning.value = null
+    editingKey.value = null
+    await loadTags()
+  } catch (err) {
+    console.error('Error saving tag with scope change:', err)
+  }
+}
+
+const cancelScopeChange = () => {
+  editForm.value.isStockScoped = true
+  scopeChangeWarning.value = null
 }
 
 const confirmDelete = async (tag: Tag) => {

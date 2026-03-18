@@ -11,5 +11,14 @@ export class Tag {
   color: string; // Hex color, e.g. #F97316
 
   @ApiProperty({ required: false })
+  isRollScoped?: boolean;
+
+  @ApiProperty({ required: false })
+  isStockScoped?: boolean;
+
+  @ApiProperty({ required: false })
   createdAt?: Date;
+
+  @ApiProperty({ required: false })
+  updatedAt?: Date;
 }
