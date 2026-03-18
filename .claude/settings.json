@@ -1,0 +1,17 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "timeout": 60,
+            "statusMessage": "Running Semgrep SAST scan...",
+            "command": "cmd=$(jq -r '.tool_input.command'); if echo \"$cmd\" | grep -q '^git commit'; then command -v semgrep >/dev/null 2>&1 && semgrep scan --config p/default --config p/typescript --metrics=off 2>&1 | tail -40 || true; fi"
+          }
+        ]
+      }
+    ]
+  }
+}

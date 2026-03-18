@@ -8,7 +8,7 @@ COPY package.json ./
 RUN npm install && npm cache clean --force
 
 # Development stage
-FROM node:24-alpine AS development
+FROM node:20-alpine AS development
 
 WORKDIR /app
 
