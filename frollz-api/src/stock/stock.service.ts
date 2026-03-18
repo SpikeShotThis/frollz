@@ -1,4 +1,6 @@
 import { Injectable } from "@nestjs/common";
+
+const toSlug = (s: string) => s.toLowerCase().replace(/\s+/g, "-");
 import { DatabaseService } from "../database/database.service";
 import { CreateStockDto } from "./dto/create-stock.dto";
 import { CreateStockMultipleFormatsDto } from "./dto/create-stock-multiple-formats.dto";
@@ -25,7 +27,6 @@ export class StockService {
   constructor(private readonly databaseService: DatabaseService) {}
 
   async create(createStockDto: CreateStockDto): Promise<Stock> {
-    const toSlug = (s: string) => s.toLowerCase().replace(/\s+/g, "-");
     const id = `${toSlug(createStockDto.manufacturer)}-${toSlug(createStockDto.brand)}-${createStockDto.speed}-${createStockDto.formatKey}`;
     const now = new Date();
 
@@ -52,7 +53,6 @@ export class StockService {
   async createMultipleFormats(
     dto: CreateStockMultipleFormatsDto,
   ): Promise<Stock[]> {
-    const toSlug = (s: string) => s.toLowerCase().replace(/\s+/g, "-");
     const now = new Date();
 
     return Promise.all(
