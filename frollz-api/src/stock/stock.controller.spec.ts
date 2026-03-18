@@ -72,7 +72,7 @@ describe("StockController", () => {
     it("should return brands from the service", async () => {
       service.getBrands.mockResolvedValue(["Portra 400", "Portra 800"]);
 
-      const result = await controller.getBrands("por");
+      const result = await controller.getBrands({ q: "por" });
 
       expect(service.getBrands).toHaveBeenCalledWith("por");
       expect(result).toEqual(["Portra 400", "Portra 800"]);
@@ -81,7 +81,7 @@ describe("StockController", () => {
     it("should pass empty string when q is undefined", async () => {
       service.getBrands.mockResolvedValue([]);
 
-      await controller.getBrands(undefined as any);
+      await controller.getBrands({});
 
       expect(service.getBrands).toHaveBeenCalledWith("");
     });
@@ -89,7 +89,7 @@ describe("StockController", () => {
     it("should return an empty array when no brands match", async () => {
       service.getBrands.mockResolvedValue([]);
 
-      const result = await controller.getBrands("zzz");
+      const result = await controller.getBrands({ q: "zzz" });
 
       expect(result).toEqual([]);
     });
@@ -99,7 +99,7 @@ describe("StockController", () => {
     it("should return manufacturers from the service", async () => {
       service.getManufacturers.mockResolvedValue(["Kodak", "Konica"]);
 
-      const result = await controller.getManufacturers("ko");
+      const result = await controller.getManufacturers({ q: "ko" });
 
       expect(service.getManufacturers).toHaveBeenCalledWith("ko");
       expect(result).toEqual(["Kodak", "Konica"]);
@@ -108,7 +108,7 @@ describe("StockController", () => {
     it("should pass empty string when q is undefined", async () => {
       service.getManufacturers.mockResolvedValue([]);
 
-      await controller.getManufacturers(undefined as any);
+      await controller.getManufacturers({});
 
       expect(service.getManufacturers).toHaveBeenCalledWith("");
     });
@@ -116,7 +116,7 @@ describe("StockController", () => {
     it("should return an empty array when no manufacturers match", async () => {
       service.getManufacturers.mockResolvedValue([]);
 
-      const result = await controller.getManufacturers("zzz");
+      const result = await controller.getManufacturers({ q: "zzz" });
 
       expect(result).toEqual([]);
     });
@@ -126,7 +126,7 @@ describe("StockController", () => {
     it("should return speeds from the service", async () => {
       service.getSpeeds.mockResolvedValue([400, 800]);
 
-      const result = await controller.getSpeeds("4");
+      const result = await controller.getSpeeds({ q: "4" });
 
       expect(service.getSpeeds).toHaveBeenCalledWith("4");
       expect(result).toEqual([400, 800]);
@@ -135,7 +135,7 @@ describe("StockController", () => {
     it("should pass empty string when q is undefined", async () => {
       service.getSpeeds.mockResolvedValue([]);
 
-      await controller.getSpeeds(undefined as any);
+      await controller.getSpeeds({});
 
       expect(service.getSpeeds).toHaveBeenCalledWith("");
     });
@@ -143,7 +143,7 @@ describe("StockController", () => {
     it("should return an empty array when no speeds match", async () => {
       service.getSpeeds.mockResolvedValue([]);
 
-      const result = await controller.getSpeeds("999");
+      const result = await controller.getSpeeds({ q: "999" });
 
       expect(result).toEqual([]);
     });
