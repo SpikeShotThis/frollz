@@ -348,7 +348,7 @@ const PROCESSES_REQUESTED = ['C-41', 'E-6', 'Black & White', 'Instant'] as const
 const todayISO = () => new Date().toISOString().slice(0, 10)
 
 const STATES_REQUIRING_METADATA = new Set([RollState.FROZEN, RollState.REFRIGERATED, RollState.SHELVED, RollState.LOADED, RollState.FINISHED, RollState.SENT_FOR_DEVELOPMENT, RollState.DEVELOPED, RollState.RECEIVED])
-const STATES_WITH_DATE_CAPTURE = new Set([RollState.REFRIGERATED, RollState.SHELVED, RollState.LOADED, RollState.DEVELOPED])
+const STATES_WITH_DATE_CAPTURE = new Set([RollState.FROZEN, RollState.REFRIGERATED, RollState.SHELVED, RollState.LOADED, RollState.FINISHED, RollState.SENT_FOR_DEVELOPMENT, RollState.DEVELOPED])
 const isImperial = navigator.language === 'en-US'
 const temperatureUnit = isImperial ? '°F' : '°C'
 const TEMPERATURE_DEFAULTS: Partial<Record<RollState, number>> = {
