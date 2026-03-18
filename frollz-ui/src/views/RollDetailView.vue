@@ -325,7 +325,7 @@ const metadataNegativesReceived = ref(false)
 const metadataNegativesDate = ref('')
 
 const DELIVERY_METHODS = ['Drop off', 'Mail in'] as const
-const PROCESSES_REQUESTED = ['C-41', 'E-6', 'Black & White', 'Instant'] as const
+const PROCESSES_REQUESTED = ['C-41', 'E-6', 'ECN-2', 'Black & White', 'Instant'] as const
 
 const todayISO = () => new Date().toISOString().slice(0, 10)
 
