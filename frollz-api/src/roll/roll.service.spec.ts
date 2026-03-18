@@ -500,4 +500,24 @@ describe("RollService", () => {
       expect(pushPullCalls.length).toBe(2);
     });
   });
+
+  describe("remove", () => {
+    it("should return true when the record is deleted", async () => {
+      db.query.mockResolvedValueOnce([{ id: "roll-uuid" }]);
+      const result = await service.remove("roll-uuid");
+
+      expect(db.query).toHaveBeenCalledWith(
+        expect.stringContaining("DELETE FROM rolls"),
+        ["roll-uuid"],
+      );
+      expect(result).toBe(true);
+    });
+
+    it("should return false when the record does not exist", async () => {
+      db.query.mockResolvedValueOnce([]);
+      const result = await service.remove("nonexistent");
+
+      expect(result).toBe(false);
+    });
+  });
 });

@@ -159,10 +159,11 @@ export class StockService {
   }
 
   async remove(key: string): Promise<boolean> {
-    await this.databaseService.execute(`DELETE FROM stocks WHERE id = ?`, [
-      key,
-    ]);
-    return true;
+    const rows = await this.databaseService.query<{ id: string }>(
+      `DELETE FROM stocks WHERE id = ? RETURNING id`,
+      [key],
+    );
+    return rows.length > 0;
   }
 
   async getBrands(query: string): Promise<string[]> {
