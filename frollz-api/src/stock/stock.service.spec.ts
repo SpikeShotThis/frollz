@@ -184,4 +184,24 @@ describe("StockService", () => {
       expect(await service.getSpeeds("999")).toEqual([]);
     });
   });
+
+  describe("remove", () => {
+    it("should return true when the record is deleted", async () => {
+      db.query.mockResolvedValueOnce([{ id: "kodak-gold-200" }]);
+      const result = await service.remove("kodak-gold-200");
+
+      expect(db.query).toHaveBeenCalledWith(
+        expect.stringContaining("DELETE FROM stocks"),
+        ["kodak-gold-200"],
+      );
+      expect(result).toBe(true);
+    });
+
+    it("should return false when the record does not exist", async () => {
+      db.query.mockResolvedValueOnce([]);
+      const result = await service.remove("nonexistent");
+
+      expect(result).toBe(false);
+    });
+  });
 });

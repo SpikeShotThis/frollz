@@ -100,7 +100,10 @@ export class TagService {
   }
 
   async remove(key: string): Promise<boolean> {
-    await this.databaseService.execute(`DELETE FROM tags WHERE id = ?`, [key]);
-    return true;
+    const rows = await this.databaseService.query<{ id: string }>(
+      `DELETE FROM tags WHERE id = ? RETURNING id`,
+      [key],
+    );
+    return rows.length > 0;
   }
 }

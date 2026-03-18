@@ -90,10 +90,10 @@ export class FilmFormatService {
   }
 
   async remove(key: string): Promise<boolean> {
-    await this.databaseService.execute(
-      `DELETE FROM film_formats WHERE id = ?`,
+    const rows = await this.databaseService.query<{ id: string }>(
+      `DELETE FROM film_formats WHERE id = ? RETURNING id`,
       [key],
     );
-    return true;
+    return rows.length > 0;
   }
 }
