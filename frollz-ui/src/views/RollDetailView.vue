@@ -67,7 +67,7 @@
                 v-for="targetState in validTransitions"
                 :key="targetState"
                 @click="handleTransition(targetState)"
-                :disabled="transitionSubmitting || !!pendingTransition"
+                :disabled="transitionSubmitting || !!pendingTransition || !!pendingMetadataTransition"
                 class="px-3 py-1 text-xs font-medium border rounded disabled:opacity-50"
                 :class="isBackwardTransition(roll.state, targetState)
                   ? 'text-orange-700 border-orange-400 hover:bg-orange-50 dark:text-orange-400 dark:border-orange-500 dark:hover:bg-orange-900/30'
@@ -75,6 +75,30 @@
               >
                 {{ isBackwardTransition(roll.state, targetState) ? '↩ ' : '' }}{{ targetState }}
               </button>
+            </div>
+            <!-- Storage state metadata form -->
+            <div v-if="pendingMetadataTransition" class="border border-blue-300 dark:border-blue-600 rounded-md p-3 bg-blue-50 dark:bg-blue-900/20">
+              <p class="text-sm font-medium text-blue-800 dark:text-blue-200 mb-3">{{ pendingMetadataTransition }} details</p>
+              <label class="block text-xs text-gray-600 dark:text-gray-400">
+                Storage temperature ({{ temperatureUnit }}) — optional
+                <input
+                  v-model="metadataTemperature"
+                  type="number"
+                  class="mt-1 w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                />
+              </label>
+              <div class="flex gap-2 mt-3">
+                <button
+                  @click="submitMetadataTransition"
+                  :disabled="transitionSubmitting"
+                  class="px-3 py-1 text-xs font-medium bg-primary-600 text-white rounded hover:bg-primary-700 disabled:opacity-50"
+                >Confirm</button>
+                <button
+                  @click="pendingMetadataTransition = null"
+                  :disabled="transitionSubmitting"
+                  class="px-3 py-1 text-xs font-medium text-gray-500 dark:text-gray-400 hover:underline disabled:opacity-50"
+                >Cancel</button>
+              </div>
             </div>
             <!-- Error correction prompt -->
             <div v-if="pendingTransition" class="border border-orange-300 dark:border-orange-600 rounded-md p-3 bg-orange-50 dark:bg-orange-900/20">
@@ -161,6 +185,7 @@
               <time class="text-xs text-gray-400 dark:text-gray-500">{{ formatDateTime(entry.date) }}</time>
             </div>
             <p v-if="entry.notes" class="mt-1 text-sm text-gray-600 dark:text-gray-400">{{ entry.notes }}</p>
+            <p v-if="entry.metadata?.temperature != null" class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ entry.metadata.temperature }}{{ temperatureUnit }}</p>
           </li>
         </ol>
       </div>
@@ -186,6 +211,17 @@ const transitionNotes = ref('')
 const transitionError = ref('')
 const transitionSubmitting = ref(false)
 const pendingTransition = ref<RollState | null>(null)
+const pendingMetadataTransition = ref<RollState | null>(null)
+const metadataTemperature = ref('')
+
+const STATES_REQUIRING_METADATA = new Set([RollState.FROZEN, RollState.REFRIGERATED, RollState.SHELVED])
+const isImperial = navigator.language === 'en-US'
+const temperatureUnit = isImperial ? '°F' : '°C'
+const TEMPERATURE_DEFAULTS: Partial<Record<RollState, number>> = {
+  [RollState.FROZEN]: isImperial ? 0 : -18,
+  [RollState.REFRIGERATED]: isImperial ? 39 : 4,
+  [RollState.SHELVED]: isImperial ? 65 : 18,
+}
 
 const FORWARD_TRANSITIONS: Partial<Record<RollState, RollState[]>> = {
   [RollState.ADDED]: [RollState.FROZEN, RollState.REFRIGERATED, RollState.SHELVED],
@@ -279,7 +315,20 @@ const handleTransition = (targetState: RollState) => {
     pendingTransition.value = targetState
     return
   }
+  if (STATES_REQUIRING_METADATA.has(targetState)) {
+    pendingMetadataTransition.value = targetState
+    metadataTemperature.value = String(TEMPERATURE_DEFAULTS[targetState] ?? '')
+    return
+  }
   void executeTransition(targetState)
+}
+
+const submitMetadataTransition = () => {
+  if (!pendingMetadataTransition.value) return
+  const target = pendingMetadataTransition.value
+  const temp = metadataTemperature.value !== '' ? parseFloat(metadataTemperature.value) : undefined
+  pendingMetadataTransition.value = null
+  void executeTransition(target, undefined, temp != null ? { temperature: temp } : undefined)
 }
 
 const confirmTransition = (isErrorCorrection: boolean) => {
@@ -289,12 +338,12 @@ const confirmTransition = (isErrorCorrection: boolean) => {
   void executeTransition(target, isErrorCorrection)
 }
 
-const executeTransition = async (targetState: RollState, isErrorCorrection?: boolean) => {
+const executeTransition = async (targetState: RollState, isErrorCorrection?: boolean, metadata?: Record<string, unknown>) => {
   if (!roll.value) return
   transitionSubmitting.value = true
   transitionError.value = ''
   try {
-    await rollApi.transition(roll.value._key!, targetState, transitionNotes.value || undefined, isErrorCorrection)
+    await rollApi.transition(roll.value._key!, targetState, transitionNotes.value || undefined, isErrorCorrection, metadata)
     transitionNotes.value = ''
     await loadData()
   } catch {

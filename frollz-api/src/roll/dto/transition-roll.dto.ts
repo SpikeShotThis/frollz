@@ -2,6 +2,7 @@ import { ApiProperty } from "@nestjs/swagger";
 import {
   IsBoolean,
   IsEnum,
+  IsObject,
   IsOptional,
   IsString,
   MaxLength,
@@ -23,4 +24,9 @@ export class TransitionRollDto {
   @IsOptional()
   @IsBoolean()
   isErrorCorrection?: boolean;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsObject()
+  metadata?: Record<string, unknown>;
 }

@@ -264,6 +264,7 @@ export class RollService implements OnModuleInit {
       date: new Date(),
       notes: dto.notes,
       isErrorCorrection: dto.isErrorCorrection,
+      metadata: dto.metadata,
     });
 
     return this.update(key, { state: dto.targetState });

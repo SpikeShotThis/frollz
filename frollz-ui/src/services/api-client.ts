@@ -75,8 +75,8 @@ export const rollApi = {
   update: (key: string, data: Partial<Roll>) =>
     api.patch<Roll>(`/rolls/${key}`, data),
   delete: (key: string) => api.delete(`/rolls/${key}`),
-  transition: (key: string, targetState: string, notes?: string, isErrorCorrection?: boolean) =>
-    api.post<Roll>(`/rolls/${key}/transition`, { targetState, notes, isErrorCorrection }),
+  transition: (key: string, targetState: string, notes?: string, isErrorCorrection?: boolean, metadata?: Record<string, unknown>) =>
+    api.post<Roll>(`/rolls/${key}/transition`, { targetState, notes, isErrorCorrection, metadata }),
 }
 
 // Roll State History API

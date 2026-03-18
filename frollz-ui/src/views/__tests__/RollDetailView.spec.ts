@@ -212,6 +212,79 @@ describe('RollDetailView', () => {
       expect(backwardBtn).toBeTruthy()
     })
 
+    it('should show metadata form when clicking FROZEN from ADDED', async () => {
+      vi.mocked(rollApi.getById).mockResolvedValue({ data: makeRoll({ state: RollState.ADDED }) } as any)
+      const wrapper = await mountView()
+
+      const buttons = wrapper.findAll('button')
+      const frozenBtn = buttons.find(b => b.text() === 'Frozen')
+      await frozenBtn!.trigger('click')
+      await flushPromises()
+
+      expect(wrapper.text()).toContain('Frozen details')
+      expect(wrapper.find('input[type="number"]').exists()).toBe(true)
+      expect(rollApi.transition).not.toHaveBeenCalled()
+    })
+
+    it('should call transition with temperature metadata when metadata form is confirmed', async () => {
+      vi.mocked(rollApi.getById).mockResolvedValue({ data: makeRoll({ state: RollState.ADDED }) } as any)
+      const wrapper = await mountView()
+
+      const buttons = wrapper.findAll('button')
+      const frozenBtn = buttons.find(b => b.text() === 'Frozen')
+      await frozenBtn!.trigger('click')
+      await flushPromises()
+
+      const input = wrapper.find('input[type="number"]')
+      await input.setValue('-20')
+
+      const confirmBtn = wrapper.findAll('button').find(b => b.text() === 'Confirm')
+      await confirmBtn!.trigger('click')
+      await flushPromises()
+
+      expect(rollApi.transition).toHaveBeenCalledWith(
+        'r1', RollState.FROZEN, undefined, undefined, { temperature: -20 },
+      )
+    })
+
+    it('should call transition with no metadata when temperature is cleared', async () => {
+      vi.mocked(rollApi.getById).mockResolvedValue({ data: makeRoll({ state: RollState.ADDED }) } as any)
+      const wrapper = await mountView()
+
+      const buttons = wrapper.findAll('button')
+      const frozenBtn = buttons.find(b => b.text() === 'Frozen')
+      await frozenBtn!.trigger('click')
+      await flushPromises()
+
+      const input = wrapper.find('input[type="number"]')
+      await input.setValue('')
+
+      const confirmBtn = wrapper.findAll('button').find(b => b.text() === 'Confirm')
+      await confirmBtn!.trigger('click')
+      await flushPromises()
+
+      expect(rollApi.transition).toHaveBeenCalledWith(
+        'r1', RollState.FROZEN, undefined, undefined, undefined,
+      )
+    })
+
+    it('should dismiss metadata form without transitioning when Cancel is clicked', async () => {
+      vi.mocked(rollApi.getById).mockResolvedValue({ data: makeRoll({ state: RollState.ADDED }) } as any)
+      const wrapper = await mountView()
+
+      const buttons = wrapper.findAll('button')
+      const frozenBtn = buttons.find(b => b.text() === 'Frozen')
+      await frozenBtn!.trigger('click')
+      await flushPromises()
+
+      const cancelBtn = wrapper.findAll('button').find(b => b.text() === 'Cancel')
+      await cancelBtn!.trigger('click')
+      await flushPromises()
+
+      expect(rollApi.transition).not.toHaveBeenCalled()
+      expect(wrapper.text()).not.toContain('Frozen details')
+    })
+
     it('should call rollApi.transition and reload on forward transition click', async () => {
       vi.mocked(rollApi.getById).mockResolvedValue({ data: makeRoll({ state: RollState.SHELVED }) } as any)
       const wrapper = await mountView()
@@ -221,7 +294,7 @@ describe('RollDetailView', () => {
       await loadedBtn!.trigger('click')
       await flushPromises()
 
-      expect(rollApi.transition).toHaveBeenCalledWith('r1', RollState.LOADED, undefined, undefined)
+      expect(rollApi.transition).toHaveBeenCalledWith('r1', RollState.LOADED, undefined, undefined, undefined)
       expect(rollApi.getById).toHaveBeenCalledTimes(2)
     })
 
@@ -251,7 +324,7 @@ describe('RollDetailView', () => {
       await yesBtn!.trigger('click')
       await flushPromises()
 
-      expect(rollApi.transition).toHaveBeenCalledWith('r1', expect.any(String), undefined, true)
+      expect(rollApi.transition).toHaveBeenCalledWith('r1', expect.any(String), undefined, true, undefined)
     })
 
     it('should call transition with isErrorCorrection=false when No is clicked', async () => {
@@ -267,7 +340,7 @@ describe('RollDetailView', () => {
       await noBtn!.trigger('click')
       await flushPromises()
 
-      expect(rollApi.transition).toHaveBeenCalledWith('r1', expect.any(String), undefined, false)
+      expect(rollApi.transition).toHaveBeenCalledWith('r1', expect.any(String), undefined, false, undefined)
     })
 
     it('should dismiss the prompt without transitioning when Cancel is clicked', async () => {
