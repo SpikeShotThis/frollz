@@ -96,6 +96,47 @@
                   class="mt-1 w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                 />
               </label>
+              <div v-if="pendingMetadataTransition === RollState.SENT_FOR_DEVELOPMENT" class="space-y-2">
+                <label class="block text-xs text-gray-600 dark:text-gray-400">
+                  Lab name <span class="text-red-500">*</span>
+                  <input
+                    v-model="metadataLabName"
+                    type="text"
+                    placeholder="e.g. The Darkroom"
+                    class="mt-1 w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                  />
+                </label>
+                <label class="block text-xs text-gray-600 dark:text-gray-400">
+                  Delivery method <span class="text-red-500">*</span>
+                  <select
+                    v-model="metadataDeliveryMethod"
+                    class="mt-1 w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                  >
+                    <option value="">Select…</option>
+                    <option v-for="m in DELIVERY_METHODS" :key="m" :value="m">{{ m }}</option>
+                  </select>
+                </label>
+                <label class="block text-xs text-gray-600 dark:text-gray-400">
+                  Process requested <span class="text-red-500">*</span>
+                  <select
+                    v-model="metadataProcessRequested"
+                    class="mt-1 w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                  >
+                    <option value="">Select…</option>
+                    <option v-for="p in PROCESSES_REQUESTED" :key="p" :value="p">{{ p }}</option>
+                  </select>
+                </label>
+                <label class="block text-xs text-gray-600 dark:text-gray-400">
+                  Push/pull stops — optional
+                  <input
+                    v-model="metadataPushPullStops"
+                    type="number"
+                    placeholder="+2 push, -1 pull"
+                    class="mt-1 w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                  />
+                </label>
+                <p v-if="metadataFormError" class="text-xs text-red-600 dark:text-red-400">{{ metadataFormError }}</p>
+              </div>
               <div class="flex gap-2 mt-3">
                 <button
                   @click="submitMetadataTransition"
@@ -196,6 +237,9 @@
             <p v-if="entry.notes" class="mt-1 text-sm text-gray-600 dark:text-gray-400">{{ entry.notes }}</p>
             <p v-if="entry.metadata?.temperature != null" class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ entry.metadata.temperature }}{{ temperatureUnit }}</p>
             <p v-if="entry.metadata?.shotISO != null" class="mt-1 text-xs text-gray-500 dark:text-gray-400">Shot at ISO {{ entry.metadata.shotISO }}</p>
+            <p v-if="entry.metadata?.labName" class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+              {{ entry.metadata.labName }} · {{ entry.metadata.deliveryMethod }} · {{ entry.metadata.processRequested }}<span v-if="entry.metadata.pushPullStops != null"> · {{ (entry.metadata.pushPullStops as number) > 0 ? '+' : '' }}{{ entry.metadata.pushPullStops }} stops</span>
+            </p>
           </li>
         </ol>
       </div>
@@ -224,8 +268,16 @@ const pendingTransition = ref<RollState | null>(null)
 const pendingMetadataTransition = ref<RollState | null>(null)
 const metadataTemperature = ref('')
 const metadataShotISO = ref('')
+const metadataLabName = ref('')
+const metadataDeliveryMethod = ref('')
+const metadataProcessRequested = ref('')
+const metadataPushPullStops = ref('')
+const metadataFormError = ref('')
 
-const STATES_REQUIRING_METADATA = new Set([RollState.FROZEN, RollState.REFRIGERATED, RollState.SHELVED, RollState.FINISHED])
+const DELIVERY_METHODS = ['Drop off', 'Mail in'] as const
+const PROCESSES_REQUESTED = ['C-41', 'E-6', 'Black & White', 'Instant'] as const
+
+const STATES_REQUIRING_METADATA = new Set([RollState.FROZEN, RollState.REFRIGERATED, RollState.SHELVED, RollState.FINISHED, RollState.SENT_FOR_DEVELOPMENT])
 const isImperial = navigator.language === 'en-US'
 const temperatureUnit = isImperial ? '°F' : '°C'
 const TEMPERATURE_DEFAULTS: Partial<Record<RollState, number>> = {
@@ -330,6 +382,11 @@ const handleTransition = (targetState: RollState) => {
     pendingMetadataTransition.value = targetState
     metadataTemperature.value = String(TEMPERATURE_DEFAULTS[targetState] ?? '')
     metadataShotISO.value = ''
+    metadataLabName.value = ''
+    metadataDeliveryMethod.value = ''
+    metadataProcessRequested.value = ''
+    metadataPushPullStops.value = ''
+    metadataFormError.value = ''
     return
   }
   void executeTransition(targetState)
@@ -338,13 +395,25 @@ const handleTransition = (targetState: RollState) => {
 const submitMetadataTransition = () => {
   if (!pendingMetadataTransition.value) return
   const target = pendingMetadataTransition.value
+
+  if (target === RollState.SENT_FOR_DEVELOPMENT) {
+    if (!metadataLabName.value.trim()) { metadataFormError.value = 'Lab name is required.'; return }
+    if (!metadataDeliveryMethod.value) { metadataFormError.value = 'Delivery method is required.'; return }
+    if (!metadataProcessRequested.value) { metadataFormError.value = 'Process is required.'; return }
+  }
+
   const temp = metadataTemperature.value !== '' ? parseFloat(metadataTemperature.value) : undefined
   const shotISO = metadataShotISO.value !== '' ? parseFloat(metadataShotISO.value) : undefined
+  const pushPullStops = metadataPushPullStops.value !== '' ? parseInt(metadataPushPullStops.value, 10) : undefined
   pendingMetadataTransition.value = null
 
   const metadata: Record<string, unknown> = {}
   if (temp != null) metadata.temperature = temp
   if (shotISO != null) metadata.shotISO = shotISO
+  if (metadataLabName.value.trim()) metadata.labName = metadataLabName.value.trim()
+  if (metadataDeliveryMethod.value) metadata.deliveryMethod = metadataDeliveryMethod.value
+  if (metadataProcessRequested.value) metadata.processRequested = metadataProcessRequested.value
+  if (pushPullStops != null) metadata.pushPullStops = pushPullStops
   void executeTransition(target, undefined, Object.keys(metadata).length > 0 ? metadata : undefined)
 }
 

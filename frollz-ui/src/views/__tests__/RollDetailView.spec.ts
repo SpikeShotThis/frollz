@@ -321,6 +321,63 @@ describe('RollDetailView', () => {
       )
     })
 
+    it('should show lab form when clicking Sent For Development', async () => {
+      vi.mocked(rollApi.getById).mockResolvedValue({ data: makeRoll({ state: RollState.FINISHED }) } as any)
+      const wrapper = await mountView()
+
+      const buttons = wrapper.findAll('button')
+      const sentBtn = buttons.find(b => b.text() === 'Sent For Development')
+      await sentBtn!.trigger('click')
+      await flushPromises()
+
+      expect(wrapper.text()).toContain('Lab name')
+      expect(wrapper.text()).toContain('Delivery method')
+      expect(wrapper.text()).toContain('Process requested')
+      expect(rollApi.transition).not.toHaveBeenCalled()
+    })
+
+    it('should show validation error when required lab fields are missing', async () => {
+      vi.mocked(rollApi.getById).mockResolvedValue({ data: makeRoll({ state: RollState.FINISHED }) } as any)
+      const wrapper = await mountView()
+
+      const buttons = wrapper.findAll('button')
+      const sentBtn = buttons.find(b => b.text() === 'Sent For Development')
+      await sentBtn!.trigger('click')
+      await flushPromises()
+
+      const confirmBtn = wrapper.findAll('button').find(b => b.text() === 'Confirm')
+      await confirmBtn!.trigger('click')
+      await flushPromises()
+
+      expect(wrapper.text()).toContain('required')
+      expect(rollApi.transition).not.toHaveBeenCalled()
+    })
+
+    it('should call transition with lab metadata when all required fields are filled', async () => {
+      vi.mocked(rollApi.getById).mockResolvedValue({ data: makeRoll({ state: RollState.FINISHED }) } as any)
+      const wrapper = await mountView()
+
+      const buttons = wrapper.findAll('button')
+      const sentBtn = buttons.find(b => b.text() === 'Sent For Development')
+      await sentBtn!.trigger('click')
+      await flushPromises()
+
+      const vm = wrapper.vm as any
+      vm.metadataLabName = 'The Darkroom'
+      vm.metadataDeliveryMethod = 'Mail in'
+      vm.metadataProcessRequested = 'C-41'
+      await wrapper.vm.$nextTick()
+
+      const confirmBtn = wrapper.findAll('button').find(b => b.text() === 'Confirm')
+      await confirmBtn!.trigger('click')
+      await flushPromises()
+
+      expect(rollApi.transition).toHaveBeenCalledWith(
+        'r1', RollState.SENT_FOR_DEVELOPMENT, undefined, undefined,
+        expect.objectContaining({ labName: 'The Darkroom', deliveryMethod: 'Mail in', processRequested: 'C-41' }),
+      )
+    })
+
     it('should dismiss metadata form without transitioning when Cancel is clicked', async () => {
       vi.mocked(rollApi.getById).mockResolvedValue({ data: makeRoll({ state: RollState.ADDED }) } as any)
       const wrapper = await mountView()

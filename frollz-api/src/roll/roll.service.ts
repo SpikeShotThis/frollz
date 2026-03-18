@@ -94,6 +94,21 @@ export class RollService implements OnModuleInit {
     }
   }
 
+  private async syncCrossProcessedTag(
+    rollKey: string,
+    stockKey: string,
+    processRequested?: string,
+  ): Promise<void> {
+    if (!processRequested) return;
+    const stocks = await this.databaseService.query<{ process: string }>(
+      `SELECT process FROM stocks WHERE id = ?`,
+      [stockKey],
+    );
+    if (stocks.length === 0) return;
+    const isCrossProcessed = processRequested !== stocks[0].process;
+    await this.rollTagService.syncAutoTag(rollKey, "cross-processed", isCrossProcessed);
+  }
+
   private async syncPushPullTags(
     rollKey: string,
     stockKey: string,
@@ -288,6 +303,11 @@ export class RollService implements OnModuleInit {
     if (dto.targetState === RollState.FINISHED) {
       const shotISO = dto.metadata?.shotISO as number | undefined;
       await this.syncPushPullTags(key, roll.stockKey, shotISO);
+    }
+
+    if (dto.targetState === RollState.SENT_FOR_DEVELOPMENT) {
+      const processRequested = dto.metadata?.processRequested as string | undefined;
+      await this.syncCrossProcessedTag(key, roll.stockKey, processRequested);
     }
 
     return this.update(key, { state: dto.targetState });

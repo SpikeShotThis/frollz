@@ -238,6 +238,68 @@ describe("RollService", () => {
     });
   });
 
+  describe("transition to SENT_FOR_DEVELOPMENT", () => {
+    const finishedRollRow = {
+      id: "roll-uuid",
+      roll_id: "roll-00001",
+      stock_key: "stock-1",
+      state: RollState.FINISHED,
+      images_url: null,
+      date_obtained: new Date().toISOString(),
+      obtainment_method: "Purchase",
+      obtained_from: "B&H",
+      expiration_date: null,
+      times_exposed_to_xrays: 0,
+      loaded_into: null,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    };
+
+    it("should apply cross-processed tag when processRequested differs from stock process", async () => {
+      db.query
+        .mockResolvedValueOnce([finishedRollRow])
+        .mockResolvedValueOnce([{ process: "C-41" }])
+        .mockResolvedValueOnce([finishedRollRow]);
+
+      await service.transition("roll-uuid", {
+        targetState: RollState.SENT_FOR_DEVELOPMENT,
+        metadata: { labName: "The Darkroom", deliveryMethod: "Mail in", processRequested: "E-6" },
+      });
+
+      expect(rollTagService.syncAutoTag).toHaveBeenCalledWith("roll-uuid", "cross-processed", true);
+    });
+
+    it("should not apply cross-processed tag when processRequested matches stock process", async () => {
+      db.query
+        .mockResolvedValueOnce([finishedRollRow])
+        .mockResolvedValueOnce([{ process: "C-41" }])
+        .mockResolvedValueOnce([finishedRollRow]);
+
+      await service.transition("roll-uuid", {
+        targetState: RollState.SENT_FOR_DEVELOPMENT,
+        metadata: { labName: "The Darkroom", deliveryMethod: "Mail in", processRequested: "C-41" },
+      });
+
+      expect(rollTagService.syncAutoTag).toHaveBeenCalledWith("roll-uuid", "cross-processed", false);
+    });
+
+    it("should not call syncCrossProcessedTag when processRequested is absent", async () => {
+      db.query
+        .mockResolvedValueOnce([finishedRollRow])
+        .mockResolvedValueOnce([finishedRollRow]);
+
+      await service.transition("roll-uuid", {
+        targetState: RollState.SENT_FOR_DEVELOPMENT,
+        metadata: { labName: "The Darkroom", deliveryMethod: "Mail in" },
+      });
+
+      const crossCalls = rollTagService.syncAutoTag.mock.calls.filter(
+        ([, tag]) => tag === "cross-processed",
+      );
+      expect(crossCalls.length).toBe(0);
+    });
+  });
+
   describe("transition to FINISHED", () => {
     const loadedRollRow = {
       id: "roll-uuid",
@@ -314,7 +376,7 @@ describe("RollService", () => {
       expect(rollTagService.syncAutoTag).toHaveBeenCalledWith("roll-uuid", "pulled", false);
     });
 
-    it("should not call syncPushPullTags for non-FINISHED transitions", async () => {
+    it("should not call syncPushPullTags when transitioning to a non-FINISHED state", async () => {
       db.query.mockResolvedValue([loadedRollRow]);
 
       await service.transition("roll-uuid", {
