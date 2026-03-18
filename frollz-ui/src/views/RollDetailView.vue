@@ -137,6 +137,32 @@
                 </label>
                 <p v-if="metadataFormError" class="text-xs text-red-600 dark:text-red-400">{{ metadataFormError }}</p>
               </div>
+              <div v-if="pendingMetadataTransition === RollState.RECEIVED" class="space-y-3">
+                <label class="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400 cursor-pointer">
+                  <input v-model="metadataScansReceived" type="checkbox" class="rounded" />
+                  Scans received
+                </label>
+                <div v-if="metadataScansReceived" class="pl-5 space-y-2">
+                  <label class="block text-xs text-gray-600 dark:text-gray-400">
+                    Scans date
+                    <input v-model="metadataScansDate" type="date" class="mt-1 w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100" />
+                  </label>
+                  <label class="block text-xs text-gray-600 dark:text-gray-400">
+                    Scans URL — optional
+                    <input v-model="metadataScansUrl" type="url" placeholder="https://…" class="mt-1 w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100" />
+                  </label>
+                </div>
+                <label class="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400 cursor-pointer">
+                  <input v-model="metadatanegativesReceived" type="checkbox" class="rounded" />
+                  Negatives received
+                </label>
+                <div v-if="metadatanegativesReceived" class="pl-5">
+                  <label class="block text-xs text-gray-600 dark:text-gray-400">
+                    Negatives date
+                    <input v-model="metadataNegatviesDate" type="date" class="mt-1 w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100" />
+                  </label>
+                </div>
+              </div>
               <div class="flex gap-2 mt-3">
                 <button
                   @click="submitMetadataTransition"
@@ -237,6 +263,11 @@
             <p v-if="entry.notes" class="mt-1 text-sm text-gray-600 dark:text-gray-400">{{ entry.notes }}</p>
             <p v-if="entry.metadata?.temperature != null" class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ entry.metadata.temperature }}{{ temperatureUnit }}</p>
             <p v-if="entry.metadata?.shotISO != null" class="mt-1 text-xs text-gray-500 dark:text-gray-400">Shot at ISO {{ entry.metadata.shotISO }}</p>
+            <p v-if="entry.metadata?.scansReceived || entry.metadata?.negativesReceived" class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+              <span v-if="entry.metadata?.scansReceived">Scans received {{ formatDate(entry.metadata.scansDate as string) }}<span v-if="entry.metadata?.scansUrl"> · <a :href="entry.metadata.scansUrl as string" target="_blank" class="text-primary-600 dark:text-primary-400 hover:underline">View scans</a></span></span>
+              <span v-if="entry.metadata?.scansReceived && entry.metadata?.negativesReceived"> · </span>
+              <span v-if="entry.metadata?.negativesReceived">Negatives received {{ formatDate(entry.metadata.negativesDate as string) }}</span>
+            </p>
             <p v-if="entry.metadata?.labName" class="mt-1 text-xs text-gray-500 dark:text-gray-400">
               {{ entry.metadata.labName }} · {{ entry.metadata.deliveryMethod }} · {{ entry.metadata.processRequested }}<span v-if="entry.metadata.pushPullStops != null"> · {{ (entry.metadata.pushPullStops as number) > 0 ? '+' : '' }}{{ entry.metadata.pushPullStops }} stops</span>
             </p>
@@ -274,10 +305,18 @@ const metadataProcessRequested = ref('')
 const metadataPushPullStops = ref('')
 const metadataFormError = ref('')
 
+const metadataScansReceived = ref(false)
+const metadataScansUrl = ref('')
+const metadataScansDate = ref('')
+const metadatanegativesReceived = ref(false)
+const metadataNegatviesDate = ref('')
+
 const DELIVERY_METHODS = ['Drop off', 'Mail in'] as const
 const PROCESSES_REQUESTED = ['C-41', 'E-6', 'Black & White', 'Instant'] as const
 
-const STATES_REQUIRING_METADATA = new Set([RollState.FROZEN, RollState.REFRIGERATED, RollState.SHELVED, RollState.FINISHED, RollState.SENT_FOR_DEVELOPMENT])
+const todayISO = () => new Date().toISOString().slice(0, 10)
+
+const STATES_REQUIRING_METADATA = new Set([RollState.FROZEN, RollState.REFRIGERATED, RollState.SHELVED, RollState.FINISHED, RollState.SENT_FOR_DEVELOPMENT, RollState.RECEIVED])
 const isImperial = navigator.language === 'en-US'
 const temperatureUnit = isImperial ? '°F' : '°C'
 const TEMPERATURE_DEFAULTS: Partial<Record<RollState, number>> = {
@@ -387,6 +426,11 @@ const handleTransition = (targetState: RollState) => {
     metadataProcessRequested.value = ''
     metadataPushPullStops.value = ''
     metadataFormError.value = ''
+    metadataScansReceived.value = false
+    metadataScansUrl.value = ''
+    metadataScansDate.value = todayISO()
+    metadatanegativesReceived.value = false
+    metadataNegatviesDate.value = todayISO()
     return
   }
   void executeTransition(targetState)
@@ -414,6 +458,15 @@ const submitMetadataTransition = () => {
   if (metadataDeliveryMethod.value) metadata.deliveryMethod = metadataDeliveryMethod.value
   if (metadataProcessRequested.value) metadata.processRequested = metadataProcessRequested.value
   if (pushPullStops != null) metadata.pushPullStops = pushPullStops
+  if (metadataScansReceived.value) {
+    metadata.scansReceived = true
+    metadata.scansDate = metadataScansDate.value || todayISO()
+    if (metadataScansUrl.value.trim()) metadata.scansUrl = metadataScansUrl.value.trim()
+  }
+  if (metadatanegativesReceived.value) {
+    metadata.negativesReceived = true
+    metadata.negativesDate = metadataNegatviesDate.value || todayISO()
+  }
   void executeTransition(target, undefined, Object.keys(metadata).length > 0 ? metadata : undefined)
 }
 
