@@ -378,6 +378,62 @@ describe('RollDetailView', () => {
       )
     })
 
+    it('should show scans/negatives checkboxes when clicking Received', async () => {
+      vi.mocked(rollApi.getById).mockResolvedValue({ data: makeRoll({ state: RollState.DEVELOPED }) } as any)
+      const wrapper = await mountView()
+
+      const buttons = wrapper.findAll('button')
+      const receivedBtn = buttons.find(b => b.text() === 'Received')
+      await receivedBtn!.trigger('click')
+      await flushPromises()
+
+      expect(wrapper.text()).toContain('Scans received')
+      expect(wrapper.text()).toContain('Negatives received')
+      expect(rollApi.transition).not.toHaveBeenCalled()
+    })
+
+    it('should include scans metadata when scans checkbox is checked and form confirmed', async () => {
+      vi.mocked(rollApi.getById).mockResolvedValue({ data: makeRoll({ state: RollState.DEVELOPED }) } as any)
+      const wrapper = await mountView()
+
+      const buttons = wrapper.findAll('button')
+      const receivedBtn = buttons.find(b => b.text() === 'Received')
+      await receivedBtn!.trigger('click')
+      await flushPromises()
+
+      const vm = wrapper.vm as any
+      vm.metadataScansReceived = true
+      vm.metadataScansDate = '2026-03-18'
+      await wrapper.vm.$nextTick()
+
+      const confirmBtn = wrapper.findAll('button').find(b => b.text() === 'Confirm')
+      await confirmBtn!.trigger('click')
+      await flushPromises()
+
+      expect(rollApi.transition).toHaveBeenCalledWith(
+        'r1', RollState.RECEIVED, undefined, undefined,
+        expect.objectContaining({ scansReceived: true, scansDate: '2026-03-18' }),
+      )
+    })
+
+    it('should transition Received with no metadata when no boxes are checked', async () => {
+      vi.mocked(rollApi.getById).mockResolvedValue({ data: makeRoll({ state: RollState.DEVELOPED }) } as any)
+      const wrapper = await mountView()
+
+      const buttons = wrapper.findAll('button')
+      const receivedBtn = buttons.find(b => b.text() === 'Received')
+      await receivedBtn!.trigger('click')
+      await flushPromises()
+
+      const confirmBtn = wrapper.findAll('button').find(b => b.text() === 'Confirm')
+      await confirmBtn!.trigger('click')
+      await flushPromises()
+
+      expect(rollApi.transition).toHaveBeenCalledWith(
+        'r1', RollState.RECEIVED, undefined, undefined, undefined,
+      )
+    })
+
     it('should dismiss metadata form without transitioning when Cancel is clicked', async () => {
       vi.mocked(rollApi.getById).mockResolvedValue({ data: makeRoll({ state: RollState.ADDED }) } as any)
       const wrapper = await mountView()
