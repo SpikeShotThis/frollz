@@ -9,7 +9,7 @@ import {
   NotFoundException,
   Query,
 } from "@nestjs/common";
-import { ApiTags, ApiOperation, ApiResponse } from "@nestjs/swagger";
+import { ApiTags, ApiOperation, ApiQuery, ApiResponse } from "@nestjs/swagger";
 import { StockService } from "./stock.service";
 import { CreateStockDto } from "./dto/create-stock.dto";
 import { CreateStockMultipleFormatsDto } from "./dto/create-stock-multiple-formats.dto";
@@ -58,6 +58,7 @@ export class StockController {
 
   @Get("brands")
   @ApiOperation({ summary: "Get distinct brand names matching a query" })
+  @ApiQuery({ name: "q", required: false, description: "Substring filter for brand names" })
   @ApiResponse({
     status: 200,
     description: "Matching brand names",
@@ -69,6 +70,7 @@ export class StockController {
 
   @Get("manufacturers")
   @ApiOperation({ summary: "Get distinct manufacturer names matching a query" })
+  @ApiQuery({ name: "q", required: false, description: "Substring filter for manufacturer names" })
   @ApiResponse({
     status: 200,
     description: "Matching manufacturer names",
@@ -80,6 +82,7 @@ export class StockController {
 
   @Get("speeds")
   @ApiOperation({ summary: "Get distinct speed values matching a query" })
+  @ApiQuery({ name: "q", required: false, description: "Substring filter for ISO speed values" })
   @ApiResponse({
     status: 200,
     description: "Matching speed values",
