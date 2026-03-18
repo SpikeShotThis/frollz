@@ -26,6 +26,11 @@
             "timeout": 60,
             "statusMessage": "Syncing codebase knowledge graph...",
             "command": "codebase-memory-mcp cli index_repository '{\"repository_path\": \"/home/spike/Code/frollz\", \"incremental\": true}' 2>/dev/null || true"
+          },
+          {
+            "type": "command",
+            "statusMessage": "Restoring session context...",
+            "command": "state=$([ -f /tmp/claude-frollz-state.md ] && printf '\\n\\n## Restored Session State\\n%s' \"$(cat /tmp/claude-frollz-state.md)\" || true); msg=\"CRITICAL RULE: NEVER perform ANY operation directly on main. ALL work must be done in a new branch created off of 'development'. Branch naming: feature/{issue-number}-{issue-title-slug}. Steps before any new work: git checkout development && git fetch origin && git pull origin development && git checkout -b feature/{issue-number}-{slug}.${state}\"; echo \"{\\\"hookSpecificOutput\\\": {\\\"hookEventName\\\": \\\"SessionStart\\\", \\\"additionalContext\\\": $(printf '%s' \"$msg\" | jq -Rs .)}}\""
           }
         ]
       }
