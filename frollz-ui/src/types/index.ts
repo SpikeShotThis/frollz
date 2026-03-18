@@ -100,6 +100,7 @@ export interface RollStateHistory {
   date: Date
   notes?: string
   isErrorCorrection?: boolean
+  metadata?: Record<string, unknown>
   createdAt?: Date
   updatedAt?: Date
 }

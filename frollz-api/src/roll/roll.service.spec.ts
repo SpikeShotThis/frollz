@@ -215,5 +215,26 @@ describe("RollService", () => {
         expect.objectContaining({ isErrorCorrection: undefined }),
       );
     });
+
+    it("should pass metadata to the state history entry", async () => {
+      await service.transition("roll-uuid", {
+        targetState: RollState.LOADED,
+        metadata: { temperature: -18 },
+      });
+
+      expect(rollStateService.create).toHaveBeenCalledWith(
+        expect.objectContaining({ metadata: { temperature: -18 } }),
+      );
+    });
+
+    it("should pass metadata: undefined when not set", async () => {
+      await service.transition("roll-uuid", {
+        targetState: RollState.LOADED,
+      });
+
+      expect(rollStateService.create).toHaveBeenCalledWith(
+        expect.objectContaining({ metadata: undefined }),
+      );
+    });
   });
 });
