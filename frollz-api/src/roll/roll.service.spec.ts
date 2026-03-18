@@ -520,4 +520,61 @@ describe("RollService", () => {
       expect(result).toBe(false);
     });
   });
+
+  describe("getNextId", () => {
+    it("should return a zero-padded ID from the sequence", async () => {
+      db.query.mockResolvedValueOnce([{ nextval: "7" }]);
+      const result = await service.getNextId();
+
+      expect(db.query).toHaveBeenCalledWith(
+        expect.stringContaining("nextval('roll_id_seq')"),
+      );
+      expect(result).toBe("00007");
+    });
+
+    it("should not pad IDs longer than 5 digits", async () => {
+      db.query.mockResolvedValueOnce([{ nextval: "100000" }]);
+      const result = await service.getNextId();
+
+      expect(result).toBe("100000");
+    });
+  });
+
+  describe("create — auto roll ID", () => {
+    it("should use the sequence when no rollId is provided", async () => {
+      db.query.mockResolvedValueOnce([{ nextval: "42" }]);
+
+      const dto = {
+        stockKey: "stock-1",
+        obtainmentMethod: "Purchase" as any,
+        obtainedFrom: "B&H",
+        timesExposedToXrays: 0,
+      };
+
+      const roll = await service.create(dto);
+
+      expect(db.query).toHaveBeenCalledWith(
+        expect.stringContaining("nextval('roll_id_seq')"),
+      );
+      expect(roll.rollId).toBe("00042");
+    });
+
+    it("should use the provided rollId and not call the sequence", async () => {
+      const dto = {
+        stockKey: "stock-1",
+        rollId: "my-custom-id",
+        obtainmentMethod: "Purchase" as any,
+        obtainedFrom: "B&H",
+        timesExposedToXrays: 0,
+      };
+
+      const roll = await service.create(dto);
+
+      const sequenceCalls = db.query.mock.calls.filter(([sql]: [string]) =>
+        sql.includes("nextval"),
+      );
+      expect(sequenceCalls).toHaveLength(0);
+      expect(roll.rollId).toBe("my-custom-id");
+    });
+  });
 });

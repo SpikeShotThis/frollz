@@ -160,16 +160,10 @@ export class RollService implements OnModuleInit {
 
     let rollId = createRollDto.rollId;
     if (!rollId) {
-      const stocks = await this.databaseService.query(
-        `SELECT brand FROM stocks WHERE id = ?`,
-        [createRollDto.stockKey],
+      const rows = await this.databaseService.query<{ nextval: string }>(
+        `SELECT nextval('roll_id_seq')`,
       );
-      const stockName =
-        stocks.length > 0
-          ? (stocks[0].brand as string).toLowerCase().replace(/\s+/g, "-")
-          : "unknown";
-      const datePart = new Date(dateObtained).toISOString().slice(0, 10);
-      rollId = `roll-${stockName}-${datePart}`;
+      rollId = String(rows[0].nextval).padStart(5, "0");
     }
 
     const now = new Date();
@@ -228,11 +222,10 @@ export class RollService implements OnModuleInit {
   }
 
   async getNextId(): Promise<string> {
-    const rows = await this.databaseService.query(
-      `SELECT COUNT(*) AS count FROM rolls`,
+    const rows = await this.databaseService.query<{ nextval: string }>(
+      `SELECT nextval('roll_id_seq')`,
     );
-    const count = Number(rows[0].count);
-    return String(count + 1).padStart(5, "0");
+    return String(rows[0].nextval).padStart(5, "0");
   }
 
   async findAll(): Promise<Roll[]> {
