@@ -2,9 +2,14 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { mount, flushPromises } from '@vue/test-utils'
 import { createRouter, createMemoryHistory } from 'vue-router'
+import { axe } from 'vitest-axe'
 import RollsView from '@/views/RollsView.vue'
 import { rollApi, stockApi } from '@/services/api-client'
 import { RollState, ObtainmentMethod } from '@/types'
+
+const axeOptions = {
+  runOnly: { type: 'tag' as const, values: ['wcag2a', 'wcag2aa', 'wcag21aa'] },
+}
 
 vi.mock('@/services/api-client', () => ({
   rollApi: {
@@ -41,6 +46,18 @@ describe('RollsView', () => {
     vi.clearAllMocks()
     vi.mocked(rollApi.getAll).mockResolvedValue({ data: [] } as any)
     vi.mocked(stockApi.getAll).mockResolvedValue({ data: [] } as any)
+  })
+
+  describe('accessibility', () => {
+    it('renders the roll list without a11y violations', async () => {
+      vi.mocked(rollApi.getAll).mockResolvedValue({ data: [] } as any)
+
+      const wrapper = mount(RollsView, { global: { plugins: [router] } })
+      await flushPromises()
+
+      const results = await axe(wrapper.element, axeOptions)
+      expect(results).toHaveNoViolations()
+    })
   })
 
   describe('shelved spelling', () => {

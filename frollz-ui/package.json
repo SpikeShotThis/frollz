@@ -36,6 +36,7 @@
     "@vue/test-utils": "^2.4.6",
     "@vue/tsconfig": "^0.9.0",
     "autoprefixer": "^10.4.27",
+    "axe-core": "^4.11.1",
     "eslint": "^10.0.3",
     "eslint-config-flat-gitignore": "^2.2.1",
     "eslint-plugin-vue": "^10.8.0",
@@ -49,6 +50,7 @@
     "typescript-eslint": "^8.57.1",
     "vite": "^8.0.0",
     "vitest": "^4.1.0",
+    "vitest-axe": "^0.1.0",
     "vue-eslint-parser": "^10.4.0",
     "vue-tsc": "^3.2.6"
   },
