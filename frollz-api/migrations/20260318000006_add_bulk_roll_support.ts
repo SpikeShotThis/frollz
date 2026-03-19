@@ -3,7 +3,7 @@ import type { Knex } from "knex";
 export async function up(knex: Knex): Promise<void> {
   // 1. Add parent_roll_id FK to rolls (self-referential, nullable)
   await knex.schema.alterTable("rolls", (t) => {
-    t.uuid("parent_roll_id")
+    t.text("parent_roll_id")
       .nullable()
       .references("id")
       .inTable("rolls")
