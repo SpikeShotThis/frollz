@@ -1,5 +1,5 @@
 import { api } from './api'
-import type { FilmFormat, Stock, Roll, RollStateHistory, Tag, StockTag, RollTag } from '@/types'
+import type { FilmFormat, Stock, Roll, RollStateHistory, Tag, StockTag, RollTag, TransitionGraph } from '@/types'
 import { Process } from '@/types'
 
 type CreateStockMultipleFormatsPayload = Pick<Stock, 'brand' | 'manufacturer' | 'speed' | 'baseStockKey' | 'boxImageUrl'> & {
@@ -69,14 +69,20 @@ export const rollTagApi = {
 export const rollApi = {
   getAll: () => api.get<Roll[]>('/rolls'),
   getById: (key: string) => api.get<Roll>(`/rolls/${key}`),
-  getNextId: () => api.get<string>('/rolls/next-id'),
-  create: (data: Omit<Roll, '_key' | 'createdAt' | 'updatedAt'>) =>
+  getChildren: (key: string) => api.get<Roll[]>(`/rolls/${key}/children`),
+  create: (data: Omit<Roll, '_key' | 'rollId' | 'createdAt' | 'updatedAt'> & { isBulkRoll?: boolean; parentRollId?: string }) =>
     api.post<Roll>('/rolls', data),
   update: (key: string, data: Partial<Roll>) =>
     api.patch<Roll>(`/rolls/${key}`, data),
   delete: (key: string) => api.delete(`/rolls/${key}`),
   transition: (key: string, targetState: string, date?: string, notes?: string, isErrorCorrection?: boolean, metadata?: Record<string, unknown>) =>
     api.post<Roll>(`/rolls/${key}/transition`, { targetState, date, notes, isErrorCorrection, metadata }),
+}
+
+// Transition API
+export const transitionApi = {
+  getGraph: (profile = 'standard') =>
+    api.get<TransitionGraph>('/transitions', { params: { profile } }),
 }
 
 // Roll State History API

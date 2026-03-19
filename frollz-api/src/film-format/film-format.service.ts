@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common";
+import { ConflictException, Injectable } from "@nestjs/common";
 import { randomUUID } from "crypto";
 import { DatabaseService } from "../database/database.service";
 import { CreateFilmFormatDto } from "./dto/create-film-format.dto";
@@ -90,10 +90,20 @@ export class FilmFormatService {
   }
 
   async remove(key: string): Promise<boolean> {
-    await this.databaseService.execute(
-      `DELETE FROM film_formats WHERE id = ?`,
+    const dependents = await this.databaseService.query<{ id: string }>(
+      `SELECT id FROM stocks WHERE format_key = ? LIMIT 1`,
       [key],
     );
-    return true;
+    if (dependents.length > 0) {
+      throw new ConflictException(
+        "Cannot delete film format: it is referenced by one or more stocks",
+      );
+    }
+
+    const rows = await this.databaseService.query<{ id: string }>(
+      `DELETE FROM film_formats WHERE id = ? RETURNING id`,
+      [key],
+    );
+    return rows.length > 0;
   }
 }

@@ -9,7 +9,6 @@ import { RollState, ObtainmentMethod } from '@/types'
 vi.mock('@/services/api-client', () => ({
   rollApi: {
     getAll: vi.fn(),
-    getNextId: vi.fn(),
     create: vi.fn(),
   },
   stockApi: {
@@ -41,7 +40,6 @@ describe('RollsView', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     vi.mocked(rollApi.getAll).mockResolvedValue({ data: [] } as any)
-    vi.mocked(rollApi.getNextId).mockResolvedValue({ data: '00001' } as any)
     vi.mocked(stockApi.getAll).mockResolvedValue({ data: [] } as any)
   })
 
@@ -74,6 +72,26 @@ describe('RollsView', () => {
 
       expect(router.currentRoute.value.name).toBe('roll-detail')
       expect(router.currentRoute.value.params.key).toBe('r1')
+    })
+  })
+
+  describe('create roll navigation', () => {
+    it('should navigate to roll-detail with the new roll key after create', async () => {
+      vi.mocked(rollApi.create).mockResolvedValue({ data: makeRoll('new-key', RollState.ADDED) } as any)
+
+      const wrapper = mount(RollsView, { global: { plugins: [router] } })
+      await flushPromises()
+
+      const vm = wrapper.vm as any
+      vm.showModal = true
+      vm.form.stockKey = 'stock1'
+      await wrapper.vm.$nextTick()
+
+      await vm.handleSubmit()
+      await flushPromises()
+
+      expect(router.currentRoute.value.name).toBe('roll-detail')
+      expect(router.currentRoute.value.params.key).toBe('new-key')
     })
   })
 

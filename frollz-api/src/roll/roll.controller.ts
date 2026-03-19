@@ -7,8 +7,9 @@ import {
   Param,
   Delete,
   NotFoundException,
-  BadRequestException,
 } from "@nestjs/common";
+import { Throttle } from "@nestjs/throttler";
+import { ThrottleLimits } from "../common/throttle-limits";
 import { ApiTags, ApiOperation, ApiResponse } from "@nestjs/swagger";
 import { RollService } from "./roll.service";
 import { CreateRollDto } from "./dto/create-roll.dto";
@@ -22,6 +23,7 @@ export class RollController {
   constructor(private readonly rollService: RollService) {}
 
   @Post()
+  @Throttle({ default: ThrottleLimits._20_REQUESTS_PER_MINUTE })
   @ApiOperation({ summary: "Create a new roll" })
   @ApiResponse({
     status: 201,
@@ -50,6 +52,17 @@ export class RollController {
     return this.rollService.findAll();
   }
 
+  @Get(":key/children")
+  @ApiOperation({ summary: "Get child rolls of a bulk roll" })
+  @ApiResponse({
+    status: 200,
+    description: "Child rolls retrieved successfully",
+    type: [Roll],
+  })
+  findChildren(@Param("key") key: string): Promise<Roll[]> {
+    return this.rollService.findChildren(key);
+  }
+
   @Get(":key")
   @ApiOperation({ summary: "Get a roll by key" })
   @ApiResponse({
@@ -67,6 +80,7 @@ export class RollController {
   }
 
   @Patch(":key")
+  @Throttle({ default: ThrottleLimits._20_REQUESTS_PER_MINUTE })
   @ApiOperation({ summary: "Update a roll" })
   @ApiResponse({
     status: 200,
@@ -86,6 +100,7 @@ export class RollController {
   }
 
   @Delete(":key")
+  @Throttle({ default: ThrottleLimits._20_REQUESTS_PER_MINUTE })
   @ApiOperation({ summary: "Delete a roll" })
   @ApiResponse({ status: 200, description: "Roll deleted successfully" })
   @ApiResponse({ status: 404, description: "Roll not found" })
@@ -98,6 +113,7 @@ export class RollController {
   }
 
   @Post(":key/transition")
+  @Throttle({ default: ThrottleLimits._20_REQUESTS_PER_MINUTE })
   @ApiOperation({ summary: "Transition a roll to a new storage state" })
   @ApiResponse({
     status: 200,
@@ -110,16 +126,10 @@ export class RollController {
     @Param("key") key: string,
     @Body() transitionRollDto: TransitionRollDto,
   ): Promise<Roll> {
-    try {
-      const roll = await this.rollService.transition(key, transitionRollDto);
-      if (!roll) {
-        throw new NotFoundException("Roll not found");
-      }
-      return roll;
-    } catch (e) {
-      if (e instanceof NotFoundException || e instanceof BadRequestException)
-        throw e;
+    const roll = await this.rollService.transition(key, transitionRollDto);
+    if (!roll) {
       throw new NotFoundException("Roll not found");
     }
+    return roll;
   }
 }

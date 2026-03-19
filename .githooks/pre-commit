@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+# Pre-commit hook — mirrors CI checks so pushes never fail on lint/test/SAST.
+# Activate once per clone: git config core.hooksPath .githooks
+set -euo pipefail
+
+ROOT="$(git rev-parse --show-toplevel)"
+
+echo "▶ pre-commit: UI lint"
+(cd "$ROOT/frollz-ui" && npm run lint --silent)
+
+echo "▶ pre-commit: UI type-check"
+(cd "$ROOT/frollz-ui" && npm run type-check --silent)
+
+echo "▶ pre-commit: UI tests"
+(cd "$ROOT/frollz-ui" && npm test -- --run)
+
+echo "▶ pre-commit: API lint"
+(cd "$ROOT/frollz-api" && npm run lint --silent)
+
+echo "▶ pre-commit: API tests"
+(cd "$ROOT/frollz-api" && npm test -- --passWithNoTests 2>&1 | tail -5)
+
+echo "▶ pre-commit: Semgrep SAST"
+if command -v semgrep &>/dev/null; then
+  semgrep scan --config p/default --config p/typescript --metrics=off --error \
+    --quiet --no-rewrite-rule-ids "$ROOT"
+else
+  echo "  (semgrep not installed — skipping)"
+fi
+
+echo "✓ All pre-commit checks passed"

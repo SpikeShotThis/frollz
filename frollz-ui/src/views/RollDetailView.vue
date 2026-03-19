@@ -23,6 +23,17 @@
           >{{ roll.state }}</span>
         </div>
 
+        <!-- Parent bulk roll link (child rolls only) -->
+        <div v-if="parentRoll" class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4">
+          <p class="text-sm text-gray-500 dark:text-gray-400">
+            Cut from bulk roll
+            <button
+              @click="router.push({ name: 'roll-detail', params: { key: parentRoll._key } })"
+              class="text-primary-600 dark:text-primary-400 hover:underline font-medium ml-1"
+            >{{ parentRoll.rollId }}</button>
+          </p>
+        </div>
+
         <!-- Details card -->
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
           <h2 class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-4">Details</h2>
@@ -87,7 +98,7 @@
             <!-- Storage state metadata form -->
             <div v-if="pendingMetadataTransition" class="border border-blue-300 dark:border-blue-600 rounded-md p-3 bg-blue-50 dark:bg-blue-900/20">
               <p class="text-sm font-medium text-blue-800 dark:text-blue-200 mb-3">{{ pendingMetadataTransition }} details</p>
-              <label v-if="STATES_WITH_DATE_CAPTURE.has(pendingMetadataTransition!)" class="block text-xs text-gray-600 dark:text-gray-400 mb-2">
+              <label v-if="requiresDateCapture(pendingMetadataTransition!)" class="block text-xs text-gray-600 dark:text-gray-400 mb-2">
                 Date <span class="text-red-500">*</span>
                 <input v-model="metadataDate" type="date" class="mt-1 w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100" />
               </label>
@@ -165,13 +176,13 @@
                   </label>
                 </div>
                 <label class="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400 cursor-pointer">
-                  <input v-model="metadatanegativesReceived" type="checkbox" class="rounded" />
+                  <input v-model="metadataNegativesReceived" type="checkbox" class="rounded" />
                   Negatives received
                 </label>
-                <div v-if="metadatanegativesReceived" class="pl-5">
+                <div v-if="metadataNegativesReceived" class="pl-5">
                   <label class="block text-xs text-gray-600 dark:text-gray-400">
                     Negatives date
-                    <input v-model="metadataNegatviesDate" type="date" class="mt-1 w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100" />
+                    <input v-model="metadataNegativesDate" type="date" class="mt-1 w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100" />
                   </label>
                 </div>
               </div>
@@ -219,6 +230,27 @@
             </div>
             <div v-if="transitionError" class="text-sm text-red-600 dark:text-red-400">{{ transitionError }}</div>
           </div>
+        </div>
+
+        <!-- Child rolls card (bulk rolls only) -->
+        <div v-if="roll.transitionProfile === 'bulk'" class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+          <div class="flex justify-between items-center mb-4">
+            <h2 class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Child Rolls</h2>
+            <span class="text-xs text-gray-400 dark:text-gray-500">{{ childRolls.length }} roll{{ childRolls.length !== 1 ? 's' : '' }} cut</span>
+          </div>
+          <div v-if="childRolls.length === 0" class="text-sm text-gray-400 dark:text-gray-500 italic">No rolls cut from this canister yet.</div>
+          <ul v-else class="space-y-2">
+            <li v-for="child in childRolls" :key="child._key" class="flex items-center justify-between text-sm">
+              <button
+                @click="router.push({ name: 'roll-detail', params: { key: child._key } })"
+                class="text-primary-600 dark:text-primary-400 hover:underline font-medium"
+              >{{ child.rollId }}</button>
+              <span
+                class="px-2 text-xs leading-5 font-semibold rounded-full"
+                :class="getStateColor(child.state)"
+              >{{ child.state }}</span>
+            </li>
+          </ul>
         </div>
 
         <!-- Tags card -->
@@ -291,15 +323,18 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
-import { useRoute } from 'vue-router'
-import { rollApi, rollStateApi, rollTagApi, tagApi } from '@/services/api-client'
-import type { Roll, RollStateHistory, Tag, RollTag } from '@/types'
+import { ref, computed, onMounted, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import { rollApi, rollStateApi, rollTagApi, tagApi, transitionApi } from '@/services/api-client'
+import type { Roll, RollStateHistory, Tag, RollTag, TransitionGraph } from '@/types'
 import { RollState } from '@/types'
 
 const route = useRoute()
+const router = useRouter()
 
 const roll = ref<Roll | null>(null)
+const parentRoll = ref<Roll | null>(null)
+const childRolls = ref<Roll[]>([])
 const history = ref<RollStateHistory[]>([])
 const rollTags = ref<RollTag[]>([])
 const allTags = ref<Tag[]>([])
@@ -321,16 +356,14 @@ const metadataDate = ref('')
 const metadataScansReceived = ref(false)
 const metadataScansUrl = ref('')
 const metadataScansDate = ref('')
-const metadatanegativesReceived = ref(false)
-const metadataNegatviesDate = ref('')
+const metadataNegativesReceived = ref(false)
+const metadataNegativesDate = ref('')
 
 const DELIVERY_METHODS = ['Drop off', 'Mail in'] as const
-const PROCESSES_REQUESTED = ['C-41', 'E-6', 'Black & White', 'Instant'] as const
+const PROCESSES_REQUESTED = ['C-41', 'E-6', 'ECN-2', 'Black & White', 'Instant'] as const
 
 const todayISO = () => new Date().toISOString().slice(0, 10)
 
-const STATES_REQUIRING_METADATA = new Set([RollState.FROZEN, RollState.REFRIGERATED, RollState.SHELVED, RollState.LOADED, RollState.FINISHED, RollState.SENT_FOR_DEVELOPMENT, RollState.DEVELOPED, RollState.RECEIVED])
-const STATES_WITH_DATE_CAPTURE = new Set([RollState.FROZEN, RollState.REFRIGERATED, RollState.SHELVED, RollState.LOADED, RollState.FINISHED, RollState.SENT_FOR_DEVELOPMENT, RollState.DEVELOPED])
 const isImperial = navigator.language === 'en-US'
 const temperatureUnit = isImperial ? '°F' : '°C'
 const TEMPERATURE_DEFAULTS: Partial<Record<RollState, number>> = {
@@ -339,44 +372,35 @@ const TEMPERATURE_DEFAULTS: Partial<Record<RollState, number>> = {
   [RollState.SHELVED]: isImperial ? 65 : 18,
 }
 
-const FORWARD_TRANSITIONS: Partial<Record<RollState, RollState[]>> = {
-  [RollState.ADDED]: [RollState.FROZEN, RollState.REFRIGERATED, RollState.SHELVED],
-  [RollState.FROZEN]: [RollState.REFRIGERATED, RollState.SHELVED],
-  [RollState.REFRIGERATED]: [RollState.SHELVED],
-  [RollState.SHELVED]: [RollState.LOADED],
-  [RollState.LOADED]: [RollState.FINISHED],
-  [RollState.FINISHED]: [RollState.SENT_FOR_DEVELOPMENT],
-  [RollState.SENT_FOR_DEVELOPMENT]: [RollState.DEVELOPED],
-  [RollState.DEVELOPED]: [RollState.RECEIVED],
-}
-
-const BACKWARD_TRANSITIONS: Partial<Record<RollState, RollState[]>> = {
-  [RollState.FROZEN]: [RollState.ADDED],
-  [RollState.REFRIGERATED]: [RollState.FROZEN, RollState.ADDED],
-  [RollState.SHELVED]: [RollState.REFRIGERATED, RollState.FROZEN],
-  [RollState.LOADED]: [RollState.SHELVED, RollState.REFRIGERATED, RollState.FROZEN],
-  [RollState.FINISHED]: [RollState.LOADED],
-  [RollState.SENT_FOR_DEVELOPMENT]: [RollState.FINISHED],
-  [RollState.DEVELOPED]: [RollState.SENT_FOR_DEVELOPMENT],
-  [RollState.RECEIVED]: [RollState.DEVELOPED],
-}
-
-const VALID_TRANSITIONS: Partial<Record<RollState, RollState[]>> = Object.fromEntries(
-  Object.values(RollState).map((state) => [
-    state,
-    [
-      ...(FORWARD_TRANSITIONS[state] ?? []),
-      ...(BACKWARD_TRANSITIONS[state] ?? []),
-    ],
-  ]),
-) as Partial<Record<RollState, RollState[]>>
+const transitionGraph = ref<TransitionGraph>({ states: [], transitions: [] })
 
 const isBackwardTransition = (from: RollState, to: RollState): boolean =>
-  (BACKWARD_TRANSITIONS[from] ?? []).includes(to)
+  transitionGraph.value.transitions.some(
+    t => t.fromState === from && t.toState === to && t.transitionType === 'BACKWARD',
+  )
 
 const validTransitions = computed(() =>
-  roll.value ? (VALID_TRANSITIONS[roll.value.state] ?? []) : [],
+  roll.value
+    ? transitionGraph.value.transitions
+        .filter(t => t.fromState === roll.value!.state)
+        .map(t => t.toState as RollState)
+    : [],
 )
+
+const getTransitionEdge = (targetState: RollState) =>
+  transitionGraph.value.transitions.find(
+    t => t.fromState === roll.value?.state && t.toState === targetState,
+  )
+
+const requiresMetadataForm = (targetState: RollState): boolean => {
+  const t = getTransitionEdge(targetState)
+  return !!t && (t.metadata.length > 0 || t.requiresDate)
+}
+
+const requiresDateCapture = (targetState: RollState): boolean => {
+  const t = getTransitionEdge(targetState)
+  return !!t && t.requiresDate
+}
 
 const tagByKey = computed(() => {
   const map: Record<string, Tag> = {}
@@ -430,7 +454,7 @@ const handleTransition = (targetState: RollState) => {
     pendingTransition.value = targetState
     return
   }
-  if (STATES_REQUIRING_METADATA.has(targetState)) {
+  if (requiresMetadataForm(targetState)) {
     pendingMetadataTransition.value = targetState
     metadataTemperature.value = String(TEMPERATURE_DEFAULTS[targetState] ?? '')
     metadataShotISO.value = targetState === RollState.FINISHED && roll.value?.stockSpeed ? String(roll.value.stockSpeed) : ''
@@ -443,8 +467,8 @@ const handleTransition = (targetState: RollState) => {
     metadataScansReceived.value = false
     metadataScansUrl.value = ''
     metadataScansDate.value = todayISO()
-    metadatanegativesReceived.value = false
-    metadataNegatviesDate.value = todayISO()
+    metadataNegativesReceived.value = false
+    metadataNegativesDate.value = todayISO()
     return
   }
   void executeTransition(targetState)
@@ -460,7 +484,7 @@ const submitMetadataTransition = () => {
     if (!metadataProcessRequested.value) { metadataFormError.value = 'Process is required.'; return }
   }
 
-  if (STATES_WITH_DATE_CAPTURE.has(target) && !metadataDate.value) {
+  if (requiresDateCapture(target) && !metadataDate.value) {
     metadataFormError.value = 'Date is required.'
     return
   }
@@ -469,7 +493,7 @@ const submitMetadataTransition = () => {
   const shotISO = metadataShotISO.value !== '' ? parseFloat(metadataShotISO.value) : undefined
   const pushPullStops = metadataPushPullStops.value !== '' ? parseInt(metadataPushPullStops.value, 10) : undefined
   let date: string | undefined
-  if (STATES_WITH_DATE_CAPTURE.has(target) && metadataDate.value) {
+  if (requiresDateCapture(target) && metadataDate.value) {
     const [year, month, day] = metadataDate.value.split('-').map(Number)
     const now = new Date()
     date = new Date(year, month - 1, day, now.getHours(), now.getMinutes(), now.getSeconds()).toISOString()
@@ -488,9 +512,9 @@ const submitMetadataTransition = () => {
     metadata.scansDate = metadataScansDate.value || todayISO()
     if (metadataScansUrl.value.trim()) metadata.scansUrl = metadataScansUrl.value.trim()
   }
-  if (metadatanegativesReceived.value) {
+  if (metadataNegativesReceived.value) {
     metadata.negativesReceived = true
-    metadata.negativesDate = metadataNegatviesDate.value || todayISO()
+    metadata.negativesDate = metadataNegativesDate.value || todayISO()
   }
   void executeTransition(target, undefined, Object.keys(metadata).length > 0 ? metadata : undefined, date)
 }
@@ -552,14 +576,30 @@ const loadData = async () => {
   roll.value = rollRes.data
   history.value = historyRes.data
   allTags.value = tagsRes.data
-  await loadRollTags()
+  await Promise.all([
+    loadRollTags(),
+    roll.value?.parentRollId
+      ? rollApi.getById(roll.value.parentRollId).then(r => { parentRoll.value = r.data })
+      : Promise.resolve().then(() => { parentRoll.value = null }),
+    roll.value?.transitionProfile === 'bulk'
+      ? rollApi.getChildren(key).then(r => { childRolls.value = r.data })
+      : Promise.resolve().then(() => { childRolls.value = [] }),
+  ])
 }
 
-onMounted(async () => {
+const reload = async () => {
+  loading.value = true
   try {
     await loadData()
+    const graphRes = await transitionApi.getGraph(
+      roll.value?.transitionProfile ?? 'standard',
+    )
+    transitionGraph.value = graphRes.data
   } finally {
     loading.value = false
   }
-})
+}
+
+onMounted(reload)
+watch(() => route.params.key, reload)
 </script>

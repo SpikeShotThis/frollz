@@ -127,14 +127,22 @@ describe("StockTagService", () => {
   });
 
   describe("remove", () => {
-    it("should execute DELETE and return true", async () => {
+    it("should return true when the record is deleted", async () => {
+      db.query.mockResolvedValueOnce([{ id: "abc" }]);
       const result = await service.remove("abc");
 
-      expect(db.execute).toHaveBeenCalledWith(
+      expect(db.query).toHaveBeenCalledWith(
         expect.stringContaining("DELETE FROM stock_tags"),
         ["abc"],
       );
       expect(result).toBe(true);
+    });
+
+    it("should return false when the record does not exist", async () => {
+      db.query.mockResolvedValueOnce([]);
+      const result = await service.remove("nonexistent");
+
+      expect(result).toBe(false);
     });
   });
 });

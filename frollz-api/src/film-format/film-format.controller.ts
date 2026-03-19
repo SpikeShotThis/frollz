@@ -8,6 +8,8 @@ import {
   Delete,
   NotFoundException,
 } from "@nestjs/common";
+import { Throttle } from "@nestjs/throttler";
+import { ThrottleLimits } from "../common/throttle-limits";
 import { ApiTags, ApiOperation, ApiResponse } from "@nestjs/swagger";
 import { FilmFormatService } from "./film-format.service";
 import { CreateFilmFormatDto } from "./dto/create-film-format.dto";
@@ -20,6 +22,7 @@ export class FilmFormatController {
   constructor(private readonly filmFormatService: FilmFormatService) {}
 
   @Post()
+  @Throttle({ default: ThrottleLimits._20_REQUESTS_PER_MINUTE })
   @ApiOperation({ summary: "Create a new film format" })
   @ApiResponse({
     status: 201,
@@ -60,6 +63,7 @@ export class FilmFormatController {
   }
 
   @Patch(":key")
+  @Throttle({ default: ThrottleLimits._20_REQUESTS_PER_MINUTE })
   @ApiOperation({ summary: "Update a film format" })
   @ApiResponse({
     status: 200,
@@ -82,6 +86,7 @@ export class FilmFormatController {
   }
 
   @Delete(":key")
+  @Throttle({ default: ThrottleLimits._20_REQUESTS_PER_MINUTE })
   @ApiOperation({ summary: "Delete a film format" })
   @ApiResponse({ status: 200, description: "Film format deleted successfully" })
   @ApiResponse({ status: 404, description: "Film format not found" })

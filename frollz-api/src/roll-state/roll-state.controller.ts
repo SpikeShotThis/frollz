@@ -1,4 +1,4 @@
-import { Controller, Get, Query } from "@nestjs/common";
+import { Controller, Get, Query, BadRequestException } from "@nestjs/common";
 import { ApiTags, ApiOperation, ApiResponse, ApiQuery } from "@nestjs/swagger";
 import { RollStateService } from "./roll-state.service";
 import { RollStateHistory } from "./entities/roll-state.entity";
@@ -23,6 +23,8 @@ export class RollStateController {
   findByRollKey(
     @Query("rollKey") rollKey: string,
   ): Promise<RollStateHistory[]> {
+    if (!rollKey)
+      throw new BadRequestException("rollKey query parameter is required");
     return this.rollStateService.findByRollKey(rollKey);
   }
 }

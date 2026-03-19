@@ -8,6 +8,8 @@ import {
   Delete,
   NotFoundException,
 } from "@nestjs/common";
+import { Throttle } from "@nestjs/throttler";
+import { ThrottleLimits } from "../common/throttle-limits";
 import { ApiTags, ApiOperation, ApiResponse } from "@nestjs/swagger";
 import { TagService } from "./tag.service";
 import { CreateTagDto } from "./dto/create-tag.dto";
@@ -20,6 +22,7 @@ export class TagController {
   constructor(private readonly tagService: TagService) {}
 
   @Post()
+  @Throttle({ default: ThrottleLimits._20_REQUESTS_PER_MINUTE })
   @ApiOperation({ summary: "Create a new tag" })
   @ApiResponse({
     status: 201,
@@ -58,6 +61,7 @@ export class TagController {
   }
 
   @Patch(":key")
+  @Throttle({ default: ThrottleLimits._20_REQUESTS_PER_MINUTE })
   @ApiOperation({ summary: "Update a tag" })
   @ApiResponse({
     status: 200,
@@ -77,6 +81,7 @@ export class TagController {
   }
 
   @Delete(":key")
+  @Throttle({ default: ThrottleLimits._20_REQUESTS_PER_MINUTE })
   @ApiOperation({ summary: "Delete a tag" })
   @ApiResponse({ status: 200, description: "Tag deleted successfully" })
   @ApiResponse({ status: 404, description: "Tag not found" })

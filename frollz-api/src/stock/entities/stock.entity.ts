@@ -5,6 +5,7 @@ export enum Process {
   E_6 = "E-6",
   C_41 = "C-41",
   BLACK_WHITE = "Black & White",
+  INSTANT = "Instant",
 }
 
 export class Stock {

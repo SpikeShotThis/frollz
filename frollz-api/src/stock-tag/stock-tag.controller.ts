@@ -8,6 +8,8 @@ import {
   NotFoundException,
   Query,
 } from "@nestjs/common";
+import { Throttle } from "@nestjs/throttler";
+import { ThrottleLimits } from "../common/throttle-limits";
 import { ApiTags, ApiOperation, ApiResponse, ApiQuery } from "@nestjs/swagger";
 import { StockTagService } from "./stock-tag.service";
 import { CreateStockTagDto } from "./dto/create-stock-tag.dto";
@@ -19,6 +21,7 @@ export class StockTagController {
   constructor(private readonly stockTagService: StockTagService) {}
 
   @Post()
+  @Throttle({ default: ThrottleLimits._20_REQUESTS_PER_MINUTE })
   @ApiOperation({ summary: "Associate a tag with a stock" })
   @ApiResponse({
     status: 201,
@@ -66,6 +69,7 @@ export class StockTagController {
   }
 
   @Delete(":key")
+  @Throttle({ default: ThrottleLimits._20_REQUESTS_PER_MINUTE })
   @ApiOperation({ summary: "Remove a stock-tag association" })
   @ApiResponse({ status: 200, description: "StockTag deleted successfully" })
   @ApiResponse({ status: 404, description: "StockTag not found" })

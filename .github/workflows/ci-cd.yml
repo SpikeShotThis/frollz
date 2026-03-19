@@ -19,7 +19,7 @@ jobs:
       - name: Set up Node
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '24'
           cache: 'npm'
           cache-dependency-path: frollz-api/package-lock.json
 
@@ -44,7 +44,7 @@ jobs:
       - name: Set up Node
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '24'
           cache: 'npm'
           cache-dependency-path: frollz-ui/package-lock.json
 
@@ -92,26 +92,14 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Build & push API image
+      - name: Build & push combined image
         uses: docker/build-push-action@v6
         with:
-          context: ./frollz-api
+          context: .
           target: production
           push: true
           tags: |
-            ghcr.io/joshholl/frollz-api:latest
-            ghcr.io/joshholl/frollz-api:${{ github.sha }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-
-      - name: Build & push UI image
-        uses: docker/build-push-action@v6
-        with:
-          context: ./frollz-ui
-          target: production
-          push: true
-          tags: |
-            ghcr.io/joshholl/frollz-ui:latest
-            ghcr.io/joshholl/frollz-ui:${{ github.sha }}
+            ghcr.io/joshholl/frollz:latest
+            ghcr.io/joshholl/frollz:${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max

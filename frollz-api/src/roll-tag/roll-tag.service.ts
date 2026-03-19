@@ -64,10 +64,11 @@ export class RollTagService {
   }
 
   async remove(key: string): Promise<boolean> {
-    await this.databaseService.execute(`DELETE FROM roll_tags WHERE id = ?`, [
-      key,
-    ]);
-    return true;
+    const rows = await this.databaseService.query<{ id: string }>(
+      `DELETE FROM roll_tags WHERE id = ? RETURNING id`,
+      [key],
+    );
+    return rows.length > 0;
   }
 
   async syncAutoTag(

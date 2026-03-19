@@ -1,4 +1,6 @@
-import { Injectable } from "@nestjs/common";
+import { ConflictException, Injectable } from "@nestjs/common";
+
+const toSlug = (s: string) => s.toLowerCase().replace(/\s+/g, "-");
 import { DatabaseService } from "../database/database.service";
 import { CreateStockDto } from "./dto/create-stock.dto";
 import { CreateStockMultipleFormatsDto } from "./dto/create-stock-multiple-formats.dto";
@@ -25,7 +27,6 @@ export class StockService {
   constructor(private readonly databaseService: DatabaseService) {}
 
   async create(createStockDto: CreateStockDto): Promise<Stock> {
-    const toSlug = (s: string) => s.toLowerCase().replace(/\s+/g, "-");
     const id = `${toSlug(createStockDto.manufacturer)}-${toSlug(createStockDto.brand)}-${createStockDto.speed}-${createStockDto.formatKey}`;
     const now = new Date();
 
@@ -52,7 +53,6 @@ export class StockService {
   async createMultipleFormats(
     dto: CreateStockMultipleFormatsDto,
   ): Promise<Stock[]> {
-    const toSlug = (s: string) => s.toLowerCase().replace(/\s+/g, "-");
     const now = new Date();
 
     return Promise.all(
@@ -159,10 +159,31 @@ export class StockService {
   }
 
   async remove(key: string): Promise<boolean> {
-    await this.databaseService.execute(`DELETE FROM stocks WHERE id = ?`, [
-      key,
-    ]);
-    return true;
+    const rollDependents = await this.databaseService.query<{ id: string }>(
+      `SELECT id FROM rolls WHERE stock_key = ? LIMIT 1`,
+      [key],
+    );
+    if (rollDependents.length > 0) {
+      throw new ConflictException(
+        "Cannot delete stock: it is referenced by one or more rolls",
+      );
+    }
+
+    const stockTagDependents = await this.databaseService.query<{ id: string }>(
+      `SELECT id FROM stock_tags WHERE stock_key = ? LIMIT 1`,
+      [key],
+    );
+    if (stockTagDependents.length > 0) {
+      throw new ConflictException(
+        "Cannot delete stock: it is referenced by one or more stock tags",
+      );
+    }
+
+    const rows = await this.databaseService.query<{ id: string }>(
+      `DELETE FROM stocks WHERE id = ? RETURNING id`,
+      [key],
+    );
+    return rows.length > 0;
   }
 
   async getBrands(query: string): Promise<string[]> {

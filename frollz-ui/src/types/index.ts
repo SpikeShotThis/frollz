@@ -92,6 +92,27 @@ export enum RollState {
   RECEIVED = 'Received',
 }
 
+export interface TransitionMetadataField {
+  field: string
+  fieldType: string
+  defaultValue: string | null
+  isRequired: boolean
+}
+
+export interface TransitionEdge {
+  id: string
+  fromState: string
+  toState: string
+  transitionType: string
+  requiresDate: boolean
+  metadata: TransitionMetadataField[]
+}
+
+export interface TransitionGraph {
+  states: string[]
+  transitions: TransitionEdge[]
+}
+
 export interface RollStateHistory {
   _key?: string
   stateId: string
@@ -108,12 +129,13 @@ export interface RollStateHistory {
 export enum ObtainmentMethod {
   GIFT = 'Gift',
   PURCHASE = 'Purchase',
+  SELF_ROLLED = 'Self Rolled',
 }
 
 export interface Roll {
   _key?: string
   rollId: string
-  stockKey: string
+  stockKey?: string
   state: RollState
   imagesUrl?: string
   dateObtained: Date
@@ -125,6 +147,10 @@ export interface Roll {
   stockName?: string
   stockSpeed?: number
   formatName?: string
+  process?: string
+  transitionProfile?: string
+  parentRollId?: string
+  childRollCount?: number
   createdAt?: Date
   updatedAt?: Date
 }
