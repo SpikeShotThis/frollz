@@ -70,6 +70,7 @@
                 @click="addFilter('format', 'Format', stock.format ?? '')"
               >{{ stock.format }}</td>
               <td class="px-6 py-4 whitespace-nowrap">
+                <!-- eslint-disable-next-line vuejs-accessibility/click-events-have-key-events, vuejs-accessibility/no-static-element-interactions -- filter chip; will be converted to a button in #202 -->
                 <span
                   class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 cursor-pointer hover:bg-blue-200 dark:hover:bg-blue-800"
                   @click="addFilter('process', 'Process', stock.process)"
@@ -83,6 +84,7 @@
               >ISO {{ stock.speed }}</td>
               <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
                 <div class="flex flex-wrap gap-1">
+                  <!-- eslint-disable-next-line vuejs-accessibility/click-events-have-key-events, vuejs-accessibility/no-static-element-interactions -- filter chip; will be converted to a button in #202 -->
                   <span
                     v-for="tag in stockTagMap[stock._key!]"
                     :key="tag._key"
@@ -111,6 +113,7 @@
     <div v-if="showModal" class="fixed inset-0 bg-gray-500 bg-opacity-75 dark:bg-gray-900 dark:bg-opacity-80 flex items-center justify-center z-50">
       <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-lg max-h-screen overflow-y-auto">
         <h2 class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4">Add Stock</h2>
+        <!-- eslint-disable vuejs-accessibility/label-has-for, vuejs-accessibility/form-control-has-label -- for/id label associations will be added in #199 -->
         <form @submit.prevent="handleSubmit">
           <div class="space-y-4">
             <div>
@@ -220,6 +223,7 @@
             </button>
           </div>
         </form>
+        <!-- eslint-enable vuejs-accessibility/label-has-for, vuejs-accessibility/form-control-has-label -->
       </div>
     </div>
   </div>

@@ -4,6 +4,7 @@ const tseslint = require("typescript-eslint");
 const vueParser = require("vue-eslint-parser");
 const skipFormatting = require("@vue/eslint-config-prettier/skip-formatting");
 const gitignore = require("eslint-config-flat-gitignore").default;
+const vueA11y = require("eslint-plugin-vuejs-accessibility");
 module.exports = [
 	gitignore(),
 	{
@@ -16,6 +17,7 @@ module.exports = [
 	},
 	...pluginVue.configs["flat/essential"],
 	...tseslint.configs.recommended,
+	...vueA11y.configs["flat/recommended"],
 	skipFormatting,
 	{
 		files: ["**/*.vue"],

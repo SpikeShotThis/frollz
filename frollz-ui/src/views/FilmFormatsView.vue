@@ -58,6 +58,7 @@
     <div v-if="showCreateForm" class="fixed inset-0 bg-black bg-opacity-50 dark:bg-opacity-70 flex items-center justify-center z-50">
       <div class="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md w-full mx-4">
         <h3 class="text-lg font-semibold dark:text-gray-100 mb-4">Add Film Format</h3>
+        <!-- eslint-disable vuejs-accessibility/label-has-for, vuejs-accessibility/form-control-has-label -- for/id label associations will be added in #199 -->
         <form @submit.prevent="createFormat">
           <div class="mb-4">
             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Form Factor</label>
@@ -100,6 +101,7 @@
             </button>
           </div>
         </form>
+        <!-- eslint-enable vuejs-accessibility/label-has-for, vuejs-accessibility/form-control-has-label -->
       </div>
     </div>
   </div>

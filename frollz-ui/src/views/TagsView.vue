@@ -21,6 +21,7 @@
             <tr v-for="tag in paginatedTags" :key="tag._key">
               <td class="px-6 py-4 whitespace-nowrap">
                 <template v-if="editingKey === tag._key">
+                  <!-- eslint-disable-next-line vuejs-accessibility/form-control-has-label -- inline table edit; column header is the visual label; full label associations in #199 -->
                   <input
                     v-model="editForm.color"
                     type="color"
@@ -36,6 +37,7 @@
               </td>
               <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
                 <template v-if="editingKey === tag._key">
+                  <!-- eslint-disable-next-line vuejs-accessibility/form-control-has-label -- inline table edit; column header is the visual label; full label associations in #199 -->
                   <input
                     v-model="editForm.value"
                     type="text"
@@ -50,6 +52,7 @@
                 </template>
               </td>
               <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                <!-- eslint-disable-next-line vuejs-accessibility/form-control-has-label -- inline table edit; column header is the visual label; full label associations in #199 -->
                 <input
                   type="checkbox"
                   :checked="editingKey === tag._key ? editForm.isRollScoped : tag.isRollScoped"
@@ -59,6 +62,7 @@
                 />
               </td>
               <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                <!-- eslint-disable-next-line vuejs-accessibility/form-control-has-label -- inline table edit; column header is the visual label; full label associations in #199 -->
                 <input
                   type="checkbox"
                   :checked="editingKey === tag._key ? editForm.isStockScoped : tag.isStockScoped"
