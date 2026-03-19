@@ -4,22 +4,22 @@
 
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
       <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
-        <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-2">Total Rolls</h3>
+        <h2 class="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-2">Total Rolls</h2>
         <p class="text-3xl font-bold text-primary-600 dark:text-primary-400">{{ stats.totalRolls }}</p>
       </div>
 
       <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
-        <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-2">Available Stocks</h3>
+        <h2 class="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-2">Available Stocks</h2>
         <p class="text-3xl font-bold text-green-600 dark:text-green-400">{{ stats.totalStocks }}</p>
       </div>
 
       <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
-        <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-2">Currently Loaded</h3>
+        <h2 class="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-2">Currently Loaded</h2>
         <p class="text-3xl font-bold text-yellow-600 dark:text-yellow-400">{{ stats.loadedRolls }}</p>
       </div>
 
       <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
-        <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-2">Developed</h3>
+        <h2 class="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-2">Developed</h2>
         <p class="text-3xl font-bold text-blue-600 dark:text-blue-400">{{ stats.developedRolls }}</p>
       </div>
     </div>
