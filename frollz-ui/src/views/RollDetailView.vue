@@ -81,13 +81,13 @@
         <div v-if="validTransitions.length > 0" class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
           <h2 class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-4">Transitions</h2>
           <div class="space-y-3">
-            <div class="flex flex-wrap gap-2">
+            <div class="flex flex-col sm:flex-row sm:flex-wrap gap-2">
               <button
                 v-for="targetState in validTransitions"
                 :key="targetState"
                 @click="handleTransition(targetState)"
                 :disabled="transitionSubmitting || !!pendingTransition || !!pendingMetadataTransition"
-                class="px-3 py-1 text-xs font-medium border rounded disabled:opacity-50"
+                class="w-full sm:w-auto px-4 py-2 sm:px-3 sm:py-1 text-sm sm:text-xs font-medium border rounded disabled:opacity-50"
                 :class="isBackwardTransition(roll.state, targetState)
                   ? 'text-orange-700 border-orange-400 hover:bg-orange-50 dark:text-orange-400 dark:border-orange-500 dark:hover:bg-orange-900/30'
                   : 'bg-primary-600 text-white border-primary-600 hover:bg-primary-700 dark:bg-primary-700 dark:border-primary-700 dark:hover:bg-primary-800'"
@@ -187,37 +187,37 @@
                   </label>
                 </div>
               </div>
-              <div class="flex gap-2 mt-3">
+              <div class="flex flex-col sm:flex-row gap-2 mt-3">
                 <button
                   @click="submitMetadataTransition"
                   :disabled="transitionSubmitting"
-                  class="px-3 py-1 text-xs font-medium bg-primary-600 text-white rounded hover:bg-primary-700 disabled:opacity-50"
+                  class="w-full sm:w-auto px-4 py-2 sm:px-3 sm:py-1 text-sm sm:text-xs font-medium bg-primary-600 text-white rounded hover:bg-primary-700 disabled:opacity-50"
                 >Confirm</button>
                 <button
                   @click="pendingMetadataTransition = null"
                   :disabled="transitionSubmitting"
-                  class="px-3 py-1 text-xs font-medium text-gray-500 dark:text-gray-400 hover:underline disabled:opacity-50"
+                  class="w-full sm:w-auto px-4 py-2 sm:px-3 sm:py-1 text-sm sm:text-xs font-medium text-gray-500 dark:text-gray-400 hover:underline disabled:opacity-50"
                 >Cancel</button>
               </div>
             </div>
             <!-- Error correction prompt -->
             <div v-if="pendingTransition" class="border border-orange-300 dark:border-orange-600 rounded-md p-3 bg-orange-50 dark:bg-orange-900/20">
               <p class="text-sm text-orange-800 dark:text-orange-200 mb-2">Was this done to correct an error?</p>
-              <div class="flex gap-2">
+              <div class="flex flex-col sm:flex-row gap-2">
                 <button
                   @click="confirmTransition(true)"
                   :disabled="transitionSubmitting"
-                  class="px-3 py-1 text-xs font-medium bg-orange-600 text-white rounded hover:bg-orange-700 disabled:opacity-50"
+                  class="w-full sm:w-auto px-4 py-2 sm:px-3 sm:py-1 text-sm sm:text-xs font-medium bg-orange-600 text-white rounded hover:bg-orange-700 disabled:opacity-50"
                 >Yes</button>
                 <button
                   @click="confirmTransition(false)"
                   :disabled="transitionSubmitting"
-                  class="px-3 py-1 text-xs font-medium border border-gray-400 dark:border-gray-500 text-gray-700 dark:text-gray-300 rounded hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50"
+                  class="w-full sm:w-auto px-4 py-2 sm:px-3 sm:py-1 text-sm sm:text-xs font-medium border border-gray-400 dark:border-gray-500 text-gray-700 dark:text-gray-300 rounded hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50"
                 >No</button>
                 <button
                   @click="pendingTransition = null"
                   :disabled="transitionSubmitting"
-                  class="px-3 py-1 text-xs font-medium text-gray-500 dark:text-gray-400 hover:underline disabled:opacity-50"
+                  class="w-full sm:w-auto px-4 py-2 sm:px-3 sm:py-1 text-sm sm:text-xs font-medium text-gray-500 dark:text-gray-400 hover:underline disabled:opacity-50"
                 >Cancel</button>
               </div>
             </div>
