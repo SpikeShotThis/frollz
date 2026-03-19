@@ -744,6 +744,191 @@ describe("RollService", () => {
     });
   });
 
+  describe("create — bulk roll", () => {
+    const bulkDto = {
+      stockKey: "stock-1",
+      rollId: "roll-00001",
+      state: RollState.ADDED,
+      obtainmentMethod: "Purchase" as any,
+      obtainedFrom: "B&H",
+      timesExposedToXrays: 0,
+      isBulkRoll: true,
+    };
+
+    it("should assign 'bulk' profile when isBulkRoll is true", async () => {
+      await service.create(bulkDto);
+
+      const [, values] = db.execute.mock.calls.find(([sql]: [string]) =>
+        sql.includes("INSERT INTO rolls"),
+      )!;
+      expect(values).toContain("bulk");
+    });
+
+    it("should throw when neither stockKey nor parentRollId is provided", async () => {
+      await expect(
+        service.create({
+          rollId: "roll-00001",
+          obtainmentMethod: "Purchase" as any,
+          obtainedFrom: "B&H",
+          timesExposedToXrays: 0,
+        }),
+      ).rejects.toThrow(BadRequestException);
+    });
+  });
+
+  describe("create — child roll from bulk parent", () => {
+    const childDto = {
+      rollId: "roll-00002",
+      parentRollId: "parent-uuid",
+      state: RollState.ADDED,
+      obtainmentMethod: "Purchase" as any,
+      obtainedFrom: "B&H",
+      timesExposedToXrays: 0,
+    };
+
+    const bulkParentRow = {
+      stock_key: "stock-1",
+      transition_profile: "bulk",
+      stock_process: "C-41",
+    };
+
+    it("should inherit stockKey from parent and assign 'standard' profile for C-41 stock", async () => {
+      db.query.mockResolvedValueOnce([bulkParentRow]);
+
+      const roll = await service.create(childDto);
+
+      expect(roll.stockKey).toBe("stock-1");
+      expect(roll.transitionProfile).toBe("standard");
+    });
+
+    it("should assign 'instant' profile when parent stock process is Instant", async () => {
+      db.query.mockResolvedValueOnce([
+        { ...bulkParentRow, stock_process: "Instant" },
+      ]);
+
+      const roll = await service.create(childDto);
+
+      expect(roll.transitionProfile).toBe("instant");
+    });
+
+    it("should store the parentRollId on the created roll", async () => {
+      db.query.mockResolvedValueOnce([bulkParentRow]);
+
+      const roll = await service.create(childDto);
+
+      expect(roll.parentRollId).toBe("parent-uuid");
+    });
+
+    it("should include parent_roll_id in the INSERT", async () => {
+      db.query.mockResolvedValueOnce([bulkParentRow]);
+
+      await service.create(childDto);
+
+      const [sql, values] = db.execute.mock.calls.find(([s]: [string]) =>
+        s.includes("INSERT INTO rolls"),
+      )!;
+      expect(sql).toContain("parent_roll_id");
+      expect(values).toContain("parent-uuid");
+    });
+
+    it("should throw when the parent roll does not exist", async () => {
+      db.query.mockResolvedValueOnce([]);
+
+      await expect(service.create(childDto)).rejects.toThrow(
+        BadRequestException,
+      );
+    });
+
+    it("should throw when the parent roll is not a bulk roll", async () => {
+      db.query.mockResolvedValueOnce([
+        { ...bulkParentRow, transition_profile: "standard" },
+      ]);
+
+      await expect(service.create(childDto)).rejects.toThrow(
+        BadRequestException,
+      );
+    });
+  });
+
+  describe("update — child roll stock lock", () => {
+    const childRollRow = {
+      id: "child-uuid",
+      roll_id: "roll-00002",
+      stock_key: "stock-1",
+      state: RollState.ADDED,
+      images_url: null,
+      date_obtained: new Date().toISOString(),
+      obtainment_method: "Purchase",
+      obtained_from: "B&H",
+      expiration_date: null,
+      times_exposed_to_xrays: 0,
+      loaded_into: null,
+      transition_profile: "standard",
+      parent_roll_id: "parent-uuid",
+      child_roll_count: 0,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    };
+
+    it("should throw when attempting to change stockKey on a child roll", async () => {
+      db.query.mockResolvedValueOnce([childRollRow]);
+
+      await expect(
+        service.update("child-uuid", { stockKey: "stock-2" }),
+      ).rejects.toThrow(BadRequestException);
+    });
+
+    it("should allow other field updates on a child roll", async () => {
+      db.query
+        .mockResolvedValueOnce([childRollRow]) // findOne for child check
+        .mockResolvedValueOnce([childRollRow]); // findOne after update
+
+      await expect(
+        service.update("child-uuid", { obtainedFrom: "Film Supply Co." }),
+      ).resolves.not.toThrow();
+    });
+  });
+
+  describe("findChildren", () => {
+    it("should query for rolls with matching parent_roll_id", async () => {
+      db.query.mockResolvedValueOnce([]);
+
+      await service.findChildren("bulk-uuid");
+
+      expect(db.query).toHaveBeenCalledWith(
+        expect.stringContaining("parent_roll_id"),
+        ["bulk-uuid"],
+      );
+    });
+
+    it("should return mapped rolls", async () => {
+      const childRow = {
+        id: "child-uuid",
+        roll_id: "roll-00002",
+        stock_key: "stock-1",
+        state: RollState.ADDED,
+        images_url: null,
+        date_obtained: new Date().toISOString(),
+        obtainment_method: "Purchase",
+        obtained_from: "B&H",
+        expiration_date: null,
+        times_exposed_to_xrays: 0,
+        loaded_into: null,
+        transition_profile: "standard",
+        parent_roll_id: "bulk-uuid",
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      };
+      db.query.mockResolvedValueOnce([childRow]);
+
+      const children = await service.findChildren("bulk-uuid");
+
+      expect(children).toHaveLength(1);
+      expect(children[0]._key).toBe("child-uuid");
+      expect(children[0].parentRollId).toBe("bulk-uuid");
+    });
+  });
+
   describe("create — auto roll ID", () => {
     it("should use the sequence when no rollId is provided", async () => {
       db.query

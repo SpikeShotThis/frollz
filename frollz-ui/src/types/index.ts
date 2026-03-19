@@ -148,6 +148,8 @@ export interface Roll {
   formatName?: string
   process?: string
   transitionProfile?: string
+  parentRollId?: string
+  childRollCount?: number
   createdAt?: Date
   updatedAt?: Date
 }

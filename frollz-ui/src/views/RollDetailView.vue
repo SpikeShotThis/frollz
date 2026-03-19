@@ -23,6 +23,17 @@
           >{{ roll.state }}</span>
         </div>
 
+        <!-- Parent bulk roll link (child rolls only) -->
+        <div v-if="parentRoll" class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4">
+          <p class="text-sm text-gray-500 dark:text-gray-400">
+            Cut from bulk roll
+            <button
+              @click="router.push({ name: 'roll-detail', params: { key: parentRoll._key } })"
+              class="text-primary-600 dark:text-primary-400 hover:underline font-medium ml-1"
+            >{{ parentRoll.rollId }}</button>
+          </p>
+        </div>
+
         <!-- Details card -->
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
           <h2 class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-4">Details</h2>
@@ -221,6 +232,27 @@
           </div>
         </div>
 
+        <!-- Child rolls card (bulk rolls only) -->
+        <div v-if="roll.transitionProfile === 'bulk'" class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+          <div class="flex justify-between items-center mb-4">
+            <h2 class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Child Rolls</h2>
+            <span class="text-xs text-gray-400 dark:text-gray-500">{{ childRolls.length }} roll{{ childRolls.length !== 1 ? 's' : '' }} cut</span>
+          </div>
+          <div v-if="childRolls.length === 0" class="text-sm text-gray-400 dark:text-gray-500 italic">No rolls cut from this canister yet.</div>
+          <ul v-else class="space-y-2">
+            <li v-for="child in childRolls" :key="child._key" class="flex items-center justify-between text-sm">
+              <button
+                @click="router.push({ name: 'roll-detail', params: { key: child._key } })"
+                class="text-primary-600 dark:text-primary-400 hover:underline font-medium"
+              >{{ child.rollId }}</button>
+              <span
+                class="px-2 text-xs leading-5 font-semibold rounded-full"
+                :class="getStateColor(child.state)"
+              >{{ child.state }}</span>
+            </li>
+          </ul>
+        </div>
+
         <!-- Tags card -->
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
           <h2 class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-4">Tags</h2>
@@ -292,14 +324,17 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { rollApi, rollStateApi, rollTagApi, tagApi, transitionApi } from '@/services/api-client'
 import type { Roll, RollStateHistory, Tag, RollTag, TransitionGraph } from '@/types'
 import { RollState } from '@/types'
 
 const route = useRoute()
+const router = useRouter()
 
 const roll = ref<Roll | null>(null)
+const parentRoll = ref<Roll | null>(null)
+const childRolls = ref<Roll[]>([])
 const history = ref<RollStateHistory[]>([])
 const rollTags = ref<RollTag[]>([])
 const allTags = ref<Tag[]>([])
@@ -542,6 +577,20 @@ const loadData = async () => {
   history.value = historyRes.data
   allTags.value = tagsRes.data
   await loadRollTags()
+
+  if (roll.value?.parentRollId) {
+    const parentRes = await rollApi.getById(roll.value.parentRollId)
+    parentRoll.value = parentRes.data
+  } else {
+    parentRoll.value = null
+  }
+
+  if (roll.value?.transitionProfile === 'bulk') {
+    const childrenRes = await rollApi.getChildren(key)
+    childRolls.value = childrenRes.data
+  } else {
+    childRolls.value = []
+  }
 }
 
 onMounted(async () => {

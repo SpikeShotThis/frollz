@@ -17,6 +17,14 @@ const ROLLS_WITH_STOCK_QUERY = `
   LEFT JOIN film_formats f ON s.format_key = f.id
 `;
 
+const ROLLS_WITH_CHILD_COUNT_QUERY = `
+  SELECT r.*, s.brand AS stock_name, s.speed AS stock_speed, s.process AS stock_process, f.format AS format_name,
+    (SELECT COUNT(*) FROM rolls c WHERE c.parent_roll_id = r.id)::int AS child_roll_count
+  FROM rolls r
+  LEFT JOIN stocks s ON r.stock_key = s.id
+  LEFT JOIN film_formats f ON s.format_key = f.id
+`;
+
 function mapRoll(row: Record<string, unknown>): Roll {
   return {
     _key: row.id as string,
@@ -37,6 +45,9 @@ function mapRoll(row: Record<string, unknown>): Roll {
     formatName: (row.format_name as string | null) ?? undefined,
     process: (row.stock_process as string | null) ?? undefined,
     transitionProfile: (row.transition_profile as string | null) ?? "standard",
+    parentRollId: (row.parent_roll_id as string | null) ?? undefined,
+    childRollCount:
+      row.child_roll_count != null ? Number(row.child_roll_count) : undefined,
     createdAt: row.created_at ? new Date(row.created_at as string) : undefined,
     updatedAt: row.updated_at ? new Date(row.updated_at as string) : undefined,
   };
@@ -131,25 +142,63 @@ export class RollService implements OnModuleInit {
     }
 
     const now = new Date();
-
     const initialState = createRollDto.state ?? RollState.ADDED;
 
-    const stockRows = await this.databaseService.query<{ process: string }>(
-      `SELECT process FROM stocks WHERE id = ?`,
-      [createRollDto.stockKey],
-    );
-    const transitionProfile =
-      stockRows.length > 0 && stockRows[0].process === "Instant"
-        ? "instant"
-        : "standard";
+    // Resolve stockKey and transition profile
+    let stockKey: string;
+    let transitionProfile: string;
+
+    if (createRollDto.parentRollId) {
+      // Child roll: inherit stock from parent, profile from parent's stock process
+      const parentRows = await this.databaseService.query<{
+        stock_key: string;
+        transition_profile: string;
+        stock_process: string | null;
+      }>(
+        `SELECT r.stock_key, r.transition_profile, s.process AS stock_process FROM rolls r LEFT JOIN stocks s ON r.stock_key = s.id WHERE r.id = ?`,
+        [createRollDto.parentRollId],
+      );
+      if (parentRows.length === 0) {
+        throw new BadRequestException(
+          `Parent roll '${createRollDto.parentRollId}' not found`,
+        );
+      }
+      if (parentRows[0].transition_profile !== "bulk") {
+        throw new BadRequestException(
+          `Parent roll '${createRollDto.parentRollId}' is not a bulk roll`,
+        );
+      }
+      stockKey = parentRows[0].stock_key;
+      transitionProfile =
+        parentRows[0].stock_process === "Instant" ? "instant" : "standard";
+    } else {
+      if (!createRollDto.stockKey) {
+        throw new BadRequestException(
+          "stockKey is required when parentRollId is not provided",
+        );
+      }
+      stockKey = createRollDto.stockKey;
+
+      if (createRollDto.isBulkRoll) {
+        transitionProfile = "bulk";
+      } else {
+        const stockRows = await this.databaseService.query<{
+          process: string;
+        }>(`SELECT process FROM stocks WHERE id = ?`, [stockKey]);
+        transitionProfile =
+          stockRows.length > 0 && stockRows[0].process === "Instant"
+            ? "instant"
+            : "standard";
+      }
+    }
 
     await this.databaseService.execute(
-      `INSERT INTO rolls (id, roll_id, stock_key, state, images_url, date_obtained, obtainment_method, obtained_from, expiration_date, times_exposed_to_xrays, loaded_into, transition_profile, created_at, updated_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      `INSERT INTO rolls (id, roll_id, stock_key, state, images_url, date_obtained, obtainment_method, obtained_from, expiration_date, times_exposed_to_xrays, loaded_into, transition_profile, parent_roll_id, created_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         id,
         rollId,
-        createRollDto.stockKey,
+        stockKey,
         initialState,
         createRollDto.imagesUrl ?? null,
         dateObtained,
@@ -159,6 +208,7 @@ export class RollService implements OnModuleInit {
         createRollDto.timesExposedToXrays ?? 0,
         createRollDto.loadedInto ?? null,
         transitionProfile,
+        createRollDto.parentRollId ?? null,
         now,
         now,
       ],
@@ -179,7 +229,7 @@ export class RollService implements OnModuleInit {
     return {
       _key: id,
       rollId,
-      stockKey: createRollDto.stockKey,
+      stockKey,
       state: initialState,
       imagesUrl: createRollDto.imagesUrl,
       dateObtained: new Date(dateObtained),
@@ -191,6 +241,7 @@ export class RollService implements OnModuleInit {
       timesExposedToXrays: createRollDto.timesExposedToXrays ?? 0,
       loadedInto: createRollDto.loadedInto,
       transitionProfile,
+      parentRollId: createRollDto.parentRollId,
       createdAt: now,
       updatedAt: now,
     };
@@ -204,22 +255,38 @@ export class RollService implements OnModuleInit {
   }
 
   async findAll(): Promise<Roll[]> {
-    const rows = await this.databaseService.query(ROLLS_WITH_STOCK_QUERY);
+    const rows = await this.databaseService.query(ROLLS_WITH_CHILD_COUNT_QUERY);
     return rows.map(mapRoll);
   }
 
   async findOne(key: string): Promise<Roll | null> {
     const rows = await this.databaseService.query(
-      `${ROLLS_WITH_STOCK_QUERY} WHERE r.id = ?`,
+      `${ROLLS_WITH_CHILD_COUNT_QUERY} WHERE r.id = ?`,
       [key],
     );
     return rows.length > 0 ? mapRoll(rows[0]) : null;
+  }
+
+  async findChildren(key: string): Promise<Roll[]> {
+    const rows = await this.databaseService.query(
+      `${ROLLS_WITH_STOCK_QUERY} WHERE r.parent_roll_id = ?`,
+      [key],
+    );
+    return rows.map(mapRoll);
   }
 
   async update(
     key: string,
     updateRollDto: UpdateRollDto,
   ): Promise<Roll | null> {
+    // Child rolls have their stock locked to the parent's stock
+    const roll = await this.findOne(key);
+    if (roll?.parentRollId && updateRollDto.stockKey !== undefined) {
+      throw new BadRequestException(
+        "Cannot change the stock of a child roll — it is inherited from the parent bulk roll",
+      );
+    }
+
     const fieldMap: Record<string, string> = {
       rollId: "roll_id",
       stockKey: "stock_key",

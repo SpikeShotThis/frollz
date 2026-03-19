@@ -67,6 +67,12 @@ export class Roll {
   transitionProfile?: string;
 
   @ApiProperty({ required: false })
+  parentRollId?: string;
+
+  @ApiProperty({ required: false })
+  childRollCount?: number;
+
+  @ApiProperty({ required: false })
   createdAt?: Date;
 
   @ApiProperty({ required: false })
