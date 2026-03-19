@@ -83,7 +83,8 @@
           <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
             <tr v-for="tag in paginatedTags" :key="tag.id">
               <td class="px-6 py-4 whitespace-nowrap">
-                <template v-if="editingId === tag.id">
+                <template v-if="editingKey === tag._key">
+                  <!-- eslint-disable-next-line vuejs-accessibility/form-control-has-label -- inline table edit; column header is the visual label; full label associations in #199 -->
                   <input
                     v-model="editForm.colorCode"
                     type="color"
@@ -99,7 +100,8 @@
                 </template>
               </td>
               <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
-                <template v-if="editingId === tag.id">
+                <template v-if="editingKey === tag._key">
+                  <!-- eslint-disable-next-line vuejs-accessibility/form-control-has-label -- inline table edit; column header is the visual label; full label associations in #199 -->
                   <input
                     v-model="editForm.name"
                     type="text"
@@ -115,6 +117,7 @@
                 </template>
               </td>
               <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                <!-- eslint-disable-next-line vuejs-accessibility/form-control-has-label -- inline table edit; column header is the visual label; full label associations in #199 -->
                 <input
                   type="checkbox"
                   :checked="editingKey === tag._key ? editForm.isRollScoped : tag.isRollScoped"
@@ -124,6 +127,7 @@
                 />
               </td>
               <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                <!-- eslint-disable-next-line vuejs-accessibility/form-control-has-label -- inline table edit; column header is the visual label; full label associations in #199 -->
                 <input
                   type="checkbox"
                   :checked="editingKey === tag._key ? editForm.isStockScoped : tag.isStockScoped"

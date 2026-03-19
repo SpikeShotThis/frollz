@@ -96,6 +96,7 @@
               </button>
             </div>
             <!-- Storage state metadata form -->
+            <!-- eslint-disable vuejs-accessibility/label-has-for, vuejs-accessibility/form-control-has-label -- for/id label associations will be added in #199 -->
             <div v-if="pendingMetadataTransition" class="border border-blue-300 dark:border-blue-600 rounded-md p-3 bg-blue-50 dark:bg-blue-900/20">
               <p class="text-sm font-medium text-blue-800 dark:text-blue-200 mb-3">{{ pendingMetadataTransition }} details</p>
               <label v-if="requiresDateCapture(pendingMetadataTransition!)" class="block text-xs text-gray-600 dark:text-gray-400 mb-2">
@@ -231,6 +232,7 @@
             <div v-if="transitionError" class="text-sm text-red-600 dark:text-red-400">{{ transitionError }}</div>
           </div>
         </div>
+        <!-- eslint-enable vuejs-accessibility/label-has-for, vuejs-accessibility/form-control-has-label -->
 
         <!-- Child rolls card (bulk rolls only) -->
         <div v-if="roll.transitionProfile === 'bulk'" class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">

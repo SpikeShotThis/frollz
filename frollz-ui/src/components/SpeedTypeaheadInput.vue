@@ -1,6 +1,6 @@
 <template>
   <div class="relative">
-    <!-- eslint-disable-next-line vuejs-accessibility/form-control-has-label -- label provided by consumer via aria-label passed through $attrs -->
+    <!-- eslint-disable-next-line vuejs-accessibility/form-control-has-label -- Full ARIA combobox pattern (including label association) addressed in #201 -->
     <input
       :value="rawInput"
       type="text"
@@ -25,6 +25,7 @@
       role="listbox"
       class="absolute z-10 mt-1 w-full bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-md shadow-lg max-h-60 overflow-auto"
     >
+      <!-- eslint-disable-next-line vuejs-accessibility/no-static-element-interactions -- Will be converted to role="option" with full ARIA combobox in #201 -->
       <li
         v-for="(suggestion, i) in suggestions"
         :key="suggestion"

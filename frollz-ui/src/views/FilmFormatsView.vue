@@ -71,8 +71,10 @@
     </div>
 
     <!-- Create Form Modal -->
-    <BaseModal :open="showCreateForm" title-id="add-format-title" @close="showCreateForm = false">
-        <h3 id="add-format-title" class="text-lg font-semibold dark:text-gray-100 mb-4">Add Film Format</h3>
+    <div v-if="showCreateForm" class="fixed inset-0 bg-black bg-opacity-50 dark:bg-opacity-70 flex items-center justify-center z-50">
+      <div class="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md w-full mx-4">
+        <h3 class="text-lg font-semibold dark:text-gray-100 mb-4">Add Film Format</h3>
+        <!-- eslint-disable vuejs-accessibility/label-has-for, vuejs-accessibility/form-control-has-label -- for/id label associations will be added in #199 -->
         <form @submit.prevent="createFormat">
           <div class="mb-4">
             <label for="format-package" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Package <span class="text-red-500" aria-hidden="true">*</span>
@@ -115,7 +117,9 @@
             </button>
           </div>
         </form>
-    </BaseModal>
+        <!-- eslint-enable vuejs-accessibility/label-has-for, vuejs-accessibility/form-control-has-label -->
+      </div>
+    </div>
   </div>
 </template>
 
