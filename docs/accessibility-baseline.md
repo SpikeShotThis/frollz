@@ -14,39 +14,65 @@
 | `eslint-plugin-vuejs-accessibility` | `npm run lint` in `frollz-ui` | Added in #189; enforces rules at lint time |
 | `axe-core` (WCAG 2.1 AA ruleset) | `npm run test` in `frollz-ui` | Added in #190; runs against NavBar, TypeaheadInput, SpeedTypeaheadInput, RollsView (empty state) |
 | Manual code review | Source files read directly | All five views + shared components inspected for structural, semantic, and interaction issues |
-| Lighthouse | **Requires a live running instance** | See [Lighthouse instructions](#lighthouse-instructions) below |
+| Lighthouse CI | GitHub Actions `lighthouse` job — runs on every PR | Added in #191; audits `/`, `/rolls`, `/stocks` against WCAG 2.1 AA thresholds |
 
 ---
 
-## Lighthouse Instructions
+## Lighthouse CI
 
-Lighthouse requires a running application. To record baseline scores:
+Lighthouse CI runs automatically on every PR via GitHub Actions (`lighthouse` job in `ci-cd.yml`). It builds the UI, serves it statically, and audits three key routes.
+
+**Score thresholds (configured in `lighthouserc.js`):**
+
+| Category | Minimum |
+|---|---|
+| Accessibility | 90 |
+| Best Practices | 90 |
+| Performance | 80 (mobile) |
+
+CI will report failures until the v0.2.0 accessibility issues (#199–#206) are resolved. This is intentional — the gate enforces that work is complete before scores pass.
+
+### Self-hosted LHCI Dashboard
+
+The LHCI server is included in the dev stack (`docker-compose.dev.yml`) and stores historical scores:
 
 ```bash
-# 1. Start the dev stack
-docker compose -f docker-compose.dev.yml up -d
-
-# 2. Run Lighthouse CLI against each route
-npx lighthouse http://localhost:5173/           --output json --output-path lighthouse-dashboard.json
-npx lighthouse http://localhost:5173/rolls      --output json --output-path lighthouse-rolls.json
-npx lighthouse http://localhost:5173/stocks     --output json --output-path lighthouse-stocks.json
-npx lighthouse http://localhost:5173/formats    --output json --output-path lighthouse-formats.json
-npx lighthouse http://localhost:5173/tags       --output json --output-path lighthouse-tags.json
+docker compose -f docker-compose.dev.yml up -d lhci-server
+# Dashboard: http://localhost:9001
 ```
 
-**Expected pre-fix score range:** 60–70 / 100 on all routes.
-Primary score drivers: missing form labels (−20 to −30), missing modal ARIA roles (−10), and heading hierarchy issues (−5).
+To connect CI to your running dashboard, add these GitHub repository secrets:
 
-Update this table after running:
+| Secret | Description |
+|---|---|
+| `LHCI_SERVER_BASE_URL` | Public URL of your LHCI server (e.g. `https://lhci.example.com`) |
+| `LHCI_TOKEN` | Build token — generate with `lhci wizard` |
+
+```bash
+# One-time setup: generate project + token
+npx @lhci/cli wizard --serverBaseUrl http://localhost:9001
+```
+
+Without these secrets CI still collects, asserts, and uploads to temporary public storage.
+
+### Manual Run
+
+```bash
+cd frollz-ui && npm run build && cd ..
+npx @lhci/cli autorun
+# Requires serve: npm install -g serve  (or npx serve is used automatically)
+```
+
+**Expected pre-fix score range:** 60–70 / 100 on accessibility.
+Primary drivers: missing form labels (−20 to −30), missing modal ARIA roles (−10).
+
+Update this table after first successful CI run:
 
 | Route | Lighthouse A11y Score | Date |
 |---|---|---|
 | `/` (Dashboard) | TBD | — |
 | `/rolls` | TBD | — |
-| `/rolls/:key` | TBD | — |
 | `/stocks` | TBD | — |
-| `/formats` | TBD | — |
-| `/tags` | TBD | — |
 
 ---
 

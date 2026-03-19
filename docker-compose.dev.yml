@@ -56,6 +56,20 @@ services:
     command: npm run dev
     restart: unless-stopped
 
+  lhci-server:
+    image: patrickhulce/lhci-server
+    container_name: frollz-lhci
+    ports:
+      - "${LHCI_PORT:-9001}:9001"
+    environment:
+      - LHCI_STORAGE__SQL_DIALECT=sqlite
+      - LHCI_STORAGE__SQL_DATABASE_PATH=/data/lhci.db
+    volumes:
+      - lhci_data:/data
+    networks:
+      - frollz-network
+    restart: unless-stopped
+
   postgres:
     image: postgres:18-alpine
     container_name: frollz-postgres
@@ -73,6 +87,7 @@ services:
 
 volumes:
   postgres_data:
+  lhci_data:
 
 networks:
   frollz-network:

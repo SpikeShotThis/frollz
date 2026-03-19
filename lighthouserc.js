@@ -7,8 +7,8 @@ module.exports = {
       startServerCommand: 'npx serve -s ./frollz-ui/dist -l 3000',
       url: [
         'http://localhost:3000/',          // Dashboard
-        'http://localhost:3000/films',     // Roll list
-        'http://localhost:3000/emulsions',    // Stocks
+        'http://localhost:3000/rolls',     // Roll list
+        'http://localhost:3000/stocks',    // Stocks
       ],
       numberOfRuns: 1,
     },
