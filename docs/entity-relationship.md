@@ -68,6 +68,8 @@ erDiagram
         text notes
         jsonb metadata
         boolean is_error_correction
+        timestamp created_at
+        timestamp updated_at
     }
 
     roll_tags {
@@ -78,33 +80,33 @@ erDiagram
     }
 
     transition_states {
-        int id PK
+        uuid id PK
         string name
     }
 
     transition_types {
-        int id PK
+        uuid id PK
         string name
     }
 
     transition_metadata_field_types {
-        int id PK
+        uuid id PK
         string name
     }
 
     transitions {
-        int id PK
-        int from_state_id FK
-        int to_state_id FK
-        int transition_type_id FK
+        uuid id PK
+        uuid from_state_id FK
+        uuid to_state_id FK
+        uuid transition_type_id FK
         boolean requires_date
     }
 
     transition_metadata {
-        int id PK
-        int transition_id FK
+        uuid id PK
+        uuid transition_id FK
         string field
-        int field_type_id FK
+        uuid field_type_id FK
         string default_value
         boolean is_required
     }

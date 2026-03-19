@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { mount, flushPromises } from '@vue/test-utils'
 import { createRouter, createMemoryHistory } from 'vue-router'
 import RollDetailView from '@/views/RollDetailView.vue'
@@ -242,6 +242,18 @@ describe('RollDetailView', () => {
   })
 
   describe('transitions', () => {
+    beforeEach(() => {
+      // Fix the clock to noon UTC so date-with-current-time logic in RollDetailView
+      // produces ISO strings whose calendar date matches the user-entered date
+      // in every timezone (UTC-12 through UTC+12).
+      vi.useFakeTimers()
+      vi.setSystemTime(new Date('2026-01-01T12:00:00.000Z'))
+    })
+
+    afterEach(() => {
+      vi.useRealTimers()
+    })
+
     it('should show forward transition buttons for current state', async () => {
       vi.mocked(rollApi.getById).mockResolvedValue({ data: makeRoll({ state: RollState.SHELVED }) } as any)
       const wrapper = await mountView()

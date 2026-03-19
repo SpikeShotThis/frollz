@@ -13,18 +13,20 @@ Always use `docker compose` (plugin), never `docker-compose` (legacy). `docker-c
 
 ### Docker
 
+> **IMPORTANT**: This environment uses `docker compose` (the plugin), **not** `docker-compose` (the legacy standalone binary). Always use the two-word form. `docker-compose` will fail with "command not found".
+
 **Development** (hot reloading, separate containers):
 ```bash
-docker-compose -f docker-compose.dev.yml up -d    # Start API + UI + PostgreSQL
-docker-compose -f docker-compose.dev.yml down      # Stop all services
-docker-compose -f docker-compose.dev.yml logs -f   # Tail logs
+docker compose -f docker-compose.dev.yml up -d    # Start API + UI + PostgreSQL
+docker compose -f docker-compose.dev.yml down      # Stop all services
+docker compose -f docker-compose.dev.yml logs -f   # Tail logs
 ```
 
 **Production** (combined container, what self-hosters run):
 ```bash
-docker-compose up -d          # Start frollz + PostgreSQL
-docker-compose down           # Stop all services
-docker-compose logs -f        # Tail logs
+docker compose up -d          # Start frollz + PostgreSQL
+docker compose down           # Stop all services
+docker compose logs -f        # Tail logs
 ```
 
 To build the production image locally:
@@ -65,9 +67,24 @@ Use the `/feature-dev` skill to run the full workflow.
 5. Use `/clear` between unrelated tasks to keep context clean.
 6. Use subagents for codebase investigation — keeps file reads out of main context.
 
-The `codebase-memory-mcp` server is installed, connected, and **must be used** for all structural code exploration. The graph is automatically kept up-to-date after every file edit. Always prefer graph queries — they are faster and more accurate than file scanning.
+The `codebase-memory-mcp` server is installed, connected, and **must be used** for all structural code exploration. The graph is automatically kept up-to-date after every file edit.
 
-**ALWAYS use MCP tools instead of Grep/Glob/Read for any structural question** (finding functions, tracing calls, understanding architecture, impact analysis, etc.). Only fall back to Read/Grep for viewing raw file content that the graph doesn't expose.
+### MCP-First Rule — No Exceptions
+
+**ALWAYS use MCP tools for structural questions.** Do NOT reach for Grep, Glob, or Bash find commands to explore the codebase structure. These are slower, noisier, and can miss cross-file relationships that the graph captures instantly.
+
+| Question type | MCP tool to use | Do NOT use |
+|---|---|---|
+| Where is function X defined? | `search_graph` | Grep |
+| What calls function X? | `trace_call_path` (inbound) | Grep |
+| What does function X call? | `trace_call_path` (outbound) | Grep |
+| How is the codebase organized? | `get_architecture` | ls / find |
+| What files changed and what's the blast radius? | `detect_changes` | git diff + Grep |
+| Find all classes/functions matching a pattern | `search_graph` | Glob |
+| Complex relationship queries | `query_graph` | multiple Greps |
+| Regex search across file content | `search_code` | Grep |
+
+Only fall back to Read/Grep for viewing **raw file content** that the graph doesn't expose (e.g., reading a specific line range to understand implementation detail).
 
 Key tools:
 - `get_architecture` — start here for codebase orientation (entry points, hotspots, clusters)
@@ -152,6 +169,16 @@ Additional rules:
 - All code passes linting rules (`npm run lint`)
 - Code has been simplified with readability in mind
 - `docs/adr/architecture.md` is updated to reflect any architectural changes, so context can be quickly rebuilt in future sessions
+
+### Architectural Decision-Making
+
+When choosing between approaches, **always pursue the architecturally cleaner solution** unless there is a concrete, articulable reason not to. The simpler path is only acceptable when you can explain clearly why the cleaner approach would add complexity without proportional benefit.
+
+Guidelines:
+- Follow established patterns in the codebase (NestJS feature modules, centralized `DatabaseService`, centralized `api-client.ts`)
+- Prefer explicit over implicit — don't hide behavior in middleware or base classes without a clear reason
+- When a simpler path is genuinely better (e.g., a one-liner utility vs. a new class), state the reason: "A shared module here would add indirection without reuse benefit because X"
+- If uncertain between clean and simple, describe both options and the trade-off before proceeding
 
 ### Context Preservation
 
