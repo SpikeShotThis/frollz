@@ -323,7 +323,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { rollApi, rollStateApi, rollTagApi, tagApi, transitionApi } from '@/services/api-client'
 import type { Roll, RollStateHistory, Tag, RollTag, TransitionGraph } from '@/types'
@@ -593,7 +593,8 @@ const loadData = async () => {
   }
 }
 
-onMounted(async () => {
+const reload = async () => {
+  loading.value = true
   try {
     await loadData()
     const graphRes = await transitionApi.getGraph(
@@ -603,5 +604,8 @@ onMounted(async () => {
   } finally {
     loading.value = false
   }
-})
+}
+
+onMounted(reload)
+watch(() => route.params.key, reload)
 </script>
