@@ -1,5 +1,5 @@
 <template>
-  <nav aria-label="Main navigation" class="bg-white dark:bg-gray-800 shadow-lg">
+  <nav class="bg-white dark:bg-gray-800 shadow-lg">
     <div class="max-w-screen-xl mx-auto page-x">
       <div class="flex justify-between items-center py-4">
         <!-- Brand -->
