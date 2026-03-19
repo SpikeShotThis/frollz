@@ -10,6 +10,14 @@ Frollz is a self-hosted film photography tracking application. If you shoot on f
 - **Auto-tag rolls** with `expired`, `pushed`, `pulled`, and `cross-processed` based on the data you enter
 - **Correct mistakes** — backward transitions are supported and flagged as corrections in the roll's history
 
+## Screenshots
+
+| | |
+|---|---|
+| ![Dashboard](docs/screenshots/dashboard.png) | ![Rolls](docs/screenshots/rolls.png) |
+| ![Roll detail](docs/screenshots/roll-detail.png) | ![Stocks](docs/screenshots/stocks.png) |
+| ![Tags](docs/screenshots/tags.png) | |
+
 ## Self-hosting
 
 Frollz is designed to be self-hosted. It runs as two Docker containers: the application (NestJS API + Vue SPA bundled together) and a PostgreSQL database.
