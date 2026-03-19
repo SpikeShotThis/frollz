@@ -11,7 +11,8 @@
     <div class="flex flex-wrap items-center gap-2 mb-4 min-h-[2rem]">
       <span class="text-sm text-gray-500 dark:text-gray-400 font-medium">Filters:</span>
       <span v-if="activeFilters.length === 0" class="text-sm text-gray-400 dark:text-gray-500 italic">
-        Click any value in the table to filter by that field
+        <span class="hidden md:inline">Click any value in the table to filter by that field</span>
+        <span class="md:hidden">No active filters</span>
       </span>
       <template v-else>
         <span
@@ -26,7 +27,32 @@
       </template>
     </div>
 
-    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md">
+    <!-- Mobile card list (hidden on md+) -->
+    <div class="md:hidden space-y-3">
+      <p v-if="filteredRolls.length === 0" class="text-center py-8 text-gray-400 dark:text-gray-500 italic">No rolls found.</p>
+      <RouterLink
+        v-for="roll in filteredRolls"
+        :key="roll._key"
+        :to="{ name: 'roll-detail', params: { key: roll._key } }"
+        class="block bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 hover:shadow-lg transition-shadow"
+      >
+        <div class="flex justify-between items-start gap-3">
+          <div class="min-w-0">
+            <p class="font-semibold text-primary-600 dark:text-primary-400 truncate">{{ roll.rollId }}</p>
+            <p class="text-sm text-gray-600 dark:text-gray-300 mt-0.5 truncate">{{ roll.stockName ?? '—' }}</p>
+            <p class="text-xs text-gray-400 dark:text-gray-500 mt-0.5">{{ roll.formatName ?? '—' }}</p>
+          </div>
+          <span
+            class="shrink-0 px-2 text-xs leading-5 font-semibold rounded-full"
+            :class="getStateColor(roll.state)"
+          >{{ roll.state }}</span>
+        </div>
+        <p class="text-xs text-gray-400 dark:text-gray-500 mt-2">{{ formatDate(roll.dateObtained) }}</p>
+      </RouterLink>
+    </div>
+
+    <!-- Desktop table (hidden below md) -->
+    <div class="hidden md:block bg-white dark:bg-gray-800 rounded-lg shadow-md">
       <div class="overflow-x-auto">
         <table class="min-w-full">
           <thead class="bg-gray-50 dark:bg-gray-700">
@@ -247,7 +273,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { RouterLink, useRoute, useRouter } from 'vue-router'
 import { rollApi, stockApi } from '@/services/api-client'
 import type { Roll, Stock } from '@/types'
 import { RollState, ObtainmentMethod } from '@/types'
