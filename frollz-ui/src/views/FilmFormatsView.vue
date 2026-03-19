@@ -10,7 +10,30 @@
       </button>
     </div>
 
-    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md">
+    <!-- Mobile card list (hidden on md+) -->
+    <div class="md:hidden space-y-3">
+      <p v-if="filmFormats.length === 0" class="text-center py-8 text-gray-400 dark:text-gray-500 italic">No formats found.</p>
+      <div
+        v-for="format in filmFormats"
+        :key="format._key"
+        class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4"
+      >
+        <div class="flex justify-between items-start gap-3">
+          <div>
+            <p class="font-semibold text-gray-900 dark:text-gray-100">{{ format.format }}</p>
+            <p class="text-sm text-gray-500 dark:text-gray-400 mt-0.5">{{ format.formFactor }}</p>
+            <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">{{ formatDate(format.createdAt) }}</p>
+          </div>
+          <button
+            @click="deleteFormat(format._key!)"
+            class="shrink-0 px-3 py-1.5 text-xs font-medium text-red-600 dark:text-red-400 border border-red-300 dark:border-red-600 rounded hover:bg-red-50 dark:hover:bg-red-900/30"
+          >Delete</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Desktop table (hidden below md) -->
+    <div class="hidden md:block bg-white dark:bg-gray-800 rounded-lg shadow-md">
       <div class="overflow-x-auto">
         <table class="min-w-full">
           <thead class="bg-gray-50 dark:bg-gray-700">

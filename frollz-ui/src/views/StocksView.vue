@@ -11,7 +11,8 @@
     <div class="flex flex-wrap items-center gap-2 mb-4 min-h-[2rem]">
       <span class="text-sm text-gray-500 dark:text-gray-400 font-medium">Filters:</span>
       <span v-if="activeFilters.length === 0" class="text-sm text-gray-400 dark:text-gray-500 italic">
-        Click any value in the table to filter by that field
+        <span class="hidden md:inline">Click any value in the table to filter by that field</span>
+        <span class="md:hidden">No active filters</span>
       </span>
       <template v-else>
         <span
@@ -26,7 +27,42 @@
       </template>
     </div>
 
-    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md">
+    <!-- Mobile card list (hidden on md+) -->
+    <div class="md:hidden space-y-3">
+      <p v-if="sortedStocks.length === 0" class="text-center py-8 text-gray-400 dark:text-gray-500 italic">No stocks found.</p>
+      <div
+        v-for="stock in sortedStocks"
+        :key="stock._key"
+        class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4"
+      >
+        <div class="flex justify-between items-start gap-3">
+          <div class="min-w-0">
+            <p class="font-semibold text-gray-900 dark:text-gray-100 truncate">{{ stock.brand }}</p>
+            <p class="text-sm text-gray-500 dark:text-gray-400 mt-0.5 truncate">{{ stock.manufacturer }}</p>
+            <p class="text-xs text-gray-400 dark:text-gray-500 mt-0.5">{{ stock.format }} · ISO {{ stock.speed }}</p>
+          </div>
+          <div class="flex flex-col items-end gap-2 shrink-0">
+            <span class="px-2 text-xs leading-5 font-semibold rounded-full bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200">{{ stock.process }}</span>
+            <button
+              @click="createRoll(stock._key!)"
+              class="text-primary-600 dark:text-primary-400 hover:text-primary-800 dark:hover:text-primary-200 font-bold text-lg leading-none"
+              title="Add roll from this stock"
+            >+</button>
+          </div>
+        </div>
+        <div v-if="stockTagMap[stock._key!]?.length" class="flex flex-wrap gap-1 mt-2">
+          <span
+            v-for="tag in stockTagMap[stock._key!]"
+            :key="tag._key"
+            class="px-2 py-0.5 rounded text-xs font-medium text-white"
+            :style="{ backgroundColor: tag.color }"
+          >{{ tag.value }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Desktop table (hidden below md) -->
+    <div class="hidden md:block bg-white dark:bg-gray-800 rounded-lg shadow-md">
       <div class="overflow-x-auto">
         <table class="min-w-full">
           <thead class="bg-gray-50 dark:bg-gray-700">
