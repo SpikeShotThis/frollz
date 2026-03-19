@@ -3,7 +3,7 @@
     <div class="container mx-auto px-4">
       <div class="flex justify-between items-center py-4">
         <div class="flex items-center space-x-4">
-          <h1 class="text-2xl font-bold text-primary-600 dark:text-primary-400">Frollz</h1>
+          <span class="text-2xl font-bold text-primary-600 dark:text-primary-400">Frollz</span>
           <span class="text-gray-500 dark:text-gray-400">Film Roll Tracker</span>
         </div>
 
