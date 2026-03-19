@@ -18,6 +18,7 @@ const ROLLS_WITH_CHILD_COUNT_QUERY = `
   LEFT JOIN film_formats f ON s.format_key = f.id
 `;
 
+
 function mapRoll(row: Record<string, unknown>): Roll {
   return {
     _key: row.id as string,
