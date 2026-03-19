@@ -15,6 +15,7 @@ export enum RollState {
 export enum ObtainmentMethod {
   GIFT = "Gift",
   PURCHASE = "Purchase",
+  SELF_ROLLED = "Self Rolled",
 }
 
 export class Roll {
@@ -65,6 +66,12 @@ export class Roll {
 
   @ApiProperty({ required: false })
   transitionProfile?: string;
+
+  @ApiProperty({ required: false })
+  parentRollId?: string;
+
+  @ApiProperty({ required: false })
+  childRollCount?: number;
 
   @ApiProperty({ required: false })
   createdAt?: Date;

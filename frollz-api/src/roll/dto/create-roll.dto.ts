@@ -1,11 +1,13 @@
 import { ApiProperty } from "@nestjs/swagger";
 import {
+  IsBoolean,
   IsEnum,
   IsString,
   IsDate,
   IsInt,
   IsOptional,
   IsUrl,
+  IsUUID,
   MaxLength,
   Min,
   Max,
@@ -20,10 +22,29 @@ export class CreateRollDto {
   @MaxLength(100)
   rollId?: string;
 
-  @ApiProperty()
+  @ApiProperty({ required: false })
+  @IsOptional()
   @IsString()
   @MaxLength(255)
-  stockKey: string;
+  stockKey?: string;
+
+  @ApiProperty({
+    required: false,
+    description:
+      "Key of the parent bulk roll. If provided, stockKey is inherited from the parent.",
+  })
+  @IsOptional()
+  @IsUUID()
+  parentRollId?: string;
+
+  @ApiProperty({
+    required: false,
+    description:
+      "Set to true to create a bulk canister roll using the bulk transition profile.",
+  })
+  @IsOptional()
+  @IsBoolean()
+  isBulkRoll?: boolean;
 
   @ApiProperty({ enum: RollState, required: false, default: RollState.ADDED })
   @IsOptional()
@@ -42,14 +63,16 @@ export class CreateRollDto {
   @Type(() => Date)
   dateObtained?: Date;
 
-  @ApiProperty({ enum: ObtainmentMethod })
+  @ApiProperty({ enum: ObtainmentMethod, required: false })
+  @IsOptional()
   @IsEnum(ObtainmentMethod)
-  obtainmentMethod: ObtainmentMethod;
+  obtainmentMethod?: ObtainmentMethod;
 
-  @ApiProperty()
+  @ApiProperty({ required: false })
+  @IsOptional()
   @IsString()
   @MaxLength(255)
-  obtainedFrom: string;
+  obtainedFrom?: string;
 
   @ApiProperty({ required: false })
   @IsOptional()

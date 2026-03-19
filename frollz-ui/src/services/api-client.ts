@@ -69,7 +69,8 @@ export const rollTagApi = {
 export const rollApi = {
   getAll: () => api.get<Roll[]>('/rolls'),
   getById: (key: string) => api.get<Roll>(`/rolls/${key}`),
-  create: (data: Omit<Roll, '_key' | 'rollId' | 'createdAt' | 'updatedAt'>) =>
+  getChildren: (key: string) => api.get<Roll[]>(`/rolls/${key}/children`),
+  create: (data: Omit<Roll, '_key' | 'rollId' | 'createdAt' | 'updatedAt'> & { isBulkRoll?: boolean; parentRollId?: string }) =>
     api.post<Roll>('/rolls', data),
   update: (key: string, data: Partial<Roll>) =>
     api.patch<Roll>(`/rolls/${key}`, data),

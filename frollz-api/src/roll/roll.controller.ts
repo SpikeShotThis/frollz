@@ -52,6 +52,17 @@ export class RollController {
     return this.rollService.findAll();
   }
 
+  @Get(":key/children")
+  @ApiOperation({ summary: "Get child rolls of a bulk roll" })
+  @ApiResponse({
+    status: 200,
+    description: "Child rolls retrieved successfully",
+    type: [Roll],
+  })
+  findChildren(@Param("key") key: string): Promise<Roll[]> {
+    return this.rollService.findChildren(key);
+  }
+
   @Get(":key")
   @ApiOperation({ summary: "Get a roll by key" })
   @ApiResponse({

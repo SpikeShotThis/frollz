@@ -113,11 +113,36 @@
         <h2 class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4">Add Roll</h2>
         <form @submit.prevent="handleSubmit">
           <div class="space-y-4">
-            <div>
+            <!-- Bulk roll toggle -->
+            <div class="flex items-center gap-3">
+              <label class="flex items-center gap-2 cursor-pointer">
+                <input v-model="form.isBulkRoll" type="checkbox" class="rounded" @change="onBulkRollToggle" />
+                <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Bulk canister roll</span>
+              </label>
+              <span class="text-xs text-gray-400 dark:text-gray-500">(100ft spool or similar)</span>
+            </div>
+
+            <!-- Parent bulk roll selector (only for non-bulk rolls) -->
+            <div v-if="!form.isBulkRoll">
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">From bulk roll — optional</label>
+              <select
+                v-model="form.parentRollId"
+                class="w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                @change="onParentRollChange"
+              >
+                <option value="">None — standalone roll</option>
+                <option v-for="roll in bulkRolls" :key="roll._key" :value="roll._key">
+                  {{ roll.rollId }} — {{ roll.stockName ?? 'Unknown stock' }}
+                </option>
+              </select>
+            </div>
+
+            <!-- Stock selector: hidden when parent roll is selected (inherited) -->
+            <div v-if="!form.parentRollId">
               <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Stock <span class="text-red-500">*</span></label>
               <select
                 v-model="form.stockKey"
-                required
+                :required="!form.parentRollId"
                 class="w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
               >
                 <option value="" disabled>Select a stock</option>
@@ -125,6 +150,9 @@
                   {{ stock.brand }} — {{ stock.manufacturer }} (ISO {{ stock.speed }})
                 </option>
               </select>
+            </div>
+            <div v-else class="text-sm text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-700/50 rounded px-3 py-2">
+              Stock inherited from parent bulk roll
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Initial State <span class="text-red-500">*</span></label>
@@ -145,33 +173,41 @@
                 class="w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
               />
             </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Obtainment Method <span class="text-red-500">*</span></label>
-              <select
-                v-model="form.obtainmentMethod"
-                required
-                class="w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
-              >
-                <option v-for="m in obtainmentMethodOptions" :key="m" :value="m">{{ m }}</option>
-              </select>
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Obtained From <span class="text-red-500">*</span></label>
-              <input
-                v-model="form.obtainedFrom"
-                type="text"
-                required
-                placeholder="e.g. B&H Photo"
-                class="w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500"
-              />
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Expiration Date</label>
-              <input
-                v-model="form.expirationDate"
-                type="date"
-                class="w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
-              />
+            <!-- Obtainment method/from/expiration: auto-set for child rolls -->
+            <template v-if="!form.parentRollId">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Obtainment Method <span class="text-red-500">*</span></label>
+                <select
+                  v-model="form.obtainmentMethod"
+                  required
+                  class="w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                >
+                  <option v-for="m in obtainmentMethodOptions" :key="m" :value="m">{{ m }}</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Obtained From <span class="text-red-500">*</span></label>
+                <input
+                  v-model="form.obtainedFrom"
+                  type="text"
+                  required
+                  placeholder="e.g. B&H Photo"
+                  class="w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500"
+                />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Expiration Date</label>
+                <input
+                  v-model="form.expirationDate"
+                  type="date"
+                  class="w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                />
+              </div>
+            </template>
+            <div v-else class="text-sm text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-700/50 rounded px-3 py-2 space-y-1">
+              <p>Obtainment: <span class="font-medium text-gray-700 dark:text-gray-300">Self Rolled</span></p>
+              <p>Obtained from: <span class="font-medium text-gray-700 dark:text-gray-300">Bulk Roll (inherited)</span></p>
+              <p>Expiration date: <span class="font-medium text-gray-700 dark:text-gray-300">Inherited from bulk roll</span></p>
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Times Exposed to X-Rays</label>
@@ -266,6 +302,8 @@ const emptyForm = () => ({
   obtainedFrom: '',
   expirationDate: '',
   timesExposedToXrays: 0,
+  isBulkRoll: false,
+  parentRollId: '',
 })
 
 const form = ref(emptyForm())
@@ -300,6 +338,22 @@ const sortedStocks = computed(() => {
   return stocks.value.slice().sort((a, b) => a.brand.toLowerCase().localeCompare(b.brand.toLowerCase()))
 })
 
+const bulkRolls = computed(() =>
+  rolls.value.filter(r => r.transitionProfile === 'bulk'),
+)
+
+const onBulkRollToggle = () => {
+  if (form.value.isBulkRoll) {
+    form.value.parentRollId = ''
+  }
+}
+
+const onParentRollChange = () => {
+  if (form.value.parentRollId) {
+    form.value.stockKey = ''
+  }
+}
+
 const formatDate = (date: Date | string) => {
   return new Date(date as string).toLocaleDateString()
 }
@@ -329,8 +383,8 @@ const handleSubmit = async () => {
   submitting.value = true
   error.value = ''
   try {
-    const payload: Omit<Roll, '_key' | 'rollId' | 'createdAt' | 'updatedAt'> = {
-      stockKey: form.value.stockKey,
+    const payload: Parameters<typeof rollApi.create>[0] = {
+      stockKey: (form.value.parentRollId ? undefined : form.value.stockKey) as string,
       state: form.value.state,
       dateObtained: new Date(form.value.dateObtained),
       obtainmentMethod: form.value.obtainmentMethod,
@@ -340,7 +394,15 @@ const handleSubmit = async () => {
     if (form.value.expirationDate) {
       payload.expirationDate = new Date(form.value.expirationDate)
     }
-    const created = await rollApi.create(payload)
+    if (form.value.isBulkRoll) {
+      payload.isBulkRoll = true
+    }
+    if (form.value.parentRollId) {
+      payload.parentRollId = form.value.parentRollId
+    }
+    // stockKey is intentionally undefined when parentRollId is set; the API accepts this
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const created = await rollApi.create(payload as any)
     closeModal()
     await router.push({ name: 'roll-detail', params: { key: created.data._key } })
   } catch {

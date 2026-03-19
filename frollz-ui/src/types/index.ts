@@ -129,6 +129,7 @@ export interface RollStateHistory {
 export enum ObtainmentMethod {
   GIFT = 'Gift',
   PURCHASE = 'Purchase',
+  SELF_ROLLED = 'Self Rolled',
 }
 
 export interface Roll {
@@ -148,6 +149,8 @@ export interface Roll {
   formatName?: string
   process?: string
   transitionProfile?: string
+  parentRollId?: string
+  childRollCount?: number
   createdAt?: Date
   updatedAt?: Date
 }
