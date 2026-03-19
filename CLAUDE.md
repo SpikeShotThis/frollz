@@ -96,7 +96,7 @@ The graph is always current — no need to run `index_repository` manually.
 
 ### Backend (NestJS + PostgreSQL)
 
-Each domain (film-format, stock, roll, tag, roll-state, stock-tag) is a self-contained NestJS feature module with the structure: `controller / service / module / dto / entities`.
+Each domain (film-format, stock, roll, tag, roll-state, stock-tag, transition) is a self-contained NestJS feature module with the structure: `controller / service / module / dto / entities`. The `transition` module exposes the DB-driven state machine graph (valid transitions, metadata fields) consumed by the UI. A `common/` directory holds shared cross-cutting code: `HttpExceptionFilter` and per-endpoint throttle limits.
 
 `DatabaseService` is the single point of PostgreSQL access — all modules depend on it. It wraps Knex, exposes a `query<T>(sql, params)` method and `execute(sql, params)` method used by all feature services. Schema is managed via Knex migrations in `frollz-api/migrations/`; `DatabaseService.onModuleInit` runs `knex.migrate.latest()` on startup.
 
@@ -105,6 +105,10 @@ Default seed data is embedded in Knex migrations and loaded into `*_default` sha
 In the combined production container, `ServeStaticModule` (registered conditionally based on whether `/app/public` exists) serves the Vue SPA for all non-`/api` routes. Security headers are applied by `helmet` in `main.ts`.
 
 A `ValidationPipe` with `transform: true`, `whitelist: true`, `forbidNonWhitelisted: true` is applied globally. Swagger docs auto-generated at `/api/docs`.
+
+**Bulk rolls (canisters)**: A roll with `transitionProfile: "bulk"` acts as a canister parent. Child rolls are created with `parentRollId` and inherit stock, process, and expiration from the parent. A parent must be a bulk roll to accept children; child rolls cannot change their stock.
+
+**Instant film**: Rolls with `transitionProfile: "instant"` skip the lab workflow states (SENT_FOR_DEVELOPMENT, DEVELOPED, RECEIVED). The profile is auto-set when a child roll's parent stock process is `"Instant"`.
 
 ### Frontend (Vue 3 + Vite + Pinia + Tailwind)
 
@@ -123,6 +127,21 @@ Five routes map to domain views: `/` (dashboard), `/stocks`, `/rolls`, `/formats
 | `POSTGRES_PASSWORD` | API | `frollz` |
 | `PORT` | API | `3000` |
 | `VITE_API_URL` | UI | `/api` (Docker) or `http://localhost:3000` (local) |
+
+## Skills
+
+Available Claude Code skills that improve workflow efficiency in this project:
+
+| Skill | When to use |
+|-------|-------------|
+| `/feature-dev` | Start here when picking up a new GitHub issue — produces an architecture-aware implementation plan before writing code |
+| `/codebase-memory-tracing` | Understand call chains and blast radius before modifying a function |
+| `/codebase-memory-quality` | Periodic dead-code and complexity audits |
+| `/simplify` | After implementing a feature — focused cleanup pass on changed code |
+| `/code-review` | Self-review before opening a PR |
+| `/commit` | Standardised commit with message generation |
+| `/commit-push-pr` | Commit + push + open PR in one shot |
+| `/claude-md-improver` | Audit and update this file after significant changes |
 
 ## Workflow
 
@@ -159,7 +178,7 @@ Additional rules:
 
 ### Review Checklist (after every code change)
 
-- Before modifying existing functionality, run `detect_changes` to understand blast radius and identify affected callers
+- Before modifying existing functionality, use `/codebase-memory-tracing` or run `detect_changes` to understand blast radius and identify affected callers
 - All modified code has unit tests and all tests pass
 - All code passes linting rules (`npm run lint`)
 - Code has been simplified with readability in mind
