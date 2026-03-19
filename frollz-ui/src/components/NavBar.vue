@@ -1,6 +1,6 @@
 <template>
   <nav class="bg-white dark:bg-gray-800 shadow-lg">
-    <div class="container mx-auto px-4">
+    <div class="max-w-screen-xl mx-auto page-x">
       <div class="flex justify-between items-center py-4">
         <div class="flex items-center space-x-4">
           <span class="text-2xl font-bold text-primary-600 dark:text-primary-400">Frollz</span>

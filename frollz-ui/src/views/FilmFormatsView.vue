@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div class="flex justify-between items-center mb-8">
+    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-8">
       <h1 class="text-3xl font-bold text-gray-900 dark:text-gray-100">Film Formats</h1>
       <button
         @click="showCreateForm = true"

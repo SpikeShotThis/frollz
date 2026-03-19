@@ -1,6 +1,22 @@
 @import "tailwindcss";
 @variant dark (&:where(.dark, .dark *));
 
+/* Safe-area-aware horizontal padding.
+ * On notched/punched devices (requires viewport-fit=cover in the meta tag)
+ * env(safe-area-inset-left/right) is non-zero; max() ensures at least the
+ * standard padding value is always applied.
+ * Breakpoints match Tailwind defaults: px-4 (mobile) → px-6 (sm+).
+ */
+@utility page-x {
+  padding-left: max(1rem, env(safe-area-inset-left));
+  padding-right: max(1rem, env(safe-area-inset-right));
+
+  @media (min-width: 640px) {
+    padding-left: max(1.5rem, env(safe-area-inset-left));
+    padding-right: max(1.5rem, env(safe-area-inset-right));
+  }
+}
+
 @theme {
   --color-primary-50: #eff6ff;
   --color-primary-100: #dbeafe;
