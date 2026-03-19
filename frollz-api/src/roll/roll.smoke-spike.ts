@@ -77,6 +77,7 @@ async function transition(
 
 interface RollRow {
   _key: string;
+  rollId: string;
   state: string;
   transitionProfile: string;
   stockName: string;
