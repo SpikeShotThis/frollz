@@ -90,7 +90,8 @@ export const rollApi = {
 
 // Transition API
 export const transitionApi = {
-  getGraph: () => api.get<TransitionGraph>('/transitions'),
+  getGraph: (profile = 'standard') =>
+    api.get<TransitionGraph>('/transitions', { params: { profile } }),
 }
 
 // Roll State History API

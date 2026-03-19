@@ -1,5 +1,5 @@
-import { Controller, Get } from "@nestjs/common";
-import { ApiOkResponse, ApiTags } from "@nestjs/swagger";
+import { Controller, Get, Query } from "@nestjs/common";
+import { ApiOkResponse, ApiQuery, ApiTags } from "@nestjs/swagger";
 import { TransitionService } from "./transition.service";
 import { TransitionGraph } from "./entities/transition.entity";
 
@@ -10,7 +10,8 @@ export class TransitionController {
 
   @Get()
   @ApiOkResponse({ type: TransitionGraph })
-  getGraph(): Promise<TransitionGraph> {
-    return this.transitionService.getGraph();
+  @ApiQuery({ name: "profile", required: false, example: "standard" })
+  getGraph(@Query("profile") profile = "standard"): Promise<TransitionGraph> {
+    return this.transitionService.getGraph(profile);
   }
 }

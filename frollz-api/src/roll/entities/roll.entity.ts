@@ -61,6 +61,12 @@ export class Roll {
   formatName?: string;
 
   @ApiProperty({ required: false })
+  process?: string;
+
+  @ApiProperty({ required: false })
+  transitionProfile?: string;
+
+  @ApiProperty({ required: false })
   createdAt?: Date;
 
   @ApiProperty({ required: false })

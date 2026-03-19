@@ -55,7 +55,7 @@ describe("TransitionService", () => {
         .mockResolvedValueOnce([{ name: "Added" }, { name: "Frozen" }])
         .mockResolvedValueOnce([]);
 
-      const graph = await service.getGraph();
+      const graph = await service.getGraph("standard");
       expect(graph.states).toEqual(["Added", "Frozen"]);
     });
 
@@ -64,7 +64,7 @@ describe("TransitionService", () => {
         .mockResolvedValueOnce([{ name: "Added" }, { name: "Frozen" }])
         .mockResolvedValueOnce([FROZEN_EDGE]);
 
-      const graph = await service.getGraph();
+      const graph = await service.getGraph("standard");
       expect(graph.transitions).toHaveLength(1);
       expect(graph.transitions[0]).toMatchObject({
         id: "edge-1",
@@ -106,7 +106,7 @@ describe("TransitionService", () => {
           },
         ]);
 
-      const graph = await service.getGraph();
+      const graph = await service.getGraph("standard");
       expect(graph.transitions).toHaveLength(1);
       expect(graph.transitions[0].metadata).toHaveLength(2);
       expect(graph.transitions[0].metadata.map((m) => m.field)).toEqual([
@@ -120,37 +120,74 @@ describe("TransitionService", () => {
         .mockResolvedValueOnce([{ name: "Shelved" }, { name: "Loaded" }])
         .mockResolvedValueOnce([LOADED_EDGE]);
 
-      const graph = await service.getGraph();
+      const graph = await service.getGraph("standard");
       expect(graph.transitions[0].metadata).toEqual([]);
+    });
+
+    it("should pass profile to the transitions query", async () => {
+      db.query
+        .mockResolvedValueOnce([{ name: "Finished" }, { name: "Received" }])
+        .mockResolvedValueOnce([]);
+
+      await service.getGraph("instant");
+
+      expect(db.query).toHaveBeenCalledWith(
+        expect.stringContaining("WHERE tp.name = ?"),
+        ["instant"],
+      );
     });
   });
 
   describe("getTransitionEdge", () => {
     it("should return the edge with metadata when transition exists", async () => {
       db.query.mockResolvedValueOnce([FROZEN_EDGE]);
-      const edge = await service.getTransitionEdge("Added", "Frozen");
+      const edge = await service.getTransitionEdge(
+        "Added",
+        "Frozen",
+        "standard",
+      );
       expect(edge).not.toBeNull();
       expect(edge!.fromState).toBe("Added");
       expect(edge!.toState).toBe("Frozen");
       expect(edge!.metadata).toHaveLength(1);
       expect(edge!.metadata[0].field).toBe("temperature");
       expect(db.query).toHaveBeenCalledWith(
-        expect.stringContaining("WHERE fs.name = ? AND ts.name = ?"),
-        ["Added", "Frozen"],
+        expect.stringContaining(
+          "WHERE fs.name = ? AND ts.name = ? AND tp.name = ?",
+        ),
+        ["Added", "Frozen", "standard"],
       );
     });
 
     it("should return an edge with empty metadata when no fields exist", async () => {
       db.query.mockResolvedValueOnce([LOADED_EDGE]);
-      const edge = await service.getTransitionEdge("Shelved", "Loaded");
+      const edge = await service.getTransitionEdge(
+        "Shelved",
+        "Loaded",
+        "standard",
+      );
       expect(edge).not.toBeNull();
       expect(edge!.metadata).toEqual([]);
     });
 
     it("should return null when no matching transition exists", async () => {
       db.query.mockResolvedValueOnce([]);
-      const edge = await service.getTransitionEdge("Shelved", "Received");
+      const edge = await service.getTransitionEdge(
+        "Shelved",
+        "Received",
+        "standard",
+      );
       expect(edge).toBeNull();
+    });
+
+    it("should pass profile to the query for instant profile lookups", async () => {
+      db.query.mockResolvedValueOnce([]);
+      await service.getTransitionEdge("Finished", "Received", "instant");
+      expect(db.query).toHaveBeenCalledWith(expect.any(String), [
+        "Finished",
+        "Received",
+        "instant",
+      ]);
     });
   });
 });

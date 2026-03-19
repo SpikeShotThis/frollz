@@ -133,6 +133,8 @@ export interface Roll {
   stockName?: string
   stockSpeed?: number
   formatName?: string
+  process?: string
+  transitionProfile?: string
   createdAt?: Date
   updatedAt?: Date
 }
