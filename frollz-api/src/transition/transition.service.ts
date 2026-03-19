@@ -33,6 +33,7 @@ const TRANSITION_SELECT = `
   JOIN transition_states fs ON t.from_state_id = fs.id
   JOIN transition_states ts ON t.to_state_id = ts.id
   JOIN transition_types tt ON t.transition_type_id = tt.id
+  JOIN transition_profiles tp ON t.profile_id = tp.id
   LEFT JOIN transition_metadata tm ON tm.transition_id = t.id
   LEFT JOIN transition_metadata_field_types tmft ON tm.field_type_id = tmft.id
 `;
@@ -41,13 +42,14 @@ const TRANSITION_SELECT = `
 export class TransitionService {
   constructor(private readonly databaseService: DatabaseService) {}
 
-  async getGraph(): Promise<TransitionGraph> {
+  async getGraph(profile: string): Promise<TransitionGraph> {
     const [stateRows, transitionRows] = await Promise.all([
       this.databaseService.query<{ name: string }>(
         `SELECT name FROM transition_states ORDER BY name`,
       ),
       this.databaseService.query<TransitionRow>(
-        `${TRANSITION_SELECT} ORDER BY t.id, tm.field`,
+        `${TRANSITION_SELECT} WHERE tp.name = ? ORDER BY t.id, tm.field`,
+        [profile],
       ),
     ]);
 
@@ -60,10 +62,11 @@ export class TransitionService {
   async getTransitionEdge(
     fromState: string,
     toState: string,
+    profile: string,
   ): Promise<TransitionEdge | null> {
     const rows = await this.databaseService.query<TransitionRow>(
-      `${TRANSITION_SELECT} WHERE fs.name = ? AND ts.name = ? ORDER BY tm.field`,
-      [fromState, toState],
+      `${TRANSITION_SELECT} WHERE fs.name = ? AND ts.name = ? AND tp.name = ? ORDER BY tm.field`,
+      [fromState, toState, profile],
     );
 
     if (rows.length === 0) return null;

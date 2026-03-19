@@ -546,10 +546,10 @@ const loadData = async () => {
 
 onMounted(async () => {
   try {
-    const [graphRes] = await Promise.all([
-      transitionApi.getGraph(),
-      loadData(),
-    ])
+    await loadData()
+    const graphRes = await transitionApi.getGraph(
+      roll.value?.transitionProfile ?? 'standard',
+    )
     transitionGraph.value = graphRes.data
   } finally {
     loading.value = false

@@ -11,7 +11,7 @@ import { TransitionService } from "../transition/transition.service";
 import { TransitionMetadataField } from "../transition/entities/transition.entity";
 
 const ROLLS_WITH_STOCK_QUERY = `
-  SELECT r.*, s.brand AS stock_name, s.speed AS stock_speed, f.format AS format_name
+  SELECT r.*, s.brand AS stock_name, s.speed AS stock_speed, s.process AS stock_process, f.format AS format_name
   FROM rolls r
   LEFT JOIN stocks s ON r.stock_key = s.id
   LEFT JOIN film_formats f ON s.format_key = f.id
@@ -35,6 +35,8 @@ function mapRoll(row: Record<string, unknown>): Roll {
     stockName: (row.stock_name as string | null) ?? undefined,
     stockSpeed: row.stock_speed != null ? Number(row.stock_speed) : undefined,
     formatName: (row.format_name as string | null) ?? undefined,
+    process: (row.stock_process as string | null) ?? undefined,
+    transitionProfile: (row.transition_profile as string | null) ?? "standard",
     createdAt: row.created_at ? new Date(row.created_at as string) : undefined,
     updatedAt: row.updated_at ? new Date(row.updated_at as string) : undefined,
   };
@@ -132,9 +134,18 @@ export class RollService implements OnModuleInit {
 
     const initialState = createRollDto.state ?? RollState.ADDED;
 
+    const stockRows = await this.databaseService.query<{ process: string }>(
+      `SELECT process FROM stocks WHERE id = ?`,
+      [createRollDto.stockKey],
+    );
+    const transitionProfile =
+      stockRows.length > 0 && stockRows[0].process === "Instant"
+        ? "instant"
+        : "standard";
+
     await this.databaseService.execute(
-      `INSERT INTO rolls (id, roll_id, stock_key, state, images_url, date_obtained, obtainment_method, obtained_from, expiration_date, times_exposed_to_xrays, loaded_into, created_at, updated_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      `INSERT INTO rolls (id, roll_id, stock_key, state, images_url, date_obtained, obtainment_method, obtained_from, expiration_date, times_exposed_to_xrays, loaded_into, transition_profile, created_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         id,
         rollId,
@@ -147,6 +158,7 @@ export class RollService implements OnModuleInit {
         createRollDto.expirationDate ?? null,
         createRollDto.timesExposedToXrays ?? 0,
         createRollDto.loadedInto ?? null,
+        transitionProfile,
         now,
         now,
       ],
@@ -178,6 +190,7 @@ export class RollService implements OnModuleInit {
         : undefined,
       timesExposedToXrays: createRollDto.timesExposedToXrays ?? 0,
       loadedInto: createRollDto.loadedInto,
+      transitionProfile,
       createdAt: now,
       updatedAt: now,
     };
@@ -267,6 +280,7 @@ export class RollService implements OnModuleInit {
     const edge = await this.transitionService.getTransitionEdge(
       roll.state,
       dto.targetState,
+      roll.transitionProfile ?? "standard",
     );
     if (!edge) {
       throw new BadRequestException(

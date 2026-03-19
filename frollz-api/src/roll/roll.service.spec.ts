@@ -168,6 +168,7 @@ describe("RollService", () => {
       expiration_date: null,
       times_exposed_to_xrays: 0,
       loaded_into: null,
+      transition_profile: "standard",
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     };
@@ -205,6 +206,7 @@ describe("RollService", () => {
       expect(transitionService.getTransitionEdge).toHaveBeenCalledWith(
         RollState.SHELVED,
         RollState.FROZEN,
+        "standard",
       );
       expect(rollStateService.create).toHaveBeenCalledWith(
         expect.objectContaining({ state: RollState.FROZEN }),
@@ -417,6 +419,7 @@ describe("RollService", () => {
       expiration_date: null,
       times_exposed_to_xrays: 0,
       loaded_into: null,
+      transition_profile: "standard",
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     };
@@ -529,6 +532,7 @@ describe("RollService", () => {
       expiration_date: null,
       times_exposed_to_xrays: 0,
       loaded_into: null,
+      transition_profile: "standard",
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     };
@@ -696,9 +700,55 @@ describe("RollService", () => {
     });
   });
 
+  describe("create — transition profile", () => {
+    const profileDto = {
+      stockKey: "stock-1",
+      rollId: "roll-00001",
+      state: RollState.ADDED,
+      obtainmentMethod: "Purchase" as any,
+      obtainedFrom: "B&H",
+      timesExposedToXrays: 0,
+    };
+
+    it("should assign 'instant' profile when stock process is Instant", async () => {
+      db.query.mockResolvedValueOnce([{ process: "Instant" }]);
+
+      await service.create({ ...profileDto });
+
+      const [, values] = db.execute.mock.calls.find(([sql]: [string]) =>
+        sql.includes("INSERT INTO rolls"),
+      )!;
+      expect(values).toContain("instant");
+    });
+
+    it("should assign 'standard' profile for non-instant processes", async () => {
+      db.query.mockResolvedValueOnce([{ process: "C-41" }]);
+
+      await service.create({ ...profileDto });
+
+      const [, values] = db.execute.mock.calls.find(([sql]: [string]) =>
+        sql.includes("INSERT INTO rolls"),
+      )!;
+      expect(values).toContain("standard");
+    });
+
+    it("should assign 'standard' profile when stock is not found", async () => {
+      // default mock returns [] — stock not found
+
+      await service.create({ ...profileDto });
+
+      const [, values] = db.execute.mock.calls.find(([sql]: [string]) =>
+        sql.includes("INSERT INTO rolls"),
+      )!;
+      expect(values).toContain("standard");
+    });
+  });
+
   describe("create — auto roll ID", () => {
     it("should use the sequence when no rollId is provided", async () => {
-      db.query.mockResolvedValueOnce([{ nextval: "42" }]);
+      db.query
+        .mockResolvedValueOnce([{ nextval: "42" }]) // sequence query (runs before stock query)
+        .mockResolvedValueOnce([]); // stock process query
 
       const dto = {
         stockKey: "stock-1",
