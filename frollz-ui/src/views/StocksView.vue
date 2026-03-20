@@ -10,7 +10,7 @@
     <!-- Active Filters -->
     <div class="flex flex-wrap items-center gap-2 mb-4 min-h-[2rem]">
       <span class="text-sm text-gray-500 dark:text-gray-400 font-medium">Filters:</span>
-      <span v-if="activeFilters.length === 0" class="text-sm text-gray-400 dark:text-gray-500 italic">
+      <span v-if="activeFilters.length === 0" class="text-sm text-gray-600 dark:text-gray-400 italic">
         <span class="hidden md:inline">Click any value in the table to filter by that field</span>
         <span class="md:hidden">No active filters</span>
       </span>
@@ -29,7 +29,7 @@
 
     <!-- Mobile card list (hidden on md+) -->
     <div class="md:hidden space-y-3" :aria-busy="isLoading" aria-label="Stocks list">
-      <p v-if="sortedStocks.length === 0" class="text-center py-8 text-gray-400 dark:text-gray-500 italic">No stocks found.</p>
+      <p v-if="sortedStocks.length === 0" class="text-center py-8 text-gray-600 dark:text-gray-400 italic">No stocks found.</p>
       <div
         v-for="stock in sortedStocks"
         :key="stock._key"
@@ -39,7 +39,7 @@
           <div class="min-w-0">
             <p class="font-semibold text-gray-900 dark:text-gray-100 truncate">{{ stock.brand }}</p>
             <p class="text-sm text-gray-500 dark:text-gray-400 mt-0.5 truncate">{{ stock.manufacturer }}</p>
-            <p class="text-xs text-gray-400 dark:text-gray-500 mt-0.5">{{ stock.format }} · ISO {{ stock.speed }}</p>
+            <p class="text-xs text-gray-600 dark:text-gray-400 mt-0.5">{{ stock.format }} · ISO {{ stock.speed }}</p>
           </div>
           <div class="flex flex-col items-end gap-2 shrink-0">
             <span class="px-2 text-xs leading-5 font-semibold rounded-full bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200">{{ stock.process }}</span>
@@ -193,7 +193,7 @@
             <fieldset>
               <legend class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Formats <span class="text-red-500" aria-hidden="true">*</span></legend>
               <div class="flex flex-wrap gap-2 p-2 border border-gray-300 dark:border-gray-600 rounded-md min-h-[2.5rem] bg-white dark:bg-gray-700">
-                <span v-if="!form.process" class="text-sm text-gray-400 dark:text-gray-500 italic">Select a process first</span>
+                <span v-if="!form.process" class="text-sm text-gray-600 dark:text-gray-400 italic">Select a process first</span>
                 <label
                   v-else
                   v-for="fmt in filteredFormats"

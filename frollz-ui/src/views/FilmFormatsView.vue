@@ -12,7 +12,7 @@
 
     <!-- Mobile card list (hidden on md+) -->
     <div class="md:hidden space-y-3" :aria-busy="isLoading" aria-label="Film formats list">
-      <p v-if="filmFormats.length === 0" class="text-center py-8 text-gray-400 dark:text-gray-500 italic">No formats found.</p>
+      <p v-if="filmFormats.length === 0" class="text-center py-8 text-gray-600 dark:text-gray-400 italic">No formats found.</p>
       <div
         v-for="format in filmFormats"
         :key="format._key"
@@ -22,7 +22,7 @@
           <div>
             <p class="font-semibold text-gray-900 dark:text-gray-100">{{ format.format }}</p>
             <p class="text-sm text-gray-500 dark:text-gray-400 mt-0.5">{{ format.formFactor }}</p>
-            <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">{{ formatDate(format.createdAt) }}</p>
+            <p class="text-xs text-gray-600 dark:text-gray-400 mt-1">{{ formatDate(format.createdAt) }}</p>
           </div>
           <button
             @click="deleteFormat(format._key!)"

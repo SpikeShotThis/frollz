@@ -6,7 +6,7 @@
 
     <!-- Mobile card list (hidden on md+) -->
     <div class="md:hidden space-y-3" :aria-busy="isLoading" aria-label="Tags list">
-      <p v-if="tags.length === 0" class="text-center py-8 text-gray-400 dark:text-gray-500 italic">No tags found.</p>
+      <p v-if="tags.length === 0" class="text-center py-8 text-gray-600 dark:text-gray-400 italic">No tags found.</p>
       <div
         v-for="tag in paginatedTags"
         :key="tag._key"
@@ -36,7 +36,7 @@
               >Delete</button>
             </div>
           </div>
-          <div class="flex gap-4 mt-2 text-xs text-gray-400 dark:text-gray-500">
+          <div class="flex gap-4 mt-2 text-xs text-gray-600 dark:text-gray-400">
             <span>Roll scope: {{ tag.isRollScoped ? 'Yes' : 'No' }}</span>
             <span>Stock scope: {{ tag.isStockScoped ? 'Yes' : 'No' }}</span>
             <span>{{ formatDate(tag.createdAt) }}</span>
@@ -175,7 +175,7 @@
               </td>
             </tr>
             <tr v-if="tags.length === 0">
-              <td colspan="6" class="px-6 py-8 text-center text-sm text-gray-400 dark:text-gray-500">No tags found.</td>
+              <td colspan="6" class="px-6 py-8 text-center text-sm text-gray-600 dark:text-gray-400">No tags found.</td>
             </tr>
           </tbody>
         </table>

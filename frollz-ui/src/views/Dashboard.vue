@@ -17,7 +17,7 @@
       <template v-else>
         <StatCard label="Total Rolls" :value="stats.totalRolls" colorClass="text-primary-600 dark:text-primary-400" />
         <StatCard label="Available Stocks" :value="stats.totalStocks" colorClass="text-green-600 dark:text-green-400" />
-        <StatCard label="Currently Loaded" :value="stats.loadedRolls" colorClass="text-yellow-600 dark:text-yellow-400" />
+        <StatCard label="Currently Loaded" :value="stats.loadedRolls" colorClass="text-yellow-700 dark:text-yellow-400" />
         <StatCard label="Developed" :value="stats.developedRolls" colorClass="text-blue-600 dark:text-blue-400" />
       </template>
     </section>

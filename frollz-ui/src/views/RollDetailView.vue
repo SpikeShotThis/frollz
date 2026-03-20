@@ -7,9 +7,9 @@
       >← Back to Rolls</button>
     </div>
 
-    <div v-if="loading" role="status" aria-label="Loading roll detail" class="text-center py-12 text-gray-400 dark:text-gray-500">Loading...</div>
+    <div v-if="loading" role="status" aria-label="Loading roll detail" class="text-center py-12 text-gray-600 dark:text-gray-400">Loading...</div>
 
-    <div v-else-if="!roll" class="text-center py-12 text-gray-400 dark:text-gray-500">Roll not found.</div>
+    <div v-else-if="!roll" class="text-center py-12 text-gray-600 dark:text-gray-400">Roll not found.</div>
 
     <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-6">
       <!-- Left: Details + Tags + Transitions -->
@@ -248,9 +248,9 @@
         <div v-if="roll.transitionProfile === 'bulk'" class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
           <div class="flex justify-between items-center mb-4">
             <h2 class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Child Rolls</h2>
-            <span class="text-xs text-gray-400 dark:text-gray-500">{{ childRolls.length }} roll{{ childRolls.length !== 1 ? 's' : '' }} cut</span>
+            <span class="text-xs text-gray-600 dark:text-gray-400">{{ childRolls.length }} roll{{ childRolls.length !== 1 ? 's' : '' }} cut</span>
           </div>
-          <div v-if="childRolls.length === 0" class="text-sm text-gray-400 dark:text-gray-500 italic">No rolls cut from this canister yet.</div>
+          <div v-if="childRolls.length === 0" class="text-sm text-gray-600 dark:text-gray-400 italic">No rolls cut from this canister yet.</div>
           <ul v-else class="space-y-2">
             <li v-for="child in childRolls" :key="child._key" class="flex items-center justify-between text-sm">
               <button
@@ -281,7 +281,7 @@
                 class="ml-1 leading-none hover:opacity-70 font-bold"
               >&times;</button>
             </span>
-            <span v-if="rollTags.length === 0" class="text-sm text-gray-400 dark:text-gray-500 italic">No tags yet</span>
+            <span v-if="rollTags.length === 0" class="text-sm text-gray-600 dark:text-gray-400 italic">No tags yet</span>
           </div>
           <div class="flex flex-wrap gap-2">
             <button
@@ -300,7 +300,7 @@
       <!-- Right: Transition History -->
       <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 h-fit">
         <h2 class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-4">History</h2>
-        <div v-if="annotatedHistory.length === 0" class="text-sm text-gray-400 dark:text-gray-500 py-4 text-center">No history recorded yet.</div>
+        <div v-if="annotatedHistory.length === 0" class="text-sm text-gray-600 dark:text-gray-400 py-4 text-center">No history recorded yet.</div>
         <ol v-else class="relative border-l border-gray-200 dark:border-gray-700 ml-3 space-y-6">
           <li v-for="entry in annotatedHistory" :key="entry.stateId" class="ml-4">
             <div
@@ -312,9 +312,9 @@
                 class="px-2 text-xs leading-5 font-semibold rounded-full"
                 :class="getStateColor(entry.state)"
               >{{ entry.state }}</span>
-              <span v-if="entry.direction === 'backward'" class="text-xs text-orange-600 dark:text-orange-400">{{ entry.isErrorCorrection ? '↩ error correction' : '↩ backward' }}</span>
-              <span v-if="entry.direction === 'initial'" class="text-xs text-gray-400 dark:text-gray-500">initial</span>
-              <time class="text-xs text-gray-400 dark:text-gray-500">{{ formatDate(entry.date) }}</time>
+              <span v-if="entry.direction === 'backward'" class="text-xs text-orange-700 dark:text-orange-400">{{ entry.isErrorCorrection ? '↩ error correction' : '↩ backward' }}</span>
+              <span v-if="entry.direction === 'initial'" class="text-xs text-gray-600 dark:text-gray-400">initial</span>
+              <time class="text-xs text-gray-600 dark:text-gray-400">{{ formatDate(entry.date) }}</time>
             </div>
             <p v-if="entry.notes" class="mt-1 text-sm text-gray-600 dark:text-gray-400">{{ entry.notes }}</p>
             <p v-if="entry.metadata?.temperature != null" class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ entry.metadata.temperature }}{{ temperatureUnit }}</p>

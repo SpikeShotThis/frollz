@@ -10,7 +10,7 @@
     <!-- Active Filters -->
     <div class="flex flex-wrap items-center gap-2 mb-4 min-h-[2rem]">
       <span class="text-sm text-gray-500 dark:text-gray-400 font-medium">Filters:</span>
-      <span v-if="activeFilters.length === 0" class="text-sm text-gray-400 dark:text-gray-500 italic">
+      <span v-if="activeFilters.length === 0" class="text-sm text-gray-600 dark:text-gray-400 italic">
         <span class="hidden md:inline">Click any value in the table to filter by that field</span>
         <span class="md:hidden">No active filters</span>
       </span>
@@ -29,7 +29,7 @@
 
     <!-- Mobile card list (hidden on md+) -->
     <div class="md:hidden space-y-3" :aria-busy="isLoading" aria-label="Rolls list">
-      <p v-if="filteredRolls.length === 0" class="text-center py-8 text-gray-400 dark:text-gray-500 italic">No rolls found.</p>
+      <p v-if="filteredRolls.length === 0" class="text-center py-8 text-gray-600 dark:text-gray-400 italic">No rolls found.</p>
       <RouterLink
         v-for="roll in filteredRolls"
         :key="roll._key"
@@ -40,14 +40,14 @@
           <div class="min-w-0">
             <p class="font-semibold text-primary-600 dark:text-primary-400 truncate">{{ roll.rollId }}</p>
             <p class="text-sm text-gray-600 dark:text-gray-300 mt-0.5 truncate">{{ roll.stockName ?? '—' }}</p>
-            <p class="text-xs text-gray-400 dark:text-gray-500 mt-0.5">{{ roll.formatName ?? '—' }}</p>
+            <p class="text-xs text-gray-600 dark:text-gray-400 mt-0.5">{{ roll.formatName ?? '—' }}</p>
           </div>
           <span
             class="shrink-0 px-2 text-xs leading-5 font-semibold rounded-full"
             :class="getStateColor(roll.state)"
           >{{ roll.state }}</span>
         </div>
-        <p class="text-xs text-gray-400 dark:text-gray-500 mt-2">{{ formatDate(roll.dateObtained) }}</p>
+        <p class="text-xs text-gray-600 dark:text-gray-400 mt-2">{{ formatDate(roll.dateObtained) }}</p>
       </RouterLink>
     </div>
 
@@ -145,7 +145,7 @@
                 <input id="roll-bulk-canister" v-model="form.isBulkRoll" type="checkbox" class="rounded" @change="onBulkRollToggle" />
                 <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Bulk canister roll</span>
               </label>
-              <span class="text-xs text-gray-400 dark:text-gray-500">(100ft spool or similar)</span>
+              <span class="text-xs text-gray-600 dark:text-gray-400">(100ft spool or similar)</span>
             </div>
 
             <!-- Parent bulk roll selector (only for non-bulk rolls) -->
