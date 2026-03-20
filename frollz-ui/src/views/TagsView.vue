@@ -202,66 +202,50 @@
     </div>
 
     <!-- Stock Scope Removal Warning Modal -->
-    <div
-      v-if="scopeChangeWarning"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="scope-change-title"
-      class="fixed inset-0 bg-gray-500 bg-opacity-75 dark:bg-gray-900 dark:bg-opacity-80 flex items-center justify-center z-50"
-    >
-      <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-md mx-4">
-        <h2 id="scope-change-title" class="text-lg font-bold text-gray-900 dark:text-gray-100 mb-3">Remove Stock Scope</h2>
-        <p class="text-sm text-gray-700 dark:text-gray-300 mb-6">
-          This tag is currently assigned to
-          <span class="font-semibold">{{ scopeChangeWarning.count }}</span>
-          stock{{ scopeChangeWarning.count === 1 ? '' : 's' }}.
-          Removing the stock scope will remove this tag from all of them.
-        </p>
-        <div class="flex justify-end gap-3">
-          <button
-            @click="cancelScopeChange"
-            class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
-          >Cancel</button>
-          <button
-            @click="confirmScopeChange"
-            class="px-4 py-2 bg-red-600 text-white rounded-md text-sm hover:bg-red-700"
-          >Confirm</button>
-        </div>
+    <BaseModal :open="!!scopeChangeWarning" title-id="scope-change-title" @close="cancelScopeChange">
+      <h2 id="scope-change-title" class="text-lg font-bold text-gray-900 dark:text-gray-100 mb-3">Remove Stock Scope</h2>
+      <p class="text-sm text-gray-700 dark:text-gray-300 mb-6">
+        This tag is currently assigned to
+        <span class="font-semibold">{{ scopeChangeWarning?.count }}</span>
+        stock{{ scopeChangeWarning?.count === 1 ? '' : 's' }}.
+        Removing the stock scope will remove this tag from all of them.
+      </p>
+      <div class="flex justify-end gap-3">
+        <button
+          @click="cancelScopeChange"
+          class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+        >Cancel</button>
+        <button
+          @click="confirmScopeChange"
+          class="px-4 py-2 bg-red-600 text-white rounded-md text-sm hover:bg-red-700"
+        >Confirm</button>
       </div>
-    </div>
+    </BaseModal>
 
     <!-- Delete Confirmation Modal -->
-    <div
-      v-if="deleteTarget"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="delete-tag-title"
-      class="fixed inset-0 bg-gray-500 bg-opacity-75 dark:bg-gray-900 dark:bg-opacity-80 flex items-center justify-center z-50"
-    >
-      <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-md mx-4">
-        <h2 id="delete-tag-title" class="text-lg font-bold text-gray-900 dark:text-gray-100 mb-3">Delete Tag</h2>
-        <p class="text-sm text-gray-700 dark:text-gray-300 mb-2">
-          Are you sure you want to delete the tag
-          <span class="font-semibold">{{ deleteTarget.value }}</span>?
-        </p>
-        <p class="text-sm text-gray-700 dark:text-gray-300 mb-6">
-          This tag has
-          <span class="font-semibold">{{ deleteStockTagCount }}</span>
-          stock association{{ deleteStockTagCount === 1 ? '' : 's' }}.
-          All associations will be removed.
-        </p>
-        <div class="flex justify-end gap-3">
-          <button
-            @click="deleteTarget = null"
-            class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
-          >Cancel</button>
-          <button
-            @click="executeDelete"
-            class="px-4 py-2 bg-red-600 text-white rounded-md text-sm hover:bg-red-700"
-          >Delete</button>
-        </div>
+    <BaseModal :open="!!deleteTarget" title-id="delete-tag-title" @close="deleteTarget = null">
+      <h2 id="delete-tag-title" class="text-lg font-bold text-gray-900 dark:text-gray-100 mb-3">Delete Tag</h2>
+      <p class="text-sm text-gray-700 dark:text-gray-300 mb-2">
+        Are you sure you want to delete the tag
+        <span class="font-semibold">{{ deleteTarget?.value }}</span>?
+      </p>
+      <p class="text-sm text-gray-700 dark:text-gray-300 mb-6">
+        This tag has
+        <span class="font-semibold">{{ deleteStockTagCount }}</span>
+        stock association{{ deleteStockTagCount === 1 ? '' : 's' }}.
+        All associations will be removed.
+      </p>
+      <div class="flex justify-end gap-3">
+        <button
+          @click="deleteTarget = null"
+          class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+        >Cancel</button>
+        <button
+          @click="executeDelete"
+          class="px-4 py-2 bg-red-600 text-white rounded-md text-sm hover:bg-red-700"
+        >Delete</button>
       </div>
-    </div>
+    </BaseModal>
   </div>
 </template>
 
@@ -269,6 +253,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { tagApi, stockTagApi } from '@/services/api-client'
 import type { Tag } from '@/types'
+import BaseModal from '@/components/BaseModal.vue'
 
 const PAGE_SIZE = 10
 

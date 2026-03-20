@@ -146,14 +146,7 @@
     </div>
 
     <!-- Add Stock Modal -->
-    <div
-      v-if="showModal"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="add-stock-title"
-      class="fixed inset-0 bg-gray-500 bg-opacity-75 dark:bg-gray-900 dark:bg-opacity-80 flex items-center justify-center z-50"
-    >
-      <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-lg mx-4 max-h-screen overflow-y-auto">
+    <BaseModal :open="showModal" title-id="add-stock-title" @close="closeModal">
         <h2 id="add-stock-title" class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4">Add Stock</h2>
         <form @submit.prevent="handleSubmit">
           <div class="space-y-4">
@@ -280,8 +273,7 @@
             </button>
           </div>
         </form>
-      </div>
-    </div>
+    </BaseModal>
   </div>
 </template>
 
@@ -292,6 +284,7 @@ import { stockApi, filmFormatApi, tagApi, stockTagApi } from '@/services/api-cli
 import type { Stock, FilmFormat, Tag } from '@/types'
 import { Process, FormFactor } from '@/types'
 import TypeaheadInput from '@/components/TypeaheadInput.vue'
+import BaseModal from '@/components/BaseModal.vue'
 import SpeedTypeaheadInput from '@/components/SpeedTypeaheadInput.vue'
 
 const router = useRouter()
