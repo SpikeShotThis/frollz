@@ -122,6 +122,7 @@ describe('FilmFormatsView', () => {
     })
 
     it('should show error message when create fails', async () => {
+      vi.spyOn(console, 'error').mockImplementation(() => {})
       vi.mocked(filmFormatApi.create).mockRejectedValue(new Error('Server error'))
 
       const wrapper = mount(FilmFormatsView)

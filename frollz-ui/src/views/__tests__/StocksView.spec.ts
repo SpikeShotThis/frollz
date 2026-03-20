@@ -1,7 +1,8 @@
 // @vitest-environment jsdom
-import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { mount, flushPromises } from '@vue/test-utils'
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
+import { mount, flushPromises, config } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
+import { createRouter, createMemoryHistory } from 'vue-router'
 import { axe } from 'vitest-axe'
 import StocksView from '@/views/StocksView.vue'
 import { stockApi, filmFormatApi, tagApi, stockTagApi } from '@/services/api-client'
@@ -54,6 +55,9 @@ describe('StocksView', () => {
   beforeEach(() => {
     setActivePinia(createPinia())
     vi.clearAllMocks()
+    config.global.plugins = [
+      createRouter({ history: createMemoryHistory(), routes: [{ path: '/', component: { template: '<div></div>' } }] }),
+    ]
 
     // Setup default mock returns
     vi.mocked(stockApi.getAll).mockResolvedValue({ data: mockStocks } as any)
@@ -63,6 +67,10 @@ describe('StocksView', () => {
     vi.mocked(stockApi.getBrands).mockResolvedValue({ data: [] } as any)
     vi.mocked(stockApi.getManufacturers).mockResolvedValue({ data: [] } as any)
     vi.mocked(stockApi.getSpeeds).mockResolvedValue({ data: [] } as any)
+  })
+
+  afterEach(() => {
+    config.global.plugins = []
   })
 
   describe('accessibility', () => {
