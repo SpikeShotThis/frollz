@@ -68,8 +68,6 @@ erDiagram
         text notes
         jsonb metadata
         boolean is_error_correction
-        timestamp created_at
-        timestamp updated_at
     }
 
     roll_tags {

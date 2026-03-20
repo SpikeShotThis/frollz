@@ -169,8 +169,6 @@ describe("RollService", () => {
       times_exposed_to_xrays: 0,
       loaded_into: null,
       transition_profile: "standard",
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
     };
 
     beforeEach(() => {
