@@ -85,6 +85,25 @@ services:
       - frollz-network
     restart: unless-stopped
 
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: pgadmin
+    user: root
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${POSTGRES_USER}@localhost.com
+      PGADMIN_DEFAULT_PASSWORD: ${POSTGRES_PASSWORD}
+      PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED: "False"
+      PGADMIN_DISABLE_POSTFIX: "True"
+      PGADMIN_REPLACE_SERVERS_ON_STARTUP: "True"
+      PGADMIN_CONFIG_SERVER_MODE: "False"
+    ports:
+      - "8080:80" # Access pgAdmin in your browser at http://localhost:8080
+    networks:
+      - frollz-network
+    depends_on:
+      - postgres # Ensure PostgreSQL starts before pgAdmin
+    entrypoint: >
+      /bin/sh -c "echo \"$PGADMIN_PGPASS\" >> /root/.ogpass; chmod 600 /pgpass; echo '$PGADMIN_SERVER_JSON' >> /pgadmin4/servers.json; /entrypoint.sh"
 volumes:
   postgres_data:
   lhci_data:
