@@ -1,11 +1,16 @@
 <template>
   <div class="relative">
-    <!-- eslint-disable-next-line vuejs-accessibility/form-control-has-label -- Full ARIA combobox pattern (role, aria-expanded, etc.) addressed in #201; label association via aria-label on the consumer -->
+    <!-- eslint-disable-next-line vuejs-accessibility/form-control-has-label -- label provided by consumer via aria-label passed through $attrs -->
     <input
       :value="rawInput"
       type="text"
       inputmode="numeric"
       v-bind="$attrs"
+      role="combobox"
+      :aria-expanded="isOpen && suggestions.length > 0"
+      aria-autocomplete="list"
+      :aria-controls="listboxId"
+      :aria-activedescendant="highlightedIndex >= 0 ? optionId(highlightedIndex) : undefined"
       @input="onInput"
       @keydown.escape.prevent="close"
       @keydown.down.prevent="moveDown"
@@ -15,14 +20,18 @@
       @focus="onFocus"
     />
     <ul
-      v-if="isOpen && suggestions.length > 0"
+      v-show="isOpen && suggestions.length > 0"
+      :id="listboxId"
+      role="listbox"
       class="absolute z-10 mt-1 w-full bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-md shadow-lg max-h-60 overflow-auto"
     >
-      <!-- eslint-disable-next-line vuejs-accessibility/no-static-element-interactions -- Will be converted to role="option" with full ARIA combobox in #201 -->
       <li
         v-for="(suggestion, i) in suggestions"
         :key="suggestion"
-        @mousedown.prevent="select(suggestion)"
+        :id="optionId(i)"
+        role="option"
+        :aria-selected="i === highlightedIndex"
+        @pointerdown.prevent="select(suggestion)"
         class="px-3 py-2 text-sm cursor-pointer"
         :class="
           i === highlightedIndex
@@ -37,10 +46,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, useId } from 'vue'
 import { buildSpeedSuggestions } from '@/utils/speedSuggestions'
 
 defineOptions({ inheritAttrs: false })
+
+const uid = useId()
+const listboxId = `typeahead-listbox-${uid}`
+const optionId = (i: number) => `typeahead-option-${uid}-${i}`
 
 const props = defineProps<{
   modelValue: number | undefined
