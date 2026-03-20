@@ -32,7 +32,7 @@
         <div class="flex items-center gap-2 md:hidden">
           <button
             @click="themeStore.toggle()"
-            class="p-2 rounded-md text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200"
+            class="inline-flex items-center justify-center min-h-[44px] min-w-[44px] rounded-md text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200"
             :aria-label="themeStore.isDark ? 'Switch to light mode' : 'Switch to dark mode'"
           >
             <SunIcon v-if="themeStore.isDark" class="w-5 h-5" />
@@ -45,7 +45,7 @@
             aria-label="Open navigation"
             :aria-expanded="menuOpen"
             aria-controls="mobile-nav-drawer"
-            class="p-2 rounded-md text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200"
+            class="inline-flex items-center justify-center min-h-[44px] min-w-[44px] rounded-md text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200"
           >
             <Bars3Icon class="w-6 h-6" />
           </button>
@@ -184,7 +184,7 @@ onUnmounted(() => {
 <style scoped>
 @reference "../style.css";
 
-/* Desktop nav links */
+/* Desktop nav links — min 44px tap target (WCAG 2.5.5) */
 .nav-link {
   @apply inline-flex items-center px-3 min-h-[44px] rounded-md text-sm font-medium text-gray-500 hover:text-primary-600 hover:bg-gray-100 transition-colors duration-200 dark:text-gray-400 dark:hover:text-primary-400 dark:hover:bg-gray-700;
 }
