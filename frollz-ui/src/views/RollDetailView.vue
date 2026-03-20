@@ -265,6 +265,27 @@
           </ul>
         </div>
 
+        <!-- Child rolls card (bulk rolls only) -->
+        <div v-if="roll.transitionProfile === 'bulk'" class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+          <div class="flex justify-between items-center mb-4">
+            <h2 class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Child Rolls</h2>
+            <span class="text-xs text-gray-400 dark:text-gray-500">{{ childRolls.length }} roll{{ childRolls.length !== 1 ? 's' : '' }} cut</span>
+          </div>
+          <div v-if="childRolls.length === 0" class="text-sm text-gray-400 dark:text-gray-500 italic">No rolls cut from this canister yet.</div>
+          <ul v-else class="space-y-2">
+            <li v-for="child in childRolls" :key="child._key" class="flex items-center justify-between text-sm">
+              <button
+                @click="router.push({ name: 'roll-detail', params: { key: child._key } })"
+                class="text-primary-600 dark:text-primary-400 hover:underline font-medium"
+              >{{ child.rollId }}</button>
+              <span
+                class="px-2 text-xs leading-5 font-semibold rounded-full"
+                :class="getStateColor(child.state)"
+              >{{ child.state }}</span>
+            </li>
+          </ul>
+        </div>
+
         <!-- Tags card -->
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
           <h2 class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-4">Tags</h2>

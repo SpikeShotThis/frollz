@@ -104,6 +104,7 @@ services:
       - postgres # Ensure PostgreSQL starts before pgAdmin
     entrypoint: >
       /bin/sh -c "echo \"$PGADMIN_PGPASS\" >> /root/.ogpass; chmod 600 /pgpass; echo '$PGADMIN_SERVER_JSON' >> /pgadmin4/servers.json; /entrypoint.sh"
+
 volumes:
   postgres_data:
   lhci_data:
