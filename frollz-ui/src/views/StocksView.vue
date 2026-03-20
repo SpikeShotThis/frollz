@@ -45,10 +45,10 @@
             <span class="px-2 text-xs leading-5 font-semibold rounded-full bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200">{{ stock.process }}</span>
             <button
               @click="createRoll(stock._key!)"
-              class="inline-flex items-center justify-center min-h-[44px] min-w-[44px] text-primary-600 dark:text-primary-400 hover:text-primary-800 dark:hover:text-primary-200 font-bold text-lg"
+              class="bg-primary-600 text-white px-4 py-2 min-h-[44px] rounded-md hover:bg-primary-700 font-medium"
               title="Add roll from this stock"
               aria-label="Add roll from this stock"
-            >+</button>
+            >Add Roll</button>
           </div>
         </div>
         <div v-if="stockTagMap[stock._key!]?.length" class="flex flex-wrap gap-1 mt-2">
@@ -136,10 +136,10 @@
               <td class="px-6 py-4 whitespace-nowrap text-right">
                 <button
                   @click="createRoll(stock._key!)"
-                  class="inline-flex items-center justify-center min-h-[44px] min-w-[44px] text-primary-600 dark:text-primary-400 hover:text-primary-800 dark:hover:text-primary-200 font-bold text-lg"
+                  class="bg-primary-600 text-white px-4 py-2 min-h-[44px] rounded-md hover:bg-primary-700 font-medium"
                   title="Add roll from this stock"
                   aria-label="Add roll from this stock"
-                >+</button>
+                >Add Roll</button>
               </td>
             </tr>
           </tbody>
