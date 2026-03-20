@@ -135,14 +135,7 @@
     </div>
 
     <!-- Add Roll Modal -->
-    <div
-      v-if="showModal"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="add-roll-title"
-      class="fixed inset-0 bg-gray-500 bg-opacity-75 dark:bg-gray-900 dark:bg-opacity-80 flex items-center justify-center z-50"
-    >
-      <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-lg mx-4 max-h-screen overflow-y-auto">
+    <BaseModal :open="showModal" title-id="add-roll-title" @close="closeModal">
         <h2 id="add-roll-title" class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4">Add Roll</h2>
         <form @submit.prevent="handleSubmit">
           <div class="space-y-4">
@@ -291,8 +284,7 @@
             </button>
           </div>
         </form>
-      </div>
-    </div>
+    </BaseModal>
   </div>
 </template>
 
@@ -300,6 +292,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
 import { rollApi, stockApi } from '@/services/api-client'
+import BaseModal from '@/components/BaseModal.vue'
 import type { Roll, Stock } from '@/types'
 import { RollState, ObtainmentMethod } from '@/types'
 

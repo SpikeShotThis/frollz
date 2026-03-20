@@ -72,14 +72,7 @@
     </div>
 
     <!-- Create Form Modal -->
-    <div
-      v-if="showCreateForm"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="add-format-title"
-      class="fixed inset-0 bg-black bg-opacity-50 dark:bg-opacity-70 flex items-center justify-center z-50"
-    >
-      <div class="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md w-full mx-4">
+    <BaseModal :open="showCreateForm" title-id="add-format-title" @close="showCreateForm = false">
         <h3 id="add-format-title" class="text-lg font-semibold dark:text-gray-100 mb-4">Add Film Format</h3>
         <form @submit.prevent="createFormat">
           <div class="mb-4">
@@ -127,17 +120,15 @@
             </button>
           </div>
         </form>
-      </div>
-    </div>
+    </BaseModal>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
-import { formatApi, packageApi } from '@/services/api-client'
-import type { Format, Package } from '@/types'
+import { ref, onMounted } from 'vue'
+import { filmFormatApi } from '@/services/api-client'
+import type { FilmFormat, FormFactor, Format } from '@/types'
 import BaseModal from '@/components/BaseModal.vue'
-import { useNotificationStore } from '@/stores/notification'
 
 const notification = useNotificationStore()
 
