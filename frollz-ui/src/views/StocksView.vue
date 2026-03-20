@@ -2,7 +2,7 @@
   <div>
     <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-8">
       <h1 class="text-3xl font-bold text-gray-900 dark:text-gray-100">Stocks</h1>
-      <button @click="showModal = true" class="bg-primary-600 text-white px-4 py-2 rounded-md hover:bg-primary-700 font-medium">
+      <button @click="showModal = true" class="bg-primary-600 text-white px-4 py-2 min-h-[44px] rounded-md hover:bg-primary-700 font-medium">
         Add Stock
       </button>
     </div>
@@ -21,7 +21,7 @@
           class="inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm bg-primary-100 dark:bg-primary-900 text-primary-800 dark:text-primary-200 font-medium"
         >
           {{ filter.label }}: {{ filter.value }}
-          <button @click="removeFilter(index)" class="ml-1 text-primary-600 dark:text-primary-400 hover:text-primary-900 dark:hover:text-primary-200 font-bold leading-none">&times;</button>
+          <button @click="removeFilter(index)" class="ml-1 inline-flex items-center justify-center min-h-[44px] min-w-[44px] text-primary-600 dark:text-primary-400 hover:text-primary-900 dark:hover:text-primary-200 font-bold">&times;</button>
         </span>
         <button @click="clearFilters" class="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 underline">Clear all</button>
       </template>
@@ -45,9 +45,10 @@
             <span class="px-2 text-xs leading-5 font-semibold rounded-full bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200">{{ stock.process }}</span>
             <button
               @click="createRoll(stock._key!)"
-              class="text-primary-600 dark:text-primary-400 hover:text-primary-800 dark:hover:text-primary-200 font-bold text-lg leading-none"
+              class="bg-primary-600 text-white px-4 py-2 min-h-[44px] rounded-md hover:bg-primary-700 font-medium"
               title="Add roll from this stock"
-            >+</button>
+              aria-label="Add roll from this stock"
+            >Add Roll</button>
           </div>
         </div>
         <div v-if="stockTagMap[stock._key!]?.length" class="flex flex-wrap gap-1 mt-2">
@@ -135,9 +136,10 @@
               <td class="px-6 py-4 whitespace-nowrap text-right">
                 <button
                   @click="createRoll(stock._key!)"
-                  class="text-primary-600 dark:text-primary-400 hover:text-primary-800 dark:hover:text-primary-200 font-bold text-lg leading-none"
+                  class="bg-primary-600 text-white px-4 py-2 min-h-[44px] rounded-md hover:bg-primary-700 font-medium"
                   title="Add roll from this stock"
-                >+</button>
+                  aria-label="Add roll from this stock"
+                >Add Roll</button>
               </td>
             </tr>
           </tbody>
@@ -199,7 +201,7 @@
                   v-for="fmt in filteredFormats"
                   :key="fmt._key"
                   :for="'format-check-' + fmt._key"
-                  class="flex items-center gap-1 text-sm cursor-pointer text-gray-900 dark:text-gray-100"
+                  class="flex items-center gap-1 min-h-[44px] px-1 text-sm cursor-pointer text-gray-900 dark:text-gray-100"
                 >
                   <input
                     :id="'format-check-' + fmt._key"
@@ -234,7 +236,7 @@
                   :key="tag._key"
                   type="button"
                   @click="toggleTag(tag._key!)"
-                  class="px-2 py-1 rounded text-xs font-medium transition-opacity"
+                  class="px-3 py-2 min-h-[44px] rounded text-xs font-medium transition-opacity"
                   :class="selectedTagKeys.includes(tag._key!) ? 'opacity-100 text-white' : 'opacity-40 text-white'"
                   :style="{ backgroundColor: tag.color }"
                 >

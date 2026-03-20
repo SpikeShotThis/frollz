@@ -3,7 +3,7 @@
     <div class="mb-6">
       <button
         @click="$router.push({ name: 'rolls' })"
-        class="text-sm text-primary-600 dark:text-primary-400 hover:underline"
+        class="inline-flex items-center min-h-[44px] text-sm text-primary-600 dark:text-primary-400 hover:underline"
       >← Back to Rolls</button>
     </div>
 
@@ -29,7 +29,7 @@
             Cut from bulk roll
             <button
               @click="router.push({ name: 'roll-detail', params: { key: parentRoll._key } })"
-              class="text-primary-600 dark:text-primary-400 hover:underline font-medium ml-1"
+              class="inline-flex items-center min-h-[44px] px-1 text-primary-600 dark:text-primary-400 hover:underline font-medium ml-1"
             >{{ parentRoll.rollId }}</button>
           </p>
         </div>
@@ -87,7 +87,7 @@
                 :key="targetState"
                 @click="handleTransition(targetState)"
                 :disabled="transitionSubmitting || !!pendingTransition || !!pendingMetadataTransition"
-                class="w-full sm:w-auto px-4 py-2 sm:px-3 sm:py-1 text-sm sm:text-xs font-medium border rounded disabled:opacity-50"
+                class="w-full sm:w-auto px-4 py-2 sm:px-3 sm:py-2 min-h-[44px] text-sm font-medium border rounded disabled:opacity-50"
                 :class="isBackwardTransition(roll.state, targetState)
                   ? 'text-orange-700 border-orange-400 hover:bg-orange-50 dark:text-orange-400 dark:border-orange-500 dark:hover:bg-orange-900/30'
                   : 'bg-primary-600 text-white border-primary-600 hover:bg-primary-700 dark:bg-primary-700 dark:border-primary-700 dark:hover:bg-primary-800'"
@@ -173,7 +173,7 @@
               </div>
               <p v-if="metadataFormError" role="alert" class="text-xs text-red-600 dark:text-red-400 mt-1">{{ metadataFormError }}</p>
               <div v-if="pendingMetadataTransition === RollState.RECEIVED" class="space-y-3">
-                <label for="meta-scans-received" class="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400 cursor-pointer">
+                <label for="meta-scans-received" class="flex items-center gap-2 min-h-[44px] text-xs text-gray-600 dark:text-gray-400 cursor-pointer">
                   <input id="meta-scans-received" v-model="metadataScansReceived" type="checkbox" class="rounded" />
                   Scans received
                 </label>
@@ -187,7 +187,7 @@
                     <input id="meta-scans-url" v-model="metadataScansUrl" type="url" placeholder="https://…" class="mt-1 w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1 text-base sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100" />
                   </label>
                 </div>
-                <label for="meta-negatives-received" class="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400 cursor-pointer">
+                <label for="meta-negatives-received" class="flex items-center gap-2 min-h-[44px] text-xs text-gray-600 dark:text-gray-400 cursor-pointer">
                   <input id="meta-negatives-received" v-model="metadataNegativesReceived" type="checkbox" class="rounded" />
                   Negatives received
                 </label>
@@ -202,12 +202,12 @@
                 <button
                   @click="submitMetadataTransition"
                   :disabled="transitionSubmitting"
-                  class="w-full sm:w-auto px-4 py-2 sm:px-3 sm:py-1 text-sm sm:text-xs font-medium bg-primary-600 text-white rounded hover:bg-primary-700 disabled:opacity-50"
+                  class="w-full sm:w-auto px-4 py-2 sm:px-3 sm:py-2 min-h-[44px] text-sm font-medium bg-primary-600 text-white rounded hover:bg-primary-700 disabled:opacity-50"
                 >Confirm</button>
                 <button
                   @click="pendingMetadataTransition = null"
                   :disabled="transitionSubmitting"
-                  class="w-full sm:w-auto px-4 py-2 sm:px-3 sm:py-1 text-sm sm:text-xs font-medium text-gray-500 dark:text-gray-400 hover:underline disabled:opacity-50"
+                  class="w-full sm:w-auto px-4 py-2 sm:px-3 sm:py-2 min-h-[44px] text-sm font-medium text-gray-500 dark:text-gray-400 hover:underline disabled:opacity-50"
                 >Cancel</button>
               </div>
             </div>
@@ -218,17 +218,17 @@
                 <button
                   @click="confirmTransition(true)"
                   :disabled="transitionSubmitting"
-                  class="w-full sm:w-auto px-4 py-2 sm:px-3 sm:py-1 text-sm sm:text-xs font-medium bg-orange-600 text-white rounded hover:bg-orange-700 disabled:opacity-50"
+                  class="w-full sm:w-auto px-4 py-2 sm:px-3 sm:py-2 min-h-[44px] text-sm font-medium bg-orange-600 text-white rounded hover:bg-orange-700 disabled:opacity-50"
                 >Yes</button>
                 <button
                   @click="confirmTransition(false)"
                   :disabled="transitionSubmitting"
-                  class="w-full sm:w-auto px-4 py-2 sm:px-3 sm:py-1 text-sm sm:text-xs font-medium border border-gray-400 dark:border-gray-500 text-gray-700 dark:text-gray-300 rounded hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50"
+                  class="w-full sm:w-auto px-4 py-2 sm:px-3 sm:py-2 min-h-[44px] text-sm font-medium border border-gray-400 dark:border-gray-500 text-gray-700 dark:text-gray-300 rounded hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50"
                 >No</button>
                 <button
                   @click="pendingTransition = null"
                   :disabled="transitionSubmitting"
-                  class="w-full sm:w-auto px-4 py-2 sm:px-3 sm:py-1 text-sm sm:text-xs font-medium text-gray-500 dark:text-gray-400 hover:underline disabled:opacity-50"
+                  class="w-full sm:w-auto px-4 py-2 sm:px-3 sm:py-2 min-h-[44px] text-sm font-medium text-gray-500 dark:text-gray-400 hover:underline disabled:opacity-50"
                 >Cancel</button>
               </div>
             </div>
@@ -255,7 +255,7 @@
             <li v-for="child in childRolls" :key="child._key" class="flex items-center justify-between text-sm">
               <button
                 @click="router.push({ name: 'roll-detail', params: { key: child._key } })"
-                class="text-primary-600 dark:text-primary-400 hover:underline font-medium"
+                class="inline-flex items-center min-h-[44px] px-1 text-primary-600 dark:text-primary-400 hover:underline font-medium"
               >{{ child.rollId }}</button>
               <span
                 class="px-2 text-xs leading-5 font-semibold rounded-full"
@@ -278,7 +278,7 @@
               {{ tagByKey[rt.tagKey]?.value ?? '…' }}
               <button
                 @click="removeTag(rt._key!)"
-                class="ml-1 leading-none hover:opacity-70 font-bold"
+                class="ml-1 inline-flex items-center justify-center min-h-[44px] min-w-[44px] hover:opacity-70 font-bold"
               >&times;</button>
             </span>
             <span v-if="rollTags.length === 0" class="text-sm text-gray-600 dark:text-gray-400 italic">No tags yet</span>
@@ -289,7 +289,7 @@
               :key="tag._key"
               type="button"
               @click="addTag(tag)"
-              class="px-2 py-1 rounded text-xs font-medium text-white opacity-40 hover:opacity-100 transition-opacity"
+              class="px-3 py-2 min-h-[44px] rounded text-xs font-medium text-white opacity-40 hover:opacity-100 transition-opacity"
               :style="{ backgroundColor: tag.color }"
             >{{ tag.value }}</button>
           </div>

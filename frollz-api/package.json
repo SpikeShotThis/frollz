@@ -72,7 +72,8 @@
     "typescript": "^5.9.3"
   },
   "overrides": {
-    "glob": ">=13.0.6"
+    "glob": ">=13.0.6",
+    "test-exclude": "^8.0.0"
   },
   "jest": {
     "moduleFileExtensions": [
@@ -86,7 +87,9 @@
       "^.+\\.(t|j)s$": "ts-jest"
     },
     "collectCoverageFrom": [
-      "**/*.(t|j)s"
+      "**/*.[tj]s",
+      "!**/*.spec.[tj]s",
+      "!**/*.smoke-spike.[tj]s"
     ],
     "coverageDirectory": "../coverage",
     "testEnvironment": "node"

@@ -28,11 +28,11 @@
             <div class="flex gap-2 shrink-0">
               <button
                 @click="startEdit(tag)"
-                class="px-3 py-1.5 text-xs font-medium text-primary-600 dark:text-primary-400 border border-primary-300 dark:border-primary-600 rounded hover:bg-primary-50 dark:hover:bg-primary-900/30"
+                class="px-3 py-2.5 min-h-[44px] text-xs font-medium text-primary-600 dark:text-primary-400 border border-primary-300 dark:border-primary-600 rounded hover:bg-primary-50 dark:hover:bg-primary-900/30"
               >Edit</button>
               <button
                 @click="confirmDelete(tag)"
-                class="px-3 py-1.5 text-xs font-medium text-red-600 dark:text-red-400 border border-red-300 dark:border-red-600 rounded hover:bg-red-50 dark:hover:bg-red-900/30"
+                class="px-3 py-2.5 min-h-[44px] text-xs font-medium text-red-600 dark:text-red-400 border border-red-300 dark:border-red-600 rounded hover:bg-red-50 dark:hover:bg-red-900/30"
               >Delete</button>
             </div>
           </div>
@@ -56,11 +56,11 @@
               />
             </div>
             <div class="flex gap-6 text-sm">
-              <label :for="'mobile-roll-scope-' + tag._key" class="flex items-center gap-2 cursor-pointer text-gray-600 dark:text-gray-400">
+              <label :for="'mobile-roll-scope-' + tag._key" class="flex items-center gap-2 min-h-[44px] cursor-pointer text-gray-600 dark:text-gray-400">
                 <input :id="'mobile-roll-scope-' + tag._key" v-model="editForm.isRollScoped" type="checkbox" class="h-4 w-4 text-primary-600 border-gray-300 dark:border-gray-600 rounded" />
                 Roll scope
               </label>
-              <label :for="'mobile-stock-scope-' + tag._key" class="flex items-center gap-2 cursor-pointer text-gray-600 dark:text-gray-400">
+              <label :for="'mobile-stock-scope-' + tag._key" class="flex items-center gap-2 min-h-[44px] cursor-pointer text-gray-600 dark:text-gray-400">
                 <input :id="'mobile-stock-scope-' + tag._key" v-model="editForm.isStockScoped" type="checkbox" class="h-4 w-4 text-primary-600 border-gray-300 dark:border-gray-600 rounded" />
                 Stock scope
               </label>
@@ -129,24 +129,30 @@
                 </template>
               </td>
               <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                <input
-                  type="checkbox"
-                  aria-label="Roll scope"
-                  :checked="editingKey === tag._key ? editForm.isRollScoped : tag.isRollScoped"
-                  :disabled="editingKey !== tag._key"
-                  @change="editingKey === tag._key && (editForm.isRollScoped = ($event.target as HTMLInputElement).checked)"
-                  class="h-4 w-4 text-primary-600 border-gray-300 dark:border-gray-600 rounded"
-                />
+                <label :for="'table-roll-scope-' + tag._key" class="inline-flex items-center justify-center min-h-[44px] min-w-[44px] cursor-pointer">
+                  <input
+                    :id="'table-roll-scope-' + tag._key"
+                    type="checkbox"
+                    aria-label="Roll scope"
+                    :checked="editingKey === tag._key ? editForm.isRollScoped : tag.isRollScoped"
+                    :disabled="editingKey !== tag._key"
+                    @change="editingKey === tag._key && (editForm.isRollScoped = ($event.target as HTMLInputElement).checked)"
+                    class="h-4 w-4 text-primary-600 border-gray-300 dark:border-gray-600 rounded"
+                  />
+                </label>
               </td>
               <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                <input
-                  type="checkbox"
-                  aria-label="Stock scope"
-                  :checked="editingKey === tag._key ? editForm.isStockScoped : tag.isStockScoped"
-                  :disabled="editingKey !== tag._key"
-                  @change="editingKey === tag._key && (editForm.isStockScoped = ($event.target as HTMLInputElement).checked)"
-                  class="h-4 w-4 text-primary-600 border-gray-300 dark:border-gray-600 rounded"
-                />
+                <label :for="'table-stock-scope-' + tag._key" class="inline-flex items-center justify-center min-h-[44px] min-w-[44px] cursor-pointer">
+                  <input
+                    :id="'table-stock-scope-' + tag._key"
+                    type="checkbox"
+                    aria-label="Stock scope"
+                    :checked="editingKey === tag._key ? editForm.isStockScoped : tag.isStockScoped"
+                    :disabled="editingKey !== tag._key"
+                    @change="editingKey === tag._key && (editForm.isStockScoped = ($event.target as HTMLInputElement).checked)"
+                    class="h-4 w-4 text-primary-600 border-gray-300 dark:border-gray-600 rounded"
+                  />
+                </label>
               </td>
               <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                 {{ formatDate(tag.createdAt) }}
@@ -155,21 +161,21 @@
                 <template v-if="editingKey === tag._key">
                   <button
                     @click="saveEdit(tag._key!)"
-                    class="px-3 py-1 text-xs font-medium text-white bg-green-600 rounded hover:bg-green-700"
+                    class="px-3 py-2 min-h-[44px] text-xs font-medium text-white bg-green-600 rounded hover:bg-green-700"
                   >Save</button>
                   <button
                     @click="cancelEdit"
-                    class="px-3 py-1 text-xs font-medium text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded hover:bg-gray-50 dark:hover:bg-gray-700"
+                    class="px-3 py-2 min-h-[44px] text-xs font-medium text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded hover:bg-gray-50 dark:hover:bg-gray-700"
                   >Cancel</button>
                 </template>
                 <template v-else>
                   <button
                     @click="startEdit(tag)"
-                    class="px-3 py-1 text-xs font-medium text-primary-600 dark:text-primary-400 border border-primary-300 dark:border-primary-600 rounded hover:bg-primary-50 dark:hover:bg-primary-900/30"
+                    class="px-3 py-2 min-h-[44px] text-xs font-medium text-primary-600 dark:text-primary-400 border border-primary-300 dark:border-primary-600 rounded hover:bg-primary-50 dark:hover:bg-primary-900/30"
                   >Edit</button>
                   <button
                     @click="confirmDelete(tag)"
-                    class="px-3 py-1 text-xs font-medium text-red-600 dark:text-red-400 border border-red-300 dark:border-red-600 rounded hover:bg-red-50 dark:hover:bg-red-900/30"
+                    class="px-3 py-2 min-h-[44px] text-xs font-medium text-red-600 dark:text-red-400 border border-red-300 dark:border-red-600 rounded hover:bg-red-50 dark:hover:bg-red-900/30"
                   >Delete</button>
                 </template>
               </td>
@@ -191,12 +197,12 @@
         <button
           @click="currentPage--"
           :disabled="currentPage === 1"
-          class="px-3 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded-md disabled:opacity-40 hover:bg-gray-50 dark:hover:bg-gray-700 dark:text-gray-300"
+          class="px-3 py-2 min-h-[44px] text-sm border border-gray-300 dark:border-gray-600 rounded-md disabled:opacity-40 hover:bg-gray-50 dark:hover:bg-gray-700 dark:text-gray-300"
         >Previous</button>
         <button
           @click="currentPage++"
           :disabled="currentPage === totalPages"
-          class="px-3 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded-md disabled:opacity-40 hover:bg-gray-50 dark:hover:bg-gray-700 dark:text-gray-300"
+          class="px-3 py-2 min-h-[44px] text-sm border border-gray-300 dark:border-gray-600 rounded-md disabled:opacity-40 hover:bg-gray-50 dark:hover:bg-gray-700 dark:text-gray-300"
         >Next</button>
       </div>
     </div>
