@@ -7,12 +7,51 @@
       </button>
     </div>
 
-    <!-- Active Filters -->
+    <!-- State Filter (Multi-select) -->
+    <div class="mb-4 bg-white dark:bg-gray-800 rounded-lg shadow-md p-4">
+      <div class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+        Filter by State
+      </div>
+      <div class="flex flex-wrap gap-2">
+        <label
+          v-for="state in rollStateOptions"
+          :key="state"
+          :for="`state-filter-${state}`"
+          class="inline-flex items-center gap-2 px-3 py-2 rounded-md border cursor-pointer transition-colors"
+          :class="selectedStates.includes(state)
+            ? 'bg-primary-100 dark:bg-primary-900 border-primary-600 dark:border-primary-400 text-primary-800 dark:text-primary-200'
+            : 'bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600'"
+        >
+          <input
+            :id="`state-filter-${state}`"
+            type="checkbox"
+            :value="state"
+            v-model="selectedStates"
+            class="rounded text-primary-600 focus:ring-primary-500"
+          />
+          <span class="text-sm font-medium">{{ state }}</span>
+        </label>
+      </div>
+      <div class="mt-3 flex items-center gap-3">
+        <button
+          v-if="selectedStates.length > 0"
+          @click="clearStateFilter"
+          class="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 underline"
+        >
+          Clear state filter
+        </button>
+        <span v-if="selectedStates.length > 0" class="text-sm text-gray-600 dark:text-gray-400">
+          Showing {{ filteredRolls.length }} roll(s)
+        </span>
+      </div>
+    </div>
+
+    <!-- Active Filters (Stock/Format only) -->
     <div class="flex flex-wrap items-center gap-2 mb-4 min-h-[2rem]">
-      <span class="text-sm text-gray-500 dark:text-gray-400 font-medium">Filters:</span>
+      <span class="text-sm text-gray-500 dark:text-gray-400 font-medium">Additional Filters:</span>
       <span v-if="activeFilters.length === 0" class="text-sm text-gray-600 dark:text-gray-400 italic">
-        <span class="hidden md:inline">Click any value in the table to filter by that field</span>
-        <span class="md:hidden">No active filters</span>
+        <span class="hidden md:inline">Click stock or format values in the table to filter</span>
+        <span class="md:hidden">None</span>
       </span>
       <template v-else>
         <span
@@ -73,18 +112,6 @@
                 @click="setSort('state')"
                 :class="['px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer select-none', sortField === 'state' ? 'bg-gray-200 dark:bg-gray-600' : '']"
               >State {{ sortField === 'state' ? (sortDirection === 'asc' ? '↑' : '↓') : '' }}</th>
-              <th
-                @click="setSort('dateObtained')"
-                :class="['px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer select-none', sortField === 'dateObtained' ? 'bg-gray-200 dark:bg-gray-600' : '']"
-              >Date Obtained {{ sortField === 'dateObtained' ? (sortDirection === 'asc' ? '↑' : '↓') : '' }}</th>
-              <th
-                @click="setSort('obtainedFrom')"
-                :class="['px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer select-none', sortField === 'obtainedFrom' ? 'bg-gray-200 dark:bg-gray-600' : '']"
-              >Obtained From {{ sortField === 'obtainedFrom' ? (sortDirection === 'asc' ? '↑' : '↓') : '' }}</th>
-              <th
-                @click="setSort('timesExposedToXrays')"
-                :class="['px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer select-none', sortField === 'timesExposedToXrays' ? 'bg-gray-200 dark:bg-gray-600' : '']"
-              >X-Ray Exposures {{ sortField === 'timesExposedToXrays' ? (sortDirection === 'asc' ? '↑' : '↓') : '' }}</th>
               <th class="px-6 py-3"></th>
             </tr>
           </thead>
@@ -103,25 +130,11 @@
                 @click="roll.formatName && addFilter('formatName', 'Format', roll.formatName)"
               >{{ roll.formatName ?? '—' }}</td>
               <td class="px-6 py-4 whitespace-nowrap">
-                <!-- eslint-disable-next-line vuejs-accessibility/click-events-have-key-events, vuejs-accessibility/no-static-element-interactions -- filter chip; will be converted to a button in #202 -->
                 <span
-                  class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full cursor-pointer hover:opacity-80"
+                  class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full"
                   :class="getStateColor(roll.state)"
-                  @click="addFilter('state', 'State', roll.state)"
                 >{{ roll.state }}</span>
               </td>
-              <td
-                class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 cursor-pointer hover:text-primary-600 dark:hover:text-primary-400"
-                @click="addFilter('dateObtained', 'Date Obtained', formatDate(roll.dateObtained))"
-              >{{ formatDate(roll.dateObtained) }}</td>
-              <td
-                class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 cursor-pointer hover:text-primary-600 dark:hover:text-primary-400"
-                @click="addFilter('obtainedFrom', 'Obtained From', roll.obtainedFrom)"
-              >{{ roll.obtainedFrom }}</td>
-              <td
-                class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 cursor-pointer hover:text-primary-600 dark:hover:text-primary-400"
-                @click="addFilter('timesExposedToXrays', 'X-Ray Exposures', String(roll.timesExposedToXrays))"
-              >{{ roll.timesExposedToXrays }}</td>
               <td class="px-6 py-4 whitespace-nowrap text-right">
                 <button
                   @click="$router.push({ name: 'roll-detail', params: { key: roll._key } })"
@@ -289,7 +302,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
 import { rollApi, stockApi } from '@/services/api-client'
 import BaseModal from '@/components/BaseModal.vue'
@@ -304,6 +317,10 @@ const stocks = ref<Stock[]>([])
 const isLoading = ref(false)
 const showModal = ref(false)
 
+// State filter (server-side, synced with URL)
+const selectedStates = ref<string[]>([])
+
+// Other filters (client-side: stock, format)
 type ActiveFilter = { field: string; label: string; value: string }
 const activeFilters = ref<ActiveFilter[]>([])
 
@@ -320,6 +337,10 @@ const removeFilter = (index: number) => {
 
 const clearFilters = () => {
   activeFilters.value = []
+}
+
+const clearStateFilter = () => {
+  selectedStates.value = []
 }
 const submitting = ref(false)
 const error = ref('')
@@ -461,7 +482,8 @@ const handleSubmit = async () => {
 const loadRolls = async () => {
   isLoading.value = true
   try {
-    const response = await rollApi.getAll()
+    const params = selectedStates.value.length > 0 ? { state: selectedStates.value } : undefined
+    const response = await rollApi.getAll(params)
     rolls.value = response.data
   } catch (err) {
     console.error('Error loading rolls:', err)
@@ -469,6 +491,23 @@ const loadRolls = async () => {
     isLoading.value = false
   }
 }
+
+// Sync state filters with URL query params
+const updateUrlQueryParams = () => {
+  const query = { ...route.query }
+  if (selectedStates.value.length > 0) {
+    query.state = selectedStates.value
+  } else {
+    delete query.state
+  }
+  router.replace({ query })
+}
+
+// Watch state filters and reload data + update URL
+watch(selectedStates, () => {
+  loadRolls()
+  updateUrlQueryParams()
+}, { deep: true })
 
 const loadStocks = async () => {
   try {
@@ -487,6 +526,13 @@ const openAddRoll = (stockKey?: string) => {
 }
 
 onMounted(async () => {
+  // Load state filters from URL query params
+  const stateParam = route.query.state
+  if (stateParam) {
+    const states = Array.isArray(stateParam) ? stateParam : [stateParam]
+    selectedStates.value = states.filter((s): s is string => s !== null)
+  }
+
   await Promise.all([loadRolls(), loadStocks()])
   const stockKey = route.query.stockKey as string | undefined
   if (stockKey) {

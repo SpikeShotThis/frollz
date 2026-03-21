@@ -147,7 +147,7 @@ describe('RollsView', () => {
 
       const vm = wrapper.vm as any
       expect(vm.activeFilters).toEqual([])
-      expect(wrapper.text()).toContain('Click any value in the table to filter by that field')
+      expect(wrapper.text()).toContain('Click stock or format values in the table to filter')
     })
 
     it('should add a filter via addFilter', async () => {

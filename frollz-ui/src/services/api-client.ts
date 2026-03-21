@@ -67,7 +67,7 @@ export const rollTagApi = {
 
 // Roll API
 export const rollApi = {
-  getAll: () => api.get<Roll[]>('/rolls'),
+  getAll: (params?: { state?: string[] }) => api.get<Roll[]>('/rolls', { params }),
   getById: (key: string) => api.get<Roll>(`/rolls/${key}`),
   getChildren: (key: string) => api.get<Roll[]>(`/rolls/${key}/children`),
   create: (data: Omit<Roll, '_key' | 'rollId' | 'createdAt' | 'updatedAt'> & { isBulkRoll?: boolean; parentRollId?: string }) =>
