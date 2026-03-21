@@ -7,6 +7,8 @@ import {
   Param,
   Delete,
   NotFoundException,
+  Query,
+  Logger,
 } from "@nestjs/common";
 import { Throttle } from "@nestjs/throttler";
 import { ThrottleLimits } from "../common/throttle-limits";
@@ -15,11 +17,14 @@ import { RollService } from "./roll.service";
 import { CreateRollDto } from "./dto/create-roll.dto";
 import { UpdateRollDto } from "./dto/update-roll.dto";
 import { TransitionRollDto } from "./dto/transition-roll.dto";
+import { SearchRollDto } from "./dto/search-roll.dto";
 import { Roll } from "./entities/roll.entity";
+import { asArray } from "../common/array-helper";
 
 @ApiTags("rolls")
 @Controller("rolls")
 export class RollController {
+  logger = new Logger("RollController");
   constructor(private readonly rollService: RollService) {}
 
   @Post()
@@ -43,15 +48,20 @@ export class RollController {
 
   @Get()
   @ApiOperation({ summary: "Get all rolls" })
+  @Throttle({ default: ThrottleLimits._20_REQUESTS_PER_MINUTE })
   @ApiResponse({
     status: 200,
     description: "Rolls retrieved successfully",
     type: [Roll],
   })
-  findAll(): Promise<Roll[]> {
-    return this.rollService.findAll();
+  @ApiResponse({ status: 404, description: "Rolls not found" })
+  async getRollsByStates(@Query() query: SearchRollDto): Promise<Roll[]> {
+    if (query?.state) {
+      return await this.rollService.findByStates(asArray(query.state));
+    } else {
+      return await this.rollService.findAll();
+    }
   }
-
   @Get(":key/children")
   @ApiOperation({ summary: "Get child rolls of a bulk roll" })
   @ApiResponse({

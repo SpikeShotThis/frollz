@@ -1,4 +1,9 @@
-import { Injectable, BadRequestException, OnModuleInit } from "@nestjs/common";
+import {
+  Injectable,
+  BadRequestException,
+  OnModuleInit,
+  Logger,
+} from "@nestjs/common";
 import { randomUUID } from "crypto";
 import { DatabaseService } from "../database/database.service";
 import { CreateRollDto } from "./dto/create-roll.dto";
@@ -18,6 +23,7 @@ const ROLLS_WITH_CHILD_COUNT_QUERY = `
   LEFT JOIN film_formats f ON s.format_key = f.id
 `;
 
+const logger = new Logger("RollService");
 
 function mapRoll(row: Record<string, unknown>): Roll {
   return {
@@ -123,6 +129,18 @@ export class RollService implements OnModuleInit {
     await this.rollTagService.syncAutoTag(rollKey, "expired", shouldTag);
   }
 
+  async findByStates(rolesArray: RollState[]): Promise<Roll[]> {
+    if (rolesArray.length === 0) {
+      return [];
+    } else {
+      const rollString = rolesArray.map((state) => `'${state}'`).join(", ");
+      logger.debug(`Filtering rolls by states: ${rollString}`);
+      const rows = await this.databaseService.query(
+        `${ROLLS_WITH_CHILD_COUNT_QUERY} WHERE r.state IN (${rollString})`,
+      );
+      return rows.map(mapRoll);
+    }
+  }
   async create(createRollDto: CreateRollDto): Promise<Roll> {
     const id = randomUUID();
     const dateObtained = createRollDto.dateObtained ?? new Date();
