@@ -74,7 +74,8 @@ export class EmulsionKnexRepository implements IEmulsionRepository {
   }
 
   async save(emulsion: Emulsion): Promise<number> {
-    const { id: _id, ...data } = EmulsionMapper.toPersistence(emulsion);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { id, ...data } = EmulsionMapper.toPersistence(emulsion);
     const [generatedId] = await this.knex('emulsion').insert(data);
     return generatedId;
   }

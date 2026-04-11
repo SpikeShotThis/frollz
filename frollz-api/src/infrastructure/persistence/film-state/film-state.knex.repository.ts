@@ -55,7 +55,8 @@ export class FilmStateKnexRepository implements IFilmStateRepository {
   }
 
   async save(filmState: FilmState): Promise<number> {
-    const { id: _id, ...data } = FilmStateMapper.toPersistence(filmState);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const {id, ...data } = FilmStateMapper.toPersistence(filmState);
     const [generatedId] = await this.knex('film_state').insert(data);
     return generatedId;
   }

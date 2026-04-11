@@ -47,7 +47,8 @@ export class FilmKnexRepository implements IFilmRepository {
   }
 
   async save(film: Film): Promise<number> {
-    const { id: _id, ...data } = FilmMapper.toPersistence(film);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { id, ...data } = FilmMapper.toPersistence(film);
     const [generatedId] = await this.knex('film').insert(data);
     return generatedId;
   }
