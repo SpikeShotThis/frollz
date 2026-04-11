@@ -5,12 +5,12 @@ export class CreateTagDto {
   @ApiProperty({ example: 'Expired' })
   @IsString()
   @IsNotEmpty()
-  name: string;
+  name!: string;
 
   @ApiProperty({ example: '#ff0000' })
   @IsString()
   @IsNotEmpty()
-  colorCode: string;
+  colorCode!: string;
 
   @ApiPropertyOptional({ example: 'Film past its expiration date' })
   @IsOptional()

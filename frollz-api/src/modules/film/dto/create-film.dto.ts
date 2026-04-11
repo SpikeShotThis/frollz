@@ -5,17 +5,17 @@ export class CreateFilmDto {
   @ApiProperty({ example: 'Roll 001' })
   @IsString()
   @IsNotEmpty()
-  name: string;
+  name!: string;
 
   @ApiProperty({ description: 'ID of the emulsion loaded in this film', example: '1' })
   @IsNumber()
   @IsNotEmpty()
   @IsPositive()
-  emulsionId: number;
+  emulsionId!: number;
 
   @ApiProperty({ example: '2026-12-31' })
   @IsDateString()
-  expirationDate: string;
+  expirationDate!: string;
 
   @ApiPropertyOptional({ description: 'ID of the parent bulk canister', example: '1' })
   @IsOptional()
@@ -27,5 +27,5 @@ export class CreateFilmDto {
   @IsNumber()
   @IsNotEmpty()
   @IsPositive()
-  transitionProfileId: number;
+  transitionProfileId!: number;
 }

@@ -5,34 +5,34 @@ export class CreateEmulsionDto {
   @ApiProperty({ example: 'Portra 400' })
   @IsString()
   @IsNotEmpty()
-  name: string;
+  name!: string;
 
   @ApiProperty({ example: 'Kodak' })
   @IsString()
   @IsNotEmpty()
-  brand: string;
+  brand!: string;
 
   @ApiProperty({ example: 'Kodak Alaris' })
   @IsString()
   @IsNotEmpty()
-  manufacturer: string;
+  manufacturer!: string;
 
   @ApiProperty({ example: 400 })
   @IsNumber()
   @IsPositive()
-  speed: number;
+  speed!: number;
 
   @ApiProperty({ description: 'ID of the process (e.g. C-41, E-6)', example: '1' })
   @IsNumber()
   @IsNotEmpty()
   @IsPositive()
-  processId: number;
+  processId!: number;
 
   @ApiProperty({ description: 'ID of the format (e.g. 35mm, 120)', example: '1' })
   @IsNumber()
   @IsNotEmpty()
   @IsPositive()
-  formatId: number;
+  formatId!: number;
 
   @ApiPropertyOptional({ description: 'ID of the base emulsion this is derived from', example: '1' })
   @IsOptional()

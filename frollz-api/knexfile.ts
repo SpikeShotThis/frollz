@@ -14,7 +14,7 @@ const config: Knex.Config = {
   },
   migrations: {
     directory: "./migrations",
-    extension: "ts",
+    loadExtensions: ['.ts']
   },
 };
 

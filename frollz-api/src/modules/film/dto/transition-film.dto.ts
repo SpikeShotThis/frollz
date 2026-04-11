@@ -5,7 +5,7 @@ export class TransitionFilmDto {
   @ApiProperty({ description: 'Name of the target state', example: 'Loaded' })
   @IsString()
   @IsNotEmpty()
-  targetStateName: string;
+  targetStateName!: string;
 
   @ApiPropertyOptional({ description: 'Date the transition occurred (defaults to now)', example: '2026-04-10' })
   @IsOptional()
