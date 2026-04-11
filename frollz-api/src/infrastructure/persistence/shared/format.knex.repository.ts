@@ -9,7 +9,7 @@ import { FormatRow } from '../types/db.types';
 export class FormatKnexRepository implements IFormatRepository {
   constructor(@Inject(KNEX_CONNECTION) private readonly knex: Knex) {}
 
-  async findById(id: string): Promise<Format | null> {
+  async findById(id: number): Promise<Format | null> {
     const row = await this.knex<FormatRow>('format').where({ id }).first();
     return row ? this.toDomain(row) : null;
   }
@@ -19,7 +19,7 @@ export class FormatKnexRepository implements IFormatRepository {
     return rows.map(this.toDomain);
   }
 
-  async findByPackageId(packageId: string): Promise<Format[]> {
+  async findByPackageId(packageid: number): Promise<Format[]> {
     const rows = await this.knex<FormatRow>('format').where({ package_id: packageId }).orderBy('name');
     return rows.map(this.toDomain);
   }
@@ -39,7 +39,7 @@ export class FormatKnexRepository implements IFormatRepository {
     });
   }
 
-  async delete(id: string): Promise<void> {
+  async delete(id: number): Promise<void> {
     await this.knex('format').where({ id }).delete();
   }
 

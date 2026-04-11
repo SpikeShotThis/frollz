@@ -9,7 +9,7 @@ import { ProcessRow } from '../types/db.types';
 export class ProcessKnexRepository implements IProcessRepository {
   constructor(@Inject(KNEX_CONNECTION) private readonly knex: Knex) {}
 
-  async findById(id: string): Promise<Process | null> {
+  async findById(id: number): Promise<Process | null> {
     const row = await this.knex<ProcessRow>('process').where({ id }).first();
     return row ? this.toDomain(row) : null;
   }
@@ -32,7 +32,7 @@ export class ProcessKnexRepository implements IProcessRepository {
     await this.knex('process').where({ id: process.id }).update({ name: process.name });
   }
 
-  async delete(id: string): Promise<void> {
+  async delete(id: number): Promise<void> {
     await this.knex('process').where({ id }).delete();
   }
 

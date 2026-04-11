@@ -10,7 +10,7 @@ export class FilmStateController {
   @Get()
   @ApiOperation({ summary: 'Get state history for a film' })
   @ApiQuery({ name: 'filmId', required: true })
-  findByFilmId(@Query('filmId') filmId: string) {
-    return this.filmStateService.findByFilmId(filmId);
+  findByfilmId(@Query('filmId') filmId: number) {
+    return this.filmStateService.findByfilmId(filmId);
   }
 }

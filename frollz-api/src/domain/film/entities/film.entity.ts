@@ -4,12 +4,12 @@ import { Tag } from '../../shared/entities/tag.entity';
 
 export class Film {
   constructor(
-    public readonly id: string,
+    public readonly id: number,
     public readonly name: string,
-    public readonly emulsionId: string,
+    public readonly emulsionId: number,
     public readonly expirationDate: Date,
-    public readonly parentId: string | null,
-    public readonly transitionProfileId: string,
+    public readonly parentId: number | null,
+    public readonly transitionprofileId: number,
     public readonly emulsion?: Emulsion,
     public readonly tags: Tag[] = [],
     public readonly states: FilmState[] = [],
@@ -17,12 +17,12 @@ export class Film {
   ) {}
 
   static create(props: {
-    id: string;
+    id: number;
     name: string;
-    emulsionId: string;
+    emulsionId: number;
     expirationDate: Date;
-    parentId?: string | null;
-    transitionProfileId: string;
+    parentId?: number | null;
+    transitionprofileId: number;
     emulsion?: Emulsion;
     tags?: Tag[];
     states?: FilmState[];
@@ -34,7 +34,7 @@ export class Film {
       props.emulsionId,
       props.expirationDate,
       props.parentId ?? null,
-      props.transitionProfileId,
+      props.transitionprofileId,
       props.emulsion,
       props.tags ?? [],
       props.states ?? [],

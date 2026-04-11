@@ -8,6 +8,9 @@ yarn-error.log*
 frollz-api/dist/
 frollz-ui/dist/
 
+# ── SQLite development database ───────────────────────────────────────────────
+frollz-api/dev.db
+
 # ── TypeScript ────────────────────────────────────────────────────────────────
 *.tsbuildinfo
 

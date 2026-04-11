@@ -10,7 +10,7 @@ import { TransitionStateRow, TransitionStateMetadataRow } from '../types/db.type
 export class TransitionStateKnexRepository implements ITransitionStateRepository {
   constructor(@Inject(KNEX_CONNECTION) private readonly knex: Knex) {}
 
-  async findById(id: string): Promise<TransitionState | null> {
+  async findById(id: number): Promise<TransitionState | null> {
     const row = await this.knex<TransitionStateRow>('transition_state').where({ id }).first();
     if (!row) return null;
     const metadata = await this.loadMetadata(id);
@@ -42,11 +42,11 @@ export class TransitionStateKnexRepository implements ITransitionStateRepository
     await this.knex('transition_state').where({ id: state.id }).update({ name: state.name });
   }
 
-  async delete(id: string): Promise<void> {
+  async delete(id: number): Promise<void> {
     await this.knex('transition_state').where({ id }).delete();
   }
 
-  private async loadMetadata(transitionStateId: string): Promise<TransitionStateMetadata[]> {
+  private async loadMetadata(transitionStateId: number): Promise<TransitionStateMetadata[]> {
     const rows = await this.knex<TransitionStateMetadataRow>('transition_state_metadata').where({
       transition_state_id: transitionStateId,
     });

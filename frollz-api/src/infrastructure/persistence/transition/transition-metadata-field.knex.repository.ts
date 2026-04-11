@@ -9,7 +9,7 @@ import { TransitionMetadataFieldRow } from '../types/db.types';
 export class TransitionMetadataFieldKnexRepository implements ITransitionMetadataFieldRepository {
   constructor(@Inject(KNEX_CONNECTION) private readonly knex: Knex) {}
 
-  async findById(id: string): Promise<TransitionMetadataField | null> {
+  async findById(id: number): Promise<TransitionMetadataField | null> {
     const row = await this.knex<TransitionMetadataFieldRow>('transition_metadata_field').where({ id }).first();
     return row ? this.toDomain(row) : null;
   }
@@ -39,7 +39,7 @@ export class TransitionMetadataFieldKnexRepository implements ITransitionMetadat
     });
   }
 
-  async delete(id: string): Promise<void> {
+  async delete(id: number): Promise<void> {
     await this.knex('transition_metadata_field').where({ id }).delete();
   }
 

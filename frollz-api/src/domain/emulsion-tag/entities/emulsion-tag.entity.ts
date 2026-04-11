@@ -1,10 +1,10 @@
 export class EmulsionTag {
   constructor(
-    public readonly emulsionId: string,
-    public readonly tagId: string,
+    public readonly emulsionId: number,
+    public readonly tagid: number,
   ) {}
 
-  static create(props: { emulsionId: string; tagId: string }): EmulsionTag {
+  static create(props: { emulsionId: number; tagid: number }): EmulsionTag {
     return new EmulsionTag(props.emulsionId, props.tagId);
   }
 }

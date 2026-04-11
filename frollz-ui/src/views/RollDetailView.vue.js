@@ -25,7 +25,7 @@ const stateName = computed(() => film.value ? currentStateName(film.value) : '')
 const getChildStateName = (child) => currentStateName(child);
 const isBulkFilm = computed(() => {
     const bulkProfile = transitionProfiles.value.find(p => p.name === 'bulk');
-    return !!bulkProfile && film.value?.transitionProfileId === bulkProfile.id;
+    return !!bulkProfile && film.value?.transitionprofileId === bulkProfile.id;
 });
 const isBackwardTransition = (from, to) => transitionGraph.value.transitions.some(t => t.fromState === from && t.toState === to) === false && !!from && !!to &&
     transitionGraph.value.transitions.some(t => t.toState === from && t.fromState === to);
@@ -142,7 +142,7 @@ const reload = async () => {
             loadData(),
             transitionApi.getProfiles().then(r => { transitionProfiles.value = r.data; }),
         ]);
-        const profileName = transitionProfiles.value.find(p => p.id === film.value?.transitionProfileId)?.name ?? 'standard';
+        const profileName = transitionProfiles.value.find(p => p.id === film.value?.transitionprofileId)?.name ?? 'standard';
         const graphRes = await transitionApi.getGraph(profileName);
         transitionGraph.value = graphRes.data;
     }

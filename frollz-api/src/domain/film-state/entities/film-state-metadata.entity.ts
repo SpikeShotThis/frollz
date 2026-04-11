@@ -2,16 +2,16 @@ import { TransitionStateMetadata } from '../../transition/entities/transition-st
 
 export class FilmStateMetadata {
   constructor(
-    public readonly id: string,
-    public readonly filmStateId: string,
-    public readonly transitionStateMetadataId: string,
+    public readonly id: number,
+    public readonly filmStateid: number,
+    public readonly transitionStateMetadataid: number,
     public readonly transitionStateMetadata?: TransitionStateMetadata,
   ) {}
 
   static create(props: {
-    id: string;
-    filmStateId: string;
-    transitionStateMetadataId: string;
+    id: number;
+    filmStateid: number;
+    transitionStateMetadataid: number;
     transitionStateMetadata?: TransitionStateMetadata;
   }): FilmStateMetadata {
     return new FilmStateMetadata(

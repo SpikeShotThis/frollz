@@ -64,7 +64,7 @@ export const filmApi = {
 };
 // FilmState API (replaces rollStateApi)
 export const filmStateApi = {
-    getByFilmId: (filmId) => api.get('/film-states', { params: { filmId } }),
+    getByfilmId: (filmId) => api.get('/film-states', { params: { filmId } }),
 };
 // Transition API
 export const transitionApi = {

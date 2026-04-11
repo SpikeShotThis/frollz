@@ -78,33 +78,33 @@ erDiagram
     }
 
     transition_states {
-        uuid id PK
+        int id PK
         string name
     }
 
     transition_types {
-        uuid id PK
+        int id PK
         string name
     }
 
     transition_metadata_field_types {
-        uuid id PK
+        int id PK
         string name
     }
 
     transitions {
-        uuid id PK
-        uuid from_state_id FK
-        uuid to_state_id FK
-        uuid transition_type_id FK
+        int id PK
+        int from_state_id FK
+        int to_state_id FK
+        int transition_type_id FK
         boolean requires_date
     }
 
     transition_metadata {
-        uuid id PK
-        uuid transition_id FK
+        int id PK
+        int transition_id FK
         string field
-        uuid field_type_id FK
+        int field_type_id FK
         string default_value
         boolean is_required
     }

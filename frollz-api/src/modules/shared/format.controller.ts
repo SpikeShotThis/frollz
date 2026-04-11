@@ -17,7 +17,7 @@ export class FormatController {
 
   @Get(':id')
   @ApiOperation({ summary: 'Get a format by id' })
-  findById(@Param('id') id: string) {
+  findById(@Param('id') id: number) {
     return this.formatService.findById(id);
   }
 
@@ -29,14 +29,14 @@ export class FormatController {
 
   @Patch(':id')
   @ApiOperation({ summary: 'Update a format' })
-  update(@Param('id') id: string, @Body() dto: UpdateFormatDto) {
+  update(@Param('id') id: number, @Body() dto: UpdateFormatDto) {
     return this.formatService.update(id, dto);
   }
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Delete a format' })
-  delete(@Param('id') id: string) {
+  delete(@Param('id') id: number) {
     return this.formatService.delete(id);
   }
 }

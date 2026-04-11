@@ -7,7 +7,9 @@ import { axe } from 'vitest-axe'
 import RollsView from '@/views/RollsView.vue'
 import { filmApi, emulsionApi, transitionApi } from '@/services/api-client'
 import type { Film } from '@/types'
-import { randomUUID } from 'crypto'
+import { randomInt } from 'crypto'
+
+const randomId = () => randomInt(1, 1000000);
 
 const axeOptions = {
   runOnly: { type: 'tag' as const, values: ['wcag2a', 'wcag2aa', 'wcag21aa'] },
@@ -35,12 +37,12 @@ const router = createRouter({
 })
 
 const makeFilm = (overrides: Partial<Film> = {}): Film => ({
-  id: randomUUID(),
+  id: randomId(),
   name: 'roll-00001',
-  emulsionId: randomUUID(),
+  emulsionId: randomId(),
   expirationDate: new Date('2025-12-01'),
   parentId: null,
-  transitionProfileId: randomUUID(),
+  transitionprofileId: randomId(),
   tags: [],
   states: [],
   ...overrides,
@@ -112,8 +114,8 @@ describe('RollsView', () => {
 
   describe('bulk films', () => {
     it('should identify bulk films by transition profile', async () => {
-      const bulkFilm = makeFilm({ transitionProfileId: 'prof-bulk', name: 'canister-001' })
-      const standardFilm = makeFilm({ transitionProfileId: 'prof-standard', name: 'roll-00001' })
+      const bulkFilm = makeFilm({ transitionprofileId: 'prof-bulk', name: 'canister-001' })
+      const standardFilm = makeFilm({ transitionprofileId: 'prof-standard', name: 'roll-00001' })
       vi.mocked(filmApi.getAll).mockResolvedValue({ data: [bulkFilm, standardFilm] } as any)
 
       const wrapper = mount(RollsView, { global: { plugins: [router] } })
@@ -161,7 +163,7 @@ describe('RollsView', () => {
       await wrapper.vm.$nextTick()
 
       expect(vm.showModal).toBe(true)
-      expect(vm.form.transitionProfileId).toBe('prof-standard')
+      expect(vm.form.transitionprofileId).toBe('prof-standard')
     })
 
     it('should set bulk profile when isBulkFilm is toggled on', async () => {
@@ -174,7 +176,7 @@ describe('RollsView', () => {
       vm.onBulkFilmToggle()
       await wrapper.vm.$nextTick()
 
-      expect(vm.form.transitionProfileId).toBe('prof-bulk')
+      expect(vm.form.transitionprofileId).toBe('prof-bulk')
     })
 
     it('should reset to standard profile when isBulkFilm is toggled off', async () => {
@@ -189,7 +191,7 @@ describe('RollsView', () => {
       vm.onBulkFilmToggle()
       await wrapper.vm.$nextTick()
 
-      expect(vm.form.transitionProfileId).toBe('prof-standard')
+      expect(vm.form.transitionprofileId).toBe('prof-standard')
     })
 
     it('should close modal and reset form on closeModal', async () => {

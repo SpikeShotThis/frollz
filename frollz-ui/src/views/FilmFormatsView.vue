@@ -176,7 +176,7 @@ const createFormat = async () => {
   }
 }
 
-const deleteFormat = async (id: string) => {
+const deleteFormat = async (id: number) => {
   if (confirm('Are you sure you want to delete this format?')) {
     try {
       await formatApi.delete(id)

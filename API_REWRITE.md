@@ -194,7 +194,7 @@ Decisions made and implemented:
 
 - **`dateObtained`, `obtainmentMethod`, `obtainedFrom`** → will become metadata on the "Added" `FilmState` (Phase 5 migration concern; no code changes yet)
 - **`timesExposedToXrays`, `loadedInto`, `imagesUrl`** → **removed entirely** (not migrated)
-- **`transitionProfile`** → added as `transitionProfileId` FK on `Film` entity (Option A). Stored in DB, required on create, used to look up the correct transition graph per film.
+- **`transitionProfile`** → added as `transitionprofileId` FK on `Film` entity (Option A). Stored in DB, required on create, used to look up the correct transition graph per film.
 - **`childRollCount`** → computed from `films` table query (not persisted)
 - **`isErrorCorrection`** → metadata on backward transitions (Phase 5 concern; removed from UI for now)
 - **`isRollScoped`, `isStockScoped`** on Tag → **removed entirely** (all tags are universal)
@@ -207,7 +207,7 @@ Decisions made and implemented:
 - [x] Rewrote `FilmFormatsView.vue` — `formatApi` + `packageApi`, Package dropdown in create form
 - [x] Rewrote `StocksView.vue` — `emulsionApi` + `formatApi` + `processApi`, process/format lookup maps
 - [x] Rewrote `TagsView.vue` — removed scope fields and scope-change warning modal
-- [x] Rewrote `RollsView.vue` — `filmApi`, transition profiles dropdown, bulk film detection by `transitionProfileId`
+- [x] Rewrote `RollsView.vue` — `filmApi`, transition profiles dropdown, bulk film detection by `transitionprofileId`
 - [x] Rewrote `RollDetailView.vue` — simplified transition UI (date + note only), history from `film.states`, `filmTagApi`
 - [x] Rewrote `Dashboard.vue` — `filmApi` + `emulsionApi`, state from `currentStateName()`
 - [x] Updated all view spec files to match new API surface and types

@@ -1,4 +1,4 @@
-import { randomUUID } from 'crypto';
+import { randomInt } from 'crypto';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { FilmService } from './film.service';
 import { IFilmRepository } from '../../../domain/film/repositories/film.repository.interface';
@@ -11,43 +11,45 @@ import { FilmState } from '../../../domain/film-state/entities/film-state.entity
 import { TransitionState } from '../../../domain/transition/entities/transition-state.entity';
 import { TransitionRule } from '../../../domain/transition/entities/transition-rule.entity';
 
+const randomId = () => randomInt(1, 1000000);
+
 const makeFilm = (overrides: Partial<Parameters<typeof Film.create>[0]> = {}): Film =>
   Film.create({
-    id: randomUUID(),
+    id: randomId(),
     name: 'Roll 001',
-    emulsionId: randomUUID(),
+    emulsionId: randomId(),
     expirationDate: new Date('2026-12-31'),
     parentId: null,
-    transitionProfileId: randomUUID(),
+    transitionprofileId: randomId(),
     ...overrides,
   });
 
 const makeFilmState = (overrides: Partial<Parameters<typeof FilmState.create>[0]> = {}): FilmState =>
   FilmState.create({
-    id: randomUUID(),
-    filmId: randomUUID(),
-    stateId: randomUUID(),
+    id: randomId(),
+    filmId: randomId(),
+    stateId: randomId(),
     date: new Date(),
     note: null,
     ...overrides,
   });
 
 const makeTransitionState = (overrides: Partial<Parameters<typeof TransitionState.create>[0]> = {}): TransitionState =>
-  TransitionState.create({ id: randomUUID(), name: 'Added', ...overrides });
+  TransitionState.create({ id: randomId(), name: 'Added', ...overrides });
 
 const makeTransitionRule = (overrides: Partial<Parameters<typeof TransitionRule.create>[0]> = {}): TransitionRule =>
   TransitionRule.create({
-    id: randomUUID(),
-    fromStateId: randomUUID(),
-    toStateId: randomUUID(),
-    profileId: randomUUID(),
+    id: randomId(),
+    fromStateId: randomId(),
+    toStateId: randomId(),
+    profileId: randomId(),
     ...overrides,
   });
 
 const makeFilmRepo = (overrides: Partial<IFilmRepository> = {}): IFilmRepository => ({
   findAll: jest.fn().mockResolvedValue([]),
   findById: jest.fn().mockResolvedValue(null),
-  findByEmulsionId: jest.fn().mockResolvedValue([]),
+  findByemulsionId: jest.fn().mockResolvedValue([]),
   findChildren: jest.fn().mockResolvedValue([]),
   findByCurrentStateIds: jest.fn().mockResolvedValue([]),
   save: jest.fn().mockResolvedValue(undefined),
@@ -64,9 +66,9 @@ const makeFilmTagRepo = (overrides: Partial<IFilmTagRepository> = {}): IFilmTagR
 
 const makeFilmStateRepo = (overrides: Partial<IFilmStateRepository> = {}): IFilmStateRepository => ({
   findById: jest.fn().mockResolvedValue(null),
-  findByFilmId: jest.fn().mockResolvedValue([]),
-  findLatestByFilmId: jest.fn().mockResolvedValue(null),
-  findFilmIdsByCurrentState: jest.fn().mockResolvedValue([]),
+  findByfilmId: jest.fn().mockResolvedValue([]),
+  findLatestByfilmId: jest.fn().mockResolvedValue(null),
+  findfilmIdsByCurrentState: jest.fn().mockResolvedValue([]),
   save: jest.fn().mockResolvedValue(undefined),
   update: jest.fn().mockResolvedValue(undefined),
   delete: jest.fn().mockResolvedValue(undefined),
@@ -86,8 +88,8 @@ const makeStateRepo = (overrides: Partial<ITransitionStateRepository> = {}): ITr
 const makeRuleRepo = (overrides: Partial<ITransitionRuleRepository> = {}): ITransitionRuleRepository => ({
   findAll: jest.fn().mockResolvedValue([]),
   findById: jest.fn().mockResolvedValue(null),
-  findByProfileId: jest.fn().mockResolvedValue([]),
-  findByFromStateId: jest.fn().mockResolvedValue([]),
+  findByprofileId: jest.fn().mockResolvedValue([]),
+  findByfromStateId: jest.fn().mockResolvedValue([]),
   findByFromStateAndProfile: jest.fn().mockResolvedValue([]),
   save: jest.fn().mockResolvedValue(undefined),
   update: jest.fn().mockResolvedValue(undefined),
@@ -143,7 +145,7 @@ describe('FilmService', () => {
     it('throws NotFoundException when film does not exist', async () => {
       const service = makeService();
 
-      await expect(service.findById(randomUUID())).rejects.toThrow(NotFoundException);
+      await expect(service.findById(randomId())).rejects.toThrow(NotFoundException);
     });
   });
 
@@ -154,13 +156,12 @@ describe('FilmService', () => {
 
       const result = await service.create({
         name: 'Roll 001',
-        emulsionId: randomUUID(),
+        emulsionId: randomId(),
         expirationDate: '2026-12-31',
-        transitionProfileId: randomUUID(),
+        transitionprofileId: randomId(),
       });
 
       expect(result.name).toBe('Roll 001');
-      expect(result.id).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/);
       expect(filmRepo.save).toHaveBeenCalledWith(result);
     });
   });
@@ -168,7 +169,7 @@ describe('FilmService', () => {
   describe('addTag / removeTag', () => {
     it('adds a tag association to an existing film', async () => {
       const film = makeFilm();
-      const tagId = randomUUID();
+      const tagId = randomId();
       const filmTagRepo = makeFilmTagRepo();
       const service = makeService(makeFilmRepo({ findById: jest.fn().mockResolvedValue(film) }), filmTagRepo);
 
@@ -180,13 +181,13 @@ describe('FilmService', () => {
     it('throws NotFoundException when film not found', async () => {
       const service = makeService();
 
-      await expect(service.addTag(randomUUID(), randomUUID())).rejects.toThrow(NotFoundException);
+      await expect(service.addTag(randomId(), randomId())).rejects.toThrow(NotFoundException);
     });
   });
 
   describe('transition', () => {
     it('records a new film state when the transition is valid', async () => {
-      const addedStateId = randomUUID();
+      const addedStateId = randomId();
       const loadedState = makeTransitionState({ name: 'Loaded' });
       const existingFilmState = makeFilmState({ stateId: addedStateId });
       const film = makeFilm({ states: [existingFilmState] });
@@ -215,7 +216,7 @@ describe('FilmService', () => {
     });
 
     it('throws BadRequestException when the transition is not permitted', async () => {
-      const addedStateId = randomUUID();
+      const addedStateId = randomId();
       const receivedState = makeTransitionState({ name: 'Received' });
       const existingFilmState = makeFilmState({ stateId: addedStateId });
       const film = makeFilm({ states: [existingFilmState] });

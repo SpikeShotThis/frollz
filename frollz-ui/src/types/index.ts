@@ -1,40 +1,40 @@
 // Package (e.g. Roll, Sheet, Instant)
 export interface Package {
-  id: string
+  id: number
   name: string
 }
 
 // Format (e.g. 35mm, 120) — belongs to a Package
 export interface Format {
-  id: string
-  packageId: string
+  id: number
+  packageid: number
   name: string
   package?: Package
 }
 
 // Process (e.g. C-41, E-6)
 export interface Process {
-  id: string
+  id: number
   name: string
 }
 
 // Emulsion (replaces Stock)
 export interface Emulsion {
-  id: string
+  id: number
   name: string
   brand: string
   manufacturer: string
   speed: number
-  formatId: string
-  processId: string
-  parentId: string | null
+  formatid: number
+  processid: number
+  parentId: number | null
   boxImageUrl?: string
   tags: Tag[]
 }
 
 // Tag
 export interface Tag {
-  id: string
+  id: number
   name: string
   colorCode: string
   description: string | null
@@ -42,37 +42,37 @@ export interface Tag {
 
 // EmulsionTag (replaces StockTag)
 export interface EmulsionTag {
-  id: string
-  emulsionId: string
-  tagId: string
+  id: number
+  emulsionId: number
+  tagid: number
 }
 
 // FilmTag (replaces RollTag)
 export interface FilmTag {
-  id: string
-  filmId: string
-  tagId: string
+  id: number
+  filmId: number
+  tagid: number
 }
 
 // FilmState (replaces RollStateHistory)
 export interface FilmState {
-  id: string
-  filmId: string
-  stateId: string
+  id: number
+  filmId: number
+  stateid: number
   date: Date
   note: string | null
-  state?: { id: string; name: string }
+  state?: { id: number; name: string }
   metadata: unknown[]
 }
 
 // Film (replaces Roll)
 export interface Film {
-  id: string
+  id: number
   name: string
-  emulsionId: string
+  emulsionId: number
   expirationDate: Date | null
-  parentId: string | null
-  transitionProfileId: string
+  parentId: number | null
+  transitionprofileId: number
   emulsion?: Emulsion
   tags: Tag[]
   states: FilmState[]
@@ -81,7 +81,7 @@ export interface Film {
 
 // Transition profile
 export interface TransitionProfile {
-  id: string
+  id: number
   name: string
 }
 
@@ -94,7 +94,7 @@ export interface TransitionMetadataField {
 }
 
 export interface TransitionEdge {
-  id: string
+  id: number
   fromState: string
   toState: string
   metadata: TransitionMetadataField[]

@@ -13,7 +13,7 @@ import { TransitionState } from '../../../domain/transition/entities/transition-
 export class FilmKnexRepository implements IFilmRepository {
   constructor(@Inject(KNEX_CONNECTION) private readonly knex: Knex) {}
 
-  async findById(id: string): Promise<Film | null> {
+  async findById(id: number): Promise<Film | null> {
     const row = await this.knex<FilmRow>('film').where({ id }).first();
     return row ? this.hydrate(row) : null;
   }
@@ -23,12 +23,12 @@ export class FilmKnexRepository implements IFilmRepository {
     return Promise.all(rows.map((row) => this.hydrate(row)));
   }
 
-  async findByEmulsionId(emulsionId: string): Promise<Film[]> {
+  async findByemulsionId(emulsionId: number): Promise<Film[]> {
     const rows = await this.knex<FilmRow>('film').where({ emulsion_id: emulsionId });
     return Promise.all(rows.map((row) => this.hydrate(row)));
   }
 
-  async findChildren(parentId: string): Promise<Film[]> {
+  async findChildren(parentId: number): Promise<Film[]> {
     const rows = await this.knex<FilmRow>('film').where({ parent_id: parentId });
     return Promise.all(rows.map((row) => this.hydrate(row)));
   }
@@ -55,7 +55,7 @@ export class FilmKnexRepository implements IFilmRepository {
     await this.knex('film').where({ id }).update(data);
   }
 
-  async delete(id: string): Promise<void> {
+  async delete(id: number): Promise<void> {
     await this.knex('film').where({ id }).delete();
   }
 
@@ -68,7 +68,7 @@ export class FilmKnexRepository implements IFilmRepository {
     return Film.create({ ...film, tags, states });
   }
 
-  private async loadTags(filmId: string): Promise<Tag[]> {
+  private async loadTags(filmId: number): Promise<Tag[]> {
     const rows = await this.knex<TagRow>('tag')
       .join<FilmTagRow>('film_tag', 'tag.id', 'film_tag.tag_id')
       .where('film_tag.film_id', filmId)
@@ -83,7 +83,7 @@ export class FilmKnexRepository implements IFilmRepository {
     );
   }
 
-  private async loadStates(filmId: string): Promise<FilmState[]> {
+  private async loadStates(filmId: number): Promise<FilmState[]> {
     const rows = await this.knex('film_state as fs')
       .join('transition_state as ts', 'ts.id', 'fs.state_id')
       .where('fs.film_id', filmId)

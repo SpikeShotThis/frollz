@@ -11,7 +11,7 @@ import { EmulsionMapper } from './emulsion.mapper';
 export class EmulsionKnexRepository implements IEmulsionRepository {
   constructor(@Inject(KNEX_CONNECTION) private readonly knex: Knex) {}
 
-  async findById(id: string): Promise<Emulsion | null> {
+  async findById(id: number): Promise<Emulsion | null> {
     const row = await this.knex<EmulsionRow>('emulsion').where({ id }).first();
     if (!row) return null;
     const emulsion = EmulsionMapper.toDomain(row);
@@ -30,7 +30,7 @@ export class EmulsionKnexRepository implements IEmulsionRepository {
     );
   }
 
-  async findByProcess(processId: string): Promise<Emulsion[]> {
+  async findByProcess(processid: number): Promise<Emulsion[]> {
     const rows = await this.knex<EmulsionRow>('emulsion').where({ process_id: processId });
     return Promise.all(
       rows.map(async (row) => {
@@ -41,7 +41,7 @@ export class EmulsionKnexRepository implements IEmulsionRepository {
     );
   }
 
-  async findByFormat(formatId: string): Promise<Emulsion[]> {
+  async findByFormat(formatid: number): Promise<Emulsion[]> {
     const rows = await this.knex<EmulsionRow>('emulsion').where({ format_id: formatId });
     return Promise.all(
       rows.map(async (row) => {
@@ -82,11 +82,11 @@ export class EmulsionKnexRepository implements IEmulsionRepository {
     await this.knex('emulsion').where({ id }).update(data);
   }
 
-  async delete(id: string): Promise<void> {
+  async delete(id: number): Promise<void> {
     await this.knex('emulsion').where({ id }).delete();
   }
 
-  private async loadTags(emulsionId: string): Promise<Tag[]> {
+  private async loadTags(emulsionId: number): Promise<Tag[]> {
     const rows = await this.knex<TagRow>('tag')
       .join<EmulsionTagRow>('emulsion_tag', 'tag.id', 'emulsion_tag.tag_id')
       .where('emulsion_tag.emulsion_id', emulsionId)

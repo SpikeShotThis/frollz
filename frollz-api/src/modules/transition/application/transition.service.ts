@@ -14,7 +14,7 @@ export interface TransitionMetadataFieldResponse {
 }
 
 export interface TransitionEdgeResponse {
-  id: string;
+  id: number;
   fromState: string;
   toState: string;
   metadata: TransitionMetadataFieldResponse[];
@@ -34,7 +34,7 @@ export class TransitionService {
     @Inject(TRANSITION_METADATA_FIELD_REPOSITORY) private readonly metadataFieldRepo: ITransitionMetadataFieldRepository,
   ) {}
 
-  async listProfiles(): Promise<{ id: string; name: string }[]> {
+  async listProfiles(): Promise<{ id: number; name: string }[]> {
     const profiles = await this.profileRepo.findAll();
     return profiles.map((p) => ({ id: p.id, name: p.name }));
   }
@@ -44,7 +44,7 @@ export class TransitionService {
     if (!profile) throw new NotFoundException(`Transition profile '${profileName}' not found`);
 
     const [rules, allStates] = await Promise.all([
-      this.ruleRepo.findByProfileId(profile.id),
+      this.ruleRepo.findByprofileId(profile.id),
       this.stateRepo.findAll(),
     ]);
 
@@ -57,8 +57,8 @@ export class TransitionService {
         const metadata = toState ? await this.resolveMetadata(toState) : [];
         return {
           id: rule.id,
-          fromState: fromState?.name ?? rule.fromStateId,
-          toState: toState?.name ?? rule.toStateId,
+          fromState: fromState?.name ?? '',
+          toState: toState?.name ?? '',
           metadata,
         };
       }),
@@ -79,8 +79,8 @@ export class TransitionService {
       state.metadata.map(async (m: TransitionStateMetadata) => {
         const field = await this.metadataFieldRepo.findById(m.fieldId);
         return {
-          field: field?.name ?? m.fieldId,
-          fieldType: field?.fieldType ?? 'string',
+          field: field!.name,
+        fieldType: field!.fieldType ?? 'string',
           defaultValue: m.defaultValue,
           isRequired: true,
         };

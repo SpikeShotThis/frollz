@@ -17,7 +17,7 @@ export class TagController {
 
   @Get(':id')
   @ApiOperation({ summary: 'Get a tag by id' })
-  findById(@Param('id') id: string) {
+  findById(@Param('id') id: number) {
     return this.tagService.findById(id);
   }
 
@@ -29,14 +29,14 @@ export class TagController {
 
   @Patch(':id')
   @ApiOperation({ summary: 'Update a tag' })
-  update(@Param('id') id: string, @Body() dto: UpdateTagDto) {
+  update(@Param('id') id: number, @Body() dto: UpdateTagDto) {
     return this.tagService.update(id, dto);
   }
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Delete a tag' })
-  delete(@Param('id') id: string) {
+  delete(@Param('id') id: number) {
     return this.tagService.delete(id);
   }
 }

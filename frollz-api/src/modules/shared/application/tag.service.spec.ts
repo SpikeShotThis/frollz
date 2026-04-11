@@ -1,11 +1,13 @@
-import { randomUUID } from 'crypto';
+import { randomInt } from 'crypto';
 import { NotFoundException } from '@nestjs/common';
 import { TagService } from './tag.service';
 import { ITagRepository } from '../../../domain/shared/repositories/tag.repository.interface';
 import { Tag } from '../../../domain/shared/entities/tag.entity';
 
-const makeTag = (overrides: Partial<{ id: string; name: string; colorCode: string; description: string | null }> = {}): Tag =>
-  Tag.create({ id: randomUUID(), name: 'Expired', colorCode: '#ff0000', description: null, ...overrides });
+const randomId = () => randomInt(1, 1000000);
+
+const makeTag = (overrides: Partial<{ id: number; name: string; colorCode: string; description: string | null }> = {}): Tag =>
+  Tag.create({ id: randomId(), name: 'Expired', colorCode: '#ff0000', description: null, ...overrides });
 
 const makeRepo = (overrides: Partial<ITagRepository> = {}): ITagRepository => ({
   findAll: jest.fn().mockResolvedValue([]),
@@ -42,7 +44,7 @@ describe('TagService', () => {
     it('throws NotFoundException when tag does not exist', async () => {
       const service = new TagService(makeRepo());
 
-      await expect(service.findById(randomUUID())).rejects.toThrow(NotFoundException);
+      await expect(service.findById(randomId())).rejects.toThrow(NotFoundException);
     });
   });
 
@@ -55,7 +57,6 @@ describe('TagService', () => {
 
       expect(result.name).toBe('Expired');
       expect(result.colorCode).toBe('#ff0000');
-      expect(result.id).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/);
       expect(repo.save).toHaveBeenCalledWith(result);
     });
   });
@@ -76,7 +77,7 @@ describe('TagService', () => {
     it('throws NotFoundException for a missing tag', async () => {
       const service = new TagService(makeRepo());
 
-      await expect(service.update(randomUUID(), { name: 'x' })).rejects.toThrow(NotFoundException);
+      await expect(service.update(randomId(), { name: 'x' })).rejects.toThrow(NotFoundException);
     });
   });
 
@@ -94,7 +95,7 @@ describe('TagService', () => {
     it('throws NotFoundException when tag does not exist', async () => {
       const service = new TagService(makeRepo());
 
-      await expect(service.delete(randomUUID())).rejects.toThrow(NotFoundException);
+      await expect(service.delete(randomId())).rejects.toThrow(NotFoundException);
     });
   });
 });

@@ -1,4 +1,4 @@
-import { randomUUID } from 'crypto';
+import { randomInt } from 'crypto';
 import { NotFoundException } from '@nestjs/common';
 import { TransitionService } from './transition.service';
 import { ITransitionRuleRepository } from '../../../domain/transition/repositories/transition-rule.repository.interface';
@@ -11,17 +11,19 @@ import { TransitionRule } from '../../../domain/transition/entities/transition-r
 import { TransitionMetadataField } from '../../../domain/transition/entities/transition-metadata-field.entity';
 import { TransitionStateMetadata } from '../../../domain/transition/entities/transition-state-metadata.entity';
 
+const randomId = () => randomInt(1, 1000000);
+
 const makeProfile = (name = 'standard'): TransitionProfile =>
-  TransitionProfile.create({ id: randomUUID(), name });
+  TransitionProfile.create({ id: randomId(), name });
 
 const makeState = (name: string, metadata: TransitionStateMetadata[] = []): TransitionState =>
-  TransitionState.create({ id: randomUUID(), name, metadata });
+  TransitionState.create({ id: randomId(), name, metadata });
 
-const makeRule = (fromStateId: string, toStateId: string, profileId: string): TransitionRule =>
-  TransitionRule.create({ id: randomUUID(), fromStateId, toStateId, profileId });
+const makeRule = (fromStateId: number, toStateId: number, profileId: number): TransitionRule =>
+  TransitionRule.create({ id: randomId(), fromStateId, toStateId, profileId });
 
 const makeField = (): TransitionMetadataField =>
-  TransitionMetadataField.create({ id: randomUUID(), name: 'lab_name', fieldType: 'string' });
+  TransitionMetadataField.create({ id: randomId(), name: 'lab_name', fieldType: 'string' });
 
 const makeProfileRepo = (overrides: Partial<ITransitionProfileRepository> = {}): ITransitionProfileRepository => ({
   findAll: jest.fn().mockResolvedValue([]),
@@ -36,8 +38,8 @@ const makeProfileRepo = (overrides: Partial<ITransitionProfileRepository> = {}):
 const makeRuleRepo = (overrides: Partial<ITransitionRuleRepository> = {}): ITransitionRuleRepository => ({
   findAll: jest.fn().mockResolvedValue([]),
   findById: jest.fn().mockResolvedValue(null),
-  findByProfileId: jest.fn().mockResolvedValue([]),
-  findByFromStateId: jest.fn().mockResolvedValue([]),
+  findByprofileId: jest.fn().mockResolvedValue([]),
+  findByfromStateId: jest.fn().mockResolvedValue([]),
   findByFromStateAndProfile: jest.fn().mockResolvedValue([]),
   save: jest.fn().mockResolvedValue(undefined),
   update: jest.fn().mockResolvedValue(undefined),
@@ -87,7 +89,7 @@ describe('TransitionService', () => {
       const rule = makeRule(added.id, loaded.id, profile.id);
 
       const service = makeService(
-        makeRuleRepo({ findByProfileId: jest.fn().mockResolvedValue([rule]) }),
+        makeRuleRepo({ findByprofileId: jest.fn().mockResolvedValue([rule]) }),
         makeStateRepo({ findAll: jest.fn().mockResolvedValue([added, loaded]) }),
         makeProfileRepo({ findByName: jest.fn().mockResolvedValue(profile) }),
       );
@@ -109,9 +111,9 @@ describe('TransitionService', () => {
       const profile = makeProfile('standard');
       const field = makeField();
       const stateMetadata = TransitionStateMetadata.create({
-        id: randomUUID(),
+        id: randomId(),
         fieldId: field.id,
-        transitionStateId: randomUUID(),
+        transitionStateId: randomId(),
         defaultValue: 'default-lab',
       });
       const added = makeState('Added');
@@ -119,7 +121,7 @@ describe('TransitionService', () => {
       const rule = makeRule(added.id, sent.id, profile.id);
 
       const service = makeService(
-        makeRuleRepo({ findByProfileId: jest.fn().mockResolvedValue([rule]) }),
+        makeRuleRepo({ findByprofileId: jest.fn().mockResolvedValue([rule]) }),
         makeStateRepo({ findAll: jest.fn().mockResolvedValue([added, sent]) }),
         makeProfileRepo({ findByName: jest.fn().mockResolvedValue(profile) }),
         makeFieldRepo({ findById: jest.fn().mockResolvedValue(field) }),

@@ -1,5 +1,4 @@
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
-import { randomUUID } from 'crypto';
 import { Format } from '../../../domain/shared/entities/format.entity';
 import { IFormatRepository, FORMAT_REPOSITORY } from '../../../domain/shared/repositories/format.repository.interface';
 import { IPackageRepository, PACKAGE_REPOSITORY } from '../../../domain/shared/repositories/package.repository.interface';
@@ -16,19 +15,19 @@ export class FormatService {
     return Promise.all(formats.map((f) => this.withPackage(f)));
   }
 
-  async findById(id: string): Promise<Format> {
+  async findById(id: number): Promise<Format> {
     const format = await this.formatRepo.findById(id);
     if (!format) throw new NotFoundException(`Format '${id}' not found`);
     return this.withPackage(format);
   }
 
-  async create(data: { packageId: string; name: string }): Promise<Format> {
-    const format = Format.create({ id: randomUUID(), packageId: data.packageId, name: data.name });
+  async create(data: { packageid: number; name: string }): Promise<Format> {
+    const format = Format.create({ packageId: data.packageId, name: data.name });
     await this.formatRepo.save(format);
     return this.withPackage(format);
   }
 
-  async update(id: string, data: { packageId?: string; name?: string }): Promise<Format> {
+  async update(id: number, data: { packageId?: string; name?: string }): Promise<Format> {
     const existing = await this.findById(id);
     const updated = Format.create({
       id: existing.id,
@@ -39,7 +38,7 @@ export class FormatService {
     return this.withPackage(updated);
   }
 
-  async delete(id: string): Promise<void> {
+  async delete(id: number): Promise<void> {
     await this.findById(id);
     await this.formatRepo.delete(id);
   }

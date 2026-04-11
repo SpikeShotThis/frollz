@@ -4,14 +4,14 @@ import { Tag } from '../../shared/entities/tag.entity';
 
 export class Emulsion {
   constructor(
-    public readonly id: string,
+    public readonly id: number,
     public readonly name: string,
     public readonly brand: string,
     public readonly manufacturer: string,
     public readonly speed: number,
-    public readonly processId: string,
-    public readonly formatId: string,
-    public readonly parentId: string | null,
+    public readonly processId: number,
+    public readonly formatId: number,
+    public readonly parentId: number | null,
     public readonly process?: Process,
     public readonly format?: Format,
     public readonly tags: Tag[] = [],
@@ -19,14 +19,14 @@ export class Emulsion {
   ) {}
 
   static create(props: {
-    id: string;
+    id: number;
     name: string;
     brand: string;
     manufacturer: string;
     speed: number;
-    processId: string;
-    formatId: string;
-    parentId?: string | null;
+    processId: number;
+    formatId: number;
+    parentId?: number | null;
     process?: Process;
     format?: Format;
     tags?: Tag[];

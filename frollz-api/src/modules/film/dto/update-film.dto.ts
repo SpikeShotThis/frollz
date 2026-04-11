@@ -1,5 +1,5 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsDateString, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { IsDateString, IsNotEmpty, IsNumber, IsOptional, IsPositive, IsString } from 'class-validator';
 
 export class UpdateFilmDto {
   @ApiPropertyOptional({ example: 'Roll 001' })
@@ -8,20 +8,22 @@ export class UpdateFilmDto {
   @IsNotEmpty()
   name?: string;
 
-  @ApiPropertyOptional({ description: 'ID of the emulsion', example: 'uuid' })
+  @ApiPropertyOptional({ description: 'ID of the emulsion', example: '1' })
   @IsOptional()
-  @IsString()
+  @IsNumber()
   @IsNotEmpty()
-  emulsionId?: string;
+    @IsPositive()
+  emulsionId?: number;
 
   @ApiPropertyOptional({ example: '2026-12-31' })
   @IsOptional()
   @IsDateString()
   expirationDate?: string;
 
-  @ApiPropertyOptional({ description: 'ID of the transition profile governing this film\'s workflow', example: 'uuid' })
+  @ApiPropertyOptional({ description: 'ID of the transition profile governing this film\'s workflow', example: '1' })
   @IsOptional()
-  @IsString()
+  @IsNumber()
   @IsNotEmpty()
-  transitionProfileId?: string;
+  @IsPositive()
+  transitionprofileId?: number;
 }

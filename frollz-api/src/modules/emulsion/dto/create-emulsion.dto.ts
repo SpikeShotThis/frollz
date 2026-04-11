@@ -22,18 +22,21 @@ export class CreateEmulsionDto {
   @IsPositive()
   speed: number;
 
-  @ApiProperty({ description: 'ID of the process (e.g. C-41, E-6)', example: 'uuid' })
-  @IsString()
+  @ApiProperty({ description: 'ID of the process (e.g. C-41, E-6)', example: '1' })
+  @IsNumber()
   @IsNotEmpty()
-  processId: string;
+  @IsPositive()
+  processId: number;
 
-  @ApiProperty({ description: 'ID of the format (e.g. 35mm, 120)', example: 'uuid' })
-  @IsString()
+  @ApiProperty({ description: 'ID of the format (e.g. 35mm, 120)', example: '1' })
+  @IsNumber()
   @IsNotEmpty()
-  formatId: string;
+  @IsPositive()
+  formatId: number;
 
-  @ApiPropertyOptional({ description: 'ID of the base emulsion this is derived from', example: 'uuid' })
+  @ApiPropertyOptional({ description: 'ID of the base emulsion this is derived from', example: '1' })
   @IsOptional()
-  @IsString()
-  parentId?: string;
+  @IsNumber()
+  @IsPositive()
+  parentId?: number;
 }

@@ -387,13 +387,13 @@ const filteredAndSortedEmulsions = computed(() => {
 
 const sortedEmulsions = filteredAndSortedEmulsions
 
-const toggleTag = (tagId: string) => {
+const toggleTag = (tagid: number) => {
   const idx = selectedTagIds.value.indexOf(tagId)
   if (idx === -1) selectedTagIds.value.push(tagId)
   else selectedTagIds.value.splice(idx, 1)
 }
 
-const createFilm = (emulsionId: string) => {
+const createFilm = (emulsionId: number) => {
   router.push({ name: 'rolls', query: { emulsionId } })
 }
 

@@ -22,18 +22,21 @@ export class CreateEmulsionMultipleFormatsDto {
   @IsPositive()
   speed: number;
 
-  @ApiProperty({ description: 'ID of the process', example: 'uuid' })
-  @IsString()
+  @ApiProperty({ description: 'ID of the process', example: '1' })
+  @IsNumber()
   @IsNotEmpty()
-  processId: string;
+  @IsPositive()
+  processId: number;
 
-  @ApiProperty({ description: 'One emulsion will be created per format ID', example: ['uuid-35mm', 'uuid-120'] })
+  @ApiProperty({ description: 'One emulsion will be created per format ID', example: ['1', '2'] })
   @IsArray()
-  @IsString({ each: true })
-  formatIds: string[];
+  @IsNumber({ each: true })
+  @IsPositive({ each: true })
+  formatIds: number[];
 
-  @ApiPropertyOptional({ description: 'ID of the base emulsion', example: 'uuid' })
+  @ApiPropertyOptional({ description: 'ID of the base emulsion', example: '1' })
   @IsOptional()
-  @IsString()
-  parentId?: string;
+  @IsNumber()
+  @IsPositive()
+  parentId?: number;
 }

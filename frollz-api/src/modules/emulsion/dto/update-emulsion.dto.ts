@@ -26,20 +26,22 @@ export class UpdateEmulsionDto {
   @IsPositive()
   speed?: number;
 
-  @ApiPropertyOptional({ description: 'ID of the process', example: 'uuid' })
+  @ApiPropertyOptional({ description: 'ID of the process', example: '1' })
   @IsOptional()
-  @IsString()
+  @IsNumber()
+  @IsPositive()
   @IsNotEmpty()
-  processId?: string;
+  processId?: number;
 
-  @ApiPropertyOptional({ description: 'ID of the format', example: 'uuid' })
+  @ApiPropertyOptional({ description: 'ID of the format', example: '1' })
   @IsOptional()
-  @IsString()
-  @IsNotEmpty()
-  formatId?: string;
+  @IsNumber()
+  @IsPositive()
+  formatId?: number;
 
-  @ApiPropertyOptional({ description: 'ID of the base emulsion', example: 'uuid' })
+  @ApiPropertyOptional({ description: 'ID of the base emulsion', example: '1' })
   @IsOptional()
-  @IsString()
-  parentId?: string;
+  @IsNumber()
+  @IsPositive()
+  parentId?: number;
 }

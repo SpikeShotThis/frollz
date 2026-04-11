@@ -3,9 +3,9 @@ import { FilmStateMetadata } from './film-state-metadata.entity';
 
 export class FilmState {
   constructor(
-    public readonly id: string,
-    public readonly filmId: string,
-    public readonly stateId: string,
+    public readonly id: number,
+    public readonly filmId: number,
+    public readonly stateId: number,
     public readonly date: Date,
     public readonly note: string | null,
     public readonly state?: TransitionState,
@@ -13,9 +13,9 @@ export class FilmState {
   ) {}
 
   static create(props: {
-    id: string;
-    filmId: string;
-    stateId: string;
+    id: number;
+    filmId: number;
+    stateId: number;
     date: Date;
     note?: string | null;
     state?: TransitionState;

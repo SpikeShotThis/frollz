@@ -9,7 +9,7 @@ import { TransitionStateMetadataRow } from '../types/db.types';
 export class TransitionStateMetadataKnexRepository implements ITransitionStateMetadataRepository {
   constructor(@Inject(KNEX_CONNECTION) private readonly knex: Knex) {}
 
-  async findById(id: string): Promise<TransitionStateMetadata | null> {
+  async findById(id: number): Promise<TransitionStateMetadata | null> {
     const row = await this.knex<TransitionStateMetadataRow>('transition_state_metadata').where({ id }).first();
     return row ? this.toDomain(row) : null;
   }
@@ -19,7 +19,7 @@ export class TransitionStateMetadataKnexRepository implements ITransitionStateMe
     return rows.map(this.toDomain);
   }
 
-  async findByTransitionStateId(transitionStateId: string): Promise<TransitionStateMetadata[]> {
+  async findBytransitionStateId(transitionStateId: number): Promise<TransitionStateMetadata[]> {
     const rows = await this.knex<TransitionStateMetadataRow>('transition_state_metadata').where({
       transition_state_id: transitionStateId,
     });
@@ -43,7 +43,7 @@ export class TransitionStateMetadataKnexRepository implements ITransitionStateMe
     });
   }
 
-  async delete(id: string): Promise<void> {
+  async delete(id: number): Promise<void> {
     await this.knex('transition_state_metadata').where({ id }).delete();
   }
 

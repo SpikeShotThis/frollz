@@ -1,19 +1,22 @@
-import { randomUUID } from 'crypto';
+import { randomInt } from 'crypto';
 import { NotFoundException } from '@nestjs/common';
 import { EmulsionService } from './emulsion.service';
 import { IEmulsionRepository } from '../../../domain/emulsion/repositories/emulsion.repository.interface';
 import { IEmulsionTagRepository } from '../../../domain/emulsion-tag/repositories/emulsion-tag.repository.interface';
 import { Emulsion } from '../../../domain/emulsion/entities/emulsion.entity';
 
+
+const randomId = () => randomInt(1, 1000000)
+
 const makeEmulsion = (overrides: Partial<Parameters<typeof Emulsion.create>[0]> = {}): Emulsion =>
   Emulsion.create({
-    id: randomUUID(),
+    id: randomId(),
     name: 'Portra 400',
     brand: 'Kodak',
     manufacturer: 'Kodak',
     speed: 400,
-    processId: randomUUID(),
-    formatId: randomUUID(),
+    processId: randomId(),
+    formatId: randomId(),
     parentId: null,
     ...overrides,
   });
@@ -53,7 +56,7 @@ describe('EmulsionService', () => {
     it('throws NotFoundException when not found', async () => {
       const service = new EmulsionService(makeRepo(), makeTagRepo());
 
-      await expect(service.findById(randomUUID())).rejects.toThrow(NotFoundException);
+      await expect(service.findById(randomId())).rejects.toThrow(NotFoundException);
     });
   });
 
@@ -67,12 +70,11 @@ describe('EmulsionService', () => {
         brand: 'Kodak',
         manufacturer: 'Kodak',
         speed: 400,
-        processId: randomUUID(),
-        formatId: randomUUID(),
+        processId: randomId(),
+        formatId: randomId(),
       });
 
       expect(result.name).toBe('Portra 400');
-      expect(result.id).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/);
       expect(repo.save).toHaveBeenCalledWith(result);
     });
   });
@@ -81,14 +83,14 @@ describe('EmulsionService', () => {
     it('creates one emulsion per formatId', async () => {
       const repo = makeRepo();
       const service = new EmulsionService(repo, makeTagRepo());
-      const formatIds = [randomUUID(), randomUUID()];
+      const formatIds = [randomId(), randomId()];
 
       const results = await service.createMultipleFormats({
         name: 'HP5',
         brand: 'Ilford',
         manufacturer: 'Ilford',
         speed: 400,
-        processId: randomUUID(),
+        processId: randomId(),
         formatIds,
       });
 
@@ -119,7 +121,7 @@ describe('EmulsionService', () => {
     it('throws NotFoundException when emulsion not found', async () => {
       const service = new EmulsionService(makeRepo(), makeTagRepo());
 
-      await expect(service.update(randomUUID(), { speed: 800 })).rejects.toThrow(NotFoundException);
+      await expect(service.update(randomId(), { speed: 800 })).rejects.toThrow(NotFoundException);
     });
   });
 
@@ -127,7 +129,7 @@ describe('EmulsionService', () => {
     it('adds a tag association to an existing emulsion', async () => {
       const emulsion = makeEmulsion();
       const tagRepo = makeTagRepo();
-      const tagId = randomUUID();
+      const tagId = randomId();
       const service = new EmulsionService(
         makeRepo({ findById: jest.fn().mockResolvedValue(emulsion) }),
         tagRepo,
@@ -141,7 +143,7 @@ describe('EmulsionService', () => {
     it('removes a tag association from an existing emulsion', async () => {
       const emulsion = makeEmulsion();
       const tagRepo = makeTagRepo();
-      const tagId = randomUUID();
+      const tagId = randomId();
       const service = new EmulsionService(
         makeRepo({ findById: jest.fn().mockResolvedValue(emulsion) }),
         tagRepo,
@@ -155,7 +157,7 @@ describe('EmulsionService', () => {
     it('throws NotFoundException when emulsion not found', async () => {
       const service = new EmulsionService(makeRepo(), makeTagRepo());
 
-      await expect(service.addTag(randomUUID(), randomUUID())).rejects.toThrow(NotFoundException);
+      await expect(service.addTag(randomId(), randomId())).rejects.toThrow(NotFoundException);
     });
   });
 

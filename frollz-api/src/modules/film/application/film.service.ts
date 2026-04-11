@@ -1,5 +1,4 @@
 import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
-import { randomUUID } from 'crypto';
 import { Film } from '../../../domain/film/entities/film.entity';
 import { IFilmRepository, FILM_REPOSITORY } from '../../../domain/film/repositories/film.repository.interface';
 import { IFilmTagRepository, FILM_TAG_REPOSITORY } from '../../../domain/film-tag/repositories/film-tag.repository.interface';
@@ -10,6 +9,8 @@ import { ITransitionRuleRepository, TRANSITION_RULE_REPOSITORY } from '../../../
 import { CreateFilmDto } from '../dto/create-film.dto';
 import { UpdateFilmDto } from '../dto/update-film.dto';
 import { TransitionFilmDto } from '../dto/transition-film.dto';
+
+import { randomInt } from 'crypto';
 
 @Injectable()
 export class FilmService {
@@ -34,30 +35,30 @@ export class FilmService {
     return this.filmRepo.findByCurrentStateIds(stateIds);
   }
 
-  async findById(id: string): Promise<Film> {
+  async findById(id: number): Promise<Film> {
     const film = await this.filmRepo.findById(id);
     if (!film) throw new NotFoundException(`Film '${id}' not found`);
     return film;
   }
 
-  findChildren(parentId: string): Promise<Film[]> {
+  findChildren(parentId: number): Promise<Film[]> {
     return this.filmRepo.findChildren(parentId);
   }
 
   async create(dto: CreateFilmDto): Promise<Film> {
     const film = Film.create({
-      id: randomUUID(),
+      id: randomInt(1, 1000000),
       name: dto.name,
       emulsionId: dto.emulsionId,
       expirationDate: new Date(dto.expirationDate),
       parentId: dto.parentId ?? null,
-      transitionProfileId: dto.transitionProfileId,
+      transitionprofileId: dto.transitionprofileId,
     });
     await this.filmRepo.save(film);
     return film;
   }
 
-  async update(id: string, dto: UpdateFilmDto): Promise<Film> {
+  async update(id: number, dto: UpdateFilmDto): Promise<Film> {
     const existing = await this.findById(id);
     const updated = Film.create({
       id: existing.id,
@@ -65,28 +66,28 @@ export class FilmService {
       emulsionId: dto.emulsionId ?? existing.emulsionId,
       expirationDate: dto.expirationDate ? new Date(dto.expirationDate) : existing.expirationDate,
       parentId: existing.parentId,
-      transitionProfileId: dto.transitionProfileId ?? existing.transitionProfileId,
+      transitionprofileId: dto.transitionprofileId ?? existing.transitionprofileId,
     });
     await this.filmRepo.update(updated);
     return this.findById(id);
   }
 
-  async delete(id: string): Promise<void> {
+  async delete(id: number): Promise<void> {
     await this.findById(id);
     await this.filmRepo.delete(id);
   }
 
-  async addTag(filmId: string, tagId: string): Promise<void> {
+  async addTag(filmId: number, tagId: number): Promise<void> {
     await this.findById(filmId);
     await this.filmTagRepo.add(filmId, tagId);
   }
 
-  async removeTag(filmId: string, tagId: string): Promise<void> {
+  async removeTag(filmId: number, tagId: number): Promise<void> {
     await this.findById(filmId);
     await this.filmTagRepo.remove(filmId, tagId);
   }
 
-  async transition(filmId: string, dto: TransitionFilmDto): Promise<Film> {
+  async transition(filmId: number, dto: TransitionFilmDto): Promise<Film> {
     const film = await this.findById(filmId);
 
     const targetState = await this.transitionStateRepo.findByName(dto.targetStateName);
@@ -96,7 +97,7 @@ export class FilmService {
     if (currentState) {
       const rules = await this.transitionRuleRepo.findByFromStateAndProfile(
         currentState.stateId,
-        film.transitionProfileId,
+        film.transitionprofileId,
       );
       const allowed = rules.some((r) => r.toStateId === targetState.id);
       if (!allowed) {
@@ -107,8 +108,8 @@ export class FilmService {
     }
 
     const newState = FilmState.create({
-      id: randomUUID(),
-      filmId,
+      id: randomInt(1, 1000000),
+      filmId: film.id,
       stateId: targetState.id,
       date: dto.date ? new Date(dto.date) : new Date(),
       note: dto.note ?? null,

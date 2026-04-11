@@ -249,7 +249,7 @@ const cancelEdit = () => {
   editingId.value = null
 }
 
-const saveEdit = async (id: string) => {
+const saveEdit = async (id: number) => {
   try {
     await tagApi.update(id, {
       name: editForm.value.name,

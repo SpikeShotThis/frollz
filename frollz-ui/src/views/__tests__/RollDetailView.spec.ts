@@ -7,7 +7,9 @@ import { axe } from 'vitest-axe'
 import RollDetailView from '@/views/RollDetailView.vue'
 import { filmApi, filmTagApi, tagApi, transitionApi } from '@/services/api-client'
 import type { Film, Tag, FilmTag, TransitionGraph, TransitionEdge, FilmState } from '@/types'
-import { randomUUID } from 'crypto'
+import { randomInt } from 'crypto'
+
+const randomId = () => randomInt(1, 1000000);
 
 const axeOptions = {
   runOnly: { type: 'tag' as const, values: ['wcag2a', 'wcag2aa', 'wcag21aa'] },
@@ -34,7 +36,7 @@ vi.mock('@/services/api-client', () => ({
 }))
 
 const edge = (
-  id: string,
+  id: number,
   fromState: string,
   toState: string,
   transitionType: 'FORWARD' | 'BACKWARD',
@@ -45,30 +47,30 @@ const edge = (
 const makeGraph = (): TransitionGraph => ({
   states: ['Added', 'Shelved', 'Loaded', 'Finished'],
   transitions: [
-    edge('e1', 'Added',    'Shelved',  'FORWARD',  true, []),
-    edge('e2', 'Shelved',  'Loaded',   'FORWARD',  true, []),
-    edge('e3', 'Loaded',   'Finished', 'FORWARD',  true, []),
-    edge('e4', 'Shelved',  'Added',    'BACKWARD', false, []),
-    edge('e5', 'Loaded',   'Shelved',  'BACKWARD', false, []),
+    edge(randomId(), 'Added',    'Shelved',  'FORWARD',  true, []),
+    edge(randomId(), 'Shelved',  'Loaded',   'FORWARD',  true, []),
+    edge(randomId(), 'Loaded',   'Finished', 'FORWARD',  true, []),
+    edge(randomId(), 'Shelved',  'Added',    'BACKWARD', false, []),
+    edge(randomId(), 'Loaded',   'Shelved',  'BACKWARD', false, []),
   ],
 })
 
 const makeFilmState = (stateName: string, date: Date): FilmState => ({
-  id: randomUUID(),
+  id: randomId(),
   filmId: 'film1',
-  stateId: randomUUID(),
+  stateId: randomId(),
   date,
   note: undefined,
-  state: { id: randomUUID(), name: stateName },
+  state: { id: randomId(), name: stateName },
 })
 
 const makeFilm = (overrides: Partial<Film> = {}): Film => ({
   id: 'film1',
   name: 'roll-00001',
-  emulsionId: randomUUID(),
+  emulsionId: randomId(),
   expirationDate: new Date('2026-12-01'),
   parentId: null,
-  transitionProfileId: 'prof-standard',
+  transitionprofileId: 'prof-standard',
   tags: [],
   states: [makeFilmState('Shelved', new Date('2024-01-15'))],
   ...overrides,
@@ -314,9 +316,9 @@ describe('RollDetailView', () => {
   })
 
   describe('bulk film detection', () => {
-    it('should compute isBulkFilm as true when transitionProfileId matches bulk profile', async () => {
+    it('should compute isBulkFilm as true when transitionprofileId matches bulk profile', async () => {
       vi.mocked(filmApi.getById).mockResolvedValue({
-        data: makeFilm({ transitionProfileId: 'prof-bulk' }),
+        data: makeFilm({ transitionprofileId: 'prof-bulk' }),
       } as any)
 
       const wrapper = await mountView()

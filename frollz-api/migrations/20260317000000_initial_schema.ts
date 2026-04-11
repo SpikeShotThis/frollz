@@ -16,19 +16,19 @@ async function createMirror(
 export async function up(knex: Knex): Promise<void> {
   // package ---------------------------------------------------------------
   await createMirror(knex, "package", (t) => {
-    t.text("id").primary();
+    t.increments("id").notNullable().primary();
     t.text("name").notNullable().unique();
   });
 
   // process ---------------------------------------------------------------
   await createMirror(knex, "process", (t) => {
-    t.text("id").primary();
+    t.increments("id").notNullable().primary();
     t.text("name").notNullable().unique();
   });
 
   // format ----------------------------------------------------------------
   await knex.schema.createTable("format", (t) => {
-    t.text("id").primary();
+    t.increments("id").notNullable().primary();
     t.text("package_id")
       .notNullable()
       .references("id")
@@ -38,7 +38,7 @@ export async function up(knex: Knex): Promise<void> {
   });
 
   await knex.schema.createTable("format_default", (t) => {
-    t.text("id").primary();
+        t.increments("id").notNullable().primary();
     t.text("package_id")
       .notNullable()
       .references("id")
@@ -49,7 +49,7 @@ export async function up(knex: Knex): Promise<void> {
 
   // tag -------------------------------------------------------------------
   await createMirror(knex, "tag", (t) => {
-    t.text("id").primary();
+    t.increments("id").notNullable().primary();
     t.text("name").notNullable();
     t.text("color_code").notNullable();
     t.text("description").nullable();
@@ -57,7 +57,7 @@ export async function up(knex: Knex): Promise<void> {
 
   // emulsion --------------------------------------------------------------
   await knex.schema.createTable("emulsion", (t) => {
-    t.text("id").primary();
+    t.increments("id").notNullable().primary();
     t.text("parent_id")
       .nullable()
       .references("id")
@@ -80,7 +80,7 @@ export async function up(knex: Knex): Promise<void> {
   });
 
   await knex.schema.createTable("emulsion_default", (t) => {
-    t.text("id").primary();
+    t.increments("id").notNullable().primary();
     t.text("parent_id")
       .nullable()
       .references("id")
@@ -104,7 +104,7 @@ export async function up(knex: Knex): Promise<void> {
 
   // emulsion_tag ----------------------------------------------------------
   await knex.schema.createTable("emulsion_tag", (t) => {
-    t.text("id").primary();
+    t.increments("id").notNullable().primary();
     t.text("emulsion_id")
       .notNullable()
       .references("id")
@@ -119,7 +119,7 @@ export async function up(knex: Knex): Promise<void> {
   });
 
   await knex.schema.createTable("emulsion_tag_default", (t) => {
-    t.text("id").primary();
+    t.increments("id").notNullable().primary();
     t.text("emulsion_id")
       .notNullable()
       .references("id")
@@ -136,7 +136,7 @@ export async function up(knex: Knex): Promise<void> {
   // film ------------------------------------------------------------------
   // transition_profile_id FK added in 20260317000001 after transition_profile exists
   await knex.schema.createTable("film", (t) => {
-    t.text("id").primary();
+    t.increments("id").notNullable().primary();
     t.text("name").notNullable();
     t.text("parent_id")
       .nullable()
@@ -153,7 +153,7 @@ export async function up(knex: Knex): Promise<void> {
 
   // film_tag --------------------------------------------------------------
   await knex.schema.createTable("film_tag", (t) => {
-    t.text("id").primary();
+    t.increments("id").notNullable().primary();
     t.text("film_id")
       .notNullable()
       .references("id")
@@ -170,7 +170,7 @@ export async function up(knex: Knex): Promise<void> {
   // film_state ------------------------------------------------------------
   // state_id FK to transition_state added in 20260317000001
   await knex.schema.createTable("film_state", (t) => {
-    t.text("id").primary();
+    t.increments("id").notNullable().primary();
     t.text("film_id")
       .notNullable()
       .references("id")

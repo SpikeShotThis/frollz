@@ -209,7 +209,7 @@
               <label for="film-profile" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Transition Profile <span class="text-red-500" aria-hidden="true">*</span>
                 <select
                   id="film-profile"
-                  v-model="form.transitionProfileId"
+                  v-model="form.transitionprofileId"
                   required
                   aria-required="true"
                   class="mt-1 w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 text-base sm:text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
@@ -303,7 +303,7 @@ const emptyForm = () => ({
   name: '',
   emulsionId: '',
   expirationDate: '',
-  transitionProfileId: '',
+  transitionprofileId: '',
   isBulkFilm: false,
   parentId: '',
 })
@@ -326,21 +326,21 @@ const sortedEmulsions = computed(() =>
   emulsions.value.slice().sort((a, b) => a.brand.toLowerCase().localeCompare(b.brand.toLowerCase()))
 )
 
-const bulkProfileId = computed(() =>
+const bulkprofileId = computed(() =>
   transitionProfiles.value.find(p => p.name === 'bulk')?.id ?? '',
 )
 
 const bulkFilms = computed(() =>
-  films.value.filter(f => f.transitionProfileId === bulkProfileId.value)
+  films.value.filter(f => f.transitionprofileId === bulkprofileId.value)
 )
 
 const onBulkFilmToggle = () => {
   if (form.value.isBulkFilm) {
     form.value.parentId = ''
-    form.value.transitionProfileId = bulkProfileId.value
+    form.value.transitionprofileId = bulkprofileId.value
   } else {
     const standardId = transitionProfiles.value.find(p => p.name === 'standard')?.id ?? ''
-    form.value.transitionProfileId = standardId
+    form.value.transitionprofileId = standardId
   }
 }
 
@@ -362,7 +362,7 @@ const handleSubmit = async () => {
   try {
     const payload = {
       name: form.value.name,
-      transitionProfileId: form.value.transitionProfileId,
+      transitionprofileId: form.value.transitionprofileId,
       ...(form.value.emulsionId ? { emulsionId: form.value.emulsionId } : {}),
       ...(form.value.expirationDate ? { expirationDate: form.value.expirationDate } : {}),
       ...(form.value.parentId ? { parentId: form.value.parentId } : {}),
@@ -409,7 +409,7 @@ const openAddFilm = (emulsionId?: string) => {
   if (emulsionId) form.value.emulsionId = emulsionId
   // Default to standard profile
   const standardId = transitionProfiles.value.find(p => p.name === 'standard')?.id ?? ''
-  form.value.transitionProfileId = standardId
+  form.value.transitionprofileId = standardId
   showModal.value = true
 }
 

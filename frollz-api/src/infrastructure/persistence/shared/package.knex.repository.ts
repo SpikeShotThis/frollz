@@ -9,7 +9,7 @@ import { PackageRow } from '../types/db.types';
 export class PackageKnexRepository implements IPackageRepository {
   constructor(@Inject(KNEX_CONNECTION) private readonly knex: Knex) {}
 
-  async findById(id: string): Promise<Package | null> {
+  async findById(id: number): Promise<Package | null> {
     const row = await this.knex<PackageRow>('package').where({ id }).first();
     return row ? this.toDomain(row) : null;
   }
@@ -32,7 +32,7 @@ export class PackageKnexRepository implements IPackageRepository {
     await this.knex('package').where({ id: pkg.id }).update({ name: pkg.name });
   }
 
-  async delete(id: string): Promise<void> {
+  async delete(id: number): Promise<void> {
     await this.knex('package').where({ id }).delete();
   }
 

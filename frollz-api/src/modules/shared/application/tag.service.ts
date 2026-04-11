@@ -1,7 +1,7 @@
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
-import { randomUUID } from 'crypto';
 import { Tag } from '../../../domain/shared/entities/tag.entity';
 import { ITagRepository, TAG_REPOSITORY } from '../../../domain/shared/repositories/tag.repository.interface';
+import { randomInt } from 'crypto';
 
 @Injectable()
 export class TagService {
@@ -11,19 +11,19 @@ export class TagService {
     return this.tagRepo.findAll();
   }
 
-  async findById(id: string): Promise<Tag> {
+  async findById(id: number): Promise<Tag> {
     const tag = await this.tagRepo.findById(id);
     if (!tag) throw new NotFoundException(`Tag '${id}' not found`);
     return tag;
   }
 
   async create(data: { name: string; colorCode: string; description?: string }): Promise<Tag> {
-    const tag = Tag.create({ id: randomUUID(), name: data.name, colorCode: data.colorCode, description: data.description });
+    const tag = Tag.create({id: randomInt(1,281474976710654),name: data.name, colorCode: data.colorCode, description: data.description });
     await this.tagRepo.save(tag);
     return tag;
   }
 
-  async update(id: string, data: { name?: string; colorCode?: string; description?: string }): Promise<Tag> {
+  async update(id: number, data: { name?: string; colorCode?: string; description?: string }): Promise<Tag> {
     const existing = await this.findById(id);
     const updated = Tag.create({
       id: existing.id,
@@ -35,7 +35,7 @@ export class TagService {
     return updated;
   }
 
-  async delete(id: string): Promise<void> {
+  async delete(id: number): Promise<void> {
     await this.findById(id);
     await this.tagRepo.delete(id);
   }

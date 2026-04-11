@@ -1,17 +1,17 @@
 export interface FilmRow {
-  id: string;
+  id: number;
   name: string;
-  parent_id: string | null;
-  emulsion_id: string;
+  parent_id: number | null;
+  emulsion_id: number;
   expiration_date: Date;
-  transition_profile_id: string;
+  transition_profile_id: number;
 }
 
 export interface EmulsionRow {
-  id: string;
-  parent_id: string | null;
-  process_id: string;
-  format_id: string;
+  id: number;
+  parent_id: number | null;
+  process_id: number;
+  format_id: number;
   name: string;
   brand: string;
   manufacturer: string;
@@ -19,80 +19,80 @@ export interface EmulsionRow {
 }
 
 export interface FilmStateRow {
-  id: string;
-  film_id: string;
-  state_id: string;
+  id: number;
+  film_id: number;
+  state_id: number;
   date: Date;
   note: string | null;
 }
 
 export interface FilmStateMetadataRow {
-  id: string;
-  film_state_id: string;
-  transition_state_metadata_id: string;
+  id: number;
+  film_state_id: number;
+  transition_state_metadata_id: number;
 }
 
 export interface FilmTagRow {
-  id: string;
-  film_id: string;
-  tag_id: string;
+  id: number;
+  film_id: number;
+  tag_id: number;
 }
 
 export interface EmulsionTagRow {
-  id: string;
-  emulsion_id: string;
-  tag_id: string;
+  id: number;
+  emulsion_id: number;
+  tag_id: number;
 }
 
 export interface TagRow {
-  id: string;
+  id: number;
   name: string;
   color_code: string;
   description: string | null;
 }
 
 export interface FormatRow {
-  id: string;
-  package_id: string;
+  id: number;
+  package_id: number;
   name: string;
 }
 
 export interface PackageRow {
-  id: string;
+  id: number;
   name: string;
 }
 
 export interface ProcessRow {
-  id: string;
+  id: number;
   name: string;
 }
 
 export interface TransitionRuleRow {
-  id: string;
-  from_state_id: string;
+  id: number;
+  from_state_id: number;
   to_state: string;
-  profile_id: string;
+  profile_id: number;
 }
 
 export interface TransitionStateRow {
-  id: string;
+  id: number;
   name: string;
 }
 
 export interface TransitionStateMetadataRow {
-  id: string;
-  field_id: string;
-  transition_state_id: string;
+  id: number;
+  field_id: number;
+  transition_state_id: number;
   default_value: string | null;
 }
 
 export interface TransitionMetadataFieldRow {
-  id: string;
+  id: number;
   name: string;
   field_type: string;
 }
 
 export interface TransitionProfileRow {
-  id: string;
+  id: number;
   name: string;
 }

@@ -10,7 +10,7 @@ import { TransitionRuleMapper } from './transition-rule.mapper';
 export class TransitionRuleKnexRepository implements ITransitionRuleRepository {
   constructor(@Inject(KNEX_CONNECTION) private readonly knex: Knex) {}
 
-  async findById(id: string): Promise<TransitionRule | null> {
+  async findById(id: number): Promise<TransitionRule | null> {
     const row = await this.knex<TransitionRuleRow>('transition_rule').where({ id }).first();
     if (!row) return null;
     return TransitionRuleMapper.toDomain(row);
@@ -21,17 +21,17 @@ export class TransitionRuleKnexRepository implements ITransitionRuleRepository {
     return rows.map((row) => TransitionRuleMapper.toDomain(row));
   }
 
-  async findByProfileId(profileId: string): Promise<TransitionRule[]> {
+  async findByprofileId(profileId: number): Promise<TransitionRule[]> {
     const rows = await this.knex<TransitionRuleRow>('transition_rule').where({ profile_id: profileId });
     return rows.map((row) => TransitionRuleMapper.toDomain(row));
   }
 
-  async findByFromStateId(fromStateId: string): Promise<TransitionRule[]> {
+  async findByfromStateId(fromStateId: number): Promise<TransitionRule[]> {
     const rows = await this.knex<TransitionRuleRow>('transition_rule').where({ from_state_id: fromStateId });
     return rows.map((row) => TransitionRuleMapper.toDomain(row));
   }
 
-  async findByFromStateAndProfile(fromStateId: string, profileId: string): Promise<TransitionRule[]> {
+  async findByFromStateAndProfile(fromStateId: number, profileId: number): Promise<TransitionRule[]> {
     const rows = await this.knex<TransitionRuleRow>('transition_rule').where({ from_state_id: fromStateId, profile_id: profileId });
     return rows.map((row) => TransitionRuleMapper.toDomain(row));
   }
@@ -45,7 +45,7 @@ export class TransitionRuleKnexRepository implements ITransitionRuleRepository {
     await this.knex('transition_rule').where({ id }).update(data);
   }
 
-  async delete(id: string): Promise<void> {
+  async delete(id: number): Promise<void> {
     await this.knex('transition_rule').where({ id }).delete();
   }
 }

@@ -212,7 +212,7 @@ const getChildStateName = (child: Film): string => currentStateName(child)
 
 const isBulkFilm = computed(() => {
   const bulkProfile = transitionProfiles.value.find(p => p.name === 'bulk')
-  return !!bulkProfile && film.value?.transitionProfileId === bulkProfile.id
+  return !!bulkProfile && film.value?.transitionprofileId === bulkProfile.id
 })
 
 const isBackwardTransition = (from: string, to: string): boolean =>
@@ -300,7 +300,7 @@ const addTag = async (tag: Tag) => {
   }
 }
 
-const removeTag = async (filmTagId: string) => {
+const removeTag = async (filmTagid: number) => {
   try {
     await filmTagApi.delete(filmTagId)
     await loadFilmTags()
@@ -342,7 +342,7 @@ const reload = async () => {
       loadData(),
       transitionApi.getProfiles().then(r => { transitionProfiles.value = r.data }),
     ])
-    const profileName = transitionProfiles.value.find(p => p.id === film.value?.transitionProfileId)?.name ?? 'standard'
+    const profileName = transitionProfiles.value.find(p => p.id === film.value?.transitionprofileId)?.name ?? 'standard'
     const graphRes = await transitionApi.getGraph(profileName)
     transitionGraph.value = graphRes.data
   } finally {

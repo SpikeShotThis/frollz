@@ -1,5 +1,5 @@
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
-import { randomUUID } from 'crypto';
+import { randomInt } from 'crypto';
 import { Emulsion } from '../../../domain/emulsion/entities/emulsion.entity';
 import { IEmulsionRepository, EMULSION_REPOSITORY } from '../../../domain/emulsion/repositories/emulsion.repository.interface';
 import { IEmulsionTagRepository, EMULSION_TAG_REPOSITORY } from '../../../domain/emulsion-tag/repositories/emulsion-tag.repository.interface';
@@ -18,14 +18,14 @@ export class EmulsionService {
     return this.emulsionRepo.findAll();
   }
 
-  async findById(id: string): Promise<Emulsion> {
+  async findById(id: number): Promise<Emulsion> {
     const emulsion = await this.emulsionRepo.findById(id);
     if (!emulsion) throw new NotFoundException(`Emulsion '${id}' not found`);
     return emulsion;
   }
 
   async create(dto: CreateEmulsionDto): Promise<Emulsion> {
-    const emulsion = Emulsion.create({ id: randomUUID(), ...dto, parentId: dto.parentId ?? null });
+    const emulsion = Emulsion.create({ id: randomInt(1, 1000000), ...dto, parentId: dto.parentId ?? null });
     await this.emulsionRepo.save(emulsion);
     return emulsion;
   }
@@ -33,7 +33,7 @@ export class EmulsionService {
   async createMultipleFormats(dto: CreateEmulsionMultipleFormatsDto): Promise<Emulsion[]> {
     const emulsions = dto.formatIds.map((formatId) =>
       Emulsion.create({
-        id: randomUUID(),
+        id: randomInt(1, 1000000),
         name: dto.name,
         brand: dto.brand,
         manufacturer: dto.manufacturer,
@@ -47,7 +47,7 @@ export class EmulsionService {
     return emulsions;
   }
 
-  async update(id: string, dto: UpdateEmulsionDto): Promise<Emulsion> {
+  async update(id: number, dto: UpdateEmulsionDto): Promise<Emulsion> {
     const existing = await this.findById(id);
     const updated = Emulsion.create({
       id: existing.id,
@@ -63,17 +63,17 @@ export class EmulsionService {
     return this.findById(id);
   }
 
-  async delete(id: string): Promise<void> {
+  async delete(id: number): Promise<void> {
     await this.findById(id);
     await this.emulsionRepo.delete(id);
   }
 
-  async addTag(emulsionId: string, tagId: string): Promise<void> {
+  async addTag(emulsionId: number, tagId: number): Promise<void> {
     await this.findById(emulsionId);
     await this.emulsionTagRepo.add(emulsionId, tagId);
   }
 
-  async removeTag(emulsionId: string, tagId: string): Promise<void> {
+  async removeTag(emulsionId: number, tagId: number): Promise<void> {
     await this.findById(emulsionId);
     await this.emulsionTagRepo.remove(emulsionId, tagId);
   }

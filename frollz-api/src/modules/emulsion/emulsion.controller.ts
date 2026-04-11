@@ -50,7 +50,7 @@ export class EmulsionController {
 
   @Get(':id')
   @ApiOperation({ summary: 'Get an emulsion by id' })
-  findById(@Param('id') id: string) {
+  findById(@Param('id') id: number) {
     return this.emulsionService.findById(id);
   }
 
@@ -68,28 +68,28 @@ export class EmulsionController {
 
   @Patch(':id')
   @ApiOperation({ summary: 'Update an emulsion' })
-  update(@Param('id') id: string, @Body() dto: UpdateEmulsionDto) {
+  update(@Param('id') id: number, @Body() dto: UpdateEmulsionDto) {
     return this.emulsionService.update(id, dto);
   }
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Delete an emulsion' })
-  delete(@Param('id') id: string) {
+  delete(@Param('id') id: number) {
     return this.emulsionService.delete(id);
   }
 
   @Post(':id/tags')
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Associate a tag with an emulsion' })
-  addTag(@Param('id') id: string, @Body('tagId') tagId: string) {
+  addTag(@Param('id') id: number, @Body('tagId') tagid: number) {
     return this.emulsionService.addTag(id, tagId);
   }
 
   @Delete(':id/tags/:tagId')
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Remove a tag from an emulsion' })
-  removeTag(@Param('id') id: string, @Param('tagId') tagId: string) {
+  removeTag(@Param('id') id: number, @Param('tagId') tagid: number) {
     return this.emulsionService.removeTag(id, tagId);
   }
 }

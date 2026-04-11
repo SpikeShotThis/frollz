@@ -1,71 +1,71 @@
 export interface Package {
-    id: string;
+    id: number;
     name: string;
 }
 export interface Format {
-    id: string;
-    packageId: string;
+    id: number;
+    packageid: number;
     name: string;
     package?: Package;
 }
 export interface Process {
-    id: string;
+    id: number;
     name: string;
 }
 export interface Emulsion {
-    id: string;
+    id: number;
     name: string;
     brand: string;
     manufacturer: string;
     speed: number;
-    formatId: string;
-    processId: string;
-    parentId: string | null;
+    formatid: number;
+    processid: number;
+    parentId: number | null;
     boxImageUrl?: string;
     tags: Tag[];
 }
 export interface Tag {
-    id: string;
+    id: number;
     name: string;
     colorCode: string;
     description: string | null;
 }
 export interface EmulsionTag {
-    id: string;
-    emulsionId: string;
-    tagId: string;
+    id: number;
+    emulsionId: number;
+    tagid: number;
 }
 export interface FilmTag {
-    id: string;
-    filmId: string;
-    tagId: string;
+    id: number;
+    filmId: number;
+    tagid: number;
 }
 export interface FilmState {
-    id: string;
-    filmId: string;
-    stateId: string;
+    id: number;
+    filmId: number;
+    stateid: number;
     date: Date;
     note: string | null;
     state?: {
-        id: string;
+        id: number;
         name: string;
     };
     metadata: unknown[];
 }
 export interface Film {
-    id: string;
+    id: number;
     name: string;
-    emulsionId: string;
+    emulsionId: number;
     expirationDate: Date | null;
-    parentId: string | null;
-    transitionProfileId: string;
+    parentId: number | null;
+    transitionprofileId: number;
     emulsion?: Emulsion;
     tags: Tag[];
     states: FilmState[];
     parent?: Film;
 }
 export interface TransitionProfile {
-    id: string;
+    id: number;
     name: string;
 }
 export interface TransitionMetadataField {
@@ -75,7 +75,7 @@ export interface TransitionMetadataField {
     isRequired: boolean;
 }
 export interface TransitionEdge {
-    id: string;
+    id: number;
     fromState: string;
     toState: string;
     metadata: TransitionMetadataField[];

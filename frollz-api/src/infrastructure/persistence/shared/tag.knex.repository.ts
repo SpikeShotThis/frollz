@@ -9,7 +9,7 @@ import { TagRow } from '../types/db.types';
 export class TagKnexRepository implements ITagRepository {
   constructor(@Inject(KNEX_CONNECTION) private readonly knex: Knex) {}
 
-  async findById(id: string): Promise<Tag | null> {
+  async findById(id: number): Promise<Tag | null> {
     const row = await this.knex<TagRow>('tag').where({ id }).first();
     return row ? this.toDomain(row) : null;
   }
@@ -41,7 +41,7 @@ export class TagKnexRepository implements ITagRepository {
     });
   }
 
-  async delete(id: string): Promise<void> {
+  async delete(id: number): Promise<void> {
     await this.knex('tag').where({ id }).delete();
   }
 

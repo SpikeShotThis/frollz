@@ -9,7 +9,7 @@ export class FilmMapper {
       emulsionId: row.emulsion_id.trim(),
       expirationDate: new Date(row.expiration_date),
       parentId: row.parent_id ? row.parent_id.trim() : null,
-      transitionProfileId: row.transition_profile_id.trim(),
+      transitionprofileId: row.transition_profile_id.trim(),
     });
   }
 
@@ -20,7 +20,7 @@ export class FilmMapper {
       emulsion_id: film.emulsionId,
       expiration_date: film.expirationDate,
       parent_id: film.parentId,
-      transition_profile_id: film.transitionProfileId,
+      transition_profile_id: film.transitionprofileId,
     };
   }
 }

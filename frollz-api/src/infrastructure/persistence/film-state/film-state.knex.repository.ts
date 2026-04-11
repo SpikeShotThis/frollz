@@ -11,7 +11,7 @@ import { FilmStateMapper } from './film-state.mapper';
 export class FilmStateKnexRepository implements IFilmStateRepository {
   constructor(@Inject(KNEX_CONNECTION) private readonly knex: Knex) {}
 
-  async findById(id: string): Promise<FilmState | null> {
+  async findById(id: number): Promise<FilmState | null> {
     const row = await this.knex<FilmStateRow>('film_state').where({ id }).first();
     if (!row) return null;
     const filmState = FilmStateMapper.toDomain(row);
@@ -19,7 +19,7 @@ export class FilmStateKnexRepository implements IFilmStateRepository {
     return FilmState.create({ ...filmState, metadata });
   }
 
-  async findByFilmId(filmId: string): Promise<FilmState[]> {
+  async findByfilmId(filmId: number): Promise<FilmState[]> {
     const rows = await this.knex<FilmStateRow>('film_state')
       .where({ film_id: filmId })
       .orderBy('date', 'desc');
@@ -32,7 +32,7 @@ export class FilmStateKnexRepository implements IFilmStateRepository {
     );
   }
 
-  async findLatestByFilmId(filmId: string): Promise<FilmState | null> {
+  async findLatestByfilmId(filmId: number): Promise<FilmState | null> {
     const row = await this.knex<FilmStateRow>('film_state')
       .where({ film_id: filmId })
       .orderBy('date', 'desc')
@@ -43,7 +43,7 @@ export class FilmStateKnexRepository implements IFilmStateRepository {
     return FilmState.create({ ...filmState, metadata });
   }
 
-  async findFilmIdsByCurrentState(stateIds: string[]): Promise<string[]> {
+  async findfilmIdsByCurrentState(stateIds: string[]): Promise<string[]> {
     const rows = await this.knex<FilmStateRow>('film_state as fs')
       .whereIn('fs.state_id', stateIds)
       .where(
@@ -63,11 +63,11 @@ export class FilmStateKnexRepository implements IFilmStateRepository {
     await this.knex('film_state').where({ id }).update(data);
   }
 
-  async delete(id: string): Promise<void> {
+  async delete(id: number): Promise<void> {
     await this.knex('film_state').where({ id }).delete();
   }
 
-  private async loadMetadata(filmStateId: string): Promise<FilmStateMetadata[]> {
+  private async loadMetadata(filmStateid: number): Promise<FilmStateMetadata[]> {
     const rows = await this.knex<FilmStateMetadataRow>('film_state_metadata').where({
       film_state_id: filmStateId,
     });

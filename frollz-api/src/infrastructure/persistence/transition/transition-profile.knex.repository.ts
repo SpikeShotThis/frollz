@@ -9,7 +9,7 @@ import { TransitionProfileRow } from '../types/db.types';
 export class TransitionProfileKnexRepository implements ITransitionProfileRepository {
   constructor(@Inject(KNEX_CONNECTION) private readonly knex: Knex) {}
 
-  async findById(id: string): Promise<TransitionProfile | null> {
+  async findById(id: number): Promise<TransitionProfile | null> {
     const row = await this.knex<TransitionProfileRow>('transition_profile').where({ id }).first();
     return row ? TransitionProfile.create({ id: row.id.trim(), name: row.name }) : null;
   }
@@ -32,7 +32,7 @@ export class TransitionProfileKnexRepository implements ITransitionProfileReposi
     await this.knex('transition_profile').where({ id: profile.id }).update({ name: profile.name });
   }
 
-  async delete(id: string): Promise<void> {
+  async delete(id: number): Promise<void> {
     await this.knex('transition_profile').where({ id }).delete();
   }
 }

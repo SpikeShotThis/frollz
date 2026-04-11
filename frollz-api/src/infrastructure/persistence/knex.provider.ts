@@ -1,11 +1,30 @@
 import { Provider } from '@nestjs/common';
 import Knex from 'knex';
+import { resolve } from 'path';
 
 export const KNEX_CONNECTION = Symbol('KNEX_CONNECTION');
 
 export const KnexProvider: Provider = {
   provide: KNEX_CONNECTION,
   useFactory: () => {
+    const env = process.env.NODE_ENV;
+
+    if (env === 'test') {
+      return Knex({
+        client: 'better-sqlite3',
+        connection: ':memory:',
+        useNullAsDefault: true,
+      });
+    }
+
+    if (env === 'development') {
+      return Knex({
+        client: 'better-sqlite3',
+        connection: { filename: resolve(process.cwd(), 'dev.db') },
+        useNullAsDefault: true,
+      });
+    }
+
     return Knex({
       client: 'pg',
       connection: {

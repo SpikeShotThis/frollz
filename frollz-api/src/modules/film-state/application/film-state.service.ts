@@ -6,7 +6,7 @@ import { IFilmStateRepository, FILM_STATE_REPOSITORY } from '../../../domain/fil
 export class FilmStateService {
   constructor(@Inject(FILM_STATE_REPOSITORY) private readonly filmStateRepo: IFilmStateRepository) {}
 
-  findByFilmId(filmId: string): Promise<FilmState[]> {
-    return this.filmStateRepo.findByFilmId(filmId);
+  findByfilmId(filmId: number): Promise<FilmState[]> {
+    return this.filmStateRepo.findByfilmId(filmId);
   }
 }
