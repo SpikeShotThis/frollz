@@ -13,6 +13,9 @@ frollz-api/dev.db
 
 # ── TypeScript ────────────────────────────────────────────────────────────────
 *.tsbuildinfo
+# Prevent tsc composite-mode from committing emitted files into src/
+frollz-ui/src/**/*.js
+frollz-ui/src/**/*.d.ts
 
 # ── Environment variables ─────────────────────────────────────────────────────
 .env

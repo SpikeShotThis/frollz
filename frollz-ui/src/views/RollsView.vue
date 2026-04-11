@@ -68,24 +68,38 @@
 
     <!-- Mobile card list (hidden on md+) -->
     <div class="md:hidden space-y-3" :aria-busy="isLoading" aria-label="Films list">
-      <p v-if="filteredFilms.length === 0" class="text-center py-8 text-gray-600 dark:text-gray-400 italic">No films found.</p>
-      <RouterLink
-        v-for="film in filteredFilms"
-        :key="film.id"
-        :to="{ name: 'roll-detail', params: { key: film.id } }"
-        class="block bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 hover:shadow-lg transition-shadow"
-      >
-        <div class="flex justify-between items-start gap-3">
-          <div class="min-w-0">
-            <p class="font-semibold text-primary-600 dark:text-primary-400 truncate">{{ film.name }}</p>
-            <p class="text-sm text-gray-600 dark:text-gray-300 mt-0.5 truncate">{{ film.emulsion?.brand ?? '—' }}</p>
+      <!-- Skeleton -->
+      <template v-if="isLoading">
+        <div v-for="n in 5" :key="n" class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 animate-pulse">
+          <div class="flex justify-between items-start gap-3">
+            <div class="min-w-0 flex-1">
+              <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4 mb-2"></div>
+              <div class="h-3 bg-gray-200 dark:bg-gray-700 rounded w-1/2"></div>
+            </div>
+            <div class="h-5 bg-gray-200 dark:bg-gray-700 rounded-full w-20 shrink-0"></div>
           </div>
-          <span
-            class="shrink-0 px-2 text-xs leading-5 font-semibold rounded-full"
-            :class="getStateColor(getStateName(film))"
-          >{{ getStateName(film) || 'No state' }}</span>
         </div>
-      </RouterLink>
+      </template>
+      <template v-else>
+        <p v-if="filteredFilms.length === 0" class="text-center py-8 text-gray-600 dark:text-gray-400 italic">No films found.</p>
+        <RouterLink
+          v-for="film in filteredFilms"
+          :key="film.id"
+          :to="{ name: 'roll-detail', params: { key: film.id } }"
+          class="block bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 hover:shadow-lg transition-shadow"
+        >
+          <div class="flex justify-between items-start gap-3">
+            <div class="min-w-0">
+              <p class="font-semibold text-primary-600 dark:text-primary-400 truncate">{{ film.name }}</p>
+              <p class="text-sm text-gray-600 dark:text-gray-300 mt-0.5 truncate">{{ film.emulsion?.brand ?? '—' }}</p>
+            </div>
+            <span
+              class="shrink-0 px-2 text-xs leading-5 font-semibold rounded-full"
+              :class="getStateColor(getStateName(film))"
+            >{{ getStateName(film) || 'No state' }}</span>
+          </div>
+        </RouterLink>
+      </template>
     </div>
 
     <!-- Desktop table (hidden below md) -->
@@ -101,28 +115,42 @@
             </tr>
           </thead>
           <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-            <tr v-for="film in filteredFilms" :key="film.id">
-              <td
-                class="px-6 py-4 whitespace-nowrap text-sm font-medium text-primary-600 dark:text-primary-400 cursor-pointer hover:underline"
-                @click="$router.push({ name: 'roll-detail', params: { key: film.id } })"
-              >{{ film.name }}</td>
-              <td
-                class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 cursor-pointer hover:text-primary-600 dark:hover:text-primary-400"
-                @click="film.emulsion?.brand && addFilter('emulsionBrand', 'Emulsion', film.emulsion.brand)"
-              >{{ film.emulsion?.brand ?? '—' }}</td>
-              <td class="px-6 py-4 whitespace-nowrap">
-                <span
-                  class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full"
-                  :class="getStateColor(getStateName(film))"
-                >{{ getStateName(film) || 'No state' }}</span>
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap text-right">
-                <button
+            <!-- Skeleton -->
+            <template v-if="isLoading">
+              <tr v-for="n in 5" :key="n" class="animate-pulse">
+                <td class="px-6 py-4"><div class="h-4 bg-gray-200 dark:bg-gray-700 rounded w-28"></div></td>
+                <td class="px-6 py-4"><div class="h-4 bg-gray-200 dark:bg-gray-700 rounded w-36"></div></td>
+                <td class="px-6 py-4"><div class="h-5 bg-gray-200 dark:bg-gray-700 rounded-full w-20"></div></td>
+                <td class="px-6 py-4"></td>
+              </tr>
+            </template>
+            <template v-else>
+              <tr v-if="filteredFilms.length === 0">
+                <td colspan="4" class="px-6 py-8 text-center text-sm text-gray-600 dark:text-gray-400 italic">No films found.</td>
+              </tr>
+              <tr v-for="film in filteredFilms" :key="film.id" v-memo="[film, film.states]">
+                <td
+                  class="px-6 py-4 whitespace-nowrap text-sm font-medium text-primary-600 dark:text-primary-400 cursor-pointer hover:underline"
                   @click="$router.push({ name: 'roll-detail', params: { key: film.id } })"
-                  class="px-3 py-2 min-h-[44px] text-xs font-medium text-primary-600 dark:text-primary-400 border border-primary-300 dark:border-primary-600 rounded hover:bg-primary-50 dark:hover:bg-primary-900/30"
-                >View</button>
-              </td>
-            </tr>
+                >{{ film.name }}</td>
+                <td
+                  class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 cursor-pointer hover:text-primary-600 dark:hover:text-primary-400"
+                  @click="film.emulsion?.brand && addFilter('emulsionBrand', 'Emulsion', film.emulsion.brand)"
+                >{{ film.emulsion?.brand ?? '—' }}</td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <span
+                    class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full"
+                    :class="getStateColor(getStateName(film))"
+                  >{{ getStateName(film) || 'No state' }}</span>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-right">
+                  <button
+                    @click="$router.push({ name: 'roll-detail', params: { key: film.id } })"
+                    class="px-3 py-2 min-h-[44px] text-xs font-medium text-primary-600 dark:text-primary-400 border border-primary-300 dark:border-primary-600 rounded hover:bg-primary-50 dark:hover:bg-primary-900/30"
+                  >View</button>
+                </td>
+              </tr>
+            </template>
           </tbody>
         </table>
       </div>
@@ -249,6 +277,7 @@ import { filmApi, emulsionApi, transitionApi } from '@/services/api-client'
 import BaseModal from '@/components/BaseModal.vue'
 import type { Film, Emulsion, TransitionProfile } from '@/types'
 import { currentStateName } from '@/types'
+import { getStateColor } from '@/utils/stateColors'
 
 const route = useRoute()
 const router = useRouter()
@@ -256,7 +285,7 @@ const router = useRouter()
 const films = ref<Film[]>([])
 const emulsions = ref<Emulsion[]>([])
 const transitionProfiles = ref<TransitionProfile[]>([])
-const isLoading = ref(false)
+const isLoading = ref(true)
 const showModal = ref(false)
 
 const selectedStates = ref<string[]>([])
@@ -283,21 +312,6 @@ const filmStateOptions = [
 ]
 
 const getStateName = (film: Film): string => currentStateName(film)
-
-const getStateColor = (state: string) => {
-  const colors: Record<string, string> = {
-    Added: 'bg-orange-100 text-orange-800 dark:bg-orange-900/50 dark:text-orange-200',
-    Frozen: 'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-200',
-    Refrigerated: 'bg-cyan-100 text-cyan-800 dark:bg-cyan-900/50 dark:text-cyan-200',
-    Shelved: 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200',
-    Loaded: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-200',
-    Finished: 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-200',
-    'Sent For Development': 'bg-orange-100 text-orange-800 dark:bg-orange-900/50 dark:text-orange-200',
-    Developed: 'bg-purple-100 text-purple-800 dark:bg-purple-900/50 dark:text-purple-200',
-    Received: 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/50 dark:text-indigo-200',
-  }
-  return colors[state] || 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'
-}
 
 const emptyForm = () => ({
   name: '',

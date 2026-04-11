@@ -1,11 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { nextTick } from 'vue'
-import Dashboard from '@/views/Dashboard.vue'
-import StocksView from '@/views/StocksView.vue'
-import RollsView from '@/views/RollsView.vue'
-import RollDetailView from '@/views/RollDetailView.vue'
-import FilmFormatsView from '@/views/FilmFormatsView.vue'
-import TagsView from '@/views/TagsView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -13,36 +7,36 @@ const router = createRouter({
     {
       path: '/',
       name: 'dashboard',
-      component: Dashboard,
+      component: () => import('@/views/Dashboard.vue'),
       meta: { title: 'Dashboard' }
     },
     {
       path: '/stocks',
       name: 'stocks',
-      component: StocksView,
+      component: () => import('@/views/StocksView.vue'),
       meta: { title: 'Stocks' }
     },
     {
       path: '/rolls',
       name: 'rolls',
-      component: RollsView,
+      component: () => import('@/views/RollsView.vue'),
       meta: { title: 'Rolls' }
     },
     {
       path: '/rolls/:key',
       name: 'roll-detail',
-      component: RollDetailView
+      component: () => import('@/views/RollDetailView.vue')
     },
     {
       path: '/formats',
       name: 'formats',
-      component: FilmFormatsView,
+      component: () => import('@/views/FilmFormatsView.vue'),
       meta: { title: 'Film Formats' }
     },
     {
       path: '/tags',
       name: 'tags',
-      component: TagsView,
+      component: () => import('@/views/TagsView.vue'),
       meta: { title: 'Tags' }
     }
   ]
