@@ -21,21 +21,21 @@
     "migrate:rollback": "knex --knexfile knexfile.ts migrate:rollback"
   },
   "dependencies": {
-    "@nestjs/common": "^10.0.0",
-    "@nestjs/core": "^10.0.0",
-    "@nestjs/platform-express": "^10.0.0",
+    "@nestjs/common": "^11.1.18",
+    "@nestjs/core": "^11.1.18",
+    "@nestjs/platform-express": "^11.1.18",
     "@nestjs/swagger": "^11.2.7",
     "@nestjs/throttler": "^6.5.0",
     "better-sqlite3": "^12.8.0",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.15.1",
-    "dotenv": "^16.3.1",
+    "dotenv": "^17.4.1",
     "helmet": "^8.1.0",
-    "knex": "^3.1.0",
-    "pg": "^8.11.0",
-    "reflect-metadata": "^0.1.13",
-    "rxjs": "^7.8.1",
-    "uuid": "^9.0.0"
+    "knex": "^3.2.9",
+    "pg": "^8.20.0",
+    "reflect-metadata": "^0.2.2",
+    "rxjs": "^7.8.2",
+    "uuid": "^13.0.0"
   },
   "jest": {
     "moduleFileExtensions": [
@@ -55,13 +55,13 @@
     "testEnvironment": "node"
   },
   "devDependencies": {
-    "@nestjs/cli": "^10.0.0",
-    "@nestjs/schematics": "^10.0.0",
+    "@nestjs/cli": "^11.0.19",
+    "@nestjs/schematics": "^11.0.10",
     "@types/better-sqlite3": "^7.6.13",
     "@types/jest": "^30.0.0",
-    "@types/node": "^20.3.1",
-    "@types/pg": "^8.10.2",
-    "@types/uuid": "^9.0.2",
+    "@types/node": "^25.6.0",
+    "@types/pg": "^8.20.0",
+    "@types/uuid": "^11.0.0",
     "@typescript-eslint/eslint-plugin": "^8.58.1",
     "@typescript-eslint/parser": "^8.58.1",
     "eslint": "^10.2.0",
@@ -69,6 +69,6 @@
     "jest": "^30.3.0",
     "prettier": "^3.8.2",
     "ts-jest": "^29.4.9",
-    "typescript": "^5.1.3"
+    "typescript": "^6.0.2"
   }
 }
