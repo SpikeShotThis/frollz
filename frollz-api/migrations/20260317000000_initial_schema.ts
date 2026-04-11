@@ -29,7 +29,7 @@ export async function up(knex: Knex): Promise<void> {
   // format ----------------------------------------------------------------
   await knex.schema.createTable("format", (t) => {
     t.increments("id").notNullable().primary();
-    t.text("package_id")
+    t.integer("package_id")
       .notNullable()
       .references("id")
       .inTable("package")
@@ -38,8 +38,8 @@ export async function up(knex: Knex): Promise<void> {
   });
 
   await knex.schema.createTable("format_default", (t) => {
-        t.increments("id").notNullable().primary();
-    t.text("package_id")
+    t.increments("id").notNullable().primary();
+    t.integer("package_id")
       .notNullable()
       .references("id")
       .inTable("package_default")
@@ -58,17 +58,17 @@ export async function up(knex: Knex): Promise<void> {
   // emulsion --------------------------------------------------------------
   await knex.schema.createTable("emulsion", (t) => {
     t.increments("id").notNullable().primary();
-    t.text("parent_id")
+    t.integer("parent_id")
       .nullable()
       .references("id")
       .inTable("emulsion")
       .onDelete("SET NULL");
-    t.text("process_id")
+    t.integer("process_id")
       .notNullable()
       .references("id")
       .inTable("process")
       .onDelete("RESTRICT");
-    t.text("format_id")
+    t.integer("format_id")
       .notNullable()
       .references("id")
       .inTable("format")
@@ -81,17 +81,17 @@ export async function up(knex: Knex): Promise<void> {
 
   await knex.schema.createTable("emulsion_default", (t) => {
     t.increments("id").notNullable().primary();
-    t.text("parent_id")
+    t.integer("parent_id")
       .nullable()
       .references("id")
       .inTable("emulsion_default")
       .onDelete("SET NULL");
-    t.text("process_id")
+    t.integer("process_id")
       .notNullable()
       .references("id")
       .inTable("process_default")
       .onDelete("RESTRICT");
-    t.text("format_id")
+    t.integer("format_id")
       .notNullable()
       .references("id")
       .inTable("format_default")
@@ -105,12 +105,12 @@ export async function up(knex: Knex): Promise<void> {
   // emulsion_tag ----------------------------------------------------------
   await knex.schema.createTable("emulsion_tag", (t) => {
     t.increments("id").notNullable().primary();
-    t.text("emulsion_id")
+    t.integer("emulsion_id")
       .notNullable()
       .references("id")
       .inTable("emulsion")
       .onDelete("CASCADE");
-    t.text("tag_id")
+    t.integer("tag_id")
       .notNullable()
       .references("id")
       .inTable("tag")
@@ -120,12 +120,12 @@ export async function up(knex: Knex): Promise<void> {
 
   await knex.schema.createTable("emulsion_tag_default", (t) => {
     t.increments("id").notNullable().primary();
-    t.text("emulsion_id")
+    t.integer("emulsion_id")
       .notNullable()
       .references("id")
       .inTable("emulsion_default")
       .onDelete("CASCADE");
-    t.text("tag_id")
+    t.integer("tag_id")
       .notNullable()
       .references("id")
       .inTable("tag_default")
@@ -138,12 +138,12 @@ export async function up(knex: Knex): Promise<void> {
   await knex.schema.createTable("film", (t) => {
     t.increments("id").notNullable().primary();
     t.text("name").notNullable();
-    t.text("parent_id")
+    t.integer("parent_id")
       .nullable()
       .references("id")
       .inTable("film")
       .onDelete("SET NULL");
-    t.text("emulsion_id")
+    t.integer("emulsion_id")
       .notNullable()
       .references("id")
       .inTable("emulsion")
@@ -154,12 +154,12 @@ export async function up(knex: Knex): Promise<void> {
   // film_tag --------------------------------------------------------------
   await knex.schema.createTable("film_tag", (t) => {
     t.increments("id").notNullable().primary();
-    t.text("film_id")
+    t.integer("film_id")
       .notNullable()
       .references("id")
       .inTable("film")
       .onDelete("CASCADE");
-    t.text("tag_id")
+    t.integer("tag_id")
       .notNullable()
       .references("id")
       .inTable("tag")
@@ -171,12 +171,12 @@ export async function up(knex: Knex): Promise<void> {
   // state_id FK to transition_state added in 20260317000001
   await knex.schema.createTable("film_state", (t) => {
     t.increments("id").notNullable().primary();
-    t.text("film_id")
+    t.integer("film_id")
       .notNullable()
       .references("id")
       .inTable("film")
       .onDelete("CASCADE");
-    t.text("state_id").notNullable();
+    t.integer("state_id").notNullable();
     t.timestamp("date", { useTz: true }).notNullable().defaultTo(knex.fn.now());
     t.text("note").nullable();
   });
