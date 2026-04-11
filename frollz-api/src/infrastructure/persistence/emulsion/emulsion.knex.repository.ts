@@ -24,29 +24,29 @@ export class EmulsionKnexRepository implements IEmulsionRepository {
     return Promise.all(
       rows.map(async (row) => {
         const emulsion = EmulsionMapper.toDomain(row);
-        const tags = await this.loadTags(row.id.trim());
+        const tags = await this.loadTags(row.id);
         return Emulsion.create({ ...emulsion, tags });
       }),
     );
   }
 
-  async findByProcess(processid: number): Promise<Emulsion[]> {
+  async findByProcess(processId: number): Promise<Emulsion[]> {
     const rows = await this.knex<EmulsionRow>('emulsion').where({ process_id: processId });
     return Promise.all(
       rows.map(async (row) => {
         const emulsion = EmulsionMapper.toDomain(row);
-        const tags = await this.loadTags(row.id.trim());
+        const tags = await this.loadTags(row.id);
         return Emulsion.create({ ...emulsion, tags });
       }),
     );
   }
 
-  async findByFormat(formatid: number): Promise<Emulsion[]> {
+  async findByFormat(formatId: number): Promise<Emulsion[]> {
     const rows = await this.knex<EmulsionRow>('emulsion').where({ format_id: formatId });
     return Promise.all(
       rows.map(async (row) => {
         const emulsion = EmulsionMapper.toDomain(row);
-        const tags = await this.loadTags(row.id.trim());
+        const tags = await this.loadTags(row.id);
         return Emulsion.create({ ...emulsion, tags });
       }),
     );
@@ -73,8 +73,10 @@ export class EmulsionKnexRepository implements IEmulsionRepository {
     return rows.map((r) => r.speed);
   }
 
-  async save(emulsion: Emulsion): Promise<void> {
-    await this.knex('emulsion').insert(EmulsionMapper.toPersistence(emulsion));
+  async save(emulsion: Emulsion): Promise<number> {
+    const { id, ...data } = EmulsionMapper.toPersistence(emulsion);
+    const [generatedId] = await this.knex('emulsion').insert(data);
+    return generatedId;
   }
 
   async update(emulsion: Emulsion): Promise<void> {
@@ -93,9 +95,9 @@ export class EmulsionKnexRepository implements IEmulsionRepository {
       .select('tag.*');
     return rows.map((r) =>
       Tag.create({
-        id: r.id.trim(),
+        id: r.id,
         name: r.name,
-        colorCode: r.color_code.trim(),
+        colorCode: r.color_code,
         description: r.description,
       }),
     );

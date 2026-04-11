@@ -4,12 +4,12 @@ import { FilmRow } from '../types/db.types';
 export class FilmMapper {
   static toDomain(row: FilmRow): Film {
     return Film.create({
-      id: row.id.trim(),
+      id: row.id,
       name: row.name,
-      emulsionId: row.emulsion_id.trim(),
+      emulsionId: row.emulsion_id,
       expirationDate: new Date(row.expiration_date),
-      parentId: row.parent_id ? row.parent_id.trim() : null,
-      transitionprofileId: row.transition_profile_id.trim(),
+      parentId: row.parent_id,
+      transitionprofileId: row.transition_profile_id,
     });
   }
 

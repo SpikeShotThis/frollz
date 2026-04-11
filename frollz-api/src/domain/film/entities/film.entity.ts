@@ -17,7 +17,7 @@ export class Film {
   ) {}
 
   static create(props: {
-    id: number;
+    id?: number;
     name: string;
     emulsionId: number;
     expirationDate: Date;
@@ -29,7 +29,7 @@ export class Film {
     parent?: Film;
   }): Film {
     return new Film(
-      props.id,
+      props.id ?? 0,
       props.name,
       props.emulsionId,
       props.expirationDate,

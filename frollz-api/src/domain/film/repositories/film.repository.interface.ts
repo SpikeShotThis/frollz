@@ -8,7 +8,7 @@ export interface IFilmRepository {
   findByemulsionId(emulsionId: number): Promise<Film[]>;
   findChildren(parentId: number): Promise<Film[]>;
   findByCurrentStateIds(stateIds: number[]): Promise<Film[]>;
-  save(film: Film): Promise<void>;
+  save(film: Film): Promise<number>;
   update(film: Film): Promise<void>;
   delete(id: number): Promise<void>;
 }

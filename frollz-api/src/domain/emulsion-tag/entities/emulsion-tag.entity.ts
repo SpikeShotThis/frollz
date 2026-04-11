@@ -5,6 +5,6 @@ export class EmulsionTag {
   ) {}
 
   static create(props: { emulsionId: number; tagid: number }): EmulsionTag {
-    return new EmulsionTag(props.emulsionId, props.tagId);
+    return new EmulsionTag(props.emulsionId, props.tagid);
   }
 }

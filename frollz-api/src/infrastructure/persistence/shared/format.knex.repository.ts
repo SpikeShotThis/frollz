@@ -16,20 +16,20 @@ export class FormatKnexRepository implements IFormatRepository {
 
   async findAll(): Promise<Format[]> {
     const rows = await this.knex<FormatRow>('format').select('*').orderBy('name');
-    return rows.map(this.toDomain);
+    return rows.map((r) => this.toDomain(r));
   }
 
-  async findByPackageId(packageid: number): Promise<Format[]> {
+  async findByPackageId(packageId: number): Promise<Format[]> {
     const rows = await this.knex<FormatRow>('format').where({ package_id: packageId }).orderBy('name');
-    return rows.map(this.toDomain);
+    return rows.map((r) => this.toDomain(r));
   }
 
-  async save(format: Format): Promise<void> {
-    await this.knex('format').insert({
-      id: format.id,
+  async save(format: Format): Promise<number> {
+    const [generatedId] = await this.knex('format').insert({
       package_id: format.packageId,
       name: format.name,
     });
+    return generatedId;
   }
 
   async update(format: Format): Promise<void> {
@@ -45,8 +45,8 @@ export class FormatKnexRepository implements IFormatRepository {
 
   private toDomain(row: FormatRow): Format {
     return Format.create({
-      id: row.id.trim(),
-      packageId: row.package_id.trim(),
+      id: row.id,
+      packageId: row.package_id,
       name: row.name,
     });
   }

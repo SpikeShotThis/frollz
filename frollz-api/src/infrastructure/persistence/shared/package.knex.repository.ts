@@ -37,6 +37,6 @@ export class PackageKnexRepository implements IPackageRepository {
   }
 
   private toDomain(row: PackageRow): Package {
-    return Package.create({ id: row.id.trim(), name: row.name });
+    return Package.create({ id: row.id, name: row.name });
   }
 }

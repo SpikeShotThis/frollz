@@ -30,7 +30,7 @@ export class CreateEmulsionMultipleFormatsDto {
 
   @ApiProperty({ description: 'One emulsion will be created per format ID', example: ['1', '2'] })
   @IsArray()
-  @IsNumber({ each: true })
+  @IsNumber({}, { each: true })
   @IsPositive({ each: true })
   formatIds: number[];
 

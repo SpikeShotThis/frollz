@@ -10,7 +10,7 @@ export interface IEmulsionRepository {
   findBrands(q?: string): Promise<string[]>;
   findManufacturers(q?: string): Promise<string[]>;
   findSpeeds(q?: string): Promise<number[]>;
-  save(emulsion: Emulsion): Promise<void>;
+  save(emulsion: Emulsion): Promise<number>;
   update(emulsion: Emulsion): Promise<void>;
   delete(id: number): Promise<void>;
 }

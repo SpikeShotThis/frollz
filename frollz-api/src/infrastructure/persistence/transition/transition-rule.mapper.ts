@@ -4,10 +4,10 @@ import { TransitionRuleRow } from '../types/db.types';
 export class TransitionRuleMapper {
   static toDomain(row: TransitionRuleRow): TransitionRule {
     return TransitionRule.create({
-      id: row.id.trim(),
-      fromStateId: row.from_state_id.trim(),
-      toStateId: row.to_state.trim(),
-      profileId: row.profile_id.trim(),
+      id: row.id,
+      fromStateId: row.from_state_id,
+      toStateId: row.to_state_id,
+      profileId: row.profile_id,
     });
   }
 
@@ -15,7 +15,7 @@ export class TransitionRuleMapper {
     return {
       id: rule.id,
       from_state_id: rule.fromStateId,
-      to_state: rule.toStateId,
+      to_state_id: rule.toStateId,
       profile_id: rule.profileId,
     };
   }

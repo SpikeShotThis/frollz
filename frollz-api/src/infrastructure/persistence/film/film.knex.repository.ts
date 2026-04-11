@@ -33,7 +33,7 @@ export class FilmKnexRepository implements IFilmRepository {
     return Promise.all(rows.map((row) => this.hydrate(row)));
   }
 
-  async findByCurrentStateIds(stateIds: string[]): Promise<Film[]> {
+  async findByCurrentStateIds(stateIds: number[]): Promise<Film[]> {
     const latestStateSubquery = this.knex('film_state as fs2')
       .select('fs2.film_id')
       .whereIn('fs2.state_id', stateIds)
@@ -46,8 +46,10 @@ export class FilmKnexRepository implements IFilmRepository {
     return Promise.all(rows.map((row) => this.hydrate(row)));
   }
 
-  async save(film: Film): Promise<void> {
-    await this.knex('film').insert(FilmMapper.toPersistence(film));
+  async save(film: Film): Promise<number> {
+    const { id, ...data } = FilmMapper.toPersistence(film);
+    const [generatedId] = await this.knex('film').insert(data);
+    return generatedId;
   }
 
   async update(film: Film): Promise<void> {
@@ -62,8 +64,8 @@ export class FilmKnexRepository implements IFilmRepository {
   private async hydrate(row: FilmRow): Promise<Film> {
     const film = FilmMapper.toDomain(row);
     const [tags, states] = await Promise.all([
-      this.loadTags(row.id.trim()),
-      this.loadStates(row.id.trim()),
+      this.loadTags(row.id),
+      this.loadStates(row.id),
     ]);
     return Film.create({ ...film, tags, states });
   }
@@ -75,9 +77,9 @@ export class FilmKnexRepository implements IFilmRepository {
       .select('tag.*');
     return rows.map((r) =>
       Tag.create({
-        id: r.id.trim(),
+        id: r.id,
         name: r.name,
-        colorCode: r.color_code.trim(),
+        colorCode: r.color_code,
         description: r.description,
       }),
     );
@@ -91,12 +93,12 @@ export class FilmKnexRepository implements IFilmRepository {
       .select('fs.id', 'fs.film_id', 'fs.state_id', 'fs.date', 'fs.note', 'ts.name as state_name');
     return rows.map((r) =>
       FilmState.create({
-        id: r.id.trim(),
-        filmId: r.film_id.trim(),
-        stateId: r.state_id.trim(),
+        id: r.id,
+        filmId: r.film_id,
+        stateId: r.state_id,
         date: new Date(r.date),
         note: r.note,
-        state: TransitionState.create({ id: r.state_id.trim(), name: r.state_name }),
+        state: TransitionState.create({ id: r.state_id, name: r.state_name }),
       }),
     );
   }

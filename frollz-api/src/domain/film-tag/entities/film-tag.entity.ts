@@ -5,6 +5,6 @@ export class FilmTag {
   ) {}
 
   static create(props: { filmId: number; tagid: number }): FilmTag {
-    return new FilmTag(props.filmId, props.tagId);
+    return new FilmTag(props.filmId, props.tagid);
   }
 }

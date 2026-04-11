@@ -300,7 +300,7 @@ const addTag = async (tag: Tag) => {
   }
 }
 
-const removeTag = async (filmTagid: number) => {
+const removeTag = async (filmTagId: number) => {
   try {
     await filmTagApi.delete(filmTagId)
     await loadFilmTags()

@@ -123,23 +123,20 @@ export async function up(knex: Knex): Promise<void> {
     "Developed",
     "Received",
   ];
-  const stateRows = stateNames.map((name) => ({  name }));
-  await knex("transition_state").insert(stateRows);
-
-  const stateId = (name: string) => stateRows.find((s) => s.name === name)!.id;
+  await knex("transition_state").insert(stateNames.map((name) => ({ name })));
+  const insertedStates = await knex<{ id: number; name: string }>("transition_state").select("id", "name");
+  const stateId = (name: string) => insertedStates.find((s) => s.name === name)!.id;
 
   // -----------------------------------------------------------------------
   // Seed: profiles
   // -----------------------------------------------------------------------
-  const profileRows = [
-    {  name: "standard" },
-    {  name: "instant" },
-    {  name: "bulk" },
-  ];
-  await knex("transition_profile").insert(profileRows);
-
-  const profileId = (name: string) =>
-    profileRows.find((p) => p.name === name)!.id;
+  await knex("transition_profile").insert([
+    { name: "standard" },
+    { name: "instant" },
+    { name: "bulk" },
+  ]);
+  const insertedProfiles = await knex<{ id: number; name: string }>("transition_profile").select("id", "name");
+  const profileId = (name: string) => insertedProfiles.find((p) => p.name === name)!.id;
 
   const std = profileId("standard");
   const inst = profileId("instant");
@@ -238,8 +235,8 @@ export async function up(knex: Knex): Promise<void> {
     {  name: "negativesDate", field_type: "date" },
   ];
   await knex("transition_metadata_field").insert(fieldRows);
-
-  const fieldId = (name: string) => fieldRows.find((f) => f.name === name)!.id;
+  const insertedFields = await knex<{ id: number; name: string }>("transition_metadata_field").select("id", "name");
+  const fieldId = (name: string) => insertedFields.find((f) => f.name === name)!.id;
 
   // -----------------------------------------------------------------------
   // Seed: state metadata associations

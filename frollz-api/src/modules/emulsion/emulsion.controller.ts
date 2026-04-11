@@ -82,14 +82,14 @@ export class EmulsionController {
   @Post(':id/tags')
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Associate a tag with an emulsion' })
-  addTag(@Param('id') id: number, @Body('tagId') tagid: number) {
+  addTag(@Param('id') id: number, @Body('tagId') tagId: number) {
     return this.emulsionService.addTag(id, tagId);
   }
 
   @Delete(':id/tags/:tagId')
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Remove a tag from an emulsion' })
-  removeTag(@Param('id') id: number, @Param('tagId') tagid: number) {
+  removeTag(@Param('id') id: number, @Param('tagId') tagId: number) {
     return this.emulsionService.removeTag(id, tagId);
   }
 }

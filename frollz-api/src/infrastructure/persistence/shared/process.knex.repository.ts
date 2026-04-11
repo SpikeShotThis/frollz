@@ -37,6 +37,6 @@ export class ProcessKnexRepository implements IProcessRepository {
   }
 
   private toDomain(row: ProcessRow): Process {
-    return Process.create({ id: row.id.trim(), name: row.name });
+    return Process.create({ id: row.id, name: row.name });
   }
 }

@@ -10,8 +10,6 @@ import { CreateFilmDto } from '../dto/create-film.dto';
 import { UpdateFilmDto } from '../dto/update-film.dto';
 import { TransitionFilmDto } from '../dto/transition-film.dto';
 
-import { randomInt } from 'crypto';
-
 @Injectable()
 export class FilmService {
   constructor(
@@ -47,15 +45,14 @@ export class FilmService {
 
   async create(dto: CreateFilmDto): Promise<Film> {
     const film = Film.create({
-      id: randomInt(1, 1000000),
       name: dto.name,
       emulsionId: dto.emulsionId,
       expirationDate: new Date(dto.expirationDate),
       parentId: dto.parentId ?? null,
       transitionprofileId: dto.transitionprofileId,
     });
-    await this.filmRepo.save(film);
-    return film;
+    const id = await this.filmRepo.save(film);
+    return this.findById(id);
   }
 
   async update(id: number, dto: UpdateFilmDto): Promise<Film> {
@@ -108,7 +105,6 @@ export class FilmService {
     }
 
     const newState = FilmState.create({
-      id: randomInt(1, 1000000),
       filmId: film.id,
       stateId: targetState.id,
       date: dto.date ? new Date(dto.date) : new Date(),

@@ -16,8 +16,8 @@ export class FilmStateMetadata {
   }): FilmStateMetadata {
     return new FilmStateMetadata(
       props.id,
-      props.filmStateId,
-      props.transitionStateMetadataId,
+      props.filmStateid,
+      props.transitionStateMetadataid,
       props.transitionStateMetadata,
     );
   }

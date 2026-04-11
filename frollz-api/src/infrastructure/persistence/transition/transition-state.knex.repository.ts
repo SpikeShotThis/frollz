@@ -14,15 +14,15 @@ export class TransitionStateKnexRepository implements ITransitionStateRepository
     const row = await this.knex<TransitionStateRow>('transition_state').where({ id }).first();
     if (!row) return null;
     const metadata = await this.loadMetadata(id);
-    return TransitionState.create({ id: row.id.trim(), name: row.name, metadata });
+    return TransitionState.create({ id: row.id, name: row.name, metadata });
   }
 
   async findAll(): Promise<TransitionState[]> {
     const rows = await this.knex<TransitionStateRow>('transition_state').select('*').orderBy('name');
     return Promise.all(
       rows.map(async (row) => {
-        const metadata = await this.loadMetadata(row.id.trim());
-        return TransitionState.create({ id: row.id.trim(), name: row.name, metadata });
+        const metadata = await this.loadMetadata(row.id);
+        return TransitionState.create({ id: row.id, name: row.name, metadata });
       }),
     );
   }
@@ -30,8 +30,8 @@ export class TransitionStateKnexRepository implements ITransitionStateRepository
   async findByName(name: string): Promise<TransitionState | null> {
     const row = await this.knex<TransitionStateRow>('transition_state').where({ name }).first();
     if (!row) return null;
-    const metadata = await this.loadMetadata(row.id.trim());
-    return TransitionState.create({ id: row.id.trim(), name: row.name, metadata });
+    const metadata = await this.loadMetadata(row.id);
+    return TransitionState.create({ id: row.id, name: row.name, metadata });
   }
 
   async save(state: TransitionState): Promise<void> {
@@ -52,9 +52,9 @@ export class TransitionStateKnexRepository implements ITransitionStateRepository
     });
     return rows.map((r) =>
       TransitionStateMetadata.create({
-        id: r.id.trim(),
-        fieldId: r.field_id.trim(),
-        transitionStateId: r.transition_state_id.trim(),
+        id: r.id,
+        fieldId: r.field_id,
+        transitionStateId: r.transition_state_id,
         defaultValue: r.default_value,
       }),
     );

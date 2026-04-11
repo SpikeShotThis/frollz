@@ -63,14 +63,14 @@ export class FilmController {
   @Post(':id/tags')
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Associate a tag with a film' })
-  addTag(@Param('id') id: number, @Body('tagId') tagid: number) {
+  addTag(@Param('id') id: number, @Body('tagId') tagId: number) {
     return this.filmService.addTag(id, tagId);
   }
 
   @Delete(':id/tags/:tagId')
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Remove a tag from a film' })
-  removeTag(@Param('id') id: number, @Param('tagId') tagid: number) {
+  removeTag(@Param('id') id: number, @Param('tagId') tagId: number) {
     return this.filmService.removeTag(id, tagId);
   }
 

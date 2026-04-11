@@ -26,7 +26,7 @@ export class FilmStateKnexRepository implements IFilmStateRepository {
     return Promise.all(
       rows.map(async (row) => {
         const filmState = FilmStateMapper.toDomain(row);
-        const metadata = await this.loadMetadata(row.id.trim());
+        const metadata = await this.loadMetadata(row.id);
         return FilmState.create({ ...filmState, metadata });
       }),
     );
@@ -39,11 +39,11 @@ export class FilmStateKnexRepository implements IFilmStateRepository {
       .first();
     if (!row) return null;
     const filmState = FilmStateMapper.toDomain(row);
-    const metadata = await this.loadMetadata(row.id.trim());
+    const metadata = await this.loadMetadata(row.id);
     return FilmState.create({ ...filmState, metadata });
   }
 
-  async findfilmIdsByCurrentState(stateIds: string[]): Promise<string[]> {
+  async findfilmIdsByCurrentState(stateIds: number[]): Promise<number[]> {
     const rows = await this.knex<FilmStateRow>('film_state as fs')
       .whereIn('fs.state_id', stateIds)
       .where(
@@ -51,11 +51,13 @@ export class FilmStateKnexRepository implements IFilmStateRepository {
         this.knex('film_state as fs2').max('fs2.date').where('fs2.film_id', this.knex.ref('fs.film_id')),
       )
       .select('fs.film_id');
-    return rows.map((r) => r.film_id.trim());
+    return rows.map((r) => r.film_id);
   }
 
-  async save(filmState: FilmState): Promise<void> {
-    await this.knex('film_state').insert(FilmStateMapper.toPersistence(filmState));
+  async save(filmState: FilmState): Promise<number> {
+    const { id, ...data } = FilmStateMapper.toPersistence(filmState);
+    const [generatedId] = await this.knex('film_state').insert(data);
+    return generatedId;
   }
 
   async update(filmState: FilmState): Promise<void> {
@@ -67,15 +69,15 @@ export class FilmStateKnexRepository implements IFilmStateRepository {
     await this.knex('film_state').where({ id }).delete();
   }
 
-  private async loadMetadata(filmStateid: number): Promise<FilmStateMetadata[]> {
+  private async loadMetadata(filmStateId: number): Promise<FilmStateMetadata[]> {
     const rows = await this.knex<FilmStateMetadataRow>('film_state_metadata').where({
       film_state_id: filmStateId,
     });
     return rows.map((r) =>
       FilmStateMetadata.create({
-        id: r.id.trim(),
-        filmStateId: r.film_state_id.trim(),
-        transitionStateMetadataId: r.transition_state_metadata_id.trim(),
+        id: r.id,
+        filmStateid: r.film_state_id,
+        transitionStateMetadataid: r.transition_state_metadata_id,
       }),
     );
   }

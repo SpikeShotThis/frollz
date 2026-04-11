@@ -11,17 +11,17 @@ export class TransitionProfileKnexRepository implements ITransitionProfileReposi
 
   async findById(id: number): Promise<TransitionProfile | null> {
     const row = await this.knex<TransitionProfileRow>('transition_profile').where({ id }).first();
-    return row ? TransitionProfile.create({ id: row.id.trim(), name: row.name }) : null;
+    return row ? TransitionProfile.create({ id: row.id, name: row.name }) : null;
   }
 
   async findAll(): Promise<TransitionProfile[]> {
     const rows = await this.knex<TransitionProfileRow>('transition_profile').select('*').orderBy('name');
-    return rows.map((r) => TransitionProfile.create({ id: r.id.trim(), name: r.name }));
+    return rows.map((r) => TransitionProfile.create({ id: r.id, name: r.name }));
   }
 
   async findByName(name: string): Promise<TransitionProfile | null> {
     const row = await this.knex<TransitionProfileRow>('transition_profile').where({ name }).first();
-    return row ? TransitionProfile.create({ id: row.id.trim(), name: row.name }) : null;
+    return row ? TransitionProfile.create({ id: row.id, name: row.name }) : null;
   }
 
   async save(profile: TransitionProfile): Promise<void> {

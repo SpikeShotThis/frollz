@@ -70,7 +70,7 @@ export interface ProcessRow {
 export interface TransitionRuleRow {
   id: number;
   from_state_id: number;
-  to_state: string;
+  to_state_id: number;
   profile_id: number;
 }
 

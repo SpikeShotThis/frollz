@@ -24,13 +24,13 @@ export class TagKnexRepository implements ITagRepository {
     return row ? this.toDomain(row) : null;
   }
 
-  async save(tag: Tag): Promise<void> {
-    await this.knex('tag').insert({
-      id: tag.id,
+  async save(tag: Tag): Promise<number> {
+    const [generatedId] = await this.knex('tag').insert({
       name: tag.name,
       color_code: tag.colorCode,
       description: tag.description,
     });
+    return generatedId;
   }
 
   async update(tag: Tag): Promise<void> {
@@ -47,9 +47,9 @@ export class TagKnexRepository implements ITagRepository {
 
   private toDomain(row: TagRow): Tag {
     return Tag.create({
-      id: row.id.trim(),
+      id: row.id,
       name: row.name,
-      colorCode: row.color_code.trim(),
+      colorCode: row.color_code,
       description: row.description,
     });
   }

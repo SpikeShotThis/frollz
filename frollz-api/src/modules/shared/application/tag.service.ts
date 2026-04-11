@@ -1,7 +1,6 @@
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { Tag } from '../../../domain/shared/entities/tag.entity';
 import { ITagRepository, TAG_REPOSITORY } from '../../../domain/shared/repositories/tag.repository.interface';
-import { randomInt } from 'crypto';
 
 @Injectable()
 export class TagService {
@@ -18,9 +17,9 @@ export class TagService {
   }
 
   async create(data: { name: string; colorCode: string; description?: string }): Promise<Tag> {
-    const tag = Tag.create({id: randomInt(1,281474976710654),name: data.name, colorCode: data.colorCode, description: data.description });
-    await this.tagRepo.save(tag);
-    return tag;
+    const tag = Tag.create({ name: data.name, colorCode: data.colorCode, description: data.description });
+    const id = await this.tagRepo.save(tag);
+    return this.findById(id);
   }
 
   async update(id: number, data: { name?: string; colorCode?: string; description?: string }): Promise<Tag> {

@@ -29,7 +29,7 @@ const makeRepo = (overrides: Partial<IEmulsionRepository> = {}): IEmulsionReposi
   findBrands: jest.fn().mockResolvedValue([]),
   findManufacturers: jest.fn().mockResolvedValue([]),
   findSpeeds: jest.fn().mockResolvedValue([]),
-  save: jest.fn().mockResolvedValue(undefined),
+  save: jest.fn().mockResolvedValue(randomId()),
   update: jest.fn().mockResolvedValue(undefined),
   delete: jest.fn().mockResolvedValue(undefined),
   ...overrides,
@@ -62,7 +62,8 @@ describe('EmulsionService', () => {
 
   describe('create', () => {
     it('saves and returns a new emulsion with a generated uuid', async () => {
-      const repo = makeRepo();
+      const savedEmulsion = makeEmulsion({ name: 'Portra 400' });
+      const repo = makeRepo({ findById: jest.fn().mockResolvedValue(savedEmulsion) });
       const service = new EmulsionService(repo, makeTagRepo());
 
       const result = await service.create({
@@ -75,15 +76,20 @@ describe('EmulsionService', () => {
       });
 
       expect(result.name).toBe('Portra 400');
-      expect(repo.save).toHaveBeenCalledWith(result);
+      expect(repo.save).toHaveBeenCalledWith(expect.objectContaining({ name: 'Portra 400' }));
     });
   });
 
   describe('createMultipleFormats', () => {
     it('creates one emulsion per formatId', async () => {
-      const repo = makeRepo();
-      const service = new EmulsionService(repo, makeTagRepo());
       const formatIds = [randomId(), randomId()];
+      const emulsions = formatIds.map((formatId) => makeEmulsion({ formatId }));
+      const repo = makeRepo({
+        findById: jest.fn()
+          .mockResolvedValueOnce(emulsions[0])
+          .mockResolvedValueOnce(emulsions[1]),
+      });
+      const service = new EmulsionService(repo, makeTagRepo());
 
       const results = await service.createMultipleFormats({
         name: 'HP5',

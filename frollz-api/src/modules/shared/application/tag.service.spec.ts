@@ -13,7 +13,7 @@ const makeRepo = (overrides: Partial<ITagRepository> = {}): ITagRepository => ({
   findAll: jest.fn().mockResolvedValue([]),
   findById: jest.fn().mockResolvedValue(null),
   findByName: jest.fn().mockResolvedValue(null),
-  save: jest.fn().mockResolvedValue(undefined),
+  save: jest.fn().mockResolvedValue(randomId()),
   update: jest.fn().mockResolvedValue(undefined),
   delete: jest.fn().mockResolvedValue(undefined),
   ...overrides,
@@ -50,14 +50,15 @@ describe('TagService', () => {
 
   describe('create', () => {
     it('saves and returns a new tag with a generated uuid', async () => {
-      const repo = makeRepo();
+      const savedTag = makeTag({ name: 'Expired', colorCode: '#ff0000' });
+      const repo = makeRepo({ findById: jest.fn().mockResolvedValue(savedTag) });
       const service = new TagService(repo);
 
       const result = await service.create({ name: 'Expired', colorCode: '#ff0000' });
 
       expect(result.name).toBe('Expired');
       expect(result.colorCode).toBe('#ff0000');
-      expect(repo.save).toHaveBeenCalledWith(result);
+      expect(repo.save).toHaveBeenCalledWith(expect.objectContaining({ name: 'Expired', colorCode: '#ff0000' }));
     });
   });
 

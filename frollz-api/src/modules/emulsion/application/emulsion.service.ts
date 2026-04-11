@@ -1,5 +1,4 @@
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
-import { randomInt } from 'crypto';
 import { Emulsion } from '../../../domain/emulsion/entities/emulsion.entity';
 import { IEmulsionRepository, EMULSION_REPOSITORY } from '../../../domain/emulsion/repositories/emulsion.repository.interface';
 import { IEmulsionTagRepository, EMULSION_TAG_REPOSITORY } from '../../../domain/emulsion-tag/repositories/emulsion-tag.repository.interface';
@@ -25,15 +24,14 @@ export class EmulsionService {
   }
 
   async create(dto: CreateEmulsionDto): Promise<Emulsion> {
-    const emulsion = Emulsion.create({ id: randomInt(1, 1000000), ...dto, parentId: dto.parentId ?? null });
-    await this.emulsionRepo.save(emulsion);
-    return emulsion;
+    const emulsion = Emulsion.create({ ...dto, parentId: dto.parentId ?? null });
+    const id = await this.emulsionRepo.save(emulsion);
+    return this.findById(id);
   }
 
   async createMultipleFormats(dto: CreateEmulsionMultipleFormatsDto): Promise<Emulsion[]> {
     const emulsions = dto.formatIds.map((formatId) =>
       Emulsion.create({
-        id: randomInt(1, 1000000),
         name: dto.name,
         brand: dto.brand,
         manufacturer: dto.manufacturer,
@@ -43,8 +41,8 @@ export class EmulsionService {
         parentId: dto.parentId ?? null,
       }),
     );
-    await Promise.all(emulsions.map((e) => this.emulsionRepo.save(e)));
-    return emulsions;
+    const ids = await Promise.all(emulsions.map((e) => this.emulsionRepo.save(e)));
+    return Promise.all(ids.map((id) => this.emulsionRepo.findById(id).then((e) => e!)));
   }
 
   async update(id: number, dto: UpdateEmulsionDto): Promise<Emulsion> {

@@ -21,13 +21,13 @@ export class FormatService {
     return this.withPackage(format);
   }
 
-  async create(data: { packageid: number; name: string }): Promise<Format> {
+  async create(data: { packageId: number; name: string }): Promise<Format> {
     const format = Format.create({ packageId: data.packageId, name: data.name });
-    await this.formatRepo.save(format);
-    return this.withPackage(format);
+    const id = await this.formatRepo.save(format);
+    return this.findById(id);
   }
 
-  async update(id: number, data: { packageId?: string; name?: string }): Promise<Format> {
+  async update(id: number, data: { packageId?: number; name?: string }): Promise<Format> {
     const existing = await this.findById(id);
     const updated = Format.create({
       id: existing.id,

@@ -13,7 +13,7 @@ export class FilmState {
   ) {}
 
   static create(props: {
-    id: number;
+    id?: number;
     filmId: number;
     stateId: number;
     date: Date;
@@ -22,7 +22,7 @@ export class FilmState {
     metadata?: FilmStateMetadata[];
   }): FilmState {
     return new FilmState(
-      props.id,
+      props.id ?? 0,
       props.filmId,
       props.stateId,
       props.date,

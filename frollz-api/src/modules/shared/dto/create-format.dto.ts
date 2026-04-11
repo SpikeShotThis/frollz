@@ -6,7 +6,7 @@ export class CreateFormatDto {
   @IsNumber()
   @IsNotEmpty()
   @IsPositive()
-  packageid: number;
+  packageId: number;
 
   @ApiProperty({ example: '35mm' })
   @IsString()

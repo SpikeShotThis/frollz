@@ -4,14 +4,14 @@ import { EmulsionRow } from '../types/db.types';
 export class EmulsionMapper {
   static toDomain(row: EmulsionRow): Emulsion {
     return Emulsion.create({
-      id: row.id.trim(),
+      id: row.id,
       name: row.name,
       brand: row.brand,
       manufacturer: row.manufacturer,
       speed: row.speed,
-      processId: row.process_id.trim(),
-      formatId: row.format_id.trim(),
-      parentId: row.parent_id ? row.parent_id.trim() : null,
+      processId: row.process_id,
+      formatId: row.format_id,
+      parentId: row.parent_id,
     });
   }
 

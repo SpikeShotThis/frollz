@@ -52,7 +52,7 @@ const makeFilmRepo = (overrides: Partial<IFilmRepository> = {}): IFilmRepository
   findByemulsionId: jest.fn().mockResolvedValue([]),
   findChildren: jest.fn().mockResolvedValue([]),
   findByCurrentStateIds: jest.fn().mockResolvedValue([]),
-  save: jest.fn().mockResolvedValue(undefined),
+  save: jest.fn().mockResolvedValue(randomId()),
   update: jest.fn().mockResolvedValue(undefined),
   delete: jest.fn().mockResolvedValue(undefined),
   ...overrides,
@@ -69,7 +69,7 @@ const makeFilmStateRepo = (overrides: Partial<IFilmStateRepository> = {}): IFilm
   findByfilmId: jest.fn().mockResolvedValue([]),
   findLatestByfilmId: jest.fn().mockResolvedValue(null),
   findfilmIdsByCurrentState: jest.fn().mockResolvedValue([]),
-  save: jest.fn().mockResolvedValue(undefined),
+  save: jest.fn().mockResolvedValue(randomId()),
   update: jest.fn().mockResolvedValue(undefined),
   delete: jest.fn().mockResolvedValue(undefined),
   ...overrides,
@@ -151,7 +151,8 @@ describe('FilmService', () => {
 
   describe('create', () => {
     it('saves and returns a new film with a generated uuid', async () => {
-      const filmRepo = makeFilmRepo();
+      const savedFilm = makeFilm({ name: 'Roll 001' });
+      const filmRepo = makeFilmRepo({ findById: jest.fn().mockResolvedValue(savedFilm) });
       const service = makeService(filmRepo);
 
       const result = await service.create({
@@ -162,7 +163,7 @@ describe('FilmService', () => {
       });
 
       expect(result.name).toBe('Roll 001');
-      expect(filmRepo.save).toHaveBeenCalledWith(result);
+      expect(filmRepo.save).toHaveBeenCalledWith(expect.objectContaining({ name: 'Roll 001' }));
     });
   });
 

@@ -45,7 +45,7 @@ export class TransitionMetadataFieldKnexRepository implements ITransitionMetadat
 
   private toDomain(row: TransitionMetadataFieldRow): TransitionMetadataField {
     return TransitionMetadataField.create({
-      id: row.id.trim(),
+      id: row.id,
       name: row.name,
       fieldType: row.field_type,
     });

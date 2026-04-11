@@ -19,7 +19,7 @@ export class Emulsion {
   ) {}
 
   static create(props: {
-    id: number;
+    id?: number;
     name: string;
     brand: string;
     manufacturer: string;
@@ -33,7 +33,7 @@ export class Emulsion {
     parent?: Emulsion;
   }): Emulsion {
     return new Emulsion(
-      props.id,
+      props.id ?? 0,
       props.name,
       props.brand,
       props.manufacturer,

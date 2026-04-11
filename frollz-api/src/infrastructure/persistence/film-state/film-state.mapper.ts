@@ -4,9 +4,9 @@ import { FilmStateRow } from '../types/db.types';
 export class FilmStateMapper {
   static toDomain(row: FilmStateRow): FilmState {
     return FilmState.create({
-      id: row.id.trim(),
-      filmId: row.film_id.trim(),
-      stateId: row.state_id.trim(),
+      id: row.id,
+      filmId: row.film_id,
+      stateId: row.state_id,
       date: new Date(row.date),
       note: row.note,
     });
