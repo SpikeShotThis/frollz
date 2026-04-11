@@ -27,5 +27,5 @@ export class CreateFilmDto {
   @IsNumber()
   @IsNotEmpty()
   @IsPositive()
-  transitionprofileId: number;
+  transitionProfileId: number;
 }

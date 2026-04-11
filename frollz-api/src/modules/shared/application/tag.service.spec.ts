@@ -65,14 +65,17 @@ describe('TagService', () => {
   describe('update', () => {
     it('applies partial changes and saves', async () => {
       const existing = makeTag();
-      const repo = makeRepo({ findById: jest.fn().mockResolvedValue(existing) });
+      const updated = makeTag({ id: existing.id, name: 'Pushed', colorCode: existing.colorCode });
+      const repo = makeRepo({
+        findById: jest.fn().mockResolvedValueOnce(existing).mockResolvedValueOnce(updated),
+      });
       const service = new TagService(repo);
 
       const result = await service.update(existing.id, { name: 'Pushed' });
 
       expect(result.name).toBe('Pushed');
       expect(result.colorCode).toBe(existing.colorCode);
-      expect(repo.update).toHaveBeenCalledWith(result);
+      expect(repo.update).toHaveBeenCalledWith(expect.objectContaining({ name: 'Pushed' }));
     });
 
     it('throws NotFoundException for a missing tag', async () => {

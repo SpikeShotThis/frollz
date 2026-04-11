@@ -19,7 +19,7 @@ export class FilmStateKnexRepository implements IFilmStateRepository {
     return FilmState.create({ ...filmState, metadata });
   }
 
-  async findByfilmId(filmId: number): Promise<FilmState[]> {
+  async findByFilmId(filmId: number): Promise<FilmState[]> {
     const rows = await this.knex<FilmStateRow>('film_state')
       .where({ film_id: filmId })
       .orderBy('date', 'desc');
@@ -32,7 +32,7 @@ export class FilmStateKnexRepository implements IFilmStateRepository {
     );
   }
 
-  async findLatestByfilmId(filmId: number): Promise<FilmState | null> {
+  async findLatestByFilmId(filmId: number): Promise<FilmState | null> {
     const row = await this.knex<FilmStateRow>('film_state')
       .where({ film_id: filmId })
       .orderBy('date', 'desc')
@@ -43,7 +43,7 @@ export class FilmStateKnexRepository implements IFilmStateRepository {
     return FilmState.create({ ...filmState, metadata });
   }
 
-  async findfilmIdsByCurrentState(stateIds: number[]): Promise<number[]> {
+  async findFilmIdsByCurrentState(stateIds: number[]): Promise<number[]> {
     const rows = await this.knex<FilmStateRow>('film_state as fs')
       .whereIn('fs.state_id', stateIds)
       .where(
@@ -55,7 +55,7 @@ export class FilmStateKnexRepository implements IFilmStateRepository {
   }
 
   async save(filmState: FilmState): Promise<number> {
-    const { id, ...data } = FilmStateMapper.toPersistence(filmState);
+    const { id: _id, ...data } = FilmStateMapper.toPersistence(filmState);
     const [generatedId] = await this.knex('film_state').insert(data);
     return generatedId;
   }
@@ -76,8 +76,8 @@ export class FilmStateKnexRepository implements IFilmStateRepository {
     return rows.map((r) =>
       FilmStateMetadata.create({
         id: r.id,
-        filmStateid: r.film_state_id,
-        transitionStateMetadataid: r.transition_state_metadata_id,
+        filmStateId: r.film_state_id,
+        transitionStateMetadataId: r.transition_state_metadata_id,
       }),
     );
   }

@@ -165,7 +165,7 @@ const loadPackages = async () => {
 const createFormat = async () => {
   createError.value = ''
   try {
-    await formatApi.create(newFormat.value)
+    await formatApi.create({ ...newFormat.value, packageId: Number(newFormat.value.packageId) })
     showCreateForm.value = false
     newFormat.value = { packageId: '', name: '' }
     await loadFormats()

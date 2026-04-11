@@ -6,6 +6,7 @@ import {
   HttpCode,
   HttpStatus,
   Param,
+  ParseIntPipe,
   Patch,
   Post,
   Query,
@@ -31,13 +32,13 @@ export class FilmController {
 
   @Get(':id')
   @ApiOperation({ summary: 'Get a film by id' })
-  findById(@Param('id') id: number) {
+  findById(@Param('id', ParseIntPipe) id: number) {
     return this.filmService.findById(id);
   }
 
   @Get(':id/children')
   @ApiOperation({ summary: 'List child films cut from a bulk canister' })
-  findChildren(@Param('id') id: number) {
+  findChildren(@Param('id', ParseIntPipe) id: number) {
     return this.filmService.findChildren(id);
   }
 
@@ -49,34 +50,34 @@ export class FilmController {
 
   @Patch(':id')
   @ApiOperation({ summary: 'Update a film' })
-  update(@Param('id') id: number, @Body() dto: UpdateFilmDto) {
+  update(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateFilmDto) {
     return this.filmService.update(id, dto);
   }
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Delete a film' })
-  delete(@Param('id') id: number) {
+  delete(@Param('id', ParseIntPipe) id: number) {
     return this.filmService.delete(id);
   }
 
   @Post(':id/tags')
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Associate a tag with a film' })
-  addTag(@Param('id') id: number, @Body('tagId') tagId: number) {
+  addTag(@Param('id', ParseIntPipe) id: number, @Body('tagId') tagId: number) {
     return this.filmService.addTag(id, tagId);
   }
 
   @Delete(':id/tags/:tagId')
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Remove a tag from a film' })
-  removeTag(@Param('id') id: number, @Param('tagId') tagId: number) {
+  removeTag(@Param('id', ParseIntPipe) id: number, @Param('tagId', ParseIntPipe) tagId: number) {
     return this.filmService.removeTag(id, tagId);
   }
 
   @Post(':id/transition')
   @ApiOperation({ summary: 'Transition a film to a new state' })
-  transition(@Param('id') id: number, @Body() dto: TransitionFilmDto) {
+  transition(@Param('id', ParseIntPipe) id: number, @Body() dto: TransitionFilmDto) {
     return this.filmService.transition(id, dto);
   }
 }

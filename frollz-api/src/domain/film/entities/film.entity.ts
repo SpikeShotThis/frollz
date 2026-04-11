@@ -9,7 +9,7 @@ export class Film {
     public readonly emulsionId: number,
     public readonly expirationDate: Date,
     public readonly parentId: number | null,
-    public readonly transitionprofileId: number,
+    public readonly transitionProfileId: number,
     public readonly emulsion?: Emulsion,
     public readonly tags: Tag[] = [],
     public readonly states: FilmState[] = [],
@@ -22,7 +22,7 @@ export class Film {
     emulsionId: number;
     expirationDate: Date;
     parentId?: number | null;
-    transitionprofileId: number;
+    transitionProfileId: number;
     emulsion?: Emulsion;
     tags?: Tag[];
     states?: FilmState[];
@@ -34,7 +34,7 @@ export class Film {
       props.emulsionId,
       props.expirationDate,
       props.parentId ?? null,
-      props.transitionprofileId,
+      props.transitionProfileId,
       props.emulsion,
       props.tags ?? [],
       props.states ?? [],
@@ -45,7 +45,7 @@ export class Film {
   get currentState(): FilmState | null {
     if (this.states.length === 0) return null;
     return this.states.reduce((latest, state) =>
-      state.date > latest.date ? state : latest,
+      new Date(state.date).getTime() > new Date(latest.date).getTime() ? state : latest,
     );
   }
 }

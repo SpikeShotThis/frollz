@@ -30,7 +30,7 @@ export class EmulsionKnexRepository implements IEmulsionRepository {
     );
   }
 
-  async findByProcess(processId: number): Promise<Emulsion[]> {
+  async findByProcessId(processId: number): Promise<Emulsion[]> {
     const rows = await this.knex<EmulsionRow>('emulsion').where({ process_id: processId });
     return Promise.all(
       rows.map(async (row) => {
@@ -41,7 +41,7 @@ export class EmulsionKnexRepository implements IEmulsionRepository {
     );
   }
 
-  async findByFormat(formatId: number): Promise<Emulsion[]> {
+  async findByFormatId(formatId: number): Promise<Emulsion[]> {
     const rows = await this.knex<EmulsionRow>('emulsion').where({ format_id: formatId });
     return Promise.all(
       rows.map(async (row) => {
@@ -74,7 +74,7 @@ export class EmulsionKnexRepository implements IEmulsionRepository {
   }
 
   async save(emulsion: Emulsion): Promise<number> {
-    const { id, ...data } = EmulsionMapper.toPersistence(emulsion);
+    const { id: _id, ...data } = EmulsionMapper.toPersistence(emulsion);
     const [generatedId] = await this.knex('emulsion').insert(data);
     return generatedId;
   }

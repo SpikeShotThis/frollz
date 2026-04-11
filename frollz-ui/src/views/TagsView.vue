@@ -212,7 +212,7 @@ const tags = ref<Tag[]>([])
 const isLoading = ref(false)
 const currentPage = ref(1)
 
-const editingId = ref<string | null>(null)
+const editingId = ref<number | null>(null)
 const editForm = ref({ name: '', colorCode: '#000000', description: '' })
 
 const deleteTarget = ref<Tag | null>(null)

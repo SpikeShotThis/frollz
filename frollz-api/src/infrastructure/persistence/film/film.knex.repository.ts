@@ -23,7 +23,7 @@ export class FilmKnexRepository implements IFilmRepository {
     return Promise.all(rows.map((row) => this.hydrate(row)));
   }
 
-  async findByemulsionId(emulsionId: number): Promise<Film[]> {
+  async findByEmulsionId(emulsionId: number): Promise<Film[]> {
     const rows = await this.knex<FilmRow>('film').where({ emulsion_id: emulsionId });
     return Promise.all(rows.map((row) => this.hydrate(row)));
   }
@@ -47,7 +47,7 @@ export class FilmKnexRepository implements IFilmRepository {
   }
 
   async save(film: Film): Promise<number> {
-    const { id, ...data } = FilmMapper.toPersistence(film);
+    const { id: _id, ...data } = FilmMapper.toPersistence(film);
     const [generatedId] = await this.knex('film').insert(data);
     return generatedId;
   }

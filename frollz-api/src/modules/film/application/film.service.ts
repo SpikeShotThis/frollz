@@ -49,7 +49,7 @@ export class FilmService {
       emulsionId: dto.emulsionId,
       expirationDate: new Date(dto.expirationDate),
       parentId: dto.parentId ?? null,
-      transitionprofileId: dto.transitionprofileId,
+      transitionProfileId: dto.transitionProfileId,
     });
     const id = await this.filmRepo.save(film);
     return this.findById(id);
@@ -63,7 +63,7 @@ export class FilmService {
       emulsionId: dto.emulsionId ?? existing.emulsionId,
       expirationDate: dto.expirationDate ? new Date(dto.expirationDate) : existing.expirationDate,
       parentId: existing.parentId,
-      transitionprofileId: dto.transitionprofileId ?? existing.transitionprofileId,
+      transitionProfileId: dto.transitionProfileId ?? existing.transitionProfileId,
     });
     await this.filmRepo.update(updated);
     return this.findById(id);
@@ -94,7 +94,7 @@ export class FilmService {
     if (currentState) {
       const rules = await this.transitionRuleRepo.findByFromStateAndProfile(
         currentState.stateId,
-        film.transitionprofileId,
+        film.transitionProfileId,
       );
       const allowed = rules.some((r) => r.toStateId === targetState.id);
       if (!allowed) {

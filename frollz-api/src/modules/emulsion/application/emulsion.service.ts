@@ -42,7 +42,14 @@ export class EmulsionService {
       }),
     );
     const ids = await Promise.all(emulsions.map((e) => this.emulsionRepo.save(e)));
-    return Promise.all(ids.map((id) => this.emulsionRepo.findById(id).then((e) => e!)));
+    return Promise.all(
+      ids.map((id) =>
+        this.emulsionRepo.findById(id).then((e) => {
+          if (!e) throw new NotFoundException(`Emulsion '${id}' not found`);
+          return e;
+        }),
+      ),
+    );
   }
 
   async update(id: number, dto: UpdateEmulsionDto): Promise<Emulsion> {

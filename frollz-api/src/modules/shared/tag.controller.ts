@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, ParseIntPipe, Patch, Post } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { CreateTagDto } from './dto/create-tag.dto';
 import { UpdateTagDto } from './dto/update-tag.dto';
@@ -17,7 +17,7 @@ export class TagController {
 
   @Get(':id')
   @ApiOperation({ summary: 'Get a tag by id' })
-  findById(@Param('id') id: number) {
+  findById(@Param('id', ParseIntPipe) id: number) {
     return this.tagService.findById(id);
   }
 
@@ -29,14 +29,14 @@ export class TagController {
 
   @Patch(':id')
   @ApiOperation({ summary: 'Update a tag' })
-  update(@Param('id') id: number, @Body() dto: UpdateTagDto) {
+  update(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateTagDto) {
     return this.tagService.update(id, dto);
   }
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Delete a tag' })
-  delete(@Param('id') id: number) {
+  delete(@Param('id', ParseIntPipe) id: number) {
     return this.tagService.delete(id);
   }
 }

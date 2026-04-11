@@ -5,7 +5,7 @@ export const TRANSITION_STATE_METADATA_REPOSITORY = 'TRANSITION_STATE_METADATA_R
 export interface ITransitionStateMetadataRepository {
   findById(id: number): Promise<TransitionStateMetadata | null>;
   findAll(): Promise<TransitionStateMetadata[]>;
-  findBytransitionStateId(transitionStateId: number): Promise<TransitionStateMetadata[]>;
+  findByTransitionStateId(transitionStateId: number): Promise<TransitionStateMetadata[]>;
   save(metadata: TransitionStateMetadata): Promise<void>;
   update(metadata: TransitionStateMetadata): Promise<void>;
   delete(id: number): Promise<void>;

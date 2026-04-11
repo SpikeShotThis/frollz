@@ -112,13 +112,13 @@ describe('FilmFormatsView', () => {
 
       const vm = wrapper.vm as any
       vm.showCreateForm = true
-      vm.newFormat = { packageId: 'pkg1', name: '35mm' }
+      vm.newFormat = { packageId: 1, name: '35mm' }
       await wrapper.vm.$nextTick()
 
       await vm.createFormat()
       await flushPromises()
 
-      expect(formatApi.create).toHaveBeenCalledWith({ packageId: 'pkg1', name: '35mm' })
+      expect(formatApi.create).toHaveBeenCalledWith({ packageId: 1, name: '35mm' })
       expect(formatApi.getAll).toHaveBeenCalledTimes(2)
     })
 

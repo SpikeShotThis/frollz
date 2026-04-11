@@ -146,7 +146,7 @@ describe('StocksView', () => {
         brand: 'Test Brand',
         manufacturer: 'Test Manufacturer',
         formatIds: ['fmt1'],
-        processId: 'proc1',
+        processId: 1,
         speed: 400,
         boxImageUrl: '',
       }
@@ -159,7 +159,7 @@ describe('StocksView', () => {
         brand: 'Test Brand',
         manufacturer: 'Test Manufacturer',
         formatIds: ['fmt1'],
-        processId: 'proc1',
+        processId: 1,
         speed: 400,
       })
     })

@@ -25,5 +25,5 @@ export class UpdateFilmDto {
   @IsNumber()
   @IsNotEmpty()
   @IsPositive()
-  transitionprofileId?: number;
+  transitionProfileId?: number;
 }

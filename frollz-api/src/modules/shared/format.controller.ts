@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, ParseIntPipe, Patch, Post } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { CreateFormatDto } from './dto/create-format.dto';
 import { UpdateFormatDto } from './dto/update-format.dto';
@@ -17,7 +17,7 @@ export class FormatController {
 
   @Get(':id')
   @ApiOperation({ summary: 'Get a format by id' })
-  findById(@Param('id') id: number) {
+  findById(@Param('id', ParseIntPipe) id: number) {
     return this.formatService.findById(id);
   }
 
@@ -29,14 +29,14 @@ export class FormatController {
 
   @Patch(':id')
   @ApiOperation({ summary: 'Update a format' })
-  update(@Param('id') id: number, @Body() dto: UpdateFormatDto) {
+  update(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateFormatDto) {
     return this.formatService.update(id, dto);
   }
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Delete a format' })
-  delete(@Param('id') id: number) {
+  delete(@Param('id', ParseIntPipe) id: number) {
     return this.formatService.delete(id);
   }
 }

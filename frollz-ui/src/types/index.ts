@@ -7,7 +7,7 @@ export interface Package {
 // Format (e.g. 35mm, 120) — belongs to a Package
 export interface Format {
   id: number
-  packageid: number
+  packageId: number
   name: string
   package?: Package
 }
@@ -25,8 +25,8 @@ export interface Emulsion {
   brand: string
   manufacturer: string
   speed: number
-  formatid: number
-  processid: number
+  formatId: number
+  processId: number
   parentId: number | null
   boxImageUrl?: string
   tags: Tag[]
@@ -44,21 +44,21 @@ export interface Tag {
 export interface EmulsionTag {
   id: number
   emulsionId: number
-  tagid: number
+  tagId: number
 }
 
 // FilmTag (replaces RollTag)
 export interface FilmTag {
   id: number
   filmId: number
-  tagid: number
+  tagId: number
 }
 
 // FilmState (replaces RollStateHistory)
 export interface FilmState {
   id: number
   filmId: number
-  stateid: number
+  stateId: number
   date: Date
   note: string | null
   state?: { id: number; name: string }
@@ -72,7 +72,7 @@ export interface Film {
   emulsionId: number
   expirationDate: Date | null
   parentId: number | null
-  transitionprofileId: number
+  transitionProfileId: number
   emulsion?: Emulsion
   tags: Tag[]
   states: FilmState[]

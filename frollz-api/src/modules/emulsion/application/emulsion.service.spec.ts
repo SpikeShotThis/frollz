@@ -24,8 +24,8 @@ const makeEmulsion = (overrides: Partial<Parameters<typeof Emulsion.create>[0]> 
 const makeRepo = (overrides: Partial<IEmulsionRepository> = {}): IEmulsionRepository => ({
   findAll: jest.fn().mockResolvedValue([]),
   findById: jest.fn().mockResolvedValue(null),
-  findByProcess: jest.fn().mockResolvedValue([]),
-  findByFormat: jest.fn().mockResolvedValue([]),
+  findByProcessId: jest.fn().mockResolvedValue([]),
+  findByFormatId: jest.fn().mockResolvedValue([]),
   findBrands: jest.fn().mockResolvedValue([]),
   findManufacturers: jest.fn().mockResolvedValue([]),
   findSpeeds: jest.fn().mockResolvedValue([]),

@@ -1,4 +1,4 @@
-import { Controller, Get, Query } from '@nestjs/common';
+import { Controller, Get, ParseIntPipe, Query } from '@nestjs/common';
 import { ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { FilmStateService } from './application/film-state.service';
 
@@ -10,7 +10,7 @@ export class FilmStateController {
   @Get()
   @ApiOperation({ summary: 'Get state history for a film' })
   @ApiQuery({ name: 'filmId', required: true })
-  findByfilmId(@Query('filmId') filmId: number) {
-    return this.filmStateService.findByfilmId(filmId);
+  findByFilmId(@Query('filmId', ParseIntPipe) filmId: number) {
+    return this.filmStateService.findByFilmId(filmId);
   }
 }

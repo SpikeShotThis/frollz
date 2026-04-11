@@ -38,8 +38,8 @@ const makeProfileRepo = (overrides: Partial<ITransitionProfileRepository> = {}):
 const makeRuleRepo = (overrides: Partial<ITransitionRuleRepository> = {}): ITransitionRuleRepository => ({
   findAll: jest.fn().mockResolvedValue([]),
   findById: jest.fn().mockResolvedValue(null),
-  findByprofileId: jest.fn().mockResolvedValue([]),
-  findByfromStateId: jest.fn().mockResolvedValue([]),
+  findByProfileId: jest.fn().mockResolvedValue([]),
+  findByFromStateId: jest.fn().mockResolvedValue([]),
   findByFromStateAndProfile: jest.fn().mockResolvedValue([]),
   save: jest.fn().mockResolvedValue(undefined),
   update: jest.fn().mockResolvedValue(undefined),
@@ -89,7 +89,7 @@ describe('TransitionService', () => {
       const rule = makeRule(added.id, loaded.id, profile.id);
 
       const service = makeService(
-        makeRuleRepo({ findByprofileId: jest.fn().mockResolvedValue([rule]) }),
+        makeRuleRepo({ findByProfileId: jest.fn().mockResolvedValue([rule]) }),
         makeStateRepo({ findAll: jest.fn().mockResolvedValue([added, loaded]) }),
         makeProfileRepo({ findByName: jest.fn().mockResolvedValue(profile) }),
       );
@@ -121,7 +121,7 @@ describe('TransitionService', () => {
       const rule = makeRule(added.id, sent.id, profile.id);
 
       const service = makeService(
-        makeRuleRepo({ findByprofileId: jest.fn().mockResolvedValue([rule]) }),
+        makeRuleRepo({ findByProfileId: jest.fn().mockResolvedValue([rule]) }),
         makeStateRepo({ findAll: jest.fn().mockResolvedValue([added, sent]) }),
         makeProfileRepo({ findByName: jest.fn().mockResolvedValue(profile) }),
         makeFieldRepo({ findById: jest.fn().mockResolvedValue(field) }),

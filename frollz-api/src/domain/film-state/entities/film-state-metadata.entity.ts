@@ -3,21 +3,21 @@ import { TransitionStateMetadata } from '../../transition/entities/transition-st
 export class FilmStateMetadata {
   constructor(
     public readonly id: number,
-    public readonly filmStateid: number,
-    public readonly transitionStateMetadataid: number,
+    public readonly filmStateId: number,
+    public readonly transitionStateMetadataId: number,
     public readonly transitionStateMetadata?: TransitionStateMetadata,
   ) {}
 
   static create(props: {
     id: number;
-    filmStateid: number;
-    transitionStateMetadataid: number;
+    filmStateId: number;
+    transitionStateMetadataId: number;
     transitionStateMetadata?: TransitionStateMetadata;
   }): FilmStateMetadata {
     return new FilmStateMetadata(
       props.id,
-      props.filmStateid,
-      props.transitionStateMetadataid,
+      props.filmStateId,
+      props.transitionStateMetadataId,
       props.transitionStateMetadata,
     );
   }

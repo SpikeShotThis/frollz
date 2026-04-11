@@ -212,7 +212,7 @@ const getChildStateName = (child: Film): string => currentStateName(child)
 
 const isBulkFilm = computed(() => {
   const bulkProfile = transitionProfiles.value.find(p => p.name === 'bulk')
-  return !!bulkProfile && film.value?.transitionprofileId === bulkProfile.id
+  return !!bulkProfile && film.value?.transitionProfileId === bulkProfile.id
 })
 
 const isBackwardTransition = (from: string, to: string): boolean =>
@@ -316,7 +316,7 @@ const loadFilmTags = async () => {
 }
 
 const loadData = async () => {
-  const id = route.params.key as string
+  const id = Number(route.params.key)
   const [filmRes, tagsRes] = await Promise.all([
     filmApi.getById(id),
     tagApi.getAll(),
@@ -330,7 +330,7 @@ const loadData = async () => {
       ? filmApi.getById(film.value.parentId).then(r => { parentFilm.value = r.data })
       : Promise.resolve().then(() => { parentFilm.value = null }),
     isBulkFilm.value
-      ? filmApi.getChildren(id).then(r => { childFilms.value = r.data })
+      ? filmApi.getChildren(Number(id)).then(r => { childFilms.value = r.data })
       : Promise.resolve().then(() => { childFilms.value = [] }),
   ])
 }
@@ -342,7 +342,7 @@ const reload = async () => {
       loadData(),
       transitionApi.getProfiles().then(r => { transitionProfiles.value = r.data }),
     ])
-    const profileName = transitionProfiles.value.find(p => p.id === film.value?.transitionprofileId)?.name ?? 'standard'
+    const profileName = transitionProfiles.value.find(p => p.id === film.value?.transitionProfileId)?.name ?? 'standard'
     const graphRes = await transitionApi.getGraph(profileName)
     transitionGraph.value = graphRes.data
   } finally {

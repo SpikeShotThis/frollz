@@ -19,7 +19,7 @@ export class TransitionStateMetadataKnexRepository implements ITransitionStateMe
     return rows.map(this.toDomain);
   }
 
-  async findBytransitionStateId(transitionStateId: number): Promise<TransitionStateMetadata[]> {
+  async findByTransitionStateId(transitionStateId: number): Promise<TransitionStateMetadata[]> {
     const rows = await this.knex<TransitionStateMetadataRow>('transition_state_metadata').where({
       transition_state_id: transitionStateId,
     });

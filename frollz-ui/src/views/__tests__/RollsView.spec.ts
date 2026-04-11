@@ -42,7 +42,7 @@ const makeFilm = (overrides: Partial<Film> = {}): Film => ({
   emulsionId: randomId(),
   expirationDate: new Date('2025-12-01'),
   parentId: null,
-  transitionprofileId: randomId(),
+  transitionProfileId: randomId(),
   tags: [],
   states: [],
   ...overrides,
@@ -114,8 +114,8 @@ describe('RollsView', () => {
 
   describe('bulk films', () => {
     it('should identify bulk films by transition profile', async () => {
-      const bulkFilm = makeFilm({ transitionprofileId: 'prof-bulk', name: 'canister-001' })
-      const standardFilm = makeFilm({ transitionprofileId: 'prof-standard', name: 'roll-00001' })
+      const bulkFilm = makeFilm({ transitionProfileId: 'prof-bulk', name: 'canister-001' })
+      const standardFilm = makeFilm({ transitionProfileId: 'prof-standard', name: 'roll-00001' })
       vi.mocked(filmApi.getAll).mockResolvedValue({ data: [bulkFilm, standardFilm] } as any)
 
       const wrapper = mount(RollsView, { global: { plugins: [router] } })
@@ -163,7 +163,7 @@ describe('RollsView', () => {
       await wrapper.vm.$nextTick()
 
       expect(vm.showModal).toBe(true)
-      expect(vm.form.transitionprofileId).toBe('prof-standard')
+      expect(vm.form.transitionProfileId).toBe('prof-standard')
     })
 
     it('should set bulk profile when isBulkFilm is toggled on', async () => {
@@ -176,7 +176,7 @@ describe('RollsView', () => {
       vm.onBulkFilmToggle()
       await wrapper.vm.$nextTick()
 
-      expect(vm.form.transitionprofileId).toBe('prof-bulk')
+      expect(vm.form.transitionProfileId).toBe('prof-bulk')
     })
 
     it('should reset to standard profile when isBulkFilm is toggled off', async () => {
@@ -191,7 +191,7 @@ describe('RollsView', () => {
       vm.onBulkFilmToggle()
       await wrapper.vm.$nextTick()
 
-      expect(vm.form.transitionprofileId).toBe('prof-standard')
+      expect(vm.form.transitionProfileId).toBe('prof-standard')
     })
 
     it('should close modal and reset form on closeModal', async () => {

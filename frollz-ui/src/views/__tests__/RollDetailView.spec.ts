@@ -70,7 +70,7 @@ const makeFilm = (overrides: Partial<Film> = {}): Film => ({
   emulsionId: randomId(),
   expirationDate: new Date('2026-12-01'),
   parentId: null,
-  transitionprofileId: 'prof-standard',
+  transitionProfileId: 'prof-standard',
   tags: [],
   states: [makeFilmState('Shelved', new Date('2024-01-15'))],
   ...overrides,
@@ -316,9 +316,9 @@ describe('RollDetailView', () => {
   })
 
   describe('bulk film detection', () => {
-    it('should compute isBulkFilm as true when transitionprofileId matches bulk profile', async () => {
+    it('should compute isBulkFilm as true when transitionProfileId matches bulk profile', async () => {
       vi.mocked(filmApi.getById).mockResolvedValue({
-        data: makeFilm({ transitionprofileId: 'prof-bulk' }),
+        data: makeFilm({ transitionProfileId: 'prof-bulk' }),
       } as any)
 
       const wrapper = await mountView()

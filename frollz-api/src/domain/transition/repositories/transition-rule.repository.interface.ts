@@ -5,8 +5,8 @@ export const TRANSITION_RULE_REPOSITORY = 'TRANSITION_RULE_REPOSITORY';
 export interface ITransitionRuleRepository {
   findById(id: number): Promise<TransitionRule | null>;
   findAll(): Promise<TransitionRule[]>;
-  findByprofileId(profileId: number): Promise<TransitionRule[]>;
-  findByfromStateId(fromStateId: number): Promise<TransitionRule[]>;
+  findByProfileId(profileId: number): Promise<TransitionRule[]>;
+  findByFromStateId(fromStateId: number): Promise<TransitionRule[]>;
   findByFromStateAndProfile(fromStateId: number, profileId: number): Promise<TransitionRule[]>;
   save(rule: TransitionRule): Promise<void>;
   update(rule: TransitionRule): Promise<void>;

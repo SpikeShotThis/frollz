@@ -44,7 +44,7 @@ export class TransitionService {
     if (!profile) throw new NotFoundException(`Transition profile '${profileName}' not found`);
 
     const [rules, allStates] = await Promise.all([
-      this.ruleRepo.findByprofileId(profile.id),
+      this.ruleRepo.findByProfileId(profile.id),
       this.stateRepo.findAll(),
     ]);
 
@@ -78,11 +78,12 @@ export class TransitionService {
     return Promise.all(
       state.metadata.map(async (m: TransitionStateMetadata) => {
         const field = await this.metadataFieldRepo.findById(m.fieldId);
+        if (!field) throw new NotFoundException(`Metadata field '${m.fieldId}' not found`);
         return {
-          field: field!.name,
-        fieldType: field!.fieldType ?? 'string',
+          field: field.name,
+          fieldType: field.fieldType ?? 'string',
           defaultValue: m.defaultValue,
-          isRequired: true,
+          isRequired: true, // TODO: model optional fields when schema supports it
         };
       }),
     );

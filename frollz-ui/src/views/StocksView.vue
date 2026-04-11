@@ -301,7 +301,7 @@ const isLoading = ref(false)
 const showModal = ref(false)
 const submitting = ref(false)
 const error = ref('')
-const selectedTagIds = ref<string[]>([])
+const selectedTagIds = ref<number[]>([])
 
 type SortField = 'brand' | 'manufacturer' | 'speed'
 const sortField = ref<SortField>('brand')
@@ -387,7 +387,7 @@ const filteredAndSortedEmulsions = computed(() => {
 
 const sortedEmulsions = filteredAndSortedEmulsions
 
-const toggleTag = (tagid: number) => {
+const toggleTag = (tagId: number) => {
   const idx = selectedTagIds.value.indexOf(tagId)
   if (idx === -1) selectedTagIds.value.push(tagId)
   else selectedTagIds.value.splice(idx, 1)
@@ -417,7 +417,7 @@ const handleSubmit = async () => {
       brand: form.value.brand,
       manufacturer: form.value.manufacturer,
       formatIds: form.value.formatIds,
-      processId: form.value.processId,
+      processId: Number(form.value.processId),
       speed: form.value.speed!,
       ...(form.value.boxImageUrl ? { boxImageUrl: form.value.boxImageUrl } : {}),
     }

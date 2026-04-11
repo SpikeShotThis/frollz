@@ -20,7 +20,7 @@ const makeFilm = (overrides: Partial<Parameters<typeof Film.create>[0]> = {}): F
     emulsionId: randomId(),
     expirationDate: new Date('2026-12-31'),
     parentId: null,
-    transitionprofileId: randomId(),
+    transitionProfileId: randomId(),
     ...overrides,
   });
 
@@ -49,7 +49,7 @@ const makeTransitionRule = (overrides: Partial<Parameters<typeof TransitionRule.
 const makeFilmRepo = (overrides: Partial<IFilmRepository> = {}): IFilmRepository => ({
   findAll: jest.fn().mockResolvedValue([]),
   findById: jest.fn().mockResolvedValue(null),
-  findByemulsionId: jest.fn().mockResolvedValue([]),
+  findByEmulsionId: jest.fn().mockResolvedValue([]),
   findChildren: jest.fn().mockResolvedValue([]),
   findByCurrentStateIds: jest.fn().mockResolvedValue([]),
   save: jest.fn().mockResolvedValue(randomId()),
@@ -66,9 +66,9 @@ const makeFilmTagRepo = (overrides: Partial<IFilmTagRepository> = {}): IFilmTagR
 
 const makeFilmStateRepo = (overrides: Partial<IFilmStateRepository> = {}): IFilmStateRepository => ({
   findById: jest.fn().mockResolvedValue(null),
-  findByfilmId: jest.fn().mockResolvedValue([]),
-  findLatestByfilmId: jest.fn().mockResolvedValue(null),
-  findfilmIdsByCurrentState: jest.fn().mockResolvedValue([]),
+  findByFilmId: jest.fn().mockResolvedValue([]),
+  findLatestByFilmId: jest.fn().mockResolvedValue(null),
+  findFilmIdsByCurrentState: jest.fn().mockResolvedValue([]),
   save: jest.fn().mockResolvedValue(randomId()),
   update: jest.fn().mockResolvedValue(undefined),
   delete: jest.fn().mockResolvedValue(undefined),
@@ -88,8 +88,8 @@ const makeStateRepo = (overrides: Partial<ITransitionStateRepository> = {}): ITr
 const makeRuleRepo = (overrides: Partial<ITransitionRuleRepository> = {}): ITransitionRuleRepository => ({
   findAll: jest.fn().mockResolvedValue([]),
   findById: jest.fn().mockResolvedValue(null),
-  findByprofileId: jest.fn().mockResolvedValue([]),
-  findByfromStateId: jest.fn().mockResolvedValue([]),
+  findByProfileId: jest.fn().mockResolvedValue([]),
+  findByFromStateId: jest.fn().mockResolvedValue([]),
   findByFromStateAndProfile: jest.fn().mockResolvedValue([]),
   save: jest.fn().mockResolvedValue(undefined),
   update: jest.fn().mockResolvedValue(undefined),
@@ -159,7 +159,7 @@ describe('FilmService', () => {
         name: 'Roll 001',
         emulsionId: randomId(),
         expirationDate: '2026-12-31',
-        transitionprofileId: randomId(),
+        transitionProfileId: randomId(),
       });
 
       expect(result.name).toBe('Roll 001');

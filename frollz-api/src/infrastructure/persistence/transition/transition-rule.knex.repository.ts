@@ -21,12 +21,12 @@ export class TransitionRuleKnexRepository implements ITransitionRuleRepository {
     return rows.map((row) => TransitionRuleMapper.toDomain(row));
   }
 
-  async findByprofileId(profileId: number): Promise<TransitionRule[]> {
+  async findByProfileId(profileId: number): Promise<TransitionRule[]> {
     const rows = await this.knex<TransitionRuleRow>('transition_rule').where({ profile_id: profileId });
     return rows.map((row) => TransitionRuleMapper.toDomain(row));
   }
 
-  async findByfromStateId(fromStateId: number): Promise<TransitionRule[]> {
+  async findByFromStateId(fromStateId: number): Promise<TransitionRule[]> {
     const rows = await this.knex<TransitionRuleRow>('transition_rule').where({ from_state_id: fromStateId });
     return rows.map((row) => TransitionRuleMapper.toDomain(row));
   }

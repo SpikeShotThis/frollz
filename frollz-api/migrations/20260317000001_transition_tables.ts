@@ -125,7 +125,11 @@ export async function up(knex: Knex): Promise<void> {
   ];
   await knex("transition_state").insert(stateNames.map((name) => ({ name })));
   const insertedStates = await knex<{ id: number; name: string }>("transition_state").select("id", "name");
-  const stateId = (name: string) => insertedStates.find((s) => s.name === name)!.id;
+  const stateId = (name: string) => {
+    const row = insertedStates.find((s) => s.name === name);
+    if (!row) throw new Error(`Seed error: transition_state '${name}' not found`);
+    return row.id;
+  };
 
   // -----------------------------------------------------------------------
   // Seed: profiles
@@ -136,7 +140,11 @@ export async function up(knex: Knex): Promise<void> {
     { name: "bulk" },
   ]);
   const insertedProfiles = await knex<{ id: number; name: string }>("transition_profile").select("id", "name");
-  const profileId = (name: string) => insertedProfiles.find((p) => p.name === name)!.id;
+  const profileId = (name: string) => {
+    const row = insertedProfiles.find((p) => p.name === name);
+    if (!row) throw new Error(`Seed error: transition_profile '${name}' not found`);
+    return row.id;
+  };
 
   const std = profileId("standard");
   const inst = profileId("instant");
@@ -236,7 +244,11 @@ export async function up(knex: Knex): Promise<void> {
   ];
   await knex("transition_metadata_field").insert(fieldRows);
   const insertedFields = await knex<{ id: number; name: string }>("transition_metadata_field").select("id", "name");
-  const fieldId = (name: string) => insertedFields.find((f) => f.name === name)!.id;
+  const fieldId = (name: string) => {
+    const row = insertedFields.find((f) => f.name === name);
+    if (!row) throw new Error(`Seed error: transition_metadata_field '${name}' not found`);
+    return row.id;
+  };
 
   // -----------------------------------------------------------------------
   // Seed: state metadata associations

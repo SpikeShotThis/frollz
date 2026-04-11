@@ -31,7 +31,7 @@ export class TagService {
       description: data.description !== undefined ? data.description : existing.description,
     });
     await this.tagRepo.update(updated);
-    return updated;
+    return this.findById(id);
   }
 
   async delete(id: number): Promise<void> {
