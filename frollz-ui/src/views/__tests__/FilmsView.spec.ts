@@ -161,6 +161,82 @@ describe('FilmsView', () => {
     })
   })
 
+  describe('search', () => {
+    beforeEach(() => {
+      vi.useFakeTimers()
+    })
+    afterEach(() => {
+      vi.useRealTimers()
+    })
+
+    it('should call filmApi.getAll with q param after debounce', async () => {
+      const wrapper = mount(FilmsView, { global: { plugins: [router] } })
+      await flushPromises()
+
+      const vm = wrapper.vm as any
+      vm.searchQuery = 'scotland'
+      await wrapper.vm.$nextTick() // let Vue flush the watch
+      vi.advanceTimersByTime(300)
+      await flushPromises()
+
+      expect(filmApi.getAll).toHaveBeenCalledWith({ q: 'scotland' })
+    })
+
+    it('should not fire immediately before debounce delay', async () => {
+      const wrapper = mount(FilmsView, { global: { plugins: [router] } })
+      await flushPromises()
+
+      const callCountBefore = vi.mocked(filmApi.getAll).mock.calls.length
+      const vm = wrapper.vm as any
+      vm.searchQuery = 'scotland'
+      await wrapper.vm.$nextTick() // let Vue flush the watch
+      vi.advanceTimersByTime(100)
+      await flushPromises()
+
+      expect(vi.mocked(filmApi.getAll).mock.calls.length).toBe(callCountBefore)
+    })
+
+    it('should include search chip in activeFilterChips when searchQuery is set', async () => {
+      const wrapper = mount(FilmsView, { global: { plugins: [router] } })
+      await flushPromises()
+
+      const vm = wrapper.vm as any
+      vm.searchQuery = 'scotland'
+      await wrapper.vm.$nextTick()
+
+      const chip = vm.activeFilterChips.find((c: any) => c.key === 'search')
+      expect(chip).toBeDefined()
+      expect(chip.label).toBe('"scotland"')
+    })
+
+    it('should clear searchQuery when search chip is removed', async () => {
+      const wrapper = mount(FilmsView, { global: { plugins: [router] } })
+      await flushPromises()
+
+      const vm = wrapper.vm as any
+      vm.searchQuery = 'scotland'
+      await wrapper.vm.$nextTick()
+
+      const chip = vm.activeFilterChips.find((c: any) => c.key === 'search')
+      chip.remove()
+      await wrapper.vm.$nextTick()
+
+      expect(vm.searchQuery).toBe('')
+    })
+
+    it('should clear searchQuery on clearAllFilters', async () => {
+      const wrapper = mount(FilmsView, { global: { plugins: [router] } })
+      await flushPromises()
+
+      const vm = wrapper.vm as any
+      vm.searchQuery = 'scotland'
+      vm.clearAllFilters()
+      await wrapper.vm.$nextTick()
+
+      expect(vm.searchQuery).toBe('')
+    })
+  })
+
   describe('add film form', () => {
     it('should open modal and set standard profile on openAddFilm', async () => {
       const wrapper = mount(FilmsView, { global: { plugins: [router] } })

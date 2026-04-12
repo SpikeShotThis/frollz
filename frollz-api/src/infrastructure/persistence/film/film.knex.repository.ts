@@ -63,6 +63,15 @@ export class FilmKnexRepository implements IFilmRepository {
       query = query.whereIn('id', sub);
     }
 
+    if (filters.searchQuery) {
+      const pattern = `%${filters.searchQuery}%`;
+      query = query.where((builder) => {
+        builder
+          .whereILike('name', pattern)
+          .orWhereIn('id', this.knex('film_state').select('film_id').whereILike('note', pattern));
+      });
+    }
+
     const rows = await query.select('*');
     return Promise.all(rows.map((row) => this.hydrate(row)));
   }

@@ -31,6 +31,7 @@ export class FilmController {
   @ApiQuery({ name: 'tagId', required: false, isArray: true, type: Number, description: 'Filter by tag ID(s) — OR semantics' })
   @ApiQuery({ name: 'from', required: false, type: String, description: 'Filter by loaded date — start (YYYY-MM-DD, inclusive)' })
   @ApiQuery({ name: 'to', required: false, type: String, description: 'Filter by loaded date — end (YYYY-MM-DD, inclusive)' })
+  @ApiQuery({ name: 'q', required: false, type: String, description: 'Search by film name or state note (case-insensitive partial match)' })
   findAll(
     @Query('state') state?: string | string[],
     @Query('emulsionId') rawEmulsionId?: string,
@@ -38,6 +39,7 @@ export class FilmController {
     @Query('tagId') tagId?: string | string[],
     @Query('from') rawFrom?: string,
     @Query('to') rawTo?: string,
+    @Query('q') rawQ?: string,
   ) {
     const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
     if (rawFrom && !dateRegex.test(rawFrom)) {
@@ -53,7 +55,7 @@ export class FilmController {
     const tagIds = tagId
       ? (Array.isArray(tagId) ? tagId : [tagId]).map((t) => parseInt(t, 10)).filter((n) => !isNaN(n))
       : undefined;
-    return this.filmService.findAll({ stateNames, emulsionId, formatId, tagIds, from: rawFrom, to: rawTo });
+    return this.filmService.findAll({ stateNames, emulsionId, formatId, tagIds, from: rawFrom, to: rawTo, q: rawQ });
   }
 
   @Get(':id')

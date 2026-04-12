@@ -10,6 +10,7 @@ export interface FilmFilters {
   loadedStateId?: number;
   loadedDateFrom?: Date;
   loadedDateTo?: Date;
+  searchQuery?: string;
 }
 
 export interface IFilmRepository {

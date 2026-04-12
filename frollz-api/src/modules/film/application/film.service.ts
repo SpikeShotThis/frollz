@@ -18,6 +18,7 @@ export interface FilmFindAllParams {
   tagIds?: number[];
   from?: string;
   to?: string;
+  q?: string;
 }
 
 @Injectable()
@@ -47,6 +48,7 @@ export class FilmService {
     if (params.emulsionId !== undefined) filters.emulsionId = params.emulsionId;
     if (params.formatId !== undefined) filters.formatId = params.formatId;
     if (params.tagIds?.length) filters.tagIds = params.tagIds;
+    if (params.q?.trim()) filters.searchQuery = params.q.trim();
 
     if (params.from || params.to) {
       const loadedState = allStates.find((s) => s.name === 'Loaded');

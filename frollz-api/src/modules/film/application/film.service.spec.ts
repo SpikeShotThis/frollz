@@ -257,6 +257,45 @@ describe('FilmService', () => {
         loadedDateTo: new Date('2025-03-31T23:59:59.999Z'),
       });
     });
+
+    it('passes searchQuery when q is provided', async () => {
+      const film = makeFilm();
+      const filmRepo = makeFilmRepo({ findWithFilters: jest.fn().mockResolvedValue([film]) });
+      const service = makeService(filmRepo);
+
+      await service.findAll({ q: 'scotland' });
+
+      expect(filmRepo.findWithFilters).toHaveBeenCalledWith({ searchQuery: 'scotland' });
+    });
+
+    it('trims whitespace from q before passing as searchQuery', async () => {
+      const filmRepo = makeFilmRepo({ findWithFilters: jest.fn().mockResolvedValue([]) });
+      const service = makeService(filmRepo);
+
+      await service.findAll({ q: '  scotland  ' });
+
+      expect(filmRepo.findWithFilters).toHaveBeenCalledWith({ searchQuery: 'scotland' });
+    });
+
+    it('ignores q when it is blank whitespace', async () => {
+      const filmRepo = makeFilmRepo({ findAll: jest.fn().mockResolvedValue([]) });
+      const service = makeService(filmRepo);
+
+      await service.findAll({ q: '   ' });
+
+      expect(filmRepo.findAll).toHaveBeenCalled();
+      expect(filmRepo.findWithFilters).not.toHaveBeenCalled();
+    });
+
+    it('combines q with other filters', async () => {
+      const emulsionId = randomId();
+      const filmRepo = makeFilmRepo({ findWithFilters: jest.fn().mockResolvedValue([]) });
+      const service = makeService(filmRepo);
+
+      await service.findAll({ emulsionId, q: 'paris' });
+
+      expect(filmRepo.findWithFilters).toHaveBeenCalledWith({ emulsionId, searchQuery: 'paris' });
+    });
   });
 
   describe('findById', () => {

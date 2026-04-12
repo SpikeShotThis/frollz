@@ -9,7 +9,7 @@
 
     <!-- Search + Filters toggle row -->
     <div class="flex gap-3 mb-3">
-      <!-- Search (wired up in #158) -->
+      <!-- Search -->
       <div class="relative flex-1">
         <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 dark:text-gray-500 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z" />
@@ -437,6 +437,10 @@ const activeFilterChips = computed((): FilterChip[] => {
   })
   if (selectedFrom.value) chips.push({ key: 'from', label: `From ${selectedFrom.value}`, remove: () => { selectedFrom.value = '' } })
   if (selectedTo.value) chips.push({ key: 'to', label: `To ${selectedTo.value}`, remove: () => { selectedTo.value = '' } })
+  if (searchQuery.value.trim()) {
+    const q = searchQuery.value.trim()
+    chips.push({ key: 'search', label: `"${q}"`, remove: () => { searchQuery.value = '' } })
+  }
   return chips
 })
 
@@ -451,6 +455,7 @@ const clearAllFilters = () => {
   selectedTagIds.value = []
   selectedFrom.value = ''
   selectedTo.value = ''
+  searchQuery.value = ''
 }
 
 const getStateName = (film: Film): string => currentStateName(film)
@@ -534,6 +539,7 @@ const loadFilms = async () => {
     if (selectedTagIds.value.length > 0) params.tagId = selectedTagIds.value
     if (selectedFrom.value) params.from = selectedFrom.value
     if (selectedTo.value) params.to = selectedTo.value
+    if (searchQuery.value.trim()) params.q = searchQuery.value.trim()
     const response = await filmApi.getAll(Object.keys(params).length > 0 ? params : undefined)
     films.value = response.data
   } catch (err) {
@@ -551,6 +557,7 @@ const updateUrlQueryParams = () => {
   if (selectedTagIds.value.length > 0) query.tagId = selectedTagIds.value.map(String)
   if (selectedFrom.value) query.from = selectedFrom.value
   if (selectedTo.value) query.to = selectedTo.value
+  if (searchQuery.value.trim()) query.q = searchQuery.value.trim()
   router.replace({ query })
 }
 
@@ -558,6 +565,15 @@ watch([selectedStates, selectedEmulsionId, selectedFormatId, selectedTagIds, sel
   loadFilms()
   updateUrlQueryParams()
 }, { deep: true })
+
+let searchDebounceTimer: ReturnType<typeof setTimeout> | null = null
+watch(searchQuery, () => {
+  if (searchDebounceTimer !== null) clearTimeout(searchDebounceTimer)
+  searchDebounceTimer = setTimeout(() => {
+    loadFilms()
+    updateUrlQueryParams()
+  }, 300)
+})
 
 const openAddFilm = (emulsionId?: string) => {
   if (emulsionId) form.value.emulsionId = emulsionId
@@ -590,6 +606,8 @@ onMounted(async () => {
   if (fromParam && typeof fromParam === 'string') selectedFrom.value = fromParam
   const toParam = route.query.to
   if (toParam && typeof toParam === 'string') selectedTo.value = toParam
+  const qParam = route.query.q
+  if (qParam && typeof qParam === 'string') searchQuery.value = qParam
 
   await Promise.all([
     loadFilms(),
