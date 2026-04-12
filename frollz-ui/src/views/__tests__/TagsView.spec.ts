@@ -10,10 +10,6 @@ const axeOptions = {
   runOnly: { type: 'tag' as const, values: ['wcag2a', 'wcag2aa', 'wcag21aa'] },
 }
 
-const axeOptions = {
-  runOnly: { type: 'tag' as const, values: ['wcag2a', 'wcag2aa', 'wcag21aa'] },
-}
-
 vi.mock('@/services/api-client', () => ({
   tagApi: {
     getAll: vi.fn(),
