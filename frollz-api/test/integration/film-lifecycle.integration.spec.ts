@@ -24,6 +24,8 @@ import { FilmTagKnexRepository } from '../../src/infrastructure/persistence/film
 import { FilmStateKnexRepository } from '../../src/infrastructure/persistence/film-state/film-state.knex.repository';
 import { TransitionStateKnexRepository } from '../../src/infrastructure/persistence/transition/transition-state.knex.repository';
 import { TransitionRuleKnexRepository } from '../../src/infrastructure/persistence/transition/transition-rule.knex.repository';
+import { TransitionStateMetadataKnexRepository } from '../../src/infrastructure/persistence/transition/transition-state-metadata.knex.repository';
+import { TransitionMetadataFieldKnexRepository } from '../../src/infrastructure/persistence/transition/transition-metadata-field.knex.repository';
 import { TagKnexRepository } from '../../src/infrastructure/persistence/shared/tag.knex.repository';
 
 import { EmulsionService } from '../../src/modules/emulsion/application/emulsion.service';
@@ -42,6 +44,8 @@ let filmTagRepo: FilmTagKnexRepository;
 let filmStateRepo: FilmStateKnexRepository;
 let transitionStateRepo: TransitionStateKnexRepository;
 let transitionRuleRepo: TransitionRuleKnexRepository;
+let transitionStateMetadataRepo: TransitionStateMetadataKnexRepository;
+let transitionMetadataFieldRepo: TransitionMetadataFieldKnexRepository;
 let tagRepo: TagKnexRepository;
 
 let emulsionService: EmulsionService;
@@ -64,11 +68,13 @@ beforeAll(async () => {
   filmStateRepo = new FilmStateKnexRepository(knex);
   transitionStateRepo = new TransitionStateKnexRepository(knex);
   transitionRuleRepo = new TransitionRuleKnexRepository(knex);
+  transitionStateMetadataRepo = new TransitionStateMetadataKnexRepository(knex);
+  transitionMetadataFieldRepo = new TransitionMetadataFieldKnexRepository(knex);
   tagRepo = new TagKnexRepository(knex);
 
   // Services
   emulsionService = new EmulsionService(emulsionRepo, emulsionTagRepo);
-  filmService = new FilmService(filmRepo, filmTagRepo, filmStateRepo, transitionStateRepo, transitionRuleRepo);
+  filmService = new FilmService(filmRepo, filmTagRepo, filmStateRepo, transitionStateRepo, transitionRuleRepo, transitionStateMetadataRepo, transitionMetadataFieldRepo);
 
   // Seed supporting data
   const seeds = await seedSupporting(knex);
@@ -210,7 +216,8 @@ describe('Film', () => {
     expect(film.name).toBe('Roll 001');
     expect(film.emulsionId).toBe(emulsionId);
     expect(film.transitionProfileId).toBe(standardProfileId);
-    expect(film.states).toHaveLength(0);
+    expect(film.states).toHaveLength(1);
+    expect(film.currentState?.state?.name).toBe('Added');
   });
 
   it('tags a film and verifies the tag is returned', async () => {
@@ -253,9 +260,10 @@ describe('Film lifecycle (standard profile)', () => {
   let filmId: number;
   let emulsionId: number;
 
-  // Use explicit ordered dates so the currentState reducer always picks the right state
-  // even when transitions happen within the same millisecond.
-  const baseDate = new Date('2024-06-01T00:00:00.000Z');
+  // Use dates strictly in the future relative to when create() runs (which uses new Date()).
+  // Without this, the auto-added 'Added' state would always sort as current because its
+  // wall-clock date would exceed any hardcoded historical date passed to transition().
+  const baseDate = new Date(Date.now() + 60_000); // 1 minute from now
   let transitionStep = 0;
 
   const nextDate = () =>
@@ -288,14 +296,10 @@ describe('Film lifecycle (standard profile)', () => {
     return film;
   };
 
-  it('starts with no state', async () => {
+  it('starts in Added state (set automatically by create)', async () => {
     const film = await filmService.findById(filmId);
-    expect(film.states).toHaveLength(0);
-    expect(film.currentState).toBeNull();
-  });
-
-  it('transitions to Added (initial state, no prior state required)', async () => {
-    await transitionAndAssert('Added');
+    expect(film.states).toHaveLength(1);
+    expect(film.currentState?.state?.name).toBe('Added');
   });
 
   it('transitions from Added to Shelved', async () => {
@@ -365,12 +369,10 @@ describe('findAll with state filter', () => {
       transitionProfileId: standardProfileId,
     });
 
-    const t0 = new Date('2025-01-01T00:00:00.000Z').toISOString();
-    const t1 = new Date('2025-01-01T00:01:00.000Z').toISOString();
-    const t2 = new Date('2025-01-01T00:02:00.000Z').toISOString();
+    // Both films start in Added state automatically via create(); filmB progresses to Shelved.
+    // Use a future date so it sorts after the auto-added Added state (which uses new Date()).
+    const t2 = new Date(Date.now() + 120_000).toISOString();
 
-    await filmService.transition(filmA.id, { targetStateName: 'Added', date: t0 });
-    await filmService.transition(filmB.id, { targetStateName: 'Added', date: t1 });
     await filmService.transition(filmB.id, { targetStateName: 'Shelved', date: t2 });
 
     const addedFilms = await filmService.findAll({ stateNames: ['Added'] });

@@ -71,7 +71,7 @@
               </button>
             </div>
 
-            <!-- Date + note form -->
+            <!-- Date + note + metadata form -->
             <div v-if="pendingTransition" class="border border-blue-300 dark:border-blue-600 rounded-md p-3 bg-blue-50 dark:bg-blue-900/20">
               <p class="text-sm font-medium text-blue-800 dark:text-blue-200 mb-3">{{ pendingTransition }}</p>
               <label for="transition-date" class="block text-xs text-gray-600 dark:text-gray-400 mb-2">
@@ -82,6 +82,47 @@
                 Note — optional
                 <textarea id="transition-note" v-model="transitionNote" rows="2" class="mt-1 w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1 text-base sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"></textarea>
               </label>
+
+              <!-- Dynamic metadata fields -->
+              <template v-for="field in pendingTransitionMetadata" :key="field.field">
+                <div v-if="field.allowMultiple" class="mb-2">
+                  <span class="block text-xs text-gray-600 dark:text-gray-400 mb-1">{{ formatFieldLabel(field.field) }} — optional</span>
+                  <div
+                    v-for="(url, idx) in (metadataValues[field.field] as string[])"
+                    :key="idx"
+                    class="flex gap-2 mb-1"
+                  >
+                    <input
+                      :id="`meta-${field.field}-${idx}`"
+                      v-model="(metadataValues[field.field] as string[])[idx]"
+                      type="url"
+                      placeholder="https://example.com/scan.jpg"
+                      class="flex-1 border border-gray-300 dark:border-gray-600 rounded px-2 py-1 text-base sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                    />
+                    <button
+                      type="button"
+                      @click="removeMetadataUrl(field.field, idx)"
+                      class="px-2 py-1 text-sm text-red-600 dark:text-red-400 hover:underline min-h-[44px]"
+                      aria-label="Remove URL"
+                    >&times;</button>
+                  </div>
+                  <button
+                    type="button"
+                    @click="addMetadataUrl(field.field)"
+                    class="text-xs text-primary-600 dark:text-primary-400 hover:underline min-h-[44px]"
+                  >+ Add URL</button>
+                </div>
+                <label v-else :for="`meta-${field.field}`" class="block text-xs text-gray-600 dark:text-gray-400 mb-2">
+                  {{ formatFieldLabel(field.field) }} — optional
+                  <input
+                    :id="`meta-${field.field}`"
+                    v-model="metadataValues[field.field] as string"
+                    :type="field.fieldType === 'number' ? 'number' : field.fieldType === 'date' ? 'date' : 'text'"
+                    class="mt-1 w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1 text-base sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                  />
+                </label>
+              </template>
+
               <div class="flex flex-col sm:flex-row gap-2 mt-3">
                 <button
                   @click="confirmTransition"
@@ -89,7 +130,7 @@
                   class="w-full sm:w-auto px-4 py-2 sm:px-3 sm:py-2 min-h-[44px] text-sm font-medium bg-primary-600 text-white rounded hover:bg-primary-700 disabled:opacity-50"
                 >Confirm</button>
                 <button
-                  @click="pendingTransition = null"
+                  @click="cancelTransition"
                   :disabled="transitionSubmitting"
                   class="w-full sm:w-auto px-4 py-2 sm:px-3 sm:py-2 min-h-[44px] text-sm font-medium text-gray-500 dark:text-gray-400 hover:underline disabled:opacity-50"
                 >Cancel</button>
@@ -172,6 +213,30 @@
               <time class="text-xs text-gray-600 dark:text-gray-400">{{ formatDate(entry.date) }}</time>
             </div>
             <p v-if="entry.note" class="mt-1 text-sm text-gray-600 dark:text-gray-400">{{ entry.note }}</p>
+            <!-- Metadata values -->
+            <ul v-if="entry.metadata?.length" class="mt-1 space-y-0.5">
+              <li
+                v-for="m in entry.metadata"
+                :key="m.id"
+                class="text-xs text-gray-500 dark:text-gray-400"
+              >
+                <span class="font-medium">{{ formatFieldLabel(m.transitionStateMetadata?.field?.name ?? '') }}:</span>
+                <template v-if="Array.isArray(m.value)">
+                  <span v-if="m.value.length === 0" class="ml-1 italic">none</span>
+                  <span v-else class="ml-1 space-x-1">
+                    <a
+                      v-for="(url, i) in m.value"
+                      :key="i"
+                      :href="url"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      class="text-primary-600 dark:text-primary-400 hover:underline"
+                    >Scan {{ i + 1 }}</a>
+                  </span>
+                </template>
+                <span v-else class="ml-1">{{ m.value ?? '—' }}</span>
+              </li>
+            </ul>
           </li>
         </ol>
       </div>
@@ -183,7 +248,7 @@
 import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { filmApi, tagApi, transitionApi } from '@/services/api-client'
-import type { Film, FilmTag, Tag, TransitionGraph, TransitionProfile } from '@/types'
+import type { Film, FilmTag, Tag, TransitionGraph, TransitionProfile, TransitionMetadataField } from '@/types'
 import { currentStateName } from '@/types'
 import { useNotificationStore } from '@/stores/notification'
 import { getStateColor } from '@/utils/stateColors'
@@ -202,8 +267,10 @@ const loading = ref(true)
 const transitionError = ref('')
 const transitionSubmitting = ref(false)
 const pendingTransition = ref<string | null>(null)
+const pendingTransitionMetadata = ref<TransitionMetadataField[]>([])
 const transitionDate = ref('')
 const transitionNote = ref('')
+const metadataValues = ref<Record<string, string | string[]>>({})
 
 const transitionGraph = ref<TransitionGraph>({ states: [], transitions: [] })
 
@@ -250,26 +317,72 @@ const sortedStates = computed(() => {
 
 const formatDate = (date: Date | string) => new Date(date as string).toLocaleDateString()
 
+const formatFieldLabel = (fieldName: string): string =>
+  fieldName.replace(/([A-Z])/g, ' $1').replace(/^./, s => s.toUpperCase()).trim()
+
 const handleTransition = (targetState: string) => {
   pendingTransition.value = targetState
   transitionDate.value = new Date().toISOString().slice(0, 10)
   transitionNote.value = ''
+
+  const edge = transitionGraph.value.transitions.find(
+    t => t.fromState === stateName.value && t.toState === targetState,
+  )
+  pendingTransitionMetadata.value = edge?.metadata ?? []
+
+  const initialValues: Record<string, string | string[]> = {}
+  for (const field of pendingTransitionMetadata.value) {
+    initialValues[field.field] = field.allowMultiple ? [] : ''
+  }
+  metadataValues.value = initialValues
+}
+
+const cancelTransition = () => {
+  pendingTransition.value = null
+  pendingTransitionMetadata.value = []
+  metadataValues.value = {}
+}
+
+const addMetadataUrl = (fieldName: string) => {
+  const arr = metadataValues.value[fieldName]
+  if (Array.isArray(arr)) arr.push('')
+}
+
+const removeMetadataUrl = (fieldName: string, idx: number) => {
+  const arr = metadataValues.value[fieldName]
+  if (Array.isArray(arr)) arr.splice(idx, 1)
+}
+
+const buildMetadataPayload = (): Record<string, string | string[]> | undefined => {
+  const payload: Record<string, string | string[]> = {}
+  for (const field of pendingTransitionMetadata.value) {
+    const val = metadataValues.value[field.field]
+    if (field.allowMultiple) {
+      const urls = (val as string[]).filter(u => u.trim() !== '')
+      if (urls.length > 0) payload[field.field] = urls
+    } else {
+      const scalar = (val as string).trim()
+      if (scalar !== '') payload[field.field] = scalar
+    }
+  }
+  return Object.keys(payload).length > 0 ? payload : undefined
 }
 
 const confirmTransition = async () => {
   if (!film.value || !pendingTransition.value) return
   transitionSubmitting.value = true
   transitionError.value = ''
+  const targetStateName = pendingTransition.value
   try {
     const today = new Date().toISOString().slice(0, 10)
     const dateStr = transitionDate.value && transitionDate.value !== today
       ? new Date(transitionDate.value + 'T12:00:00').toISOString()
       : new Date().toISOString()
-    await filmApi.transition(film.value.id, pendingTransition.value, dateStr, transitionNote.value || undefined)
-    pendingTransition.value = null
-    transitionNote.value = ''
+    const metadata = buildMetadataPayload()
+    await filmApi.transition(film.value.id, targetStateName, dateStr, transitionNote.value || undefined, metadata)
+    cancelTransition()
     await loadData()
-    notification.announce(`Film moved to ${pendingTransition.value ?? ''}`)
+    notification.announce(`Film moved to ${targetStateName}`)
   } catch {
     transitionError.value = 'Failed to transition film. Please try again.'
   } finally {
