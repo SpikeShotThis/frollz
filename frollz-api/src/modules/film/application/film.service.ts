@@ -6,9 +6,17 @@ import { FilmState } from '../../../domain/film-state/entities/film-state.entity
 import { IFilmStateRepository, FILM_STATE_REPOSITORY } from '../../../domain/film-state/repositories/film-state.repository.interface';
 import { ITransitionStateRepository, TRANSITION_STATE_REPOSITORY } from '../../../domain/transition/repositories/transition-state.repository.interface';
 import { ITransitionRuleRepository, TRANSITION_RULE_REPOSITORY } from '../../../domain/transition/repositories/transition-rule.repository.interface';
+import { FilmFilters } from '../../../domain/film/repositories/film.repository.interface';
 import { CreateFilmDto } from '../dto/create-film.dto';
 import { UpdateFilmDto } from '../dto/update-film.dto';
 import { TransitionFilmDto } from '../dto/transition-film.dto';
+
+export interface FilmFindAllParams {
+  stateNames?: string[];
+  emulsionId?: number;
+  formatId?: number;
+  tagIds?: number[];
+}
 
 @Injectable()
 export class FilmService {
@@ -20,17 +28,24 @@ export class FilmService {
     @Inject(TRANSITION_RULE_REPOSITORY) private readonly transitionRuleRepo: ITransitionRuleRepository,
   ) {}
 
-  async findAll(stateNames?: string[]): Promise<Film[]> {
-    if (!stateNames || stateNames.length === 0) {
-      return this.filmRepo.findAll();
-    }
-    const allStates = await this.transitionStateRepo.findAll();
-    const stateIds = allStates
-      .filter((s) => stateNames.includes(s.name))
-      .map((s) => s.id);
+  async findAll(params: FilmFindAllParams = {}): Promise<Film[]> {
+    const filters: FilmFilters = {};
 
-    if (stateIds.length === 0) return [];
-    return this.filmRepo.findByCurrentStateIds(stateIds);
+    if (params.stateNames?.length) {
+      const allStates = await this.transitionStateRepo.findAll();
+      const stateIds = allStates
+        .filter((s) => params.stateNames!.includes(s.name))
+        .map((s) => s.id);
+      if (stateIds.length === 0) return [];
+      filters.stateIds = stateIds;
+    }
+
+    if (params.emulsionId !== undefined) filters.emulsionId = params.emulsionId;
+    if (params.formatId !== undefined) filters.formatId = params.formatId;
+    if (params.tagIds?.length) filters.tagIds = params.tagIds;
+
+    const hasFilters = Object.keys(filters).length > 0;
+    return hasFilters ? this.filmRepo.findWithFilters(filters) : this.filmRepo.findAll();
   }
 
   async findById(id: number): Promise<Film> {

@@ -5,7 +5,7 @@ import { createPinia, setActivePinia } from 'pinia'
 import { createRouter, createMemoryHistory } from 'vue-router'
 import { axe } from 'vitest-axe'
 import RollsView from '@/views/RollsView.vue'
-import { filmApi, emulsionApi, transitionApi } from '@/services/api-client'
+import { filmApi, emulsionApi, transitionApi, formatApi, tagApi } from '@/services/api-client'
 import type { Film } from '@/types'
 import { randomInt } from 'crypto'
 
@@ -21,6 +21,12 @@ vi.mock('@/services/api-client', () => ({
     create: vi.fn(),
   },
   emulsionApi: {
+    getAll: vi.fn(),
+  },
+  formatApi: {
+    getAll: vi.fn(),
+  },
+  tagApi: {
     getAll: vi.fn(),
   },
   transitionApi: {
@@ -60,6 +66,8 @@ describe('RollsView', () => {
     vi.clearAllMocks()
     vi.mocked(filmApi.getAll).mockResolvedValue({ data: [] } as any)
     vi.mocked(emulsionApi.getAll).mockResolvedValue({ data: [] } as any)
+    vi.mocked(formatApi.getAll).mockResolvedValue({ data: [] } as any)
+    vi.mocked(tagApi.getAll).mockResolvedValue({ data: [] } as any)
     vi.mocked(transitionApi.getProfiles).mockResolvedValue({ data: mockProfiles } as any)
   })
 

@@ -68,7 +68,7 @@ export const filmTagApi = {
 
 // Film API (replaces rollApi)
 export const filmApi = {
-  getAll: (params?: { state?: string[] }) =>
+  getAll: (params?: { state?: string[]; emulsionId?: number; formatId?: number; tagId?: number[] }) =>
     api.get<Film[]>('/films', {
       params,
       paramsSerializer: { indexes: null },

@@ -1,7 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { Knex } from 'knex';
 import { Film } from '../../../domain/film/entities/film.entity';
-import { IFilmRepository } from '../../../domain/film/repositories/film.repository.interface';
+import { FilmFilters, IFilmRepository } from '../../../domain/film/repositories/film.repository.interface';
 import { KNEX_CONNECTION } from '../knex.provider';
 import { FilmRow, FilmTagRow, TagRow } from '../types/db.types';
 import { FilmMapper } from './film.mapper';
@@ -20,6 +20,44 @@ export class FilmKnexRepository implements IFilmRepository {
 
   async findAll(): Promise<Film[]> {
     const rows = await this.knex<FilmRow>('film').select('*');
+    return Promise.all(rows.map((row) => this.hydrate(row)));
+  }
+
+  async findWithFilters(filters: FilmFilters): Promise<Film[]> {
+    let query = this.knex<FilmRow>('film');
+
+    if (filters.stateIds?.length) {
+      query = query.whereIn(
+        'id',
+        this.knex('film_state as fs2')
+          .select('fs2.film_id')
+          .whereIn('fs2.state_id', filters.stateIds)
+          .where(
+            'fs2.date',
+            this.knex('film_state as fs3').max('fs3.date').where('fs3.film_id', this.knex.ref('fs2.film_id')),
+          ),
+      );
+    }
+
+    if (filters.emulsionId !== undefined) {
+      query = query.where('emulsion_id', filters.emulsionId);
+    }
+
+    if (filters.formatId !== undefined) {
+      query = query.whereIn(
+        'emulsion_id',
+        this.knex('emulsion').select('id').where('format_id', filters.formatId),
+      );
+    }
+
+    if (filters.tagIds?.length) {
+      query = query.whereIn(
+        'id',
+        this.knex('film_tag').select('film_id').whereIn('tag_id', filters.tagIds),
+      );
+    }
+
+    const rows = await query.select('*');
     return Promise.all(rows.map((row) => this.hydrate(row)));
   }
 

@@ -32,7 +32,7 @@
           <span class="text-sm font-medium">{{ state }}</span>
         </label>
       </div>
-      <div class="mt-3 flex items-center gap-3">
+      <div class="mt-2">
         <button
           v-if="selectedStates.length > 0"
           @click="clearStateFilter"
@@ -40,30 +40,78 @@
         >
           Clear state filter
         </button>
-        <span v-if="selectedStates.length > 0" class="text-sm text-gray-600 dark:text-gray-400">
-          Showing {{ filteredFilms.length }} film(s)
-        </span>
       </div>
     </div>
 
-    <!-- Active Filters -->
-    <div class="flex flex-wrap items-center gap-2 mb-4 min-h-[2rem]">
-      <span class="text-sm text-gray-500 dark:text-gray-400 font-medium">Additional Filters:</span>
-      <span v-if="activeFilters.length === 0" class="text-sm text-gray-600 dark:text-gray-400 italic">
-        <span class="hidden md:inline">Click emulsion values in the table to filter</span>
-        <span class="md:hidden">None</span>
-      </span>
-      <template v-else>
-        <span
-          v-for="(filter, index) in activeFilters"
-          :key="index"
-          class="inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm bg-primary-100 dark:bg-primary-900 text-primary-800 dark:text-primary-200 font-medium"
+    <!-- Emulsion / Format / Tag Filters -->
+    <div class="mb-4 bg-white dark:bg-gray-800 rounded-lg shadow-md p-4">
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div>
+          <label for="filter-emulsion" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Emulsion
+            <select
+              id="filter-emulsion"
+              v-model="selectedEmulsionId"
+              class="mt-1 w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500"
+            >
+              <option :value="null">All emulsions</option>
+              <option v-for="emulsion in sortedEmulsions" :key="emulsion.id" :value="emulsion.id">
+                {{ emulsion.brand }} — {{ emulsion.name }}
+              </option>
+            </select>
+          </label>
+        </div>
+        <div>
+          <label for="filter-format" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Format
+            <select
+              id="filter-format"
+              v-model="selectedFormatId"
+              class="mt-1 w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500"
+            >
+              <option :value="null">All formats</option>
+              <option v-for="format in formats" :key="format.id" :value="format.id">{{ format.name }}</option>
+            </select>
+          </label>
+        </div>
+        <div>
+          <div class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Tags</div>
+          <div class="flex flex-wrap gap-2">
+            <label
+              v-for="tag in tags"
+              :key="tag.id"
+              :for="`tag-filter-${tag.id}`"
+              class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md border cursor-pointer text-sm transition-colors"
+              :class="selectedTagIds.includes(tag.id)
+                ? 'bg-primary-100 dark:bg-primary-900 border-primary-600 dark:border-primary-400 text-primary-800 dark:text-primary-200'
+                : 'bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600'"
+            >
+              <input
+                :id="`tag-filter-${tag.id}`"
+                type="checkbox"
+                :value="tag.id"
+                v-model="selectedTagIds"
+                class="rounded text-primary-600 focus:ring-primary-500"
+              />
+              <span
+                class="inline-block w-2 h-2 rounded-full"
+                :style="{ backgroundColor: tag.colorCode }"
+              ></span>
+              {{ tag.name }}
+            </label>
+          </div>
+        </div>
+      </div>
+      <div class="mt-3 flex items-center gap-3">
+        <button
+          v-if="hasActiveFilters"
+          @click="clearAllFilters"
+          class="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 underline"
         >
-          {{ filter.label }}: {{ filter.value }}
-          <button @click="removeFilter(index)" class="ml-1 inline-flex items-center justify-center min-h-[44px] min-w-[44px] text-primary-600 dark:text-primary-400 hover:text-primary-900 dark:hover:text-primary-200 font-bold">&times;</button>
+          Clear all filters
+        </button>
+        <span v-if="hasActiveFilters" class="text-sm text-gray-600 dark:text-gray-400">
+          Showing {{ filteredFilms.length }} film(s)
         </span>
-        <button @click="clearFilters" class="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 underline">Clear all</button>
-      </template>
+      </div>
     </div>
 
     <!-- Mobile card list (hidden on md+) -->
@@ -133,10 +181,9 @@
                   class="px-6 py-4 whitespace-nowrap text-sm font-medium text-primary-600 dark:text-primary-400 cursor-pointer hover:underline"
                   @click="$router.push({ name: 'roll-detail', params: { key: film.id } })"
                 >{{ film.name }}</td>
-                <td
-                  class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 cursor-pointer hover:text-primary-600 dark:hover:text-primary-400"
-                  @click="film.emulsion?.brand && addFilter('emulsionBrand', 'Emulsion', film.emulsion.brand)"
-                >{{ film.emulsion?.brand ?? '—' }}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                  {{ film.emulsion?.brand ?? '—' }}
+                </td>
                 <td class="px-6 py-4 whitespace-nowrap">
                   <span
                     class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full"
@@ -273,9 +320,9 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
-import { filmApi, emulsionApi, transitionApi } from '@/services/api-client'
+import { filmApi, emulsionApi, transitionApi, formatApi, tagApi } from '@/services/api-client'
 import BaseModal from '@/components/BaseModal.vue'
-import type { Film, Emulsion, TransitionProfile } from '@/types'
+import type { Film, Emulsion, TransitionProfile, Format, Tag } from '@/types'
 import { currentStateName } from '@/types'
 import { getStateColor } from '@/utils/stateColors'
 
@@ -284,23 +331,16 @@ const router = useRouter()
 
 const films = ref<Film[]>([])
 const emulsions = ref<Emulsion[]>([])
+const formats = ref<Format[]>([])
+const tags = ref<Tag[]>([])
 const transitionProfiles = ref<TransitionProfile[]>([])
 const isLoading = ref(true)
 const showModal = ref(false)
 
 const selectedStates = ref<string[]>([])
-type ActiveFilter = { field: string; label: string; value: string }
-const activeFilters = ref<ActiveFilter[]>([])
-
-const addFilter = (field: string, label: string, value: string) => {
-  if (!value) return
-  if (!activeFilters.value.some(f => f.field === field && f.value === value)) {
-    activeFilters.value.push({ field, label, value })
-  }
-}
-const removeFilter = (index: number) => activeFilters.value.splice(index, 1)
-const clearFilters = () => { activeFilters.value = [] }
-const clearStateFilter = () => { selectedStates.value = [] }
+const selectedEmulsionId = ref<number | null>(null)
+const selectedFormatId = ref<number | null>(null)
+const selectedTagIds = ref<number[]>([])
 
 const submitting = ref(false)
 const error = ref('')
@@ -310,6 +350,22 @@ const filmStateOptions = [
   'Added', 'Frozen', 'Refrigerated', 'Shelved', 'Loaded',
   'Finished', 'Sent For Development', 'Developed', 'Received',
 ]
+
+const hasActiveFilters = computed(() =>
+  selectedStates.value.length > 0 ||
+  selectedEmulsionId.value !== null ||
+  selectedFormatId.value !== null ||
+  selectedTagIds.value.length > 0,
+)
+
+const clearAllFilters = () => {
+  selectedStates.value = []
+  selectedEmulsionId.value = null
+  selectedFormatId.value = null
+  selectedTagIds.value = []
+}
+
+const clearStateFilter = () => { selectedStates.value = [] }
 
 const getStateName = (film: Film): string => currentStateName(film)
 
@@ -324,17 +380,7 @@ const emptyForm = () => ({
 
 const form = ref(emptyForm())
 
-const filteredFilms = computed(() => {
-  const base = activeFilters.value.length === 0
-    ? films.value
-    : films.value.filter(film =>
-        activeFilters.value.every(f => {
-          if (f.field === 'emulsionBrand') return (film.emulsion?.brand ?? '') === f.value
-          return false
-        })
-      )
-  return base
-})
+const filteredFilms = computed(() => films.value)
 
 const sortedEmulsions = computed(() =>
   emulsions.value.slice().sort((a, b) => a.brand.toLowerCase().localeCompare(b.brand.toLowerCase()))
@@ -394,8 +440,12 @@ const handleSubmit = async () => {
 const loadFilms = async () => {
   isLoading.value = true
   try {
-    const params = selectedStates.value.length > 0 ? { state: selectedStates.value } : undefined
-    const response = await filmApi.getAll(params)
+    const params: Parameters<typeof filmApi.getAll>[0] = {}
+    if (selectedStates.value.length > 0) params.state = selectedStates.value
+    if (selectedEmulsionId.value !== null) params.emulsionId = selectedEmulsionId.value
+    if (selectedFormatId.value !== null) params.formatId = selectedFormatId.value
+    if (selectedTagIds.value.length > 0) params.tagId = selectedTagIds.value
+    const response = await filmApi.getAll(Object.keys(params).length > 0 ? params : undefined)
     films.value = response.data
   } catch (err) {
     console.error('Error loading films:', err)
@@ -405,16 +455,15 @@ const loadFilms = async () => {
 }
 
 const updateUrlQueryParams = () => {
-  const query = { ...route.query }
-  if (selectedStates.value.length > 0) {
-    query.state = selectedStates.value
-  } else {
-    delete query.state
-  }
+  const query: Record<string, string | string[]> = {}
+  if (selectedStates.value.length > 0) query.state = selectedStates.value
+  if (selectedEmulsionId.value !== null) query.emulsionId = String(selectedEmulsionId.value)
+  if (selectedFormatId.value !== null) query.formatId = String(selectedFormatId.value)
+  if (selectedTagIds.value.length > 0) query.tagId = selectedTagIds.value.map(String)
   router.replace({ query })
 }
 
-watch(selectedStates, () => {
+watch([selectedStates, selectedEmulsionId, selectedFormatId, selectedTagIds], () => {
   loadFilms()
   updateUrlQueryParams()
 }, { deep: true })
@@ -433,14 +482,29 @@ onMounted(async () => {
     const states = Array.isArray(stateParam) ? stateParam : [stateParam]
     selectedStates.value = states.filter((s): s is string => s !== null)
   }
+  const emulsionIdParam = route.query.emulsionId
+  if (emulsionIdParam && typeof emulsionIdParam === 'string') {
+    selectedEmulsionId.value = parseInt(emulsionIdParam, 10) || null
+  }
+  const formatIdParam = route.query.formatId
+  if (formatIdParam && typeof formatIdParam === 'string') {
+    selectedFormatId.value = parseInt(formatIdParam, 10) || null
+  }
+  const tagIdParam = route.query.tagId
+  if (tagIdParam) {
+    const ids = Array.isArray(tagIdParam) ? tagIdParam : [tagIdParam]
+    selectedTagIds.value = ids.map(Number).filter(Boolean)
+  }
 
   await Promise.all([
     loadFilms(),
     emulsionApi.getAll().then(r => { emulsions.value = r.data }),
+    formatApi.getAll().then(r => { formats.value = r.data }),
+    tagApi.getAll().then(r => { tags.value = r.data }),
     transitionApi.getProfiles().then(r => { transitionProfiles.value = r.data }),
   ])
 
-  const emulsionId = route.query.emulsionId as string | undefined
-  if (emulsionId) openAddFilm(emulsionId)
+  const openWithEmulsionId = route.query.emulsionId as string | undefined
+  if (openWithEmulsionId && selectedEmulsionId.value === null) openAddFilm(openWithEmulsionId)
 })
 </script>

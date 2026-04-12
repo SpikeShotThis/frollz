@@ -23,11 +23,24 @@ export class FilmController {
   constructor(private readonly filmService: FilmService) {}
 
   @Get()
-  @ApiOperation({ summary: 'List all films, optionally filtered by current state name' })
-  @ApiQuery({ name: 'state', required: false, isArray: true, description: 'Filter by state name(s)' })
-  findAll(@Query('state') state?: string | string[]) {
+  @ApiOperation({ summary: 'List all films with optional filters' })
+  @ApiQuery({ name: 'state', required: false, isArray: true, description: 'Filter by current state name(s)' })
+  @ApiQuery({ name: 'emulsionId', required: false, type: Number, description: 'Filter by emulsion ID' })
+  @ApiQuery({ name: 'formatId', required: false, type: Number, description: 'Filter by format ID (via emulsion)' })
+  @ApiQuery({ name: 'tagId', required: false, isArray: true, type: Number, description: 'Filter by tag ID(s) — OR semantics' })
+  findAll(
+    @Query('state') state?: string | string[],
+    @Query('emulsionId') rawEmulsionId?: string,
+    @Query('formatId') rawFormatId?: string,
+    @Query('tagId') tagId?: string | string[],
+  ) {
     const stateNames = state ? (Array.isArray(state) ? state : [state]) : undefined;
-    return this.filmService.findAll(stateNames);
+    const emulsionId = rawEmulsionId !== undefined ? parseInt(rawEmulsionId, 10) : undefined;
+    const formatId = rawFormatId !== undefined ? parseInt(rawFormatId, 10) : undefined;
+    const tagIds = tagId
+      ? (Array.isArray(tagId) ? tagId : [tagId]).map((t) => parseInt(t, 10)).filter((n) => !isNaN(n))
+      : undefined;
+    return this.filmService.findAll({ stateNames, emulsionId, formatId, tagIds });
   }
 
   @Get(':id')
