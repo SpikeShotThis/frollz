@@ -1,4 +1,5 @@
 const STATE_COLORS: Record<string, string> = {
+  Imported: 'bg-teal-100 text-teal-800 dark:bg-teal-900/50 dark:text-teal-200',
   Added: 'bg-orange-100 text-orange-800 dark:bg-orange-900/50 dark:text-orange-200',
   Frozen: 'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-200',
   Refrigerated: 'bg-cyan-100 text-cyan-800 dark:bg-cyan-900/50 dark:text-cyan-200',
