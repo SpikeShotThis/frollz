@@ -14,7 +14,7 @@ Always use `docker compose` (plugin), never `docker-compose` (legacy). `docker-c
 
 ```bash
 # API (frollz-api/)
-npm run start:dev        # dev server — SQLite, no setup needed
+npm run dev        # dev server — SQLite, no setup needed
 npm test                 # unit tests
 npm run test:integration # integration tests
 npm run lint             # ESLint + auto-fix

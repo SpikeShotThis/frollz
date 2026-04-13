@@ -29,7 +29,7 @@ services:
       - /app/node_modules
     networks:
       - frollz-network
-    command: npm run start:dev
+    command: npm run dev
     restart: unless-stopped
 
   frollz-ui:
