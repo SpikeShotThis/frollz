@@ -204,39 +204,59 @@
               class="absolute -left-1.5 w-3 h-3 rounded-full border-2 border-white dark:border-gray-800"
               :class="idx === sortedStates.length - 1 ? 'bg-gray-400' : isBackwardTransition(sortedStates[idx + 1]?.state?.name ?? '', entry.state?.name ?? '') ? 'bg-orange-400' : 'bg-primary-500'"
             ></div>
-            <div class="flex items-center gap-2 flex-wrap">
+            <component
+              :is="entryHasDetails(entry) ? 'button' : 'div'"
+              class="flex items-center gap-2 flex-wrap w-full text-left"
+              @click="entryHasDetails(entry) && toggleEntry(entry.id)"
+            >
               <span
                 class="px-2 text-xs leading-5 font-semibold rounded-full"
                 :class="getStateColor(entry.state?.name ?? '')"
               >{{ entry.state?.name ?? entry.stateId }}</span>
               <span v-if="idx === sortedStates.length - 1" class="text-xs text-gray-600 dark:text-gray-400">initial</span>
               <time class="text-xs text-gray-600 dark:text-gray-400">{{ formatDate(entry.date) }}</time>
-            </div>
-            <p v-if="entry.note" class="mt-1 text-sm text-gray-600 dark:text-gray-400">{{ entry.note }}</p>
-            <!-- Metadata values -->
-            <ul v-if="entry.metadata?.length" class="mt-1 space-y-0.5">
-              <li
-                v-for="m in entry.metadata"
-                :key="m.id"
-                class="text-xs text-gray-500 dark:text-gray-400"
+              <span
+                v-if="entryHasDetails(entry)"
+                class="ml-auto text-xs text-gray-400 transition-transform duration-150"
+                :class="expandedEntries.has(entry.id) ? 'rotate-90' : ''"
+              >›</span>
+            </component>
+            <Transition
+              @enter="(el: Element) => { const e = el as HTMLElement; e.style.maxHeight = '0'; e.offsetHeight; e.style.maxHeight = e.scrollHeight + 'px' }"
+              @after-enter="(el: Element) => { (el as HTMLElement).style.maxHeight = '' }"
+              @leave="(el: Element) => { const e = el as HTMLElement; e.style.maxHeight = e.scrollHeight + 'px'; e.offsetHeight; e.style.maxHeight = '0' }"
+              @after-leave="(el: Element) => { (el as HTMLElement).style.maxHeight = '' }"
+            >
+              <div
+                v-if="entryHasDetails(entry) && expandedEntries.has(entry.id)"
+                class="overflow-hidden transition-[max-height] duration-[150ms] ease-in-out"
               >
-                <span class="font-medium">{{ formatFieldLabel(m.transitionStateMetadata?.field?.name ?? '') }}:</span>
-                <template v-if="Array.isArray(m.value)">
-                  <span v-if="m.value.length === 0" class="ml-1 italic">none</span>
-                  <span v-else class="ml-1 space-x-1">
-                    <a
-                      v-for="(url, i) in m.value"
-                      :key="i"
-                      :href="url"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      class="text-primary-600 dark:text-primary-400 hover:underline"
-                    >Scan {{ i + 1 }}</a>
-                  </span>
-                </template>
-                <span v-else class="ml-1">{{ m.value ?? '—' }}</span>
-              </li>
-            </ul>
+                <p v-if="entry.note" class="mt-1 text-sm text-gray-600 dark:text-gray-400">{{ entry.note }}</p>
+                <ul v-if="entry.metadata?.length" class="mt-1 space-y-0.5">
+                  <li
+                    v-for="m in entry.metadata"
+                    :key="m.id"
+                    class="text-xs text-gray-500 dark:text-gray-400"
+                  >
+                    <span class="font-medium">{{ formatFieldLabel(m.transitionStateMetadata?.field?.name ?? '') }}:</span>
+                    <template v-if="Array.isArray(m.value)">
+                      <span v-if="m.value.length === 0" class="ml-1 italic">none</span>
+                      <span v-else class="ml-1 space-x-1">
+                        <a
+                          v-for="(url, i) in m.value"
+                          :key="i"
+                          :href="url"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          class="text-primary-600 dark:text-primary-400 hover:underline"
+                        >Scan {{ i + 1 }}</a>
+                      </span>
+                    </template>
+                    <span v-else class="ml-1">{{ m.value ?? '—' }}</span>
+                  </li>
+                </ul>
+              </div>
+            </Transition>
           </li>
         </ol>
       </div>
@@ -312,6 +332,16 @@ const sortedStates = computed(() => {
   if (!film.value?.states) return []
   return [...film.value.states].sort((a, b) => b.id - a.id)
 })
+
+const expandedEntries = ref<Set<number>>(new Set())
+
+const toggleEntry = (id: number) => {
+  if (expandedEntries.value.has(id)) expandedEntries.value.delete(id)
+  else expandedEntries.value.add(id)
+}
+
+const entryHasDetails = (entry: { note?: string | null; metadata?: unknown[] }): boolean =>
+  !!entry.note || (entry.metadata?.length ?? 0) > 0
 
 const formatDate = (date: Date | string) => new Date(date as string).toLocaleDateString()
 
@@ -454,6 +484,12 @@ const reload = async () => {
     loading.value = false
   }
 }
+
+watch(sortedStates, (entries) => {
+  if (entries.length && entryHasDetails(entries[0])) {
+    expandedEntries.value.add(entries[0].id)
+  }
+}, { immediate: true })
 
 onMounted(reload)
 watch(() => route.params.key, reload)
