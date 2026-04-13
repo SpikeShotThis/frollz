@@ -38,6 +38,12 @@ const router = createRouter({
       name: 'tags',
       component: () => import('@/views/TagsView.vue'),
       meta: { title: 'Tags' }
+    },
+    {
+      path: '/stats',
+      name: 'stats',
+      component: () => import('@/views/StatsView.vue'),
+      meta: { title: 'Statistics' }
     }
   ]
 })

@@ -1,5 +1,5 @@
 import { api } from './api'
-import type { Format, Package, Process, Emulsion, Film, FilmState, Tag, FilmTag, TransitionGraph, TransitionProfile } from '@/types'
+import type { Format, Package, Process, Emulsion, Film, FilmState, Tag, FilmTag, TransitionGraph, TransitionProfile, StateCount, MonthCount, EmulsionCount, TransitionDuration } from '@/types'
 
 // Format API (replaces filmFormatApi)
 export const formatApi = {
@@ -126,6 +126,14 @@ export const importApi = {
       form,
     )
   },
+}
+
+// Film Stats API
+export const filmStatsApi = {
+  byState: () => api.get<StateCount[]>('/films/stats/by-state'),
+  byMonth: (months = 12) => api.get<MonthCount[]>('/films/stats/by-month', { params: { months } }),
+  byEmulsion: () => api.get<EmulsionCount[]>('/films/stats/by-emulsion'),
+  lifecycleDurations: () => api.get<TransitionDuration[]>('/films/stats/lifecycle-durations'),
 }
 
 // Transition API

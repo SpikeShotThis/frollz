@@ -8,6 +8,7 @@ import { FilmModule } from './modules/film/film.module';
 import { FilmStateModule } from './modules/film-state/film-state.module';
 import { TransitionModule } from './modules/transition/transition.module';
 import { ExportImportModule } from './modules/export-import/export-import.module';
+import { FilmStatsModule } from './modules/film-stats/film-stats.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { ExportImportModule } from './modules/export-import/export-import.module
     FilmStateModule,
     TransitionModule,
     ExportImportModule,
+    FilmStatsModule,
   ],
   providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
 })
