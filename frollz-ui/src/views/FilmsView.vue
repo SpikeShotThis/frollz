@@ -194,10 +194,43 @@
               <p class="font-semibold text-primary-600 dark:text-primary-400 truncate">{{ film.name }}</p>
               <p class="text-sm text-gray-600 dark:text-gray-300 mt-0.5 truncate">{{ film.emulsion?.brand ?? '—' }}</p>
             </div>
-            <span
-              class="shrink-0 px-2 text-xs leading-5 font-semibold rounded-full"
-              :class="getStateColor(getStateName(film))"
-            >{{ getStateName(film) || 'No state' }}</span>
+            <div class="shrink-0 flex items-center gap-2">
+              <!-- Scan link indicator -->
+              <template v-if="getScanUrls(film).length > 0">
+                <a
+                  v-if="getScanUrls(film).length === 1"
+                  :href="getScanUrls(film)[0]"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  :aria-label="`1 scan link`"
+                  data-testid="scan-indicator"
+                  class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-xs font-medium text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/30 hover:bg-primary-100 dark:hover:bg-primary-900/50"
+                  @click.stop
+                >
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                  </svg>
+                  {{ getScanUrls(film).length }}
+                </a>
+                <span
+                  v-else
+                  :aria-label="`${getScanUrls(film).length} scan links`"
+                  data-testid="scan-indicator"
+                  class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-xs font-medium text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/30"
+                >
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                  </svg>
+                  {{ getScanUrls(film).length }}
+                </span>
+              </template>
+              <span
+                class="px-2 text-xs leading-5 font-semibold rounded-full"
+                :class="getStateColor(getStateName(film))"
+              >{{ getStateName(film) || 'No state' }}</span>
+            </div>
           </div>
         </RouterLink>
       </template>
@@ -212,6 +245,7 @@
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer select-none">Name</th>
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer select-none">Emulsion</th>
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer select-none">State</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider select-none">Scans</th>
               <th class="px-6 py-3"></th>
             </tr>
           </thead>
@@ -223,11 +257,12 @@
                 <td class="px-6 py-4"><div class="h-4 bg-gray-200 dark:bg-gray-700 rounded w-36"></div></td>
                 <td class="px-6 py-4"><div class="h-5 bg-gray-200 dark:bg-gray-700 rounded-full w-20"></div></td>
                 <td class="px-6 py-4"></td>
+                <td class="px-6 py-4"></td>
               </tr>
             </template>
             <template v-else>
               <tr v-if="filteredFilms.length === 0">
-                <td colspan="4" class="px-6 py-8 text-center text-sm text-gray-600 dark:text-gray-400 italic">No films found.</td>
+                <td colspan="5" class="px-6 py-8 text-center text-sm text-gray-600 dark:text-gray-400 italic">No films found.</td>
               </tr>
               <tr v-for="film in filteredFilms" :key="film.id" v-memo="[film, film.states]">
                 <td
@@ -242,6 +277,38 @@
                     class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full"
                     :class="getStateColor(getStateName(film))"
                   >{{ getStateName(film) || 'No state' }}</span>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <template v-if="getScanUrls(film).length > 0">
+                    <a
+                      v-if="getScanUrls(film).length === 1"
+                      :href="getScanUrls(film)[0]"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      :aria-label="`1 scan link`"
+                      data-testid="scan-indicator"
+                      class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-xs font-medium text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/30 hover:bg-primary-100 dark:hover:bg-primary-900/50"
+                    >
+                      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                      </svg>
+                      {{ getScanUrls(film).length }}
+                    </a>
+                    <RouterLink
+                      v-else
+                      :to="{ name: 'film-detail', params: { key: film.id } }"
+                      :aria-label="`${getScanUrls(film).length} scan links`"
+                      data-testid="scan-indicator"
+                      class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-xs font-medium text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/30 hover:bg-primary-100 dark:hover:bg-primary-900/50"
+                    >
+                      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                      </svg>
+                      {{ getScanUrls(film).length }}
+                    </RouterLink>
+                  </template>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-right">
                   <button
@@ -376,7 +443,7 @@ import { RouterLink, useRoute, useRouter } from 'vue-router'
 import { filmApi, emulsionApi, transitionApi, formatApi, tagApi } from '@/services/api-client'
 import BaseModal from '@/components/BaseModal.vue'
 import type { Film, Emulsion, TransitionProfile, Format, Tag } from '@/types'
-import { currentStateName } from '@/types'
+import { currentStateName, getScanUrls } from '@/types'
 import { getStateColor } from '@/utils/stateColors'
 
 const route = useRoute()

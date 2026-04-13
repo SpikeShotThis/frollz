@@ -237,6 +237,103 @@ describe('FilmsView', () => {
     })
   })
 
+  describe('scan link indicator', () => {
+    const makeFilmWithScans = (urls: string[]): Film =>
+      makeFilm({
+        states: [
+          {
+            id: 1,
+            filmId: 1,
+            stateId: 1,
+            date: new Date('2026-01-01'),
+            note: null,
+            metadata: urls.length > 0
+              ? [
+                  {
+                    id: 1,
+                    filmStateId: 1,
+                    transitionStateMetadataId: 1,
+                    value: urls,
+                    transitionStateMetadata: {
+                      id: 1,
+                      fieldId: 1,
+                      transitionStateId: 1,
+                      defaultValue: null,
+                      field: { id: 1, name: 'scansUrl', fieldType: 'url', allowMultiple: true },
+                    },
+                  },
+                ]
+              : [],
+          },
+        ],
+      })
+
+    it('shows no scan indicator for a film with no scans', async () => {
+      const film = makeFilm()
+      vi.mocked(filmApi.getAll).mockResolvedValue({ data: [film] } as any)
+
+      const wrapper = mount(FilmsView, { global: { plugins: [router] } })
+      await flushPromises()
+
+      expect(wrapper.findAll('[data-testid="scan-indicator"]')).toHaveLength(0)
+    })
+
+    it('renders an external link for a film with 1 scan URL', async () => {
+      const film = makeFilmWithScans(['https://drive.google.com/folder/abc'])
+      vi.mocked(filmApi.getAll).mockResolvedValue({ data: [film] } as any)
+
+      const wrapper = mount(FilmsView, { global: { plugins: [router] } })
+      await flushPromises()
+
+      const indicators = wrapper.findAll('[data-testid="scan-indicator"]')
+      expect(indicators.length).toBeGreaterThan(0)
+      // At least one should be an anchor pointing to the scan URL
+      const externalLink = indicators.find(
+        el => el.element.tagName === 'A' && el.attributes('href') === 'https://drive.google.com/folder/abc',
+      )
+      expect(externalLink).toBeDefined()
+      expect(externalLink!.attributes('target')).toBe('_blank')
+    })
+
+    it('shows count badge matching number of scan URLs', async () => {
+      const film = makeFilmWithScans([
+        'https://drive.google.com/folder/abc',
+        'https://drive.google.com/folder/xyz',
+      ])
+      vi.mocked(filmApi.getAll).mockResolvedValue({ data: [film] } as any)
+
+      const wrapper = mount(FilmsView, { global: { plugins: [router] } })
+      await flushPromises()
+
+      const indicators = wrapper.findAll('[data-testid="scan-indicator"]')
+      expect(indicators.length).toBeGreaterThan(0)
+      // Each indicator should display the count "2"
+      expect(indicators[0].text()).toContain('2')
+    })
+
+    it('links to film detail for a film with multiple scan URLs (desktop)', async () => {
+      const film = makeFilmWithScans([
+        'https://drive.google.com/folder/abc',
+        'https://drive.google.com/folder/xyz',
+      ])
+      vi.mocked(filmApi.getAll).mockResolvedValue({ data: [film] } as any)
+
+      const wrapper = mount(FilmsView, { global: { plugins: [router] } })
+      await flushPromises()
+
+      // The desktop scan indicator for 2+ scans should be a RouterLink (renders as <a>)
+      // pointing to the film detail route, not an external URL
+      const indicators = wrapper.findAll('[data-testid="scan-indicator"]')
+      const detailLink = indicators.find(
+        el =>
+          el.element.tagName === 'A' &&
+          el.attributes('href')?.includes(`${film.id}`) &&
+          el.attributes('target') !== '_blank',
+      )
+      expect(detailLink).toBeDefined()
+    })
+  })
+
   describe('add film form', () => {
     it('should open modal and set standard profile on openAddFilm', async () => {
       const wrapper = mount(FilmsView, { global: { plugins: [router] } })
