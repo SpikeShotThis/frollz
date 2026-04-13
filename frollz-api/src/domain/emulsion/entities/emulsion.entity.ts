@@ -5,7 +5,6 @@ import { Tag } from '../../shared/entities/tag.entity';
 export class Emulsion {
   constructor(
     public readonly id: number,
-    public readonly name: string,
     public readonly brand: string,
     public readonly manufacturer: string,
     public readonly speed: number,
@@ -22,7 +21,6 @@ export class Emulsion {
 
   static create(props: {
     id?: number;
-    name: string;
     brand: string;
     manufacturer: string;
     speed: number;
@@ -38,7 +36,6 @@ export class Emulsion {
   }): Emulsion {
     return new Emulsion(
       props.id ?? 0,
-      props.name,
       props.brand,
       props.manufacturer,
       props.speed,

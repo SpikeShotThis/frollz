@@ -38,8 +38,7 @@ const makeFilmRepo = (overrides: Partial<IFilmRepository> = {}): IFilmRepository
 const makeEmulsion = (overrides: Partial<Parameters<typeof Emulsion.create>[0]> = {}): Emulsion =>
   Emulsion.create({
     id: randomId(),
-    name: 'Kodak Gold 200',
-    brand: 'Kodak',
+    brand: 'Kodak Gold 200',
     manufacturer: 'Kodak',
     speed: 200,
     processId: randomId(),
@@ -66,7 +65,7 @@ const makeTag = (overrides: Partial<Parameters<typeof Tag.create>[0]> = {}): Tag
 const makeEmulsionRepo = (overrides: Partial<IEmulsionRepository> = {}): IEmulsionRepository => ({
   findAll: jest.fn().mockResolvedValue([]),
   findById: jest.fn().mockResolvedValue(null),
-  findByName: jest.fn().mockResolvedValue(null),
+  findByBrand: jest.fn().mockResolvedValue(null),
   findByProcessId: jest.fn().mockResolvedValue([]),
   findByFormatId: jest.fn().mockResolvedValue([]),
   findBrands: jest.fn().mockResolvedValue([]),
@@ -164,7 +163,7 @@ describe('ExportService', () => {
     });
 
     it('returns all emulsions, formats, and tags from their repositories', async () => {
-      const emulsions = [makeEmulsion({ name: 'Kodak Gold 200' }), makeEmulsion({ name: 'Fuji Superia 400' })];
+      const emulsions = [makeEmulsion({ brand: 'Kodak Gold 200' }), makeEmulsion({ brand: 'Fuji Superia 400' })];
       const formats = [makeFormat({ name: '35mm' }), makeFormat({ name: '120' })];
       const tags = [makeTag({ name: 'Expired' }), makeTag({ name: 'Push +1' })];
       emulsionRepo.findAll = jest.fn().mockResolvedValue(emulsions);

@@ -25,11 +25,11 @@ export const processApi = {
 export const emulsionApi = {
   getAll: () => api.get<Emulsion[]>('/emulsions'),
   getById: (id: number) => api.get<Emulsion>(`/emulsions/${id}`),
-  create: (data: { name: string; brand: string; manufacturer: string; speed: number; processId: number; formatId: number; parentId?: string }) =>
+  create: (data: { brand: string; manufacturer: string; speed: number; processId: number; formatId: number; parentId?: string }) =>
     api.post<Emulsion>('/emulsions', data),
-  createBulk: (data: { name: string; brand: string; manufacturer: string; speed: number; processId: number; formatIds: string[]; parentId?: string }) =>
+  createBulk: (data: { brand: string; manufacturer: string; speed: number; processId: number; formatIds: string[]; parentId?: string }) =>
     api.post<Emulsion[]>('/emulsions/bulk', data),
-  update: (id: number, data: Partial<{ name: string; brand: string; manufacturer: string; speed: number; processId: number; formatId: number }>) =>
+  update: (id: number, data: Partial<{ brand: string; manufacturer: string; speed: number; processId: number; formatId: number }>) =>
     api.patch<Emulsion>(`/emulsions/${id}`, data),
   uploadBoxImage: (id: number, file: File) => {
     const form = new FormData()

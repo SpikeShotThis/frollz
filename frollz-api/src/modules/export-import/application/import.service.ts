@@ -81,7 +81,7 @@ export class ImportService {
         continue;
       }
 
-      const emulsion = await this.emulsionRepo.findByName(emulsionName);
+      const emulsion = await this.emulsionRepo.findByBrand(emulsionName);
       if (!emulsion) {
         errors.push({ row: rowNum, reason: `Unknown emulsion: "${emulsionName}"` });
         skipped++;

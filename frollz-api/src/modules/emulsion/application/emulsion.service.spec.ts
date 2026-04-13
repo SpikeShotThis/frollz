@@ -11,7 +11,6 @@ const randomId = () => randomInt(1, 1000000)
 const makeEmulsion = (overrides: Partial<Parameters<typeof Emulsion.create>[0]> = {}): Emulsion =>
   Emulsion.create({
     id: randomId(),
-    name: 'Portra 400',
     brand: 'Kodak',
     manufacturer: 'Kodak',
     speed: 400,
@@ -24,7 +23,7 @@ const makeEmulsion = (overrides: Partial<Parameters<typeof Emulsion.create>[0]> 
 const makeRepo = (overrides: Partial<IEmulsionRepository> = {}): IEmulsionRepository => ({
   findAll: jest.fn().mockResolvedValue([]),
   findById: jest.fn().mockResolvedValue(null),
-  findByName: jest.fn().mockResolvedValue(null),
+  findByBrand: jest.fn().mockResolvedValue(null),
   findByProcessId: jest.fn().mockResolvedValue([]),
   findByFormatId: jest.fn().mockResolvedValue([]),
   findBrands: jest.fn().mockResolvedValue([]),
@@ -65,21 +64,20 @@ describe('EmulsionService', () => {
 
   describe('create', () => {
     it('saves and returns a new emulsion with a generated uuid', async () => {
-      const savedEmulsion = makeEmulsion({ name: 'Portra 400' });
+      const savedEmulsion = makeEmulsion({ brand: 'Kodak Portra 400' });
       const repo = makeRepo({ findById: jest.fn().mockResolvedValue(savedEmulsion) });
       const service = new EmulsionService(repo, makeTagRepo());
 
       const result = await service.create({
-        name: 'Portra 400',
-        brand: 'Kodak',
+        brand: 'Kodak Portra 400',
         manufacturer: 'Kodak',
         speed: 400,
         processId: randomId(),
         formatId: randomId(),
       });
 
-      expect(result.name).toBe('Portra 400');
-      expect(repo.save).toHaveBeenCalledWith(expect.objectContaining({ name: 'Portra 400' }));
+      expect(result.brand).toBe('Kodak Portra 400');
+      expect(repo.save).toHaveBeenCalledWith(expect.objectContaining({ brand: 'Kodak Portra 400' }));
     });
   });
 
@@ -95,8 +93,7 @@ describe('EmulsionService', () => {
       const service = new EmulsionService(repo, makeTagRepo());
 
       const results = await service.createMultipleFormats({
-        name: 'HP5',
-        brand: 'Ilford',
+        brand: 'Ilford HP5',
         manufacturer: 'Ilford',
         speed: 400,
         processId: randomId(),

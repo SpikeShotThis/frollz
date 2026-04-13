@@ -26,7 +26,7 @@ export interface LibraryImportResult {
 
 interface TagPayload { name: string; colorCode: string; description?: string | null }
 interface FormatPayload { id: number; packageId: number; name: string }
-interface EmulsionPayload { name: string; brand: string; manufacturer: string; speed: number; processId: number; formatId: number }
+interface EmulsionPayload { brand: string; manufacturer: string; speed: number; processId: number; formatId: number; name?: string }
 interface LibraryEnvelope { version?: string; tags?: TagPayload[]; formats?: FormatPayload[]; emulsions?: EmulsionPayload[] }
 
 @Injectable()
@@ -95,13 +95,12 @@ export class LibraryImportService {
     for (let i = 0; i < (envelope.emulsions ?? []).length; i++) {
       const e = envelope.emulsions![i];
       try {
-        const existing = await this.emulsionRepo.findByName(e.name);
+        const existing = await this.emulsionRepo.findByBrand(e.brand);
         if (existing) { emulsionResult.skipped++; continue; }
 
         const localFormatId = formatIdMap.get(e.formatId) ?? e.formatId;
         await this.emulsionRepo.save(
           Emulsion.create({
-            name: e.name,
             brand: e.brand,
             manufacturer: e.manufacturer,
             speed: e.speed,
@@ -112,7 +111,7 @@ export class LibraryImportService {
         );
         emulsionResult.imported++;
       } catch {
-        errors.push({ entity: 'emulsion', index: i + 1, reason: `Failed to import emulsion "${e.name}"` });
+        errors.push({ entity: 'emulsion', index: i + 1, reason: `Failed to import emulsion "${e.brand}"` });
       }
     }
 

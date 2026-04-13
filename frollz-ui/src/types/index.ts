@@ -21,7 +21,6 @@ export interface Process {
 // Emulsion (replaces Stock)
 export interface Emulsion {
   id: number
-  name: string
   brand: string
   manufacturer: string
   speed: number

@@ -46,7 +46,6 @@ describe('StocksView', () => {
   const mockEmulsions = [
     {
       id: 'emu1',
-      name: 'Kodak Portra 400 35mm',
       brand: 'Portra 400',
       manufacturer: 'Kodak',
       speed: 400,
@@ -116,7 +115,6 @@ describe('StocksView', () => {
       const vm = wrapper.vm as any
 
       vm.form = {
-        name: 'Test',
         brand: 'Test Brand',
         manufacturer: 'Test Manufacturer',
         formatIds: [],
@@ -131,7 +129,7 @@ describe('StocksView', () => {
     })
 
     it('should proceed with API call when formats are selected', async () => {
-      const mockCreated = [{ id: 'emu-new', name: 'Test Brand 400 35mm' }]
+      const mockCreated = [{ id: 'emu-new' }]
 
       vi.mocked(emulsionApi.createBulk).mockResolvedValue({ data: mockCreated } as any)
 
@@ -139,7 +137,6 @@ describe('StocksView', () => {
       const vm = wrapper.vm as any
 
       vm.form = {
-        name: 'Test',
         brand: 'Test Brand',
         manufacturer: 'Test Manufacturer',
         formatIds: ['fmt1'],
@@ -152,7 +149,6 @@ describe('StocksView', () => {
       await vm.handleSubmit()
 
       expect(emulsionApi.createBulk).toHaveBeenCalledWith({
-        name: 'Test',
         brand: 'Test Brand',
         manufacturer: 'Test Manufacturer',
         formatIds: ['fmt1'],
@@ -164,9 +160,9 @@ describe('StocksView', () => {
 
   describe('sorting', () => {
     const multiEmulsions = [
-      { id: 'e1', name: 'Zebra Film 35mm', brand: 'Zebra Film', manufacturer: 'Alpha Corp', speed: 200, formatId: 'fmt1', processId: 'proc1', parentId: null, tags: [] },
-      { id: 'e2', name: 'Alpha Film 120', brand: 'Alpha Film', manufacturer: 'Zebra Corp', speed: 400, formatId: 'fmt2', processId: 'proc2', parentId: null, tags: [] },
-      { id: 'e3', name: 'Mango Film I-Type', brand: 'Mango Film', manufacturer: 'Mango Corp', speed: 100, formatId: 'fmt3', processId: 'proc3', parentId: null, tags: [] },
+      { id: 'e1', brand: 'Zebra Film', manufacturer: 'Alpha Corp', speed: 200, formatId: 'fmt1', processId: 'proc1', parentId: null, tags: [] },
+      { id: 'e2', brand: 'Alpha Film', manufacturer: 'Zebra Corp', speed: 400, formatId: 'fmt2', processId: 'proc2', parentId: null, tags: [] },
+      { id: 'e3', brand: 'Mango Film', manufacturer: 'Mango Corp', speed: 100, formatId: 'fmt3', processId: 'proc3', parentId: null, tags: [] },
     ]
 
     beforeEach(() => {
@@ -244,9 +240,9 @@ describe('StocksView', () => {
 
   describe('filtering', () => {
     const multiEmulsions = [
-      { id: 'e1', name: 'Portra 400 35mm', brand: 'Portra 400', manufacturer: 'Kodak', speed: 400, formatId: 'fmt1', processId: 'proc1', parentId: null, tags: [] },
-      { id: 'e2', name: 'HP5 Plus 35mm', brand: 'HP5 Plus', manufacturer: 'Ilford', speed: 400, formatId: 'fmt1', processId: 'proc2', parentId: null, tags: [] },
-      { id: 'e3', name: 'Velvia 50 120', brand: 'Velvia 50', manufacturer: 'Fujifilm', speed: 50, formatId: 'fmt2', processId: 'proc2', parentId: null, tags: [] },
+      { id: 'e1', brand: 'Portra 400', manufacturer: 'Kodak', speed: 400, formatId: 'fmt1', processId: 'proc1', parentId: null, tags: [] },
+      { id: 'e2', brand: 'HP5 Plus', manufacturer: 'Ilford', speed: 400, formatId: 'fmt1', processId: 'proc2', parentId: null, tags: [] },
+      { id: 'e3', brand: 'Velvia 50', manufacturer: 'Fujifilm', speed: 50, formatId: 'fmt2', processId: 'proc2', parentId: null, tags: [] },
     ]
 
     beforeEach(() => {
@@ -370,7 +366,6 @@ describe('StocksView', () => {
       const vm = wrapper.vm as any
 
       vm.form = {
-        name: 'Test',
         brand: 'Test Brand',
         manufacturer: 'Test Manufacturer',
         formatIds: ['fmt1', 'fmt2'],

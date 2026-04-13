@@ -173,7 +173,7 @@
             >
               <option :value="null">All emulsions</option>
               <option v-for="emulsion in sortedEmulsions" :key="emulsion.id" :value="emulsion.id">
-                {{ emulsion.brand }} — {{ emulsion.name }}
+                {{ emulsion.brand }}
               </option>
             </select>
           </label>
@@ -591,7 +591,7 @@ const activeFilterChips = computed((): FilterChip[] => {
   })
   if (selectedEmulsionId.value !== null) {
     const e = emulsions.value.find(x => x.id === selectedEmulsionId.value)
-    if (e) chips.push({ key: 'emulsion', label: `${e.brand} — ${e.name}`, remove: () => { selectedEmulsionId.value = null } })
+    if (e) chips.push({ key: 'emulsion', label: `${e.brand}`, remove: () => { selectedEmulsionId.value = null } })
   }
   if (selectedFormatId.value !== null) {
     const f = formats.value.find(x => x.id === selectedFormatId.value)

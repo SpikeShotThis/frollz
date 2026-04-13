@@ -2,12 +2,6 @@ import { ApiPropertyOptional } from '@nestjs/swagger';
 import { IsNotEmpty, IsNumber, IsOptional, IsPositive, IsString } from 'class-validator';
 
 export class UpdateEmulsionDto {
-  @ApiPropertyOptional({ example: 'Portra 400' })
-  @IsOptional()
-  @IsString()
-  @IsNotEmpty()
-  name?: string;
-
   @ApiPropertyOptional({ example: 'Kodak' })
   @IsOptional()
   @IsString()

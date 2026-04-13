@@ -2,11 +2,6 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsNotEmpty, IsNumber, IsOptional, IsPositive, IsString } from 'class-validator';
 
 export class CreateEmulsionDto {
-  @ApiProperty({ example: 'Portra 400' })
-  @IsString()
-  @IsNotEmpty()
-  name!: string;
-
   @ApiProperty({ example: 'Kodak' })
   @IsString()
   @IsNotEmpty()

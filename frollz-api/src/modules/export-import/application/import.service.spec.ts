@@ -15,11 +15,10 @@ import { TransitionProfile } from '../../../domain/transition/entities/transitio
 
 const randomId = () => randomInt(1, 1_000_000);
 
-const makeEmulsion = (name = 'Kodak Portra 400'): Emulsion =>
+const makeEmulsion = (brand = 'Kodak Portra 400'): Emulsion =>
   Emulsion.create({
     id: randomId(),
-    name,
-    brand: 'Kodak',
+    brand,
     manufacturer: 'Kodak',
     speed: 400,
     processId: randomId(),
@@ -69,7 +68,7 @@ const makeFilmTagRepo = (overrides: Partial<IFilmTagRepository> = {}): IFilmTagR
 const makeEmulsionRepo = (overrides: Partial<IEmulsionRepository> = {}): IEmulsionRepository => ({
   findAll: jest.fn().mockResolvedValue([]),
   findById: jest.fn().mockResolvedValue(null),
-  findByName: jest.fn().mockResolvedValue(null),
+  findByBrand: jest.fn().mockResolvedValue(null),
   findByProcessId: jest.fn().mockResolvedValue([]),
   findByFormatId: jest.fn().mockResolvedValue([]),
   findBrands: jest.fn().mockResolvedValue([]),
@@ -133,7 +132,7 @@ describe('ImportService', () => {
     filmRepo = makeFilmRepo() as jest.Mocked<IFilmRepository>;
     filmStateRepo = makeFilmStateRepo() as jest.Mocked<IFilmStateRepository>;
     filmTagRepo = makeFilmTagRepo() as jest.Mocked<IFilmTagRepository>;
-    emulsionRepo = makeEmulsionRepo({ findByName: jest.fn().mockResolvedValue(portra) }) as jest.Mocked<IEmulsionRepository>;
+    emulsionRepo = makeEmulsionRepo({ findByBrand: jest.fn().mockResolvedValue(portra) }) as jest.Mocked<IEmulsionRepository>;
     tagRepo = makeTagRepo() as jest.Mocked<ITagRepository>;
     transitionStateRepo = makeTransitionStateRepo(importedState) as jest.Mocked<ITransitionStateRepository>;
     transitionProfileRepo = makeTransitionProfileRepo(standardProfile) as jest.Mocked<ITransitionProfileRepository>;
@@ -189,7 +188,7 @@ describe('ImportService', () => {
     });
 
     it('skips a row where the emulsion name is not found', async () => {
-      emulsionRepo.findByName = jest.fn().mockResolvedValue(null);
+      emulsionRepo.findByBrand = jest.fn().mockResolvedValue(null);
       const result = await service.importFilms(csv(['Roll 001,Unknown Emulsion,,']));
       expect(result.imported).toBe(0);
       expect(result.skipped).toBe(1);
@@ -240,7 +239,7 @@ describe('ImportService', () => {
     });
 
     it('continues processing remaining rows after a skipped row', async () => {
-      emulsionRepo.findByName = jest.fn()
+      emulsionRepo.findByBrand = jest.fn()
         .mockResolvedValueOnce(null)
         .mockResolvedValueOnce(portra);
 
@@ -256,7 +255,7 @@ describe('ImportService', () => {
 
     it('returns correct counts for a mixed batch', async () => {
       // Row 1: valid; Row 2: missing name (skipped before emulsion lookup); Row 3: valid
-      emulsionRepo.findByName = jest.fn().mockResolvedValue(portra);
+      emulsionRepo.findByBrand = jest.fn().mockResolvedValue(portra);
 
       const result = await service.importFilms(csv([
         'Roll 001,Kodak Portra 400,,',

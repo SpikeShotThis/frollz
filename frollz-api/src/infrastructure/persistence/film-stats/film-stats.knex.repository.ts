@@ -58,9 +58,9 @@ export class FilmStatsKnexRepository implements IFilmStatsRepository {
   async countByEmulsion(): Promise<EmulsionCount[]> {
     const rows = await this.knex('film as f')
       .join('emulsion as e', 'e.id', 'f.emulsion_id')
-      .groupBy('e.id', 'e.brand', 'e.name')
+      .groupBy('e.id', 'e.brand')
       .orderByRaw('COUNT(f.id) DESC')
-      .select(this.knex.raw(`e.brand || ' ' || e.name as emulsion_name`), this.knex.raw('COUNT(f.id) as count'));
+      .select(this.knex.raw(`e.brand as emulsion_name`), this.knex.raw('COUNT(f.id) as count'));
 
     return rows.map((r: { emulsion_name: string; count: string | number }) => ({
       emulsionName: r.emulsion_name,

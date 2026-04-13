@@ -95,8 +95,7 @@ afterAll(async () => {
 describe('Emulsion', () => {
   it('creates an emulsion and reads it back', async () => {
     const emulsion = await emulsionService.create({
-      name: 'Portra 400',
-      brand: 'Kodak',
+      brand: 'Kodak Portra 400',
       manufacturer: 'Kodak',
       speed: 400,
       processId,
@@ -104,14 +103,13 @@ describe('Emulsion', () => {
     });
 
     expect(emulsion.id).toBeGreaterThan(0);
-    expect(emulsion.name).toBe('Portra 400');
-    expect(emulsion.brand).toBe('Kodak');
+    expect(emulsion.brand).toBe('Kodak Portra 400');
     expect(emulsion.speed).toBe(400);
     expect(emulsion.processId).toBe(processId);
     expect(emulsion.formatId).toBe(formatId);
 
     const fetched = await emulsionService.findById(emulsion.id);
-    expect(fetched.name).toBe('Portra 400');
+    expect(fetched.brand).toBe('Kodak Portra 400');
   });
 
   it('creates emulsions across multiple formats in one call', async () => {
@@ -119,8 +117,7 @@ describe('Emulsion', () => {
     const [format2Id] = await knex('format').insert({ name: '120', package_id: (await knex('package').first()).id });
 
     const emulsions = await emulsionService.createMultipleFormats({
-      name: 'HP5 Plus',
-      brand: 'Ilford',
+      brand: 'Ilford HP5 Plus',
       manufacturer: 'Ilford',
       speed: 400,
       processId,
@@ -134,8 +131,7 @@ describe('Emulsion', () => {
 
   it('tags an emulsion and verifies the tag is returned', async () => {
     const emulsion = await emulsionService.create({
-      name: 'Ektar 100',
-      brand: 'Kodak',
+      brand: 'Kodak Ektar 100',
       manufacturer: 'Kodak',
       speed: 100,
       processId,
@@ -152,8 +148,7 @@ describe('Emulsion', () => {
 
   it('removes a tag from an emulsion', async () => {
     const emulsion = await emulsionService.create({
-      name: 'Velvia 50',
-      brand: 'Fujifilm',
+      brand: 'Fujifilm Velvia 50',
       manufacturer: 'Fujifilm',
       speed: 50,
       processId,
@@ -169,8 +164,7 @@ describe('Emulsion', () => {
 
   it('updates an emulsion field and persists the change', async () => {
     const emulsion = await emulsionService.create({
-      name: 'Delta 400',
-      brand: 'Ilford',
+      brand: 'Ilford Delta 400',
       manufacturer: 'Ilford',
       speed: 400,
       processId,
@@ -194,8 +188,7 @@ describe('Film', () => {
 
   beforeAll(async () => {
     const emulsion = await emulsionService.create({
-      name: 'Portra 160',
-      brand: 'Kodak',
+      brand: 'Kodak Portra 160',
       manufacturer: 'Kodak',
       speed: 160,
       processId,
@@ -219,7 +212,7 @@ describe('Film', () => {
     expect(film.states).toHaveLength(1);
     expect(film.currentState?.state?.name).toBe('Added');
     expect(film.emulsion).toBeDefined();
-    expect(film.emulsion?.brand).toBe('Kodak');
+    expect(film.emulsion?.brand).toBe('Kodak Portra 160');
     expect(film.emulsion?.speed).toBe(160);
   });
 
@@ -274,8 +267,7 @@ describe('Film lifecycle (standard profile)', () => {
 
   beforeAll(async () => {
     const emulsion = await emulsionService.create({
-      name: 'Tri-X 400',
-      brand: 'Kodak',
+      brand: 'Kodak Tri-X 400',
       manufacturer: 'Kodak',
       speed: 400,
       processId,
@@ -350,8 +342,7 @@ describe('findAll with state filter', () => {
 
   beforeAll(async () => {
     const emulsion = await emulsionService.create({
-      name: 'HP5 400',
-      brand: 'Ilford',
+      brand: 'Ilford HP5 400',
       manufacturer: 'Ilford',
       speed: 400,
       processId,

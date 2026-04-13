@@ -147,7 +147,7 @@ export class FilmKnexRepository implements IFilmRepository {
 
   private async loadEmulsion(emulsionId: number): Promise<Emulsion | undefined> {
     const row = await this.knex<EmulsionRow>('emulsion')
-      .select('id', 'parent_id', 'process_id', 'format_id', 'name', 'brand', 'manufacturer', 'speed', 'box_image_mime_type')
+      .select('id', 'parent_id', 'process_id', 'format_id', 'brand', 'manufacturer', 'speed', 'box_image_mime_type')
       .where({ id: emulsionId })
       .first();
     return row ? EmulsionMapper.toDomain(row) : undefined;

@@ -15,8 +15,8 @@ import { TransitionProfile } from '../../../domain/transition/entities/transitio
 
 const randomId = () => randomInt(1, 1_000_000);
 
-const makeEmulsion = (name = 'Kodak Portra 400'): Emulsion =>
-  Emulsion.create({ id: randomId(), name, brand: 'Kodak', manufacturer: 'Kodak', speed: 400, processId: 1, formatId: 1 });
+const makeEmulsion = (brand = 'Kodak Portra 400'): Emulsion =>
+  Emulsion.create({ id: randomId(), brand, manufacturer: 'Kodak', speed: 400, processId: 1, formatId: 1 });
 
 const makeTag = (name = 'landscape'): Tag =>
   Tag.create({ id: randomId(), name, colorCode: '#6B7280' });
@@ -58,7 +58,7 @@ const makeFilmTagRepo = (): IFilmTagRepository => ({
 const makeEmulsionRepo = (emulsion: Emulsion | null = makeEmulsion()): IEmulsionRepository => ({
   findAll: jest.fn().mockResolvedValue([]),
   findById: jest.fn().mockResolvedValue(null),
-  findByName: jest.fn().mockResolvedValue(emulsion),
+  findByBrand: jest.fn().mockResolvedValue(emulsion),
   findByProcessId: jest.fn().mockResolvedValue([]),
   findByFormatId: jest.fn().mockResolvedValue([]),
   findBrands: jest.fn().mockResolvedValue([]),
@@ -102,7 +102,7 @@ const makeTransitionProfileRepo = (profile = makeProfile()): ITransitionProfileR
 
 const filmJson = (overrides: Record<string, unknown> = {}) => ({
   name: 'Roll 001',
-  emulsion: { name: 'Kodak Portra 400' },
+  emulsion: { brand: 'Kodak Portra 400' },
   emulsionId: 1,
   expirationDate: '2026-12-31T00:00:00.000Z',
   parentId: null,
@@ -196,7 +196,7 @@ describe('FilmsJsonImportService', () => {
   });
 
   it('skips a film with an unknown emulsion name', async () => {
-    emulsionRepo.findByName = jest.fn().mockResolvedValue(null);
+    emulsionRepo.findByBrand = jest.fn().mockResolvedValue(null);
     const result = await service.importFilmsJson(envelope([filmJson()]));
     expect(result.skipped).toBe(1);
     expect(result.errors[0].reason).toContain('Unknown emulsion');
@@ -236,7 +236,7 @@ describe('FilmsJsonImportService', () => {
   });
 
   it('continues processing remaining films after a skipped film', async () => {
-    emulsionRepo.findByName = jest.fn()
+    emulsionRepo.findByBrand = jest.fn()
       .mockResolvedValueOnce(null)
       .mockResolvedValueOnce(makeEmulsion());
 

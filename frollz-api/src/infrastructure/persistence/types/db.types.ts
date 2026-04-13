@@ -12,7 +12,6 @@ export interface EmulsionRow {
   parent_id: number | null;
   process_id: number;
   format_id: number;
-  name: string;
   brand: string;
   manufacturer: string;
   speed: number;

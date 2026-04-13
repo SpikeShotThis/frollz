@@ -32,7 +32,6 @@ export class EmulsionService {
   async createMultipleFormats(dto: CreateEmulsionMultipleFormatsDto): Promise<Emulsion[]> {
     const emulsions = dto.formatIds.map((formatId) =>
       Emulsion.create({
-        name: dto.name,
         brand: dto.brand,
         manufacturer: dto.manufacturer,
         speed: dto.speed,
@@ -56,7 +55,6 @@ export class EmulsionService {
     const existing = await this.findById(id);
     const updated = Emulsion.create({
       id: existing.id,
-      name: dto.name ?? existing.name,
       brand: dto.brand ?? existing.brand,
       manufacturer: dto.manufacturer ?? existing.manufacturer,
       speed: dto.speed ?? existing.speed,

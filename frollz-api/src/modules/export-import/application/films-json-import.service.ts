@@ -27,7 +27,7 @@ const DEFAULT_TAG_COLOR = '#6B7280';
 
 interface StatePayload { stateId: number; date: string; note?: string | null; state?: { id: number; name: string } }
 interface TagPayload { name: string }
-interface FilmPayload { name?: string; emulsion?: { name: string } | null; expirationDate?: string; tags?: TagPayload[]; states?: StatePayload[] }
+interface FilmPayload { name?: string; emulsion?: { brand: string; name?: string } | null; expirationDate?: string; tags?: TagPayload[]; states?: StatePayload[] }
 interface FilmsEnvelope { version?: string; films?: FilmPayload[] }
 
 @Injectable()
@@ -81,16 +81,16 @@ export class FilmsJsonImportService {
         continue;
       }
 
-      const emulsionName: string | undefined = filmData.emulsion?.name;
-      if (!emulsionName) {
+      const emulsionBrand: string | undefined = filmData.emulsion?.brand ?? filmData.emulsion?.name;
+      if (!emulsionBrand) {
         errors.push({ index: i + 1, name: filmName, reason: 'Film has no emulsion — skipped' });
         skipped++;
         continue;
       }
 
-      const emulsion = await this.emulsionRepo.findByName(emulsionName);
+      const emulsion = await this.emulsionRepo.findByBrand(emulsionBrand);
       if (!emulsion) {
-        errors.push({ index: i + 1, name: filmName, reason: `Unknown emulsion: "${emulsionName}"` });
+        errors.push({ index: i + 1, name: filmName, reason: `Unknown emulsion: "${emulsionBrand}"` });
         skipped++;
         continue;
       }

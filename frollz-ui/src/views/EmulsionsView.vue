@@ -155,19 +155,6 @@
         <form @submit.prevent="handleSubmit">
           <div class="space-y-4">
             <div>
-              <label for="emulsion-name" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Name <span class="text-red-500" aria-hidden="true">*</span>
-                <input
-                  id="emulsion-name"
-                  v-model="form.name"
-                  type="text"
-                  required
-                  aria-required="true"
-                  placeholder="e.g. Portra 400"
-                  class="mt-1 w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 text-base sm:text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500"
-                />
-              </label>
-            </div>
-            <div>
               <p class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Brand <span class="text-red-500" aria-hidden="true">*</span></p>
               <TypeaheadInput
                 id="emulsion-brand"
@@ -383,7 +370,6 @@ const onBoxImageChange = (event: Event) => {
 }
 
 const emptyForm = () => ({
-  name: '',
   brand: '',
   manufacturer: '',
   formatIds: [] as string[],
@@ -453,7 +439,6 @@ const handleSubmit = async () => {
   error.value = ''
   try {
     const payload = {
-      name: form.value.name,
       brand: form.value.brand,
       manufacturer: form.value.manufacturer,
       formatIds: form.value.formatIds,

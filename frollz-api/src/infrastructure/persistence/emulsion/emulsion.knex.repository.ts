@@ -13,7 +13,6 @@ const EMULSION_COLUMNS: (keyof EmulsionRow)[] = [
   'parent_id',
   'process_id',
   'format_id',
-  'name',
   'brand',
   'manufacturer',
   'speed',
@@ -43,8 +42,8 @@ export class EmulsionKnexRepository implements IEmulsionRepository {
     );
   }
 
-  async findByName(name: string): Promise<Emulsion | null> {
-    const row = await this.knex<EmulsionRow>('emulsion').select(EMULSION_COLUMNS).whereILike('name', name).first();
+  async findByBrand(brand: string): Promise<Emulsion | null> {
+    const row = await this.knex<EmulsionRow>('emulsion').select(EMULSION_COLUMNS).whereILike('brand', brand).first();
     if (!row) return null;
     const emulsion = EmulsionMapper.toDomain(row);
     const tags = await this.loadTags(row.id);

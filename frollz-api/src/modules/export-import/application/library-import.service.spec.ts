@@ -10,8 +10,8 @@ import { Tag } from '../../../domain/shared/entities/tag.entity';
 
 const randomId = () => randomInt(1, 1_000_000);
 
-const makeEmulsion = (name = 'Kodak Portra 400'): Emulsion =>
-  Emulsion.create({ id: randomId(), name, brand: 'Kodak', manufacturer: 'Kodak', speed: 400, processId: 1, formatId: 1 });
+const makeEmulsion = (brand = 'Kodak'): Emulsion =>
+  Emulsion.create({ id: randomId(), brand, manufacturer: 'Kodak', speed: 400, processId: 1, formatId: 1 });
 
 const makeFormat = (id: number, name = '35mm', packageId = 1): Format =>
   Format.create({ id, packageId, name });
@@ -22,7 +22,7 @@ const makeTag = (name = 'landscape'): Tag =>
 const makeEmulsionRepo = (overrides: Partial<IEmulsionRepository> = {}): IEmulsionRepository => ({
   findAll: jest.fn().mockResolvedValue([]),
   findById: jest.fn().mockResolvedValue(null),
-  findByName: jest.fn().mockResolvedValue(null),
+  findByBrand: jest.fn().mockResolvedValue(null),
   findByProcessId: jest.fn().mockResolvedValue([]),
   findByFormatId: jest.fn().mockResolvedValue([]),
   findBrands: jest.fn().mockResolvedValue([]),
@@ -112,16 +112,16 @@ describe('LibraryImportService', () => {
   describe('emulsions', () => {
     it('imports a new emulsion', async () => {
       const result = await service.importLibrary(envelope({
-        emulsions: [{ name: 'Kodak Portra 400', brand: 'Kodak', manufacturer: 'Kodak', speed: 400, processId: 1, formatId: 1 }],
+        emulsions: [{ brand: 'Kodak', manufacturer: 'Kodak', speed: 400, processId: 1, formatId: 1 }],
       }));
       expect(emulsionRepo.save).toHaveBeenCalled();
       expect(result.emulsions.imported).toBe(1);
     });
 
     it('skips an emulsion that already exists', async () => {
-      emulsionRepo.findByName = jest.fn().mockResolvedValue(makeEmulsion('Kodak Portra 400'));
+      emulsionRepo.findByBrand = jest.fn().mockResolvedValue(makeEmulsion('Kodak'));
       const result = await service.importLibrary(envelope({
-        emulsions: [{ name: 'Kodak Portra 400', brand: 'Kodak', manufacturer: 'Kodak', speed: 400, processId: 1, formatId: 1 }],
+        emulsions: [{ brand: 'Kodak', manufacturer: 'Kodak', speed: 400, processId: 1, formatId: 1 }],
       }));
       expect(emulsionRepo.save).not.toHaveBeenCalled();
       expect(result.emulsions.skipped).toBe(1);
@@ -134,7 +134,7 @@ describe('LibraryImportService', () => {
 
       await service.importLibrary(envelope({
         formats: [{ id: 99, packageId: 1, name: '35mm' }],
-        emulsions: [{ name: 'Kodak Portra 400', brand: 'Kodak', manufacturer: 'Kodak', speed: 400, processId: 1, formatId: 99 }],
+        emulsions: [{ brand: 'Kodak', manufacturer: 'Kodak', speed: 400, processId: 1, formatId: 99 }],
       }));
 
       expect(emulsionRepo.save).toHaveBeenCalledWith(

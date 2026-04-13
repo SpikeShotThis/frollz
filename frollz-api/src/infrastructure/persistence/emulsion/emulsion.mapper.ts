@@ -5,7 +5,6 @@ export class EmulsionMapper {
   static toDomain(row: EmulsionRow): Emulsion {
     return Emulsion.create({
       id: row.id,
-      name: row.name,
       brand: row.brand,
       manufacturer: row.manufacturer,
       speed: row.speed,
@@ -20,7 +19,6 @@ export class EmulsionMapper {
   static toPersistence(emulsion: Emulsion): EmulsionRow {
     return {
       id: emulsion.id,
-      name: emulsion.name,
       brand: emulsion.brand,
       manufacturer: emulsion.manufacturer,
       speed: emulsion.speed,
