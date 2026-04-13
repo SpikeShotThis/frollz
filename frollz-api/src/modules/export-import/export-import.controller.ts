@@ -17,4 +17,14 @@ export class ExportImportController {
     res.setHeader('Content-Disposition', `attachment; filename="films-${date}.json"`);
     res.json(envelope);
   }
+
+  @Get('library.json')
+  @ApiOperation({ summary: 'Export reference data (emulsions, formats, tags) as JSON' })
+  async exportLibraryJson(@Res() res: Response): Promise<void> {
+    const envelope = await this.exportService.exportLibraryJson();
+    const date = new Date().toISOString().slice(0, 10);
+    res.setHeader('Content-Type', 'application/json');
+    res.setHeader('Content-Disposition', `attachment; filename="library-${date}.json"`);
+    res.json(envelope);
+  }
 }

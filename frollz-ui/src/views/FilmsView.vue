@@ -10,6 +10,13 @@
         >
           {{ exportingJson ? 'Exporting…' : 'Export JSON' }}
         </button>
+        <button
+          @click="exportLibraryJson"
+          :disabled="exportingLibrary"
+          class="border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 px-4 py-2 min-h-[44px] rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 font-medium disabled:opacity-50"
+        >
+          {{ exportingLibrary ? 'Exporting…' : 'Export Library' }}
+        </button>
         <button @click="openAddFilm()" class="bg-primary-600 text-white px-4 py-2 min-h-[44px] rounded-md hover:bg-primary-700 font-medium">
           Add Film
         </button>
@@ -466,6 +473,7 @@ const tags = ref<Tag[]>([])
 const transitionProfiles = ref<TransitionProfile[]>([])
 const isLoading = ref(true)
 const exportingJson = ref(false)
+const exportingLibrary = ref(false)
 const showModal = ref(false)
 
 const searchQuery = ref('')
@@ -661,6 +669,17 @@ const exportFilmsJson = async () => {
     console.error('Export failed:', err)
   } finally {
     exportingJson.value = false
+  }
+}
+
+const exportLibraryJson = async () => {
+  exportingLibrary.value = true
+  try {
+    await triggerDownload(exportApi.libraryJsonPath, 'library.json')
+  } catch (err) {
+    console.error('Export failed:', err)
+  } finally {
+    exportingLibrary.value = false
   }
 }
 

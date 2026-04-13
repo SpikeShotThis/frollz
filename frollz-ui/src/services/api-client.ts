@@ -93,6 +93,7 @@ export const filmStateApi = {
 // Export API
 export const exportApi = {
   filmsJsonPath: '/export/films.json',
+  libraryJsonPath: '/export/library.json',
 }
 
 // Transition API
