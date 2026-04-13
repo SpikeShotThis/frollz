@@ -127,6 +127,27 @@ export interface TransitionGraph {
   transitions: TransitionEdge[]
 }
 
+// Stats
+export interface StateCount {
+  state: string
+  count: number
+}
+
+export interface MonthCount {
+  month: string
+  count: number
+}
+
+export interface EmulsionCount {
+  emulsionName: string
+  count: number
+}
+
+export interface TransitionDuration {
+  transition: string
+  avgDays: number | null
+}
+
 // Helpers — derive current state name from Film.states
 export function currentStateName(film: Film): string {
   if (!film.states?.length) return ''

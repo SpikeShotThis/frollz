@@ -117,6 +117,7 @@ const navLinks = [
   { to: '/emulsions', name: 'emulsions', label: 'Emulsions' },
   { to: '/films', name: 'films', label: 'Films' },
   { to: '/tags', name: 'tags', label: 'Tags' },
+  { to: '/stats', name: 'stats', label: 'Statistics' },
 ] as const
 
 const menuOpen = ref(false)
