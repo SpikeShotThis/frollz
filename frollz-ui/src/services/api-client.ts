@@ -73,8 +73,8 @@ export const filmApi = {
   update: (id: number, data: Partial<{ name: string; emulsionId: number; expirationDate: string; transitionProfileId: number }>) =>
     api.patch<Film>(`/films/${id}`, data),
   delete: (id: number) => api.delete(`/films/${id}`),
-  transition: (id: number, targetStateName: string, date?: string, note?: string) =>
-    api.post<Film>(`/films/${id}/transition`, { targetStateName, date, note }),
+  transition: (id: number, targetStateName: string, date?: string, note?: string, metadata?: Record<string, string | string[]>) =>
+    api.post<Film>(`/films/${id}/transition`, { targetStateName, date, note, metadata }),
   addTag: (id: number, tagId: number) => api.post(`/films/${id}/tags`, { tagId }),
   removeTag: (id: number, tagId: number) => api.delete(`/films/${id}/tags/${tagId}`),
 }

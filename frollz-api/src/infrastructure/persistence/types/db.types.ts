@@ -30,6 +30,7 @@ export interface FilmStateMetadataRow {
   id: number;
   film_state_id: number;
   transition_state_metadata_id: number;
+  value: string | null;
 }
 
 export interface FilmTagRow {
@@ -90,6 +91,7 @@ export interface TransitionMetadataFieldRow {
   id: number;
   name: string;
   field_type: string;
+  allow_multiple: boolean;
 }
 
 export interface TransitionProfileRow {

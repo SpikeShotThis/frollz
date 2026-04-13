@@ -54,6 +54,27 @@ export interface FilmTag {
   tagId: number
 }
 
+export interface FilmStateMetadataField {
+  id: number
+  name: string
+  fieldType: string
+  allowMultiple: boolean
+}
+
+export interface FilmStateMetadata {
+  id: number
+  filmStateId: number
+  transitionStateMetadataId: number
+  value: string | string[] | null
+  transitionStateMetadata?: {
+    id: number
+    fieldId: number
+    transitionStateId: number
+    defaultValue: string | null
+    field?: FilmStateMetadataField
+  }
+}
+
 // FilmState (replaces RollStateHistory)
 export interface FilmState {
   id: number
@@ -62,7 +83,7 @@ export interface FilmState {
   date: Date
   note: string | null
   state?: { id: number; name: string }
-  metadata: unknown[]
+  metadata: FilmStateMetadata[]
 }
 
 // Film (replaces Roll)
@@ -89,6 +110,7 @@ export interface TransitionProfile {
 export interface TransitionMetadataField {
   field: string
   fieldType: string
+  allowMultiple: boolean
   defaultValue: string | null
   isRequired: boolean
 }
