@@ -2,9 +2,18 @@
   <div>
     <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-4">
       <h1 class="text-3xl font-bold text-gray-900 dark:text-gray-100">Films</h1>
-      <button @click="openAddFilm()" class="bg-primary-600 text-white px-4 py-2 min-h-[44px] rounded-md hover:bg-primary-700 font-medium">
-        Add Film
-      </button>
+      <div class="flex flex-wrap gap-2">
+        <button
+          @click="exportFilmsJson"
+          :disabled="exportingJson"
+          class="border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 px-4 py-2 min-h-[44px] rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 font-medium disabled:opacity-50"
+        >
+          {{ exportingJson ? 'Exporting…' : 'Export JSON' }}
+        </button>
+        <button @click="openAddFilm()" class="bg-primary-600 text-white px-4 py-2 min-h-[44px] rounded-md hover:bg-primary-700 font-medium">
+          Add Film
+        </button>
+      </div>
     </div>
 
     <!-- Search + Filters toggle row -->
@@ -440,11 +449,12 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
-import { filmApi, emulsionApi, transitionApi, formatApi, tagApi } from '@/services/api-client'
+import { filmApi, emulsionApi, transitionApi, formatApi, tagApi, exportApi } from '@/services/api-client'
 import BaseModal from '@/components/BaseModal.vue'
 import type { Film, Emulsion, TransitionProfile, Format, Tag } from '@/types'
 import { currentStateName, getScanUrls } from '@/types'
 import { getStateColor } from '@/utils/stateColors'
+import { triggerDownload } from '@/utils/download'
 
 const route = useRoute()
 const router = useRouter()
@@ -455,6 +465,7 @@ const formats = ref<Format[]>([])
 const tags = ref<Tag[]>([])
 const transitionProfiles = ref<TransitionProfile[]>([])
 const isLoading = ref(true)
+const exportingJson = ref(false)
 const showModal = ref(false)
 
 const searchQuery = ref('')
@@ -641,6 +652,17 @@ watch(searchQuery, () => {
     updateUrlQueryParams()
   }, 300)
 })
+
+const exportFilmsJson = async () => {
+  exportingJson.value = true
+  try {
+    await triggerDownload(exportApi.filmsJsonPath, 'films.json')
+  } catch (err) {
+    console.error('Export failed:', err)
+  } finally {
+    exportingJson.value = false
+  }
+}
 
 const openAddFilm = (emulsionId?: string) => {
   if (emulsionId) form.value.emulsionId = emulsionId

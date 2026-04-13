@@ -90,6 +90,11 @@ export const filmStateApi = {
     api.get<FilmState[]>('/film-states', { params: { filmId } }),
 }
 
+// Export API
+export const exportApi = {
+  filmsJsonPath: '/export/films.json',
+}
+
 // Transition API
 export const transitionApi = {
   getProfiles: () => api.get<TransitionProfile[]>('/transitions/profiles'),

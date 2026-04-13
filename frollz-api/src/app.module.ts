@@ -7,6 +7,7 @@ import { EmulsionModule } from './modules/emulsion/emulsion.module';
 import { FilmModule } from './modules/film/film.module';
 import { FilmStateModule } from './modules/film-state/film-state.module';
 import { TransitionModule } from './modules/transition/transition.module';
+import { ExportImportModule } from './modules/export-import/export-import.module';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { TransitionModule } from './modules/transition/transition.module';
     FilmModule,
     FilmStateModule,
     TransitionModule,
+    ExportImportModule,
   ],
   providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
 })
