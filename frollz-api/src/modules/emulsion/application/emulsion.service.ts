@@ -83,6 +83,18 @@ export class EmulsionService {
     await this.emulsionTagRepo.remove(emulsionId, tagId);
   }
 
+  async uploadBoxImage(id: number, data: Buffer, mimeType: string): Promise<void> {
+    await this.findById(id);
+    await this.emulsionRepo.updateBoxImage(id, data, mimeType);
+  }
+
+  async getBoxImage(id: number): Promise<{ data: Buffer; mimeType: string }> {
+    await this.findById(id);
+    const image = await this.emulsionRepo.getBoxImage(id);
+    if (!image) throw new NotFoundException(`No box image for emulsion '${id}'`);
+    return image;
+  }
+
   findBrands(q?: string): Promise<string[]> {
     return this.emulsionRepo.findBrands(q);
   }

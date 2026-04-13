@@ -16,6 +16,8 @@ export interface EmulsionRow {
   brand: string;
   manufacturer: string;
   speed: number;
+  box_image_data?: Buffer | null;
+  box_image_mime_type?: string | null;
 }
 
 export interface FilmStateRow {

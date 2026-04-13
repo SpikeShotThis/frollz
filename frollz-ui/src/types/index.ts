@@ -28,7 +28,7 @@ export interface Emulsion {
   formatId: number
   processId: number
   parentId: number | null
-  boxImageUrl?: string
+  boxImageMimeType: string | null
   tags: Tag[]
 }
 

@@ -7,12 +7,25 @@ import { KNEX_CONNECTION } from '../knex.provider';
 import { EmulsionRow, EmulsionTagRow, TagRow } from '../types/db.types';
 import { EmulsionMapper } from './emulsion.mapper';
 
+// Columns returned for list/detail queries — excludes the blob to keep payloads lean.
+const EMULSION_COLUMNS: (keyof EmulsionRow)[] = [
+  'id',
+  'parent_id',
+  'process_id',
+  'format_id',
+  'name',
+  'brand',
+  'manufacturer',
+  'speed',
+  'box_image_mime_type',
+];
+
 @Injectable()
 export class EmulsionKnexRepository implements IEmulsionRepository {
   constructor(@Inject(KNEX_CONNECTION) private readonly knex: Knex) {}
 
   async findById(id: number): Promise<Emulsion | null> {
-    const row = await this.knex<EmulsionRow>('emulsion').where({ id }).first();
+    const row = await this.knex<EmulsionRow>('emulsion').select(EMULSION_COLUMNS).where({ id }).first();
     if (!row) return null;
     const emulsion = EmulsionMapper.toDomain(row);
     const tags = await this.loadTags(id);
@@ -20,7 +33,7 @@ export class EmulsionKnexRepository implements IEmulsionRepository {
   }
 
   async findAll(): Promise<Emulsion[]> {
-    const rows = await this.knex<EmulsionRow>('emulsion').select('*');
+    const rows = await this.knex<EmulsionRow>('emulsion').select(EMULSION_COLUMNS);
     return Promise.all(
       rows.map(async (row) => {
         const emulsion = EmulsionMapper.toDomain(row);
@@ -31,7 +44,7 @@ export class EmulsionKnexRepository implements IEmulsionRepository {
   }
 
   async findByProcessId(processId: number): Promise<Emulsion[]> {
-    const rows = await this.knex<EmulsionRow>('emulsion').where({ process_id: processId });
+    const rows = await this.knex<EmulsionRow>('emulsion').select(EMULSION_COLUMNS).where({ process_id: processId });
     return Promise.all(
       rows.map(async (row) => {
         const emulsion = EmulsionMapper.toDomain(row);
@@ -42,7 +55,7 @@ export class EmulsionKnexRepository implements IEmulsionRepository {
   }
 
   async findByFormatId(formatId: number): Promise<Emulsion[]> {
-    const rows = await this.knex<EmulsionRow>('emulsion').where({ format_id: formatId });
+    const rows = await this.knex<EmulsionRow>('emulsion').select(EMULSION_COLUMNS).where({ format_id: formatId });
     return Promise.all(
       rows.map(async (row) => {
         const emulsion = EmulsionMapper.toDomain(row);
@@ -87,6 +100,21 @@ export class EmulsionKnexRepository implements IEmulsionRepository {
 
   async delete(id: number): Promise<void> {
     await this.knex('emulsion').where({ id }).delete();
+  }
+
+  async updateBoxImage(id: number, data: Buffer, mimeType: string): Promise<void> {
+    await this.knex('emulsion')
+      .where({ id })
+      .update({ box_image_data: data, box_image_mime_type: mimeType });
+  }
+
+  async getBoxImage(id: number): Promise<{ data: Buffer; mimeType: string } | null> {
+    const row = await this.knex<EmulsionRow>('emulsion')
+      .select(['box_image_data', 'box_image_mime_type'])
+      .where({ id })
+      .first();
+    if (!row?.box_image_data || !row.box_image_mime_type) return null;
+    return { data: row.box_image_data, mimeType: row.box_image_mime_type };
   }
 
   private async loadTags(emulsionId: number): Promise<Tag[]> {

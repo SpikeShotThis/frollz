@@ -16,6 +16,8 @@ export class Emulsion {
     public readonly format?: Format,
     public readonly tags: Tag[] = [],
     public readonly parent?: Emulsion,
+    public readonly boxImageData?: Buffer | null,
+    public readonly boxImageMimeType?: string | null,
   ) {}
 
   static create(props: {
@@ -31,6 +33,8 @@ export class Emulsion {
     format?: Format;
     tags?: Tag[];
     parent?: Emulsion;
+    boxImageData?: Buffer | null;
+    boxImageMimeType?: string | null;
   }): Emulsion {
     return new Emulsion(
       props.id ?? 0,
@@ -45,6 +49,8 @@ export class Emulsion {
       props.format,
       props.tags ?? [],
       props.parent,
+      props.boxImageData ?? null,
+      props.boxImageMimeType ?? null,
     );
   }
 }

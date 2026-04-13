@@ -25,12 +25,17 @@ export const processApi = {
 export const emulsionApi = {
   getAll: () => api.get<Emulsion[]>('/emulsions'),
   getById: (id: number) => api.get<Emulsion>(`/emulsions/${id}`),
-  create: (data: { name: string; brand: string; manufacturer: string; speed: number; processId: number; formatId: number; parentId?: string; boxImageUrl?: string }) =>
+  create: (data: { name: string; brand: string; manufacturer: string; speed: number; processId: number; formatId: number; parentId?: string }) =>
     api.post<Emulsion>('/emulsions', data),
-  createBulk: (data: { name: string; brand: string; manufacturer: string; speed: number; processId: number; formatIds: string[]; parentId?: string; boxImageUrl?: string }) =>
+  createBulk: (data: { name: string; brand: string; manufacturer: string; speed: number; processId: number; formatIds: string[]; parentId?: string }) =>
     api.post<Emulsion[]>('/emulsions/bulk', data),
-  update: (id: number, data: Partial<{ name: string; brand: string; manufacturer: string; speed: number; processId: number; formatId: number; boxImageUrl: string }>) =>
+  update: (id: number, data: Partial<{ name: string; brand: string; manufacturer: string; speed: number; processId: number; formatId: number }>) =>
     api.patch<Emulsion>(`/emulsions/${id}`, data),
+  uploadBoxImage: (id: number, file: File) => {
+    const form = new FormData()
+    form.append('file', file)
+    return api.put<void>(`/emulsions/${id}/box-image`, form)
+  },
   delete: (id: number) => api.delete(`/emulsions/${id}`),
   addTag: (id: number, tagId: number) => api.post(`/emulsions/${id}/tags`, { tagId }),
   removeTag: (id: number, tagId: number) => api.delete(`/emulsions/${id}/tags/${tagId}`),

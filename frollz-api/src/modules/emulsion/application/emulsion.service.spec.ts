@@ -32,6 +32,8 @@ const makeRepo = (overrides: Partial<IEmulsionRepository> = {}): IEmulsionReposi
   save: jest.fn().mockResolvedValue(randomId()),
   update: jest.fn().mockResolvedValue(undefined),
   delete: jest.fn().mockResolvedValue(undefined),
+  updateBoxImage: jest.fn().mockResolvedValue(undefined),
+  getBoxImage: jest.fn().mockResolvedValue(null),
   ...overrides,
 });
 
