@@ -229,6 +229,7 @@ describe('RollDetailView', () => {
         'Loaded',
         expect.stringContaining('2026-01-15'),
         'test note',
+        undefined,
       )
     })
 

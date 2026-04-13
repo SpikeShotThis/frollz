@@ -29,6 +29,7 @@ export class TransitionMetadataFieldKnexRepository implements ITransitionMetadat
       id: field.id,
       name: field.name,
       field_type: field.fieldType,
+      allow_multiple: field.allowMultiple,
     });
   }
 
@@ -36,6 +37,7 @@ export class TransitionMetadataFieldKnexRepository implements ITransitionMetadat
     await this.knex('transition_metadata_field').where({ id: field.id }).update({
       name: field.name,
       field_type: field.fieldType,
+      allow_multiple: field.allowMultiple,
     });
   }
 
@@ -48,6 +50,7 @@ export class TransitionMetadataFieldKnexRepository implements ITransitionMetadat
       id: row.id,
       name: row.name,
       fieldType: row.field_type,
+      allowMultiple: Boolean(row.allow_multiple),
     });
   }
 }

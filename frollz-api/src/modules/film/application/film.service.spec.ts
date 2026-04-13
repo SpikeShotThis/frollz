@@ -6,6 +6,8 @@ import { IFilmTagRepository } from '../../../domain/film-tag/repositories/film-t
 import { IFilmStateRepository } from '../../../domain/film-state/repositories/film-state.repository.interface';
 import { ITransitionStateRepository } from '../../../domain/transition/repositories/transition-state.repository.interface';
 import { ITransitionRuleRepository } from '../../../domain/transition/repositories/transition-rule.repository.interface';
+import { ITransitionStateMetadataRepository } from '../../../domain/transition/repositories/transition-state-metadata.repository.interface';
+import { ITransitionMetadataFieldRepository } from '../../../domain/transition/repositories/transition-metadata-field.repository.interface';
 import { Film } from '../../../domain/film/entities/film.entity';
 import { FilmState } from '../../../domain/film-state/entities/film-state.entity';
 import { TransitionState } from '../../../domain/transition/entities/transition-state.entity';
@@ -71,6 +73,27 @@ const makeFilmStateRepo = (overrides: Partial<IFilmStateRepository> = {}): IFilm
   findLatestByFilmId: jest.fn().mockResolvedValue(null),
   findFilmIdsByCurrentState: jest.fn().mockResolvedValue([]),
   save: jest.fn().mockResolvedValue(randomId()),
+  saveMetadataValue: jest.fn().mockResolvedValue(undefined),
+  update: jest.fn().mockResolvedValue(undefined),
+  delete: jest.fn().mockResolvedValue(undefined),
+  ...overrides,
+});
+
+const makeTransitionStateMetadataRepo = (overrides: Partial<ITransitionStateMetadataRepository> = {}): ITransitionStateMetadataRepository => ({
+  findById: jest.fn().mockResolvedValue(null),
+  findAll: jest.fn().mockResolvedValue([]),
+  findByTransitionStateId: jest.fn().mockResolvedValue([]),
+  save: jest.fn().mockResolvedValue(undefined),
+  update: jest.fn().mockResolvedValue(undefined),
+  delete: jest.fn().mockResolvedValue(undefined),
+  ...overrides,
+});
+
+const makeMetadataFieldRepo = (overrides: Partial<ITransitionMetadataFieldRepository> = {}): ITransitionMetadataFieldRepository => ({
+  findById: jest.fn().mockResolvedValue(null),
+  findAll: jest.fn().mockResolvedValue([]),
+  findByName: jest.fn().mockResolvedValue(null),
+  save: jest.fn().mockResolvedValue(undefined),
   update: jest.fn().mockResolvedValue(undefined),
   delete: jest.fn().mockResolvedValue(undefined),
   ...overrides,
@@ -104,7 +127,9 @@ const makeService = (
   filmStateRepo: IFilmStateRepository = makeFilmStateRepo(),
   stateRepo: ITransitionStateRepository = makeStateRepo(),
   ruleRepo: ITransitionRuleRepository = makeRuleRepo(),
-) => new FilmService(filmRepo, filmTagRepo, filmStateRepo, stateRepo, ruleRepo);
+  transitionStateMetadataRepo: ITransitionStateMetadataRepository = makeTransitionStateMetadataRepo(),
+  metadataFieldRepo: ITransitionMetadataFieldRepository = makeMetadataFieldRepo(),
+) => new FilmService(filmRepo, filmTagRepo, filmStateRepo, stateRepo, ruleRepo, transitionStateMetadataRepo, metadataFieldRepo);
 
 describe('FilmService', () => {
   describe('findAll', () => {

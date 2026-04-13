@@ -13,4 +13,6 @@ export interface IEmulsionRepository {
   save(emulsion: Emulsion): Promise<number>;
   update(emulsion: Emulsion): Promise<void>;
   delete(id: number): Promise<void>;
+  updateBoxImage(id: number, data: Buffer, mimeType: string): Promise<void>;
+  getBoxImage(id: number): Promise<{ data: Buffer; mimeType: string } | null>;
 }

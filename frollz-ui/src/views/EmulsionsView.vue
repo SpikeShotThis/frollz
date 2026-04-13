@@ -36,10 +36,17 @@
         class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4"
       >
         <div class="flex justify-between items-start gap-3">
-          <div class="min-w-0">
-            <p class="font-semibold text-gray-900 dark:text-gray-100 truncate">{{ emulsion.brand }}</p>
-            <p class="text-sm text-gray-500 dark:text-gray-400 mt-0.5 truncate">{{ emulsion.manufacturer }}</p>
-            <p class="text-xs text-gray-600 dark:text-gray-400 mt-0.5">{{ formatNameById[emulsion.formatId] ?? '—' }} · ISO {{ emulsion.speed }}</p>
+          <div class="flex items-start gap-3 min-w-0">
+            <img
+              :src="boxImageSrc(emulsion)"
+              :alt="emulsion.boxImageMimeType ? 'Box image' : 'Placeholder'"
+              class="w-12 h-12 object-contain rounded shrink-0"
+            />
+            <div class="min-w-0">
+              <p class="font-semibold text-gray-900 dark:text-gray-100 truncate">{{ emulsion.brand }}</p>
+              <p class="text-sm text-gray-500 dark:text-gray-400 mt-0.5 truncate">{{ emulsion.manufacturer }}</p>
+              <p class="text-xs text-gray-600 dark:text-gray-400 mt-0.5">{{ formatNameById[emulsion.formatId] ?? '—' }} · ISO {{ emulsion.speed }}</p>
+            </div>
           </div>
           <div class="flex flex-col items-end gap-2 shrink-0">
             <span class="px-2 text-xs leading-5 font-semibold rounded-full bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200">{{ processNameById[emulsion.processId] ?? '—' }}</span>
@@ -83,6 +90,7 @@
                 :class="['px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer select-none', sortField === 'speed' ? 'bg-gray-200 dark:bg-gray-600' : '']"
               >Speed {{ sortField === 'speed' ? (sortDirection === 'asc' ? '↑' : '↓') : '' }}</th>
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Tags</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Image</th>
               <th class="px-6 py-3"></th>
             </tr>
           </thead>
@@ -119,6 +127,13 @@
                     {{ tag.name }}
                   </span>
                 </div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <img
+                  :src="boxImageSrc(emulsion)"
+                  :alt="emulsion.boxImageMimeType ? 'Box image' : 'Placeholder'"
+                  class="w-12 h-12 object-contain rounded"
+                />
               </td>
               <td class="px-6 py-4 whitespace-nowrap text-right">
                 <button
@@ -246,15 +261,16 @@
               <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Click tags to select</p>
             </div>
             <div>
-              <label for="emulsion-box-image-url" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Box Image URL
-                  <input
-                    id="emulsion-box-image-url"
-                    v-model="form.boxImageUrl"
-                    type="url"
-                    placeholder="https://..."
-                    class="mt-1 w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 text-base sm:text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500"
-                  />
+              <label for="emulsion-box-image" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Box Image
+                <input
+                  id="emulsion-box-image"
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp,image/gif"
+                  @change="onBoxImageChange"
+                  class="mt-1 w-full text-sm text-gray-700 dark:text-gray-300 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-primary-50 file:text-primary-700 dark:file:bg-primary-900 dark:file:text-primary-200 hover:file:bg-primary-100"
+                />
               </label>
+              <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">JPEG, PNG, WebP or GIF · max 4 MB</p>
             </div>
           </div>
           <div v-if="error" role="alert" class="mt-4 text-sm text-red-600 dark:text-red-400">{{ error }}</div>
@@ -288,6 +304,17 @@ import TypeaheadInput from '@/components/TypeaheadInput.vue'
 import BaseModal from '@/components/BaseModal.vue'
 import SpeedTypeaheadInput from '@/components/SpeedTypeaheadInput.vue'
 import { useNotificationStore } from '@/stores/notification'
+import placeholderColorNegative from '@/components/placeholder/color-negative.svg'
+import placeholderBlackAndWhite from '@/components/placeholder/black-and-white.svg'
+import placeholderMotionPicture from '@/components/placeholder/motion-picture.svg'
+import placeholderColorPositive from '@/components/placeholder/color-positive.svg'
+
+const PROCESS_PLACEHOLDER: Record<string, string> = {
+  'C-41': placeholderColorNegative,
+  'Black and White': placeholderBlackAndWhite,
+  'ECN-2': placeholderMotionPicture,
+  'E-6': placeholderColorPositive,
+}
 
 const router = useRouter()
 const notification = useNotificationStore()
@@ -340,7 +367,20 @@ const processNameById = computed(() => {
   return map
 })
 
+const boxImageSrc = (emulsion: Emulsion): string => {
+  if (emulsion.boxImageMimeType) return `/api/emulsions/${emulsion.id}/box-image`
+  const processName = processNameById.value[emulsion.processId] ?? ''
+  return PROCESS_PLACEHOLDER[processName] ?? placeholderColorNegative
+}
+
 const availableFormats = computed(() => formats.value)
+
+const boxImageFile = ref<File | null>(null)
+
+const onBoxImageChange = (event: Event) => {
+  const input = event.target as HTMLInputElement
+  boxImageFile.value = input.files?.[0] ?? null
+}
 
 const emptyForm = () => ({
   name: '',
@@ -349,7 +389,6 @@ const emptyForm = () => ({
   formatIds: [] as string[],
   processId: '',
   speed: undefined as number | undefined,
-  boxImageUrl: '',
 })
 
 const form = ref(emptyForm())
@@ -401,6 +440,7 @@ const closeModal = () => {
   showModal.value = false
   form.value = emptyForm()
   selectedTagIds.value = []
+  boxImageFile.value = null
   error.value = ''
 }
 
@@ -419,19 +459,23 @@ const handleSubmit = async () => {
       formatIds: form.value.formatIds,
       processId: Number(form.value.processId),
       speed: form.value.speed!,
-      ...(form.value.boxImageUrl ? { boxImageUrl: form.value.boxImageUrl } : {}),
     }
 
     const response = await emulsionApi.createBulk(payload)
     const createdEmulsions = response.data
 
-    await Promise.all(
-      createdEmulsions.flatMap(emulsion =>
+    await Promise.all([
+      ...createdEmulsions.flatMap(emulsion =>
         selectedTagIds.value.map(tagId =>
           emulsionApi.addTag(emulsion.id, tagId)
         )
-      )
-    )
+      ),
+      ...(boxImageFile.value
+        ? createdEmulsions.map(emulsion =>
+            emulsionApi.uploadBoxImage(emulsion.id, boxImageFile.value!)
+          )
+        : []),
+    ])
 
     await loadEmulsions()
     closeModal()

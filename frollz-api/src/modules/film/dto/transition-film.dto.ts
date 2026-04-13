@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsDateString, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { IsDateString, IsNotEmpty, IsObject, IsOptional, IsString } from 'class-validator';
 
 export class TransitionFilmDto {
   @ApiProperty({ description: 'Name of the target state', example: 'Loaded' })
@@ -16,4 +16,12 @@ export class TransitionFilmDto {
   @IsOptional()
   @IsString()
   note?: string;
+
+  @ApiPropertyOptional({
+    description: 'Metadata values keyed by field name. For allow_multiple fields (e.g. scansUrl), provide an array of strings.',
+    example: { scansUrl: ['https://example.com/scan1.jpg', 'https://example.com/scan2.jpg'] },
+  })
+  @IsOptional()
+  @IsObject()
+  metadata?: Record<string, string | string[]>;
 }
