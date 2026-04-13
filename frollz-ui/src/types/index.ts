@@ -135,3 +135,17 @@ export function currentStateName(film: Film): string {
   )
   return sorted[0]?.state?.name ?? ''
 }
+
+// Helpers — collect all scan URLs stored in film state metadata
+export function getScanUrls(film: Film): string[] {
+  const urls: string[] = []
+  for (const state of film.states ?? []) {
+    for (const m of state.metadata ?? []) {
+      if (m.transitionStateMetadata?.field?.name === 'scansUrl' && Array.isArray(m.value)) {
+        urls.push(...m.value)
+      }
+    }
+  }
+  // deduplicate while preserving order
+  return [...new Set(urls)]
+}
