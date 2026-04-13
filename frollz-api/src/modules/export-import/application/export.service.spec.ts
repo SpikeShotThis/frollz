@@ -66,6 +66,7 @@ const makeTag = (overrides: Partial<Parameters<typeof Tag.create>[0]> = {}): Tag
 const makeEmulsionRepo = (overrides: Partial<IEmulsionRepository> = {}): IEmulsionRepository => ({
   findAll: jest.fn().mockResolvedValue([]),
   findById: jest.fn().mockResolvedValue(null),
+  findByName: jest.fn().mockResolvedValue(null),
   findByProcessId: jest.fn().mockResolvedValue([]),
   findByFormatId: jest.fn().mockResolvedValue([]),
   findBrands: jest.fn().mockResolvedValue([]),

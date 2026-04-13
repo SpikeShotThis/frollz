@@ -17,10 +17,34 @@
         >
           {{ exportingLibrary ? 'Exporting…' : 'Export Library' }}
         </button>
+        <button
+          @click="csvInput?.click()"
+          :disabled="importingCsv"
+          class="border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 px-4 py-2 min-h-[44px] rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 font-medium disabled:opacity-50"
+        >
+          {{ importingCsv ? 'Importing…' : 'Import CSV' }}
+        </button>
+        <input ref="csvInput" type="file" accept=".csv,text/csv" class="hidden" aria-label="Select CSV file to import" @change="onCsvSelected" />
         <button @click="openAddFilm()" class="bg-primary-600 text-white px-4 py-2 min-h-[44px] rounded-md hover:bg-primary-700 font-medium">
           Add Film
         </button>
       </div>
+    </div>
+
+    <!-- Import results -->
+    <div v-if="importResult" class="mb-4 rounded-md border p-4 text-sm" :class="importResult.errors.length ? 'border-yellow-300 bg-yellow-50 dark:bg-yellow-900/20 dark:border-yellow-700' : 'border-green-300 bg-green-50 dark:bg-green-900/20 dark:border-green-700'">
+      <div class="flex items-center justify-between mb-1">
+        <span class="font-medium text-gray-800 dark:text-gray-200">
+          Import complete — {{ importResult.imported }} imported, {{ importResult.skipped }} skipped
+        </span>
+        <button @click="importResult = null" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 text-lg leading-none">&times;</button>
+      </div>
+      <ul v-if="importResult.errors.length" class="mt-2 space-y-1 text-yellow-800 dark:text-yellow-200">
+        <li v-for="err in importResult.errors" :key="err.row">Row {{ err.row }}: {{ err.reason }}</li>
+      </ul>
+      <p v-if="!importResult.errors.length" class="text-green-800 dark:text-green-200 mt-1">
+        All rows imported successfully. <a :href="importApi.templateUrl" class="underline">Download template</a> for next time.
+      </p>
     </div>
 
     <!-- Search + Filters toggle row -->
@@ -456,7 +480,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
-import { filmApi, emulsionApi, transitionApi, formatApi, tagApi, exportApi } from '@/services/api-client'
+import { filmApi, emulsionApi, transitionApi, formatApi, tagApi, exportApi, importApi } from '@/services/api-client'
 import BaseModal from '@/components/BaseModal.vue'
 import type { Film, Emulsion, TransitionProfile, Format, Tag } from '@/types'
 import { currentStateName, getScanUrls } from '@/types'
@@ -474,6 +498,9 @@ const transitionProfiles = ref<TransitionProfile[]>([])
 const isLoading = ref(true)
 const exportingJson = ref(false)
 const exportingLibrary = ref(false)
+const importingCsv = ref(false)
+const csvInput = ref<HTMLInputElement | null>(null)
+const importResult = ref<{ imported: number; skipped: number; errors: { row: number; reason: string }[] } | null>(null)
 const showModal = ref(false)
 
 const searchQuery = ref('')
@@ -680,6 +707,23 @@ const exportLibraryJson = async () => {
     console.error('Export failed:', err)
   } finally {
     exportingLibrary.value = false
+  }
+}
+
+const onCsvSelected = async (event: Event) => {
+  const file = (event.target as HTMLInputElement).files?.[0]
+  if (!file) return
+  importingCsv.value = true
+  importResult.value = null
+  try {
+    const res = await importApi.importFilms(file)
+    importResult.value = res.data
+    await loadFilms()
+  } catch (err) {
+    console.error('Import failed:', err)
+  } finally {
+    importingCsv.value = false
+    if (csvInput.value) csvInput.value.value = ''
   }
 }
 

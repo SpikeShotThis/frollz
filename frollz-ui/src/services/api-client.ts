@@ -96,6 +96,21 @@ export const exportApi = {
   libraryJsonPath: '/export/library.json',
 }
 
+// Import API
+const API_BASE_URL = import.meta.env.VITE_API_URL || '/api'
+export const importApi = {
+  templatePath: '/import/films/template',
+  importFilms: (file: File) => {
+    const form = new FormData()
+    form.append('csv', file)
+    return api.post<{ imported: number; skipped: number; errors: { row: number; reason: string }[] }>(
+      '/import/films',
+      form,
+    )
+  },
+  templateUrl: `${API_BASE_URL}/import/films/template`,
+}
+
 // Transition API
 export const transitionApi = {
   getProfiles: () => api.get<TransitionProfile[]>('/transitions/profiles'),

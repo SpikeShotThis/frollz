@@ -5,6 +5,7 @@ export const EMULSION_REPOSITORY = 'EMULSION_REPOSITORY';
 export interface IEmulsionRepository {
   findById(id: number): Promise<Emulsion | null>;
   findAll(): Promise<Emulsion[]>;
+  findByName(name: string): Promise<Emulsion | null>;
   findByProcessId(processId: number): Promise<Emulsion[]>;
   findByFormatId(formatId: number): Promise<Emulsion[]>;
   findBrands(q?: string): Promise<string[]>;

@@ -43,6 +43,14 @@ export class EmulsionKnexRepository implements IEmulsionRepository {
     );
   }
 
+  async findByName(name: string): Promise<Emulsion | null> {
+    const row = await this.knex<EmulsionRow>('emulsion').select(EMULSION_COLUMNS).whereILike('name', name).first();
+    if (!row) return null;
+    const emulsion = EmulsionMapper.toDomain(row);
+    const tags = await this.loadTags(row.id);
+    return Emulsion.create({ ...emulsion, tags });
+  }
+
   async findByProcessId(processId: number): Promise<Emulsion[]> {
     const rows = await this.knex<EmulsionRow>('emulsion').select(EMULSION_COLUMNS).where({ process_id: processId });
     return Promise.all(

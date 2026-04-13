@@ -1,14 +1,19 @@
-import { Controller, Get, Res } from '@nestjs/common';
-import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { BadRequestException, Controller, Get, Post, Res, UploadedFile, UseInterceptors } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { ApiBody, ApiConsumes, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
 import { ExportService } from './application/export.service';
+import { ImportResult, ImportService } from './application/import.service';
 
-@ApiTags('Export')
-@Controller('export')
+@ApiTags('Export / Import')
+@Controller()
 export class ExportImportController {
-  constructor(private readonly exportService: ExportService) {}
+  constructor(
+    private readonly exportService: ExportService,
+    private readonly importService: ImportService,
+  ) {}
 
-  @Get('films.json')
+  @Get('export/films.json')
   @ApiOperation({ summary: 'Export all films as JSON' })
   async exportFilmsJson(@Res() res: Response): Promise<void> {
     const envelope = await this.exportService.exportFilmsJson();
@@ -18,7 +23,7 @@ export class ExportImportController {
     res.json(envelope);
   }
 
-  @Get('library.json')
+  @Get('export/library.json')
   @ApiOperation({ summary: 'Export reference data (emulsions, formats, tags) as JSON' })
   async exportLibraryJson(@Res() res: Response): Promise<void> {
     const envelope = await this.exportService.exportLibraryJson();
@@ -26,5 +31,28 @@ export class ExportImportController {
     res.setHeader('Content-Type', 'application/json');
     res.setHeader('Content-Disposition', `attachment; filename="library-${date}.json"`);
     res.json(envelope);
+  }
+
+  @Get('import/films/template')
+  @ApiOperation({ summary: 'Download CSV template for film import' })
+  getFilmsTemplate(@Res() res: Response): void {
+    const date = new Date().toISOString().slice(0, 10);
+    res.setHeader('Content-Type', 'text/csv');
+    res.setHeader('Content-Disposition', `attachment; filename="films-import-template-${date}.csv"`);
+    res.send(this.importService.getTemplate());
+  }
+
+  @Post('import/films')
+  @ApiOperation({ summary: 'Import films from a CSV file' })
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({ schema: { type: 'object', properties: { csv: { type: 'string', format: 'binary' } } } })
+  @UseInterceptors(FileInterceptor('csv'))
+  async importFilms(@UploadedFile() file: Express.Multer.File): Promise<ImportResult> {
+    if (!file) throw new BadRequestException('No file uploaded');
+    const allowed = new Set(['text/csv', 'application/vnd.ms-excel', 'text/plain']);
+    if (!allowed.has(file.mimetype)) {
+      throw new BadRequestException(`Unsupported file type: ${file.mimetype}`);
+    }
+    return this.importService.importFilms(file.buffer);
   }
 }
