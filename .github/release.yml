@@ -1,0 +1,23 @@
+changelog:
+  categories:
+    - title: "New Features"
+      labels:
+        - feature
+        - enhancement
+    - title: "Accessibility"
+      labels:
+        - a11y
+        - accessibility
+    - title: "Bug Fixes"
+      labels:
+        - bug
+        - fix
+    - title: "Performance"
+      labels:
+        - performance
+    - title: "Maintenance"
+      labels:
+        - chore
+        - refactor
+        - dependencies
+        - ci

@@ -44,7 +44,7 @@ Fall back to Read/Grep only for raw file content (config values, line ranges).
 **Before any new work — no exceptions:**
 
 ```bash
-git checkout development && git fetch origin && git pull origin development
+git checkout develop && git fetch origin && git pull origin develop
 git checkout -b feature/{issue-number}-{issue-title-slug}
 ```
 
@@ -54,7 +54,7 @@ Use the `/feature-dev` skill to run the full workflow.
 
 1. **Never work directly on `main`.**
 2. **Wait for user approval before submitting or merging a PR** — do not auto-merge.
-3. Target branch for PRs is always `development`.
+3. Target branch for feature PRs is always `develop`. Release PRs target `main`.
 4. `docs/adr/architecture.md` must be updated for any architectural change.
 5. Use `/clear` between unrelated tasks to keep context clean.
 6. Use subagents for codebase investigation — keeps file reads out of main context.

@@ -1,80 +1,105 @@
 # Release Checklist
 
-Steps to take when you're ready to ship a new build.
+Steps to take when you're ready to ship a new build. See [gitflow.md](./gitflow.md) for the full branching strategy.
 
 ---
 
-## 1. Get Code onto Main
+## 1. Cut the Release Branch
 
-- [ ] Merge your feature/fix branch into `main` via a PR
-- [ ] Confirm the merge commit appears on the `main` branch
+- [ ] Check out `develop` and pull latest
+- [ ] Create `release/x.y.z` off `develop`
+- [ ] Bump version numbers if needed (package.json)
+- [ ] Push and open a PR: `release/x.y.z → main`
 
 ---
 
-## 2. Watch the CI/CD Pipeline
+## 2. Merge to Main (fast-forward only)
 
-- [ ] Open **Actions** tab on GitHub: `https://github.com/joshholl/frollz/actions`
-- [ ] Confirm the `CI / CD` workflow triggered on the merge
+After the release PR is reviewed and approved:
+
+```bash
+git checkout main && git pull origin main
+git merge --ff-only release/x.y.z
+git push origin main
+```
+
+> **Must be fast-forward.** A merge commit breaks auto-generated release notes.
+
+---
+
+## 3. Tag the Release
+
+```bash
+git tag -a vx.y.z -m "Release vx.y.z"
+git push origin vx.y.z
+```
+
+Pushing the tag triggers the CI/CD pipeline automatically.
+
+---
+
+## 4. Watch the CI/CD Pipeline
+
+- [ ] Open **Actions** tab: `https://github.com/joshholl/frollz/actions`
+- [ ] Confirm `CI / CD` triggered on the tag push
 - [ ] Wait for **API — Lint & Test** and **UI — Lint, Type-check & Test** to go green
 - [ ] Wait for **Build & Push Images** to complete
-- [ ] If any job fails — fix the issue, push to `main`, and the pipeline re-runs automatically
+- [ ] If any job fails — fix on the release branch, re-merge, re-tag
 
 ---
 
-## 3. Confirm Images Were Published (first release only)
+## 5. Merge Release Branch Back to Develop
 
-> After the very first successful push, GHCR packages are created as **private** by default.
-> You only need to do this once per image.
-
-- [ ] Go to your GitHub profile → **Packages**
-- [ ] Find `frollz-api` and `frollz-ui`
-- [ ] For each: **Package settings** → change visibility to **Public** (or leave private and ensure your server can authenticate)
+```bash
+git checkout develop && git pull origin develop
+git merge --no-ff release/x.y.z
+git push origin develop
+git push origin --delete release/x.y.z
+git branch -d release/x.y.z
+```
 
 ---
 
-## 4. Pull and Deploy on Your Production Host
+## 6. Publish the Draft Release
+
+- [ ] Go to **Releases** on GitHub
+- [ ] Open the draft release created by the tag push
+- [ ] Review and edit the auto-generated notes
+- [ ] Publish
+
+---
+
+## 7. Deploy on Production Host
 
 - [ ] SSH into the production server
-- [ ] Pull the new images:
-  ```bash
-  docker pull ghcr.io/joshholl/frollz-api:latest
-  docker pull ghcr.io/joshholl/frollz-ui:latest
-  ```
-- [ ] Restart the stack:
-  ```bash
-  docker-compose pull   # refreshes to latest
-  docker-compose up -d  # recreates containers with new images
-  ```
-- [ ] Confirm all containers are running:
-  ```bash
-  docker-compose ps
-  ```
+- [ ] Pull the new images and restart:
 
-> **Tip:** To deploy a specific build instead of `latest`, use the commit SHA tag —
-> e.g. `ghcr.io/joshholl/frollz-api:abc1234`. Every build is tagged with its SHA.
+```bash
+docker compose pull
+docker compose up -d
+docker compose ps
+```
 
 ---
 
-## 5. Smoke Test
+## 8. Smoke Test
 
 - [ ] Open the app in a browser and confirm it loads
-- [ ] Log an entry and verify it saves (exercises the API and DB end-to-end)
+- [ ] Log an entry and verify it saves (exercises API and DB end-to-end)
 - [ ] Check logs for errors:
-  ```bash
-  docker-compose logs -f
-  ```
+
+```bash
+docker compose logs -f
+```
 
 ---
 
 ## Rollback
 
-If something's wrong, roll back to the previous build using its SHA tag:
+If something's wrong, roll back using the previous image SHA tag:
 
 ```bash
-# Find recent SHA tags in GitHub → Packages → frollz-api → versions
-docker pull ghcr.io/joshholl/frollz-api:<previous-sha>
-docker pull ghcr.io/joshholl/frollz-ui:<previous-sha>
-
-# Update docker-compose.yml image tags to the previous SHA, then:
-docker-compose up -d
+# Find recent SHA tags in GitHub → Packages → frollz → versions
+# Edit docker-compose.yml to pin the image tag to the previous SHA, then:
+docker compose up -d
 ```

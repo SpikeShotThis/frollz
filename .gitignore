@@ -40,3 +40,4 @@ Thumbs.db
 .claude/
 frollz-api/coverage
 frollz-ui/coverage
+frollz-api/dev.db
