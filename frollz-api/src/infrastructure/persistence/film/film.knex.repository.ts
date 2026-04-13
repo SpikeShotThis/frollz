@@ -33,7 +33,7 @@ export class FilmKnexRepository implements IFilmRepository {
           .select('fs2.film_id')
           .whereIn('fs2.state_id', filters.stateIds)
           .whereRaw(
-            'fs2.id = (SELECT fs3.id FROM film_state fs3 WHERE fs3.film_id = fs2.film_id ORDER BY fs3.date DESC, fs3.id DESC LIMIT 1)',
+            'fs2.id = (SELECT fs3.id FROM film_state fs3 WHERE fs3.film_id = fs2.film_id ORDER BY fs3.id DESC LIMIT 1)',
           ),
       );
     }
@@ -143,7 +143,7 @@ export class FilmKnexRepository implements IFilmRepository {
     const rows = await this.knex('film_state as fs')
       .join('transition_state as ts', 'ts.id', 'fs.state_id')
       .where('fs.film_id', filmId)
-      .orderBy([{ column: 'fs.date', order: 'desc' }, { column: 'fs.id', order: 'desc' }])
+      .orderBy('fs.id', 'desc')
       .select('fs.id', 'fs.film_id', 'fs.state_id', 'fs.date', 'fs.note', 'ts.name as state_name');
     return rows.map((r) =>
       FilmState.create({

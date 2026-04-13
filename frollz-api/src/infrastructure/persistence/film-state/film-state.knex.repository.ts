@@ -39,7 +39,7 @@ export class FilmStateKnexRepository implements IFilmStateRepository {
   async findByFilmId(filmId: number): Promise<FilmState[]> {
     const rows = await this.knex<FilmStateRow>('film_state')
       .where({ film_id: filmId })
-      .orderBy([{ column: 'date', order: 'desc' }, { column: 'id', order: 'desc' }]);
+      .orderBy('id', 'desc');
     return Promise.all(
       rows.map(async (row) => {
         const filmState = FilmStateMapper.toDomain(row);
@@ -52,7 +52,7 @@ export class FilmStateKnexRepository implements IFilmStateRepository {
   async findLatestByFilmId(filmId: number): Promise<FilmState | null> {
     const row = await this.knex<FilmStateRow>('film_state')
       .where({ film_id: filmId })
-      .orderBy([{ column: 'date', order: 'desc' }, { column: 'id', order: 'desc' }])
+      .orderBy('id', 'desc')
       .first();
     if (!row) return null;
     const filmState = FilmStateMapper.toDomain(row);
@@ -64,7 +64,7 @@ export class FilmStateKnexRepository implements IFilmStateRepository {
     const rows = await this.knex<FilmStateRow>('film_state as fs')
       .whereIn('fs.state_id', stateIds)
       .whereRaw(
-        'fs.id = (SELECT fs2.id FROM film_state fs2 WHERE fs2.film_id = fs.film_id ORDER BY fs2.date DESC, fs2.id DESC LIMIT 1)',
+        'fs.id = (SELECT fs2.id FROM film_state fs2 WHERE fs2.film_id = fs.film_id ORDER BY fs2.id DESC LIMIT 1)',
       )
       .select('fs.film_id');
     return rows.map((r) => r.film_id);

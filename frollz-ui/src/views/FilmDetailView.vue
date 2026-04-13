@@ -310,9 +310,7 @@ const availableTags = computed(() => {
 
 const sortedStates = computed(() => {
   if (!film.value?.states) return []
-  return [...film.value.states].sort(
-    (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
-  )
+  return [...film.value.states].sort((a, b) => b.id - a.id)
 })
 
 const formatDate = (date: Date | string) => new Date(date as string).toLocaleDateString()
@@ -361,7 +359,7 @@ const buildMetadataPayload = (): Record<string, string | string[]> | undefined =
       const urls = (val as string[]).filter(u => u.trim() !== '')
       if (urls.length > 0) payload[field.field] = urls
     } else {
-      const scalar = (val as string).trim()
+      const scalar = String(val ?? '').trim()
       if (scalar !== '') payload[field.field] = scalar
     }
   }
@@ -383,7 +381,8 @@ const confirmTransition = async () => {
     cancelTransition()
     await loadData()
     notification.announce(`Film moved to ${targetStateName}`)
-  } catch {
+  } catch (err) {
+    console.error('Transition failed:', err)
     transitionError.value = 'Failed to transition film. Please try again.'
   } finally {
     transitionSubmitting.value = false

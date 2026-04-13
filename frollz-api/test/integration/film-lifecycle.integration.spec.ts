@@ -290,9 +290,11 @@ describe('Film lifecycle (standard profile)', () => {
   });
 
   const transitionAndAssert = async (targetStateName: string) => {
-    const film = await filmService.transition(filmId, { targetStateName, date: nextDate() });
+    const date = nextDate();
+    const film = await filmService.transition(filmId, { targetStateName, date:  date });
     expect(film.currentState).not.toBeNull();
     expect(film.currentState!.state!.name).toBe(targetStateName);
+    expect(film.currentState!.date.toISOString()).toBe(date);
     return film;
   };
 
@@ -370,10 +372,7 @@ describe('findAll with state filter', () => {
     });
 
     // Both films start in Added state automatically via create(); filmB progresses to Shelved.
-    // Use a future date so it sorts after the auto-added Added state (which uses new Date()).
-    const t2 = new Date(Date.now() + 120_000).toISOString();
-
-    await filmService.transition(filmB.id, { targetStateName: 'Shelved', date: t2 });
+    await filmService.transition(filmB.id, { targetStateName: 'Shelved' });
 
     const addedFilms = await filmService.findAll({ stateNames: ['Added'] });
     const addedIds = addedFilms.map((f) => f.id);
