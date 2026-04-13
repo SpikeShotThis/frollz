@@ -218,6 +218,9 @@ describe('Film', () => {
     expect(film.transitionProfileId).toBe(standardProfileId);
     expect(film.states).toHaveLength(1);
     expect(film.currentState?.state?.name).toBe('Added');
+    expect(film.emulsion).toBeDefined();
+    expect(film.emulsion?.brand).toBe('Kodak');
+    expect(film.emulsion?.speed).toBe(160);
   });
 
   it('tags a film and verifies the tag is returned', async () => {

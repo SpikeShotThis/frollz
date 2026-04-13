@@ -3,8 +3,10 @@ import { Knex } from 'knex';
 import { Film } from '../../../domain/film/entities/film.entity';
 import { FilmFilters, IFilmRepository } from '../../../domain/film/repositories/film.repository.interface';
 import { KNEX_CONNECTION } from '../knex.provider';
-import { FilmRow, FilmTagRow, TagRow } from '../types/db.types';
+import { EmulsionRow, FilmRow, FilmTagRow, TagRow } from '../types/db.types';
 import { FilmMapper } from './film.mapper';
+import { EmulsionMapper } from '../emulsion/emulsion.mapper';
+import { Emulsion } from '../../../domain/emulsion/entities/emulsion.entity';
 import { Tag } from '../../../domain/shared/entities/tag.entity';
 import { FilmState } from '../../../domain/film-state/entities/film-state.entity';
 import { FilmStateMetadata } from '../../../domain/film-state/entities/film-state-metadata.entity';
@@ -135,11 +137,20 @@ export class FilmKnexRepository implements IFilmRepository {
 
   private async hydrate(row: FilmRow): Promise<Film> {
     const film = FilmMapper.toDomain(row);
-    const [tags, states] = await Promise.all([
+    const [tags, states, emulsion] = await Promise.all([
       this.loadTags(row.id),
       this.loadStates(row.id),
+      this.loadEmulsion(row.emulsion_id),
     ]);
-    return Film.create({ ...film, tags, states });
+    return Film.create({ ...film, tags, states, emulsion });
+  }
+
+  private async loadEmulsion(emulsionId: number): Promise<Emulsion | undefined> {
+    const row = await this.knex<EmulsionRow>('emulsion')
+      .select('id', 'parent_id', 'process_id', 'format_id', 'name', 'brand', 'manufacturer', 'speed', 'box_image_mime_type')
+      .where({ id: emulsionId })
+      .first();
+    return row ? EmulsionMapper.toDomain(row) : undefined;
   }
 
   private async loadTags(filmId: number): Promise<Tag[]> {
