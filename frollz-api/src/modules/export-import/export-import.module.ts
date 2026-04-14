@@ -21,6 +21,8 @@ import { ImportService } from './application/import.service';
 import { LibraryImportService } from './application/library-import.service';
 import { FilmsJsonImportService } from './application/films-json-import.service';
 import { ExportImportController } from './export-import.controller';
+import { NoteKnexRepository } from '../../infrastructure/persistence/shared/note.knex.repository';
+import { NOTE_REPOSITORY } from '../../domain/shared/repositories/note.repository.interface';
 
 @Module({
   imports: [DatabaseModule],
@@ -33,6 +35,7 @@ import { ExportImportController } from './export-import.controller';
     { provide: FILM_TAG_REPOSITORY, useClass: FilmTagKnexRepository },
     { provide: TRANSITION_STATE_REPOSITORY, useClass: TransitionStateKnexRepository },
     { provide: TRANSITION_PROFILE_REPOSITORY, useClass: TransitionProfileKnexRepository },
+    { provide: NOTE_REPOSITORY, useClass: NoteKnexRepository },
     ExportService,
     ImportService,
     LibraryImportService,
@@ -40,4 +43,4 @@ import { ExportImportController } from './export-import.controller';
   ],
   controllers: [ExportImportController],
 })
-export class ExportImportModule {}
+export class ExportImportModule { }

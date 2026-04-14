@@ -9,6 +9,8 @@ import { Tag } from '../../../domain/shared/entities/tag.entity';
 import { ITagRepository, TAG_REPOSITORY } from '../../../domain/shared/repositories/tag.repository.interface';
 import { ITransitionStateRepository, TRANSITION_STATE_REPOSITORY } from '../../../domain/transition/repositories/transition-state.repository.interface';
 import { ITransitionProfileRepository, TRANSITION_PROFILE_REPOSITORY } from '../../../domain/transition/repositories/transition-profile.repository.interface';
+import { INoteRepository, NOTE_REPOSITORY } from '../../../domain/shared/repositories/note.repository.interface';
+import { Note } from '../../../domain/shared/entities/note.entity';
 
 export interface FilmsJsonImportError {
   index: number;
@@ -42,7 +44,8 @@ export class FilmsJsonImportService {
     @Inject(TAG_REPOSITORY) private readonly tagRepo: ITagRepository,
     @Inject(TRANSITION_STATE_REPOSITORY) private readonly transitionStateRepo: ITransitionStateRepository,
     @Inject(TRANSITION_PROFILE_REPOSITORY) private readonly transitionProfileRepo: ITransitionProfileRepository,
-  ) {}
+    @Inject(NOTE_REPOSITORY) private readonly noteRepo: INoteRepository,
+  ) { }
 
   async importFilmsJson(buffer: Buffer): Promise<FilmsJsonImportResult> {
     let envelope: FilmsEnvelope;
@@ -117,14 +120,22 @@ export class FilmsJsonImportService {
             this.logger.warn(`Unknown transition state "${stateName}" encountered during import of film "${filmName}" — state record skipped`);
             continue;
           }
-          await this.filmStateRepo.save(
+          const fsId = await this.filmStateRepo.save(
             FilmState.create({
               filmId,
               stateId: localState.id,
               date: new Date(stateData.date),
-              note: stateData.note ?? null,
             }),
           );
+
+          if (stateData.note) {
+            await this.noteRepo.save(Note.create({
+              entity_id: fsId,
+              entity_type: 'film_state',
+              text: stateData.note,
+              created_at: new Date(stateData.date),
+            }));
+          }
         }
 
         // Reconstruct tags

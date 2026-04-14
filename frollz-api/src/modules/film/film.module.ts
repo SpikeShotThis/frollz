@@ -14,8 +14,10 @@ import { TransitionStateKnexRepository } from '../../infrastructure/persistence/
 import { TransitionRuleKnexRepository } from '../../infrastructure/persistence/transition/transition-rule.knex.repository';
 import { TransitionStateMetadataKnexRepository } from '../../infrastructure/persistence/transition/transition-state-metadata.knex.repository';
 import { TransitionMetadataFieldKnexRepository } from '../../infrastructure/persistence/transition/transition-metadata-field.knex.repository';
+import { NoteKnexRepository } from '../../infrastructure/persistence/shared/note.knex.repository';
 import { FilmService } from './application/film.service';
 import { FilmController } from './film.controller';
+import { NOTE_REPOSITORY } from '../../domain/shared/repositories/note.repository.interface';
 
 @Module({
   imports: [DatabaseModule],
@@ -27,6 +29,7 @@ import { FilmController } from './film.controller';
     { provide: TRANSITION_RULE_REPOSITORY, useClass: TransitionRuleKnexRepository },
     { provide: TRANSITION_STATE_METADATA_REPOSITORY, useClass: TransitionStateMetadataKnexRepository },
     { provide: TRANSITION_METADATA_FIELD_REPOSITORY, useClass: TransitionMetadataFieldKnexRepository },
+    { provide: NOTE_REPOSITORY, useClass: NoteKnexRepository },
     FilmService,
   ],
   controllers: [FilmController],

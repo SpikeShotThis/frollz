@@ -12,6 +12,7 @@ import { Emulsion } from '../../../domain/emulsion/entities/emulsion.entity';
 import { Tag } from '../../../domain/shared/entities/tag.entity';
 import { TransitionState } from '../../../domain/transition/entities/transition-state.entity';
 import { TransitionProfile } from '../../../domain/transition/entities/transition-profile.entity';
+import { INoteRepository } from '../../../domain/shared/repositories/note.repository.interface';
 
 const randomId = () => randomInt(1, 1_000_000);
 
@@ -112,6 +113,14 @@ const makeTransitionProfileRepo = (profile: TransitionProfile, overrides: Partia
   ...overrides,
 });
 
+const makeNoteRepo = (overrides: Partial<INoteRepository> = {}): INoteRepository => ({
+  findById: jest.fn().mockResolvedValue(null),
+  findAll: jest.fn().mockResolvedValue([]),
+  findByEntityId: jest.fn().mockResolvedValue([]),
+  save: jest.fn().mockResolvedValue(randomId()),
+  ...overrides,
+});
+
 const csv = (rows: string[]) => Buffer.from([`name,emulsion,tags,notes`, ...rows].join('\n'));
 
 describe('ImportService', () => {
@@ -123,6 +132,7 @@ describe('ImportService', () => {
   let tagRepo: jest.Mocked<ITagRepository>;
   let transitionStateRepo: jest.Mocked<ITransitionStateRepository>;
   let transitionProfileRepo: jest.Mocked<ITransitionProfileRepository>;
+  let noteRepo: jest.Mocked<INoteRepository>;
 
   const importedState = makeTransitionState('Imported');
   const standardProfile = makeTransitionProfile('standard');
@@ -136,11 +146,13 @@ describe('ImportService', () => {
     tagRepo = makeTagRepo() as jest.Mocked<ITagRepository>;
     transitionStateRepo = makeTransitionStateRepo(importedState) as jest.Mocked<ITransitionStateRepository>;
     transitionProfileRepo = makeTransitionProfileRepo(standardProfile) as jest.Mocked<ITransitionProfileRepository>;
+    noteRepo = makeNoteRepo() as jest.Mocked<INoteRepository>;
 
     service = new ImportService(
       filmRepo, filmStateRepo, filmTagRepo,
       emulsionRepo, tagRepo,
       transitionStateRepo, transitionProfileRepo,
+      noteRepo
     );
   });
 
@@ -221,9 +233,12 @@ describe('ImportService', () => {
     it('stores notes as the FilmState note', async () => {
       await service.importFilms(csv(['Roll 001,Kodak Portra 400,,Shot in Portugal']));
 
-      expect(filmStateRepo.save).toHaveBeenCalledWith(
-        expect.objectContaining({ note: 'Shot in Portugal' }),
-      );
+      expect(filmStateRepo.save).toHaveBeenCalledTimes(1);
+      expect(noteRepo.save).toHaveBeenCalledTimes(1);
+      expect(noteRepo.save).toHaveBeenCalledWith(expect.objectContaining({
+        text: 'Shot in Portugal',
+        entity_type: 'film_state',
+      }));
     });
 
     it('handles pipe-separated tags correctly', async () => {

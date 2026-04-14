@@ -37,8 +37,9 @@ frollz-ui/src/**/*.d.ts
 Thumbs.db
 
 # ── Claude Code local settings (personal overrides, not for version control) ──
-.claude/
+.claude/        
+!.claude/skills/
+!.claude/skills/**
 frollz-api/coverage
 frollz-ui/coverage
-frollz-api/dev.db
 frollz-api/dev.db

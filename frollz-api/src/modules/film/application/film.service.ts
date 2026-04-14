@@ -8,10 +8,12 @@ import { ITransitionStateRepository, TRANSITION_STATE_REPOSITORY } from '../../.
 import { ITransitionRuleRepository, TRANSITION_RULE_REPOSITORY } from '../../../domain/transition/repositories/transition-rule.repository.interface';
 import { ITransitionStateMetadataRepository, TRANSITION_STATE_METADATA_REPOSITORY } from '../../../domain/transition/repositories/transition-state-metadata.repository.interface';
 import { ITransitionMetadataFieldRepository, TRANSITION_METADATA_FIELD_REPOSITORY } from '../../../domain/transition/repositories/transition-metadata-field.repository.interface';
+import { INoteRepository, NOTE_REPOSITORY } from '../../../domain/shared/repositories/note.repository.interface';
 import { FilmFilters } from '../../../domain/film/repositories/film.repository.interface';
 import { CreateFilmDto } from '../dto/create-film.dto';
 import { UpdateFilmDto } from '../dto/update-film.dto';
 import { TransitionFilmDto } from '../dto/transition-film.dto';
+import { Note } from '../../../domain/shared/entities/note.entity';
 
 export interface FilmFindAllParams {
   stateNames?: string[];
@@ -33,7 +35,8 @@ export class FilmService {
     @Inject(TRANSITION_RULE_REPOSITORY) private readonly transitionRuleRepo: ITransitionRuleRepository,
     @Inject(TRANSITION_STATE_METADATA_REPOSITORY) private readonly transitionStateMetadataRepo: ITransitionStateMetadataRepository,
     @Inject(TRANSITION_METADATA_FIELD_REPOSITORY) private readonly metadataFieldRepo: ITransitionMetadataFieldRepository,
-  ) {}
+    @Inject(NOTE_REPOSITORY) private readonly noteRepository: INoteRepository,
+  ) { }
 
   async findAll(params: FilmFindAllParams = {}): Promise<Film[]> {
     const filters: FilmFilters = {};
@@ -94,7 +97,6 @@ export class FilmService {
       filmId: id,
       stateId: addedState.id,
       date: new Date(),
-      note: null,
     });
     await this.filmStateRepo.save(initialState);
 
@@ -154,9 +156,12 @@ export class FilmService {
       filmId: film.id,
       stateId: targetState.id,
       date: dto.date ? new Date(dto.date) : new Date(),
-      note: dto.note ?? null,
     });
     const newStateId = await this.filmStateRepo.save(newState);
+
+    if (dto.note) {
+      await this.addNote(newStateId, dto.note, newState.date);
+    }
 
     if (dto.metadata && Object.keys(dto.metadata).length > 0) {
       await this.saveTransitionMetadata(targetState.id, newStateId, dto.metadata);
@@ -205,5 +210,14 @@ export class FilmService {
         `Metadata field '${fieldName}' only accepts https:// URLs, got: ${url}`,
       );
     }
+  }
+
+  private async addNote(entityId: number, text: string, createdAt: Date): Promise<void> {
+    await this.noteRepository.save(Note.create({
+      entity_id: entityId,
+      entity_type: 'film_state',
+      text: text,
+      created_at: createdAt,
+    }));
   }
 }

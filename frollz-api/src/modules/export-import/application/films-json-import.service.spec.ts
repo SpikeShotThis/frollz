@@ -12,6 +12,7 @@ import { Emulsion } from '../../../domain/emulsion/entities/emulsion.entity';
 import { Tag } from '../../../domain/shared/entities/tag.entity';
 import { TransitionState } from '../../../domain/transition/entities/transition-state.entity';
 import { TransitionProfile } from '../../../domain/transition/entities/transition-profile.entity';
+import { INoteRepository } from '../../../domain/shared/repositories/note.repository.interface';
 
 const randomId = () => randomInt(1, 1_000_000);
 
@@ -100,6 +101,13 @@ const makeTransitionProfileRepo = (profile = makeProfile()): ITransitionProfileR
   delete: jest.fn().mockResolvedValue(undefined),
 });
 
+const makeNoteRepo = (): INoteRepository => ({
+  findById: jest.fn().mockResolvedValue(null),
+  findAll: jest.fn().mockResolvedValue([]),
+  findByEntityId: jest.fn().mockResolvedValue([]),
+  save: jest.fn().mockResolvedValue(randomId()),
+});
+
 const filmJson = (overrides: Record<string, unknown> = {}) => ({
   name: 'Roll 001',
   emulsion: { brand: 'Kodak Portra 400' },
@@ -124,6 +132,7 @@ describe('FilmsJsonImportService', () => {
   let tagRepo: jest.Mocked<ITagRepository>;
   let transitionStateRepo: jest.Mocked<ITransitionStateRepository>;
   let transitionProfileRepo: jest.Mocked<ITransitionProfileRepository>;
+  let noteRepo: jest.Mocked<INoteRepository>;
 
   beforeEach(() => {
     filmRepo = makeFilmRepo() as jest.Mocked<IFilmRepository>;
@@ -133,11 +142,13 @@ describe('FilmsJsonImportService', () => {
     tagRepo = makeTagRepo() as jest.Mocked<ITagRepository>;
     transitionStateRepo = makeTransitionStateRepo() as jest.Mocked<ITransitionStateRepository>;
     transitionProfileRepo = makeTransitionProfileRepo() as jest.Mocked<ITransitionProfileRepository>;
+    noteRepo = makeNoteRepo() as jest.Mocked<INoteRepository>;
 
     service = new FilmsJsonImportService(
       filmRepo, filmStateRepo, filmTagRepo,
       emulsionRepo, tagRepo,
       transitionStateRepo, transitionProfileRepo,
+      noteRepo
     );
   });
 
@@ -159,12 +170,20 @@ describe('FilmsJsonImportService', () => {
   });
 
   it('preserves the original state date and note', async () => {
+
+    const date = '2024-03-15T10:00:00.000Z';
     await service.importFilmsJson(envelope([
-      filmJson({ states: [{ filmId: 1, stateId: 1, date: '2024-03-15T10:00:00.000Z', note: 'Shot in Portugal', state: { id: 1, name: 'Loaded' } }] }),
+      filmJson({ states: [{ filmId: 1, stateId: 1, date, note: 'Shot in Portugal', state: { id: 1, name: 'Loaded' } }] }),
     ]));
     expect(filmStateRepo.save).toHaveBeenCalledWith(
-      expect.objectContaining({ date: new Date('2024-03-15T10:00:00.000Z'), note: 'Shot in Portugal' }),
+      expect.objectContaining({ date: new Date(date) }),
     );
+
+    expect(noteRepo.save).toHaveBeenCalledWith(expect.objectContaining({
+      text: 'Shot in Portugal',
+      entity_type: 'film_state',
+      created_at: new Date(date),
+    }));
   });
 
   it('reconstructs multiple states in chronological order', async () => {

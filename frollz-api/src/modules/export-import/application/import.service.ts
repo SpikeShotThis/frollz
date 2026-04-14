@@ -10,7 +10,8 @@ import { Tag } from '../../../domain/shared/entities/tag.entity';
 import { ITagRepository, TAG_REPOSITORY } from '../../../domain/shared/repositories/tag.repository.interface';
 import { ITransitionStateRepository, TRANSITION_STATE_REPOSITORY } from '../../../domain/transition/repositories/transition-state.repository.interface';
 import { ITransitionProfileRepository, TRANSITION_PROFILE_REPOSITORY } from '../../../domain/transition/repositories/transition-profile.repository.interface';
-
+import { INoteRepository, NOTE_REPOSITORY } from '../../../domain/shared/repositories/note.repository.interface';
+import { Note } from '../../../domain/shared/entities/note.entity';
 export interface ImportRowError {
   row: number;
   reason: string;
@@ -37,7 +38,8 @@ export class ImportService {
     @Inject(TAG_REPOSITORY) private readonly tagRepo: ITagRepository,
     @Inject(TRANSITION_STATE_REPOSITORY) private readonly transitionStateRepo: ITransitionStateRepository,
     @Inject(TRANSITION_PROFILE_REPOSITORY) private readonly transitionProfileRepo: ITransitionProfileRepository,
-  ) {}
+    @Inject(NOTE_REPOSITORY) private readonly noteRepo: INoteRepository,
+  ) { }
 
   getTemplate(): string {
     return `${TEMPLATE_HEADER}\n${TEMPLATE_EXAMPLE}\n`;
@@ -107,9 +109,16 @@ export class ImportService {
           filmId,
           stateId: importedState.id,
           date: new Date(),
-          note,
         });
         await this.filmStateRepo.save(filmState);
+        if (note) {
+          await this.noteRepo.save(Note.create({
+            entity_id: filmState.id,
+            entity_type: 'film_state',
+            text: note,
+            created_at: filmState.date,
+          }));
+        }
 
         for (const tagName of tagNames) {
           const tag = await this.findOrCreateTag(tagName);

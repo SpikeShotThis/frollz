@@ -24,7 +24,6 @@ export interface FilmStateRow {
   film_id: number;
   state_id: number;
   date: Date;
-  note: string | null;
 }
 
 export interface FilmStateMetadataRow {
@@ -98,4 +97,12 @@ export interface TransitionMetadataFieldRow {
 export interface TransitionProfileRow {
   id: number;
   name: string;
+}
+
+export interface NoteRow {
+  id: number;
+  entity_id: number;
+  entity_type: string;
+  text: string;
+  created_at: Date;
 }

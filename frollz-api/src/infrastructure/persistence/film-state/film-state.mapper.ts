@@ -8,7 +8,6 @@ export class FilmStateMapper {
       filmId: row.film_id,
       stateId: row.state_id,
       date: new Date(row.date),
-      note: row.note,
     });
   }
 
@@ -18,7 +17,6 @@ export class FilmStateMapper {
       film_id: filmState.filmId,
       state_id: filmState.stateId,
       date: filmState.date,
-      note: filmState.note,
     };
   }
 }
