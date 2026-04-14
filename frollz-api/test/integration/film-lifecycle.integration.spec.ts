@@ -30,6 +30,7 @@ import { TagKnexRepository } from '../../src/infrastructure/persistence/shared/t
 
 import { EmulsionService } from '../../src/modules/emulsion/application/emulsion.service';
 import { FilmService } from '../../src/modules/film/application/film.service';
+import { NoteKnexRepository } from '../../src/infrastructure/persistence/shared/note.knex.repository';
 
 // ---------------------------------------------------------------------------
 // Shared DB + repos across all tests in this file
@@ -47,6 +48,7 @@ let transitionRuleRepo: TransitionRuleKnexRepository;
 let transitionStateMetadataRepo: TransitionStateMetadataKnexRepository;
 let transitionMetadataFieldRepo: TransitionMetadataFieldKnexRepository;
 let tagRepo: TagKnexRepository;
+let noteRepo: NoteKnexRepository;
 
 let emulsionService: EmulsionService;
 let filmService: FilmService;
@@ -70,11 +72,12 @@ beforeAll(async () => {
   transitionRuleRepo = new TransitionRuleKnexRepository(knex);
   transitionStateMetadataRepo = new TransitionStateMetadataKnexRepository(knex);
   transitionMetadataFieldRepo = new TransitionMetadataFieldKnexRepository(knex);
+  noteRepo = new NoteKnexRepository(knex);
   tagRepo = new TagKnexRepository(knex);
 
   // Services
   emulsionService = new EmulsionService(emulsionRepo, emulsionTagRepo);
-  filmService = new FilmService(filmRepo, filmTagRepo, filmStateRepo, transitionStateRepo, transitionRuleRepo, transitionStateMetadataRepo, transitionMetadataFieldRepo);
+  filmService = new FilmService(filmRepo, filmTagRepo, filmStateRepo, transitionStateRepo, transitionRuleRepo, transitionStateMetadataRepo, transitionMetadataFieldRepo, noteRepo);
 
   // Seed supporting data
   const seeds = await seedSupporting(knex);

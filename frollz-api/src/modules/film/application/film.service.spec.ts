@@ -12,6 +12,7 @@ import { Film } from '../../../domain/film/entities/film.entity';
 import { FilmState } from '../../../domain/film-state/entities/film-state.entity';
 import { TransitionState } from '../../../domain/transition/entities/transition-state.entity';
 import { TransitionRule } from '../../../domain/transition/entities/transition-rule.entity';
+import { INoteRepository } from '../../../domain/shared/repositories/note.repository.interface';
 
 const randomId = () => randomInt(1, 1000000);
 
@@ -121,6 +122,11 @@ const makeRuleRepo = (overrides: Partial<ITransitionRuleRepository> = {}): ITran
   ...overrides,
 });
 
+const makeNoteRepo = (overrides: Partial<INoteRepository> = {}): INoteRepository => ({
+  findById: jest.fn(), findAll: jest.fn(), findByEntityId: jest.fn(), save: jest.fn(),
+  ...overrides
+});
+
 const makeService = (
   filmRepo: IFilmRepository = makeFilmRepo(),
   filmTagRepo: IFilmTagRepository = makeFilmTagRepo(),
@@ -129,7 +135,8 @@ const makeService = (
   ruleRepo: ITransitionRuleRepository = makeRuleRepo(),
   transitionStateMetadataRepo: ITransitionStateMetadataRepository = makeTransitionStateMetadataRepo(),
   metadataFieldRepo: ITransitionMetadataFieldRepository = makeMetadataFieldRepo(),
-) => new FilmService(filmRepo, filmTagRepo, filmStateRepo, stateRepo, ruleRepo, transitionStateMetadataRepo, metadataFieldRepo);
+  noteRepository: INoteRepository = makeNoteRepo(),
+) => new FilmService(filmRepo, filmTagRepo, filmStateRepo, stateRepo, ruleRepo, transitionStateMetadataRepo, metadataFieldRepo, noteRepository);
 
 describe('FilmService', () => {
   describe('findAll', () => {

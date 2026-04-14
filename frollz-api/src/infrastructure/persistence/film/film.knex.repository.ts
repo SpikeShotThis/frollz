@@ -31,7 +31,7 @@ interface MetadataJoinRow {
 
 @Injectable()
 export class FilmKnexRepository implements IFilmRepository {
-  constructor(@Inject(KNEX_CONNECTION) private readonly knex: Knex) {}
+  constructor(@Inject(KNEX_CONNECTION) private readonly knex: Knex) { }
 
   async findById(id: number): Promise<Film | null> {
     const row = await this.knex<FilmRow>('film').where({ id }).first();
@@ -88,7 +88,7 @@ export class FilmKnexRepository implements IFilmRepository {
       query = query.where((builder) => {
         builder
           .whereILike('name', pattern)
-          .orWhereIn('id', this.knex('film_state').select('film_id').whereILike('note', pattern));
+          .orWhereIn('id', this.knex('note').select('entity_id').where('entity_type', 'film').whereILike('text', pattern))
       });
     }
 
@@ -171,9 +171,10 @@ export class FilmKnexRepository implements IFilmRepository {
   private async loadStates(filmId: number): Promise<FilmState[]> {
     const rows = await this.knex('film_state as fs')
       .join('transition_state as ts', 'ts.id', 'fs.state_id')
+      .join('note as n', 'n.entity_id', 'fs.id')
       .where('fs.film_id', filmId)
       .orderBy('fs.id', 'desc')
-      .select('fs.id', 'fs.film_id', 'fs.state_id', 'fs.date', 'fs.note', 'ts.name as state_name');
+      .select('fs.id', 'fs.film_id', 'fs.state_id', 'fs.date', 'n.note', 'ts.name as state_name');
 
     const metadataMap = await this.loadMetadataForStates(rows.map((r) => r.id));
 
