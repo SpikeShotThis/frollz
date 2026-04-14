@@ -1,48 +1,123 @@
 # Architecture Decision Record
 
 ## PURPOSE
-Frollz is a film photography tracking application. It allows photographers to manage their film rolls through a lifecycle (loading, shooting, developing, etc.), catalog film stocks with tags, and track film formats. The system provides a UI for browsing/managing all entities and an API backend that persists data.
+Frollz is a self-hosted film photography tracker. It allows photographers to catalogue film emulsions, manage individual film rolls through a defined lifecycle (adding, storing, loading, shooting, developing, receiving), and track cameras. The system provides a Vue 3 SPA for browsing and managing all entities and a NestJS REST API that owns all persistence and business logic.
 
 ## STACK
 - **Backend:** NestJS (TypeScript) — `frollz-api`
 - **Frontend:** Vue 3 + TypeScript, Tailwind CSS, Vite — `frollz-ui`
-- **Database:** PostgreSQL 18
+- **Database:** PostgreSQL 18 in production; SQLite (`better-sqlite3`) in development and test (selected automatically when `NODE_ENV=development`)
 - **Infrastructure:** Docker Compose; single combined production container (API + UI); separate containers for development
 - **Build:** Multi-stage root `Dockerfile` (ui-build → api-build → production)
 
 ## ARCHITECTURE
-Monorepo deployed as a single container in production. The combined image contains the NestJS API and the built Vue SPA; NestJS serves both. PostgreSQL runs as a separate container. No nginx is involved — users are expected to place a reverse proxy (Nginx Proxy Manager, Traefik, Caddy, etc.) in front for HTTPS termination.
+Monorepo deployed as a single container in production. The combined image contains the NestJS API and the built Vue SPA; NestJS serves both via `ServeStaticModule` for all non-`/api` routes. PostgreSQL runs as a separate container. No nginx is involved — users are expected to place a reverse proxy (Nginx Proxy Manager, Traefik, Caddy, etc.) in front for HTTPS termination. Security headers are applied by `helmet` in `main.ts`.
 
 **Production** (`docker-compose.yml`): two services — `frollz` (combined container) + `postgres`.
 
-**Development** (`docker-compose.dev.yml`): three services — `frollz-api` (NestJS watch mode), `frollz-ui` (Vite dev server with HMR), `postgres`. The Vite dev server proxies `/api` requests to the API container via `server.proxy` in `vite.config.ts`, eliminating the need for a separate routing layer.
+**Development** (`docker-compose.dev.yml`): three services — `frollz-api` (NestJS watch mode), `frollz-ui` (Vite dev server with HMR, port 5173), `postgres`. The Vite dev server proxies `/api` requests to the API container via `server.proxy` in `vite.config.ts`.
 
-- **frollz-api**: NestJS REST API. Each domain (`roll`, `roll-state`, `stock`, `stock-tag`, `tag`, `film-format`) is a self-contained NestJS feature module with `controller / service / module / dto / entities` structure. A shared `DatabaseService` wraps all PostgreSQL access via Knex — `query<T>(sql, params): Promise<T[]>` and `execute(sql, params): Promise<void>` are the public API used by all feature services. Schema and default seed data are managed via Knex migrations in `frollz-api/migrations/`; seed migrations populate `*_default` shadow tables, which are then copied to main tables on startup. In the combined production container, `ServeStaticModule` serves the Vue SPA from `/app/public` for all non-`/api` routes.
-- **frollz-ui**: Vue 3 SPA. Views are per-domain. A centralized `api-client.ts` service handles all HTTP communication with the API. Shared UI utilities include typeahead suggestion builders for brands and speeds.
+## DOMAIN MODEL
+
+### Core entities
+| Entity | Description |
+|---|---|
+| `Emulsion` | A film emulsion (e.g. Kodak Portra 400 in 35mm). Belongs to a `Format`. Carries brand, manufacturer, ISO speed, process, and an optional box image. |
+| `Film` | A single physical roll owned by the user. References an `Emulsion` and a `TransitionProfile`. Tracks its lifecycle through `FilmState` history. |
+| `FilmState` | One entry in a film's state history. Records the `TransitionState` entered, date, and optional structured metadata. |
+| `Camera` | A camera body owned by the user. Has a status (`active`, `retired`, `in_repair`) and a list of accepted `Format`s. Currently a standalone catalogue — association to films is a future story. |
+| `Format` | A film format (e.g. 35mm, 120, 4×5). Referenced by emulsions and cameras. |
+| `Tag` | A user-defined label. Single shared pool — applied to both films and emulsions via join records. |
+
+### Reference / configuration entities
+| Entity | Description |
+|---|---|
+| `TransitionState` | A valid lifecycle state (Added, Frozen, Loaded, …). Seeded at startup. |
+| `TransitionProfile` | A named state machine variant (`standard`, `instant`, `bulk`). Governs which transitions are allowed for a film. |
+| `TransitionRule` | One allowed edge in the state machine: `fromState → toState` scoped to a `profile`. Seeded at startup. |
+| `TransitionMetadataField` | A named field captured when entering a specific state (e.g. `shotISO` at Finished). |
+| `TransitionStateMetadata` | Links a `TransitionMetadataField` to the `TransitionState` it belongs to. |
+
+## LAYERED MODULE STRUCTURE
+
+Each domain is a self-contained NestJS feature module organised in four layers:
+
+```
+src/
+  domain/<domain>/
+    entities/          ← plain TypeScript classes, no framework deps
+    repositories/      ← repository interfaces (IXxxRepository)
+  infrastructure/
+    persistence/<domain>/
+      xxx.knex.repository.ts   ← Knex implementation of the interface
+      xxx.mapper.ts            ← row → domain entity conversion
+  modules/<domain>/
+    application/
+      xxx.service.ts   ← business logic, injected repositories
+    dto/               ← class-validator DTOs
+    xxx.controller.ts
+    xxx.module.ts      ← wires providers/exports
+```
+
+`DatabaseModule` provides the Knex connection (`KNEX_CONNECTION` injection token) and `MigrationRunnerService`, which calls `knex.migrate.latest()` then `knex.seed.run()` on `onModuleInit`. Seeds are idempotent (`ON CONFLICT DO NOTHING`).
 
 ## PATTERNS
-- **NestJS feature modules**: Every resource gets its own folder with `module / controller / service / dto / entities`.
-- **Migration-first DB**: Schema is managed via Knex migrations (`frollz-api/migrations/`). `DatabaseService.onModuleInit` calls `knex.migrate.latest()` on startup, applying any pending migrations automatically. Migration files are numbered by timestamp and are idempotent — each uses `hasTable`/`hasColumn` guards before making DDL changes.
-- **Shadow table seed pattern**: Default seed data (film formats, stocks, tags, stock-tags) lives in Knex migrations and is inserted into `*_default` tables. On startup, `DatabaseService` copies from `*_default` to main tables via `INSERT ... ON CONFLICT DO NOTHING`, preserving any user modifications to main data. Two tiers of seed data: **system data** (auto-managed tags marked `is_system = true`) is always synced to main tables; **convenience data** is only copied when `DISABLE_DEFAULT_DATA_IMPORT` is not set (`true`/`1` to skip).
-- **Row mappers per service**: Each feature service has a private `mapX(row)` function that translates snake_case postgres column names to camelCase TypeScript entity fields, and aliases `row.id` to `_key`.
-- **Centralized API client**: UI uses a single `api-client.ts` service; views do not call HTTP directly.
-- **Frontend metadata gate**: `RollDetailView` uses `STATES_REQUIRING_METADATA` (Set) and `STATES_WITH_DATE_CAPTURE` (Set) to conditionally show an inline form before executing a transition. States in `STATES_REQUIRING_METADATA` pause the transition and render state-specific fields; states in `STATES_WITH_DATE_CAPTURE` also render a date picker pre-populated with today's date.
-- **State machine for rolls**: `roll-state` module manages roll lifecycle transitions via `RollService.transition`. Valid transitions are defined in `FORWARD_TRANSITIONS` and `BACKWARD_TRANSITIONS` maps. Each transition creates a `roll_states` history entry with optional `date`, `notes`, `isErrorCorrection`, and state-specific `metadata` (JSONB). Backward transitions can be flagged as error corrections.
-- **State transition metadata**: Each state captures structured metadata fields — storage states (FROZEN/REFRIGERATED/SHELVED) capture `temperature`; LOADED captures the load date; FINISHED captures `shotISO`; SENT_FOR_DEVELOPMENT captures `labName`, `deliveryMethod`, `processRequested`, and `pushPullStops`; DEVELOPED captures the development date; RECEIVED captures `scansReceived`, `scansUrl`, `negativesReceived`, and `negativesDate`.
-- **Auto-tagging**: `RollTagService.syncAutoTag` maintains auto-managed tags (`expired`, `pushed`, `pulled`, `cross-processed`). These are recomputed on relevant transitions — `expired` on create/update when expiration date precedes date obtained; `pushed`/`pulled` on FINISHED using `shotISO` vs stock speed; `cross-processed` on SENT_FOR_DEVELOPMENT when `processRequested` differs from the stock's native process.
-- **Denormalized roll reads**: `findAll` and `findOne` in `RollService` JOIN `stocks` and `film_formats` tables to return `stockName`, `stockSpeed`, and `formatName` alongside the roll, avoiding extra round-trips in the UI.
-- **Transition date handling (frontend)**: Date capture uses an HTML date input returning a bare `YYYY-MM-DD` string. To avoid UTC midnight parse issues, the UI combines the selected date with the current wall-clock time using local timezone components (`new Date(year, month-1, day, h, m, s).toISOString()`), then sends the ISO string to the API. History display shows date only (no time) via `formatDate`.
-- **Typeahead utilities**: Brand and speed suggestion logic extracted into pure utility functions (`brandSuggestions.ts`, `speedSuggestions.ts`).
+
+### State machine (film lifecycle)
+`FilmService.transition()` validates the requested `targetStateName` against the DB-driven `transition_rule` table scoped to the film's `transitionProfileId`, then inserts a new `film_state` row. Three built-in profiles:
+
+| Profile | Intended use | Key difference |
+|---|---|---|
+| `standard` | C-41 / E-6 / B&W lab workflow | Finished → Sent For Development → Developed → Received |
+| `instant` | Instax / Polaroid | Finished → Received directly; no lab steps |
+| `bulk` | Bulk canister stock | Storage and loading only; no post-shoot chain |
+
+Backward transitions (error corrections) are permitted by explicit reverse rules seeded for each profile.
+
+### Transition metadata
+Structured fields captured at specific states are declared in `transition_metadata_field` and linked to their target states in `transition_state_metadata`. Values are stored per `film_state` row in `film_state_metadata`. Fields with `allow_multiple = true` (e.g. `scansUrl`) store one row per value. Fields are keyed by name in API payloads.
+
+**Acquisition metadata** (`dateObtained`, `obtainmentMethod`, `obtainedFrom`) is captured as metadata on the initial **Added** state, passed in the `metadata` field of `POST /films`.
+
+**State-specific fields:**
+
+| State | Metadata fields |
+|---|---|
+| Added | `dateObtained` (date), `obtainmentMethod` (string), `obtainedFrom` (string) |
+| Frozen / Refrigerated | `temperature` (number) |
+| Finished | `shotISO` (number) |
+| Sent For Development | `labName`, `deliveryMethod`, `processRequested` (string), `pushPullStops` (number) |
+| Received | `scansReceived` (boolean), `scansUrl` (string, allow_multiple), `negativesReceived` (boolean), `negativesDate` (date) |
+
+### Repository pattern
+Every persistence operation goes through a typed interface (`IXxxRepository`) defined in the domain layer. The Knex implementation lives in infrastructure. Services inject via NestJS token and never touch Knex directly. Mapper classes handle all row-to-domain translation.
+
+### Tags (shared pool)
+All tags live in a single `tags` table. Association to films and emulsions is managed via join operations through the respective service (`addTag` / `removeTag`). There are no separate tag namespaces per entity type.
+
+### Centralized API client (frontend)
+The Vue SPA uses a single `api-client.ts`; views never call HTTP directly.
+
+### Frontend metadata gate
+`FilmDetailView` uses `STATES_REQUIRING_METADATA` (Set) and `STATES_WITH_DATE_CAPTURE` (Set) to conditionally show an inline form before executing a transition. States in `STATES_REQUIRING_METADATA` pause the transition and render state-specific fields; states in `STATES_WITH_DATE_CAPTURE` also render a date picker pre-populated with today's date.
+
+### Transition date handling (frontend)
+Date inputs return a bare `YYYY-MM-DD` string. To avoid UTC midnight parse issues the UI combines the date with the current wall-clock time using local timezone components (`new Date(year, month-1, day, h, m, s).toISOString()`), then sends the ISO string to the API.
 
 ## TRADEOFFS
-- **PostgreSQL over document DB**: Relational model fits the well-defined film stock metadata domain well. Familiar SQL and strong tooling outweigh the flexibility of a document DB for this use case. Knex used as a lightweight query builder and migration runner — enough structure to stay safe without the weight of a full ORM.
+- **PostgreSQL over document DB**: Relational model fits the well-defined film metadata domain. Knex used as a lightweight query builder and migration runner — enough structure without full-ORM weight.
 - **NestJS module boilerplate**: Strong conventions improve navigability at the cost of verbosity for simple resources.
-- **Single combined container**: Simplifies self-hosted deployment to a single `docker-compose.yml` with two services. Trades some separation of concerns for a dramatically simpler user-facing deployment story. The dev workflow retains separate containers with HMR via `docker-compose.dev.yml`.
-- **No nginx in the application**: Security headers previously set in nginx are now applied by `helmet` in `main.ts`. TLS termination is delegated to the user's reverse proxy (NPM, Traefik, Caddy, etc.) — this is the same model used by comparable self-hosted applications.
-- **Monorepo without shared packages**: API and UI types are duplicated (e.g., `frollz-ui/src/types/index.ts` mirrors API entities) rather than shared via a workspace package.
+- **Single combined container**: Simplifies self-hosted deployment to a two-service `docker-compose.yml`. Trades separation of concerns for dramatically simpler user-facing ops. Dev workflow retains separate containers with HMR.
+- **No nginx in the application**: TLS termination delegated to the user's reverse proxy. Same model used by comparable self-hosted applications.
+- **Monorepo without shared packages**: API and UI types are intentionally duplicated rather than shared via a workspace package, avoiding build-tooling complexity for a two-package repo.
+- **SQLite in development**: Eliminates the need to run Postgres locally. SQLite FK constraints are not enforced without `PRAGMA foreign_keys = ON`; migrations guard this with `isSQLite()` checks where DDL differs.
 
 ## PHILOSOPHY
-- Domain-driven module organization: code is grouped by business concept, not technical layer.
+- Domain-driven module organisation: code is grouped by business concept, not technical layer.
 - Separation of concerns: API owns persistence and business logic; UI owns presentation only.
-- Schema-first data integrity: database schemas enforced at the DB layer, not just application layer.
+- Schema-first data integrity: constraints enforced at the DB layer, not only the application layer.
 - Keep infrastructure simple: single combined container over multi-service orchestration for production.
+
+## KNOWN GAPS (open issues)
+- **Auto-tagging** (`expired`, `pushed`, `pulled`, `cross-processed`) was present in the previous architecture and was lost during the domain rename. Tracked as a future issue to restore.
+- **Camera ↔ Film association**: Camera is currently a standalone catalogue entity. A future story will add a join table to associate a film with the camera it is loaded into.

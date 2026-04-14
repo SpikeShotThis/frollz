@@ -28,10 +28,17 @@ describe('CameraService', () => {
   });
 
   beforeEach(async () => {
+    jest.useFakeTimers();
+    jest.setSystemTime(new Date('2024-01-01'));
+
     service = new CameraService(
       mockCameraRepo = makeMockCameraRepo(),
       mockNoteRepo = makeMockNoteRepo(),
     )
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
   });
 
   it('should be defined', () => {
@@ -101,7 +108,10 @@ describe('CameraService', () => {
 
       const result = await service.create(dto);
 
-      expect(mockCameraRepo.save).toHaveBeenCalledWith(Camera.create(dto), dto.supported_format_ids ?? []);
+      expect(mockCameraRepo.save).toHaveBeenCalledWith(
+        expect.objectContaining({ brand: dto.brand, model: dto.model, status: dto.status, notes: dto.notes }),
+        dto.supported_format_ids ?? [],
+      );
       expect(mockNoteRepo.save).toHaveBeenCalledWith(expect.objectContaining({ text: dto.notes, entity_type: 'camera', entity_id: cameraId }));
       expect(mockCameraRepo.findById).toHaveBeenCalledWith(cameraId);
       expect(result).toEqual(camera);

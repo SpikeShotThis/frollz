@@ -2,51 +2,113 @@
 
 The Frollz REST API is available at `/api`. Interactive Swagger documentation is available at `/api/docs` when the application is running.
 
-All requests and responses use JSON. Validation errors return HTTP 422 with a body describing the failed constraints.
+All requests and responses use JSON. All IDs are integers. Validation errors return HTTP 400.
 
-## Film Formats
+---
 
-| Method | Path | Description |
-|---|---|---|
-| `GET` | `/api/film-formats` | List all formats |
-| `POST` | `/api/film-formats` | Create a new format |
-| `GET` | `/api/film-formats/:key` | Get a specific format |
-| `PATCH` | `/api/film-formats/:key` | Update a format |
-| `DELETE` | `/api/film-formats/:key` | Delete a format |
-
-Formats cannot be deleted while stocks reference them (returns 409 Conflict).
-
-## Stocks
+## Formats
 
 | Method | Path | Description |
 |---|---|---|
-| `GET` | `/api/stocks` | List all stocks |
-| `POST` | `/api/stocks` | Create a new stock |
-| `GET` | `/api/stocks/:key` | Get a specific stock |
-| `PATCH` | `/api/stocks/:key` | Update a stock |
-| `DELETE` | `/api/stocks/:key` | Delete a stock |
-| `GET` | `/api/stocks/typeahead/brands` | Brand suggestions for typeahead |
-| `GET` | `/api/stocks/typeahead/manufacturers` | Manufacturer suggestions for typeahead |
-| `GET` | `/api/stocks/typeahead/speeds` | Speed suggestions for typeahead |
+| `GET` | `/api/formats` | List all formats |
+| `GET` | `/api/formats/:id` | Get a format by id |
+| `POST` | `/api/formats` | Create a format |
+| `PATCH` | `/api/formats/:id` | Update a format |
+| `DELETE` | `/api/formats/:id` | Delete a format |
 
-Stocks cannot be deleted while rolls reference them (returns 409 Conflict).
+Formats cannot be deleted while emulsions reference them (returns 409 Conflict).
 
-## Rolls
+---
+
+## Emulsions
 
 | Method | Path | Description |
 |---|---|---|
-| `GET` | `/api/rolls` | List all rolls |
-| `POST` | `/api/rolls` | Create a new roll |
-| `GET` | `/api/rolls/:key` | Get a specific roll |
-| `PATCH` | `/api/rolls/:key` | Update a roll |
-| `DELETE` | `/api/rolls/:key` | Delete a roll |
-| `POST` | `/api/rolls/:key/transition` | Transition a roll to a new state |
+| `GET` | `/api/emulsions` | List all emulsions |
+| `GET` | `/api/emulsions/brands?q=` | Distinct brand names (typeahead) |
+| `GET` | `/api/emulsions/manufacturers?q=` | Distinct manufacturer names (typeahead) |
+| `GET` | `/api/emulsions/speeds?q=` | Distinct ISO speeds (typeahead) |
+| `GET` | `/api/emulsions/:id` | Get an emulsion by id |
+| `POST` | `/api/emulsions` | Create an emulsion |
+| `POST` | `/api/emulsions/bulk` | Create one emulsion per format from a single set of properties |
+| `PATCH` | `/api/emulsions/:id` | Update an emulsion |
+| `DELETE` | `/api/emulsions/:id` | Delete an emulsion |
+| `POST` | `/api/emulsions/:id/tags` | Associate a tag with an emulsion |
+| `DELETE` | `/api/emulsions/:id/tags/:tagId` | Remove a tag from an emulsion |
+| `PUT` | `/api/emulsions/:id/box-image` | Upload or replace the box art image (multipart/form-data, field `file`, max 4 MB) |
+| `GET` | `/api/emulsions/:id/box-image` | Serve the box art image |
 
-### Roll Lifecycle
+Emulsions cannot be deleted while films reference them (returns 409 Conflict).
 
-Film rolls move through a defined set of states. Forward transitions advance the roll; backward transitions are allowed for corrections and are flagged in the roll's history.
+---
 
-| From State | Forward To | Backward To |
+## Films
+
+| Method | Path | Description |
+|---|---|---|
+| `GET` | `/api/films` | List all films with optional filters |
+| `GET` | `/api/films/:id` | Get a film by id |
+| `GET` | `/api/films/:id/children` | List child films cut from a bulk canister |
+| `POST` | `/api/films` | Create a film |
+| `PATCH` | `/api/films/:id` | Update a film |
+| `DELETE` | `/api/films/:id` | Delete a film |
+| `POST` | `/api/films/:id/tags` | Associate a tag with a film |
+| `DELETE` | `/api/films/:id/tags/:tagId` | Remove a tag from a film |
+| `POST` | `/api/films/:id/transition` | Transition a film to a new state |
+
+### List filters (`GET /api/films`)
+
+| Query param | Type | Description |
+|---|---|---|
+| `state` | string (repeatable) | Filter by current state name(s) — OR semantics |
+| `emulsionId` | number | Filter by emulsion |
+| `formatId` | number | Filter by format (via emulsion) |
+| `tagId` | number (repeatable) | Filter by tag(s) — OR semantics |
+| `from` | YYYY-MM-DD | Loaded date range start (inclusive) |
+| `to` | YYYY-MM-DD | Loaded date range end (inclusive) |
+| `q` | string | Case-insensitive partial match on film name or state note |
+
+### Create film (`POST /api/films`)
+
+```json
+{
+  "name": "Roll 001",
+  "emulsionId": 1,
+  "expirationDate": "2027-06-01",
+  "transitionProfileId": 1,
+  "parentId": null,
+  "metadata": {
+    "dateObtained": "2026-01-15",
+    "obtainmentMethod": "Purchase",
+    "obtainedFrom": "B&H Photo"
+  }
+}
+```
+
+`metadata` is optional. `dateObtained`, `obtainmentMethod`, and `obtainedFrom` are captured as metadata on the initial Added state.
+
+### Transition a film (`POST /api/films/:id/transition`)
+
+```json
+{
+  "targetStateName": "Loaded",
+  "date": "2026-04-14T10:30:00.000Z",
+  "note": "Optional free-text note",
+  "metadata": {
+    "shotISO": "400"
+  }
+}
+```
+
+`date` defaults to now. `note` and `metadata` are optional. See transition metadata fields below.
+
+### Film lifecycle
+
+Film rolls move through a defined set of states. The allowed transitions depend on the film's `transitionProfile`.
+
+#### Standard profile (C-41, E-6, B&W)
+
+| From | Forward to | Backward to |
 |---|---|---|
 | Added | Frozen, Refrigerated, Shelved | — |
 | Frozen | Refrigerated, Shelved | Added |
@@ -58,58 +120,125 @@ Film rolls move through a defined set of states. Forward transitions advance the
 | Developed | Received | Sent For Development |
 | Received | — | Developed |
 
-### Transition Metadata
+#### Instant profile (Instax, Polaroid)
 
-Certain transitions capture structured metadata:
+Same as standard through Finished, then:
 
-| Transition | Fields |
-|---|---|
-| → Frozen / Refrigerated / Shelved | `temperature` (number, optional) |
-| → Finished | `shotISO` (number, optional) |
-| → Sent For Development | `labName`, `deliveryMethod`, `processRequested` (strings), `pushPullStops` (number) |
-| → Received | `scansReceived` (boolean), `scansUrl` (string), `negativesReceived` (boolean), `negativesDate` (date) |
+| From | Forward to | Backward to |
+|---|---|---|
+| Finished | Received | Loaded |
+| Received | — | Finished |
+
+No Sent For Development or Developed states.
+
+#### Bulk profile
+
+Storage and loading only (Added → storage states → Loaded → Finished). No post-shoot chain.
+
+### Transition metadata fields by state
+
+| State | Field | Type | Notes |
+|---|---|---|---|
+| Added | `dateObtained` | date | When the film was acquired |
+| Added | `obtainmentMethod` | string | e.g. Purchase, Gift |
+| Added | `obtainedFrom` | string | e.g. store name |
+| Frozen / Refrigerated | `temperature` | number | Storage temperature |
+| Finished | `shotISO` | number | ISO used while shooting |
+| Sent For Development | `labName` | string | |
+| Sent For Development | `deliveryMethod` | string | e.g. Mail in, Drop off |
+| Sent For Development | `processRequested` | string | e.g. C-41, Push 1 |
+| Sent For Development | `pushPullStops` | number | |
+| Received | `scansReceived` | boolean | |
+| Received | `scansUrl` | string (multiple) | One URL per value |
+| Received | `negativesReceived` | boolean | |
+| Received | `negativesDate` | date | |
+
+---
+
+## Film States
+
+| Method | Path | Description |
+|---|---|---|
+| `GET` | `/api/film-states?filmId=:id` | Get the full state history for a film |
+
+`filmId` is required.
+
+---
+
+## Film Stats
+
+| Method | Path | Description |
+|---|---|---|
+| `GET` | `/api/film-stats/by-state` | Film count grouped by current state |
+| `GET` | `/api/film-stats/by-month?months=12` | Film count grouped by month of first state (default 12 months) |
+| `GET` | `/api/film-stats/by-emulsion` | Film count grouped by emulsion |
+| `GET` | `/api/film-stats/lifecycle-durations` | Average days between consecutive state transitions |
+
+---
 
 ## Tags
 
 | Method | Path | Description |
 |---|---|---|
 | `GET` | `/api/tags` | List all tags |
-| `POST` | `/api/tags` | Create a new tag |
-| `GET` | `/api/tags/:key` | Get a specific tag |
-| `PATCH` | `/api/tags/:key` | Update a tag |
-| `DELETE` | `/api/tags/:key` | Delete a tag |
+| `GET` | `/api/tags/:id` | Get a tag by id |
+| `POST` | `/api/tags` | Create a tag |
+| `PATCH` | `/api/tags/:id` | Update a tag |
+| `DELETE` | `/api/tags/:id` | Delete a tag |
 
-System tags (`expired`, `pushed`, `pulled`, `cross-processed`) cannot be deleted (returns 403 Forbidden). Tags with dependents cannot be deleted (returns 409 Conflict).
+Tags with dependents (films or emulsions using them) cannot be deleted (returns 409 Conflict).
 
-## Stock Tags
+---
 
-| Method | Path | Description |
-|---|---|---|
-| `GET` | `/api/stock-tags` | List stock–tag assignments |
-| `POST` | `/api/stock-tags` | Assign a tag to a stock |
-| `GET` | `/api/stock-tags/:key` | Get a specific assignment |
-| `DELETE` | `/api/stock-tags/:key` | Remove a tag from a stock |
-
-## Roll Tags
+## Cameras
 
 | Method | Path | Description |
 |---|---|---|
-| `GET` | `/api/roll-tags` | List roll–tag assignments (filterable by `?rollKey=` or `?tagKey=`) |
-| `POST` | `/api/roll-tags` | Assign a tag to a roll |
-| `DELETE` | `/api/roll-tags/:key` | Remove a tag from a roll |
+| `GET` | `/api/cameras` | List cameras with optional filters |
+| `GET` | `/api/cameras/:id` | Get a camera by id |
+| `POST` | `/api/cameras` | Create a camera |
+| `PATCH` | `/api/cameras/:id` | Update a camera |
+| `DELETE` | `/api/cameras/:id` | Delete a camera |
 
-## Roll States
+### List filters (`GET /api/cameras`)
+
+| Query param | Type | Description |
+|---|---|---|
+| `brand` | string | Filter by brand |
+| `model` | string | Filter by model |
+| `status` | string | `active`, `retired`, or `in_repair` |
+| `formatId` | number | Filter by accepted format |
+| `unloaded` | boolean | Only cameras not currently loaded |
+
+Camera status values: `active`, `retired`, `in_repair`.
+
+---
+
+## Transitions (state machine configuration)
 
 | Method | Path | Description |
 |---|---|---|
-| `GET` | `/api/roll-states` | List all state history entries |
-| `GET` | `/api/roll-states/:key` | Get a specific state entry |
+| `GET` | `/api/transitions/profiles` | List all transition profiles |
+| `GET` | `/api/transitions?profile=standard` | Get the full state machine graph for a profile |
 
-## Transition Configuration (DB-driven state machine)
+---
+
+## Reference data (read-only)
 
 | Method | Path | Description |
 |---|---|---|
-| `GET` | `/api/transition-states` | List all valid roll states |
-| `GET` | `/api/transitions` | List all valid transitions |
-| `GET` | `/api/transitions/:key` | Get a transition with its metadata fields |
-| `GET` | `/api/transition-metadata` | List metadata field definitions |
+| `GET` | `/api/packages` | List all package types (Roll, Sheet, Instant, …) |
+| `GET` | `/api/processes` | List all development processes (C-41, E-6, B&W, Instant) |
+
+---
+
+## Export / Import
+
+| Method | Path | Description |
+|---|---|---|
+| `GET` | `/api/export/films.json` | Export all films with full state history as JSON |
+| `GET` | `/api/export/library.json` | Export reference data (emulsions, formats, tags) as JSON |
+| `GET` | `/api/import/films/template` | Download the CSV template for film import |
+| `POST` | `/api/import/films` | Import films from a CSV file (multipart, field `csv`) |
+| `POST` | `/api/import/library` | Import reference data from a `library.json` export (multipart, field `library`) |
+| `POST` | `/api/import/films/json` | Import films with full state history from a `films.json` export (multipart, field `films`) |
