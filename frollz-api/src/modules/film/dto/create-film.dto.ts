@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsDateString, IsNotEmpty, IsNumber, IsOptional, IsPositive, IsString } from 'class-validator';
+import { IsDateString, IsNotEmpty, IsNumber, IsObject, IsOptional, IsPositive, IsString } from 'class-validator';
 
 export class CreateFilmDto {
   @ApiProperty({ example: 'Roll 001' })
@@ -28,4 +28,12 @@ export class CreateFilmDto {
   @IsNotEmpty()
   @IsPositive()
   transitionProfileId!: number;
+
+  @ApiPropertyOptional({
+    description: 'Acquisition metadata for the Added state (dateObtained, obtainmentMethod, obtainedFrom)',
+    example: { dateObtained: '2026-01-15', obtainmentMethod: 'Purchase', obtainedFrom: 'B&H Photo' },
+  })
+  @IsOptional()
+  @IsObject()
+  metadata?: Record<string, string | string[]>;
 }

@@ -11,7 +11,7 @@ import { KNEX_CONNECTION } from '../knex.provider';
 
 @Injectable()
 export class FilmStatsKnexRepository implements IFilmStatsRepository {
-  constructor(@Inject(KNEX_CONNECTION) private readonly knex: Knex) {}
+  constructor(@Inject(KNEX_CONNECTION) private readonly knex: Knex) { }
 
   async countByCurrentState(): Promise<StateCount[]> {
     const rows = await this.knex('transition_state as ts')
@@ -73,7 +73,7 @@ export class FilmStatsKnexRepository implements IFilmStatsRepository {
       ? `EXTRACT(EPOCH FROM (CAST(fs2.date AS TIMESTAMP) - CAST(fs1.date AS TIMESTAMP))) / 86400`
       : `(julianday(fs2.date) - julianday(fs1.date))`;
 
-    const raw = await this.knex.raw<{ rows?: RawDurationRow[]; [0]: RawDurationRow[] }>(`
+    const raw = await this.knex.raw<{ rows?: RawDurationRow[];[0]: RawDurationRow[] }>(`
       SELECT
         ts1.name || ' → ' || ts2.name AS transition,
         CASE WHEN COUNT(*) >= 2 THEN AVG(day_diff) ELSE NULL END AS avg_days
@@ -96,7 +96,8 @@ export class FilmStatsKnexRepository implements IFilmStatsRepository {
       ORDER BY ts1.name, ts2.name
     `);
 
-    const rows: RawDurationRow[] = this.isPostgres() ? (raw as any).rows : (raw as any);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const rows: RawDurationRow[] = this.isPostgres() ? raw.rows : (raw as any);
     return rows.map((r) => ({
       transition: r.transition,
       avgDays: r.avg_days !== null && r.avg_days !== undefined ? Number(r.avg_days) : null,
@@ -104,7 +105,7 @@ export class FilmStatsKnexRepository implements IFilmStatsRepository {
   }
 
   private isPostgres(): boolean {
-    return (this.knex as any).client?.config?.client === 'pg';
+    return this.knex.client?.config?.client === 'pg';
   }
 }
 

@@ -98,7 +98,11 @@ export class FilmService {
       stateId: addedState.id,
       date: new Date(),
     });
-    await this.filmStateRepo.save(initialState);
+    const initialStateId = await this.filmStateRepo.save(initialState);
+
+    if (dto.metadata && Object.keys(dto.metadata).length > 0) {
+      await this.saveTransitionMetadata(addedState.id, initialStateId, dto.metadata);
+    }
 
     return this.findById(id);
   }

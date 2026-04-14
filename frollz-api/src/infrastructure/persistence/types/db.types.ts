@@ -106,3 +106,24 @@ export interface NoteRow {
   text: string;
   created_at: Date;
 }
+export interface CameraRow {
+  id: number;
+  brand: string;
+  model: string;
+  status: string;
+  created_at: Date;
+  updated_at: Date;
+  notes?: string | null;
+  serial_number?: string | null;
+  purchase_price?: number | null;
+  acquired_at?: Date | null;
+}
+
+export interface CameraFormatJoinRow {
+  id: number;
+  camera_id: number;
+  format_id: number;
+  format_name: string;
+  package_id: number;
+  package_name: string;
+}

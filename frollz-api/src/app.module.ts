@@ -9,7 +9,7 @@ import { FilmStateModule } from './modules/film-state/film-state.module';
 import { TransitionModule } from './modules/transition/transition.module';
 import { ExportImportModule } from './modules/export-import/export-import.module';
 import { FilmStatsModule } from './modules/film-stats/film-stats.module';
-
+import { CameraModule } from './modules/camera/camera.module';
 @Module({
   imports: [
     ThrottlerModule.forRoot([{ ttl: 60_000, limit: 200 }]),
@@ -21,7 +21,8 @@ import { FilmStatsModule } from './modules/film-stats/film-stats.module';
     TransitionModule,
     ExportImportModule,
     FilmStatsModule,
+    CameraModule
   ],
   providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
 })
-export class AppModule {}
+export class AppModule { }

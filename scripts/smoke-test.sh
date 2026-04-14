@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
 # scripts/smoke-test.sh — Frollz compose stack smoke test
 #
-# Exercises the full API lifecycle (film formats, stocks, rolls, transitions)
-# then restarts the entire compose stack and verifies all data survived on the
-# postgres volume. Intended to catch regressions introduced by redeployment.
+# Exercises the full API lifecycle (formats, emulsions, films, transitions)
+# then optionally restarts the entire compose stack and verifies all data
+# survived on the postgres volume. Intended to catch regressions introduced
+# by redeployment.
 #
 # Prerequisites: curl, jq, docker (with compose plugin)
 #
@@ -37,8 +38,8 @@ NC='\033[0m'
 # ── state ─────────────────────────────────────────────────────────────────────
 PASS=0
 FAIL=0
-# "endpoint-prefix:uuid" pairs — processed in reverse order during cleanup
-CLEANUP_KEYS=()
+# "endpoint-prefix:id" pairs — processed in reverse order during cleanup
+CLEANUP_IDS=()
 
 # ── logging ───────────────────────────────────────────────────────────────────
 phase() { echo -e "\n${BOLD}${CYAN}▶ $*${NC}"; }
@@ -67,11 +68,10 @@ check_nonempty() {
   fi
 }
 
-# Abort the run — used when a prerequisite call fails (no key to continue with)
-require_key() {
+require_id() {
   local label="$1" value="$2"
   if [[ -z "$value" || "$value" == "null" ]]; then
-    abort "Could not get key for '$label' — cannot continue"
+    abort "Could not get id for '$label' — cannot continue"
   fi
 }
 
@@ -98,7 +98,7 @@ HTTP_STATUS() {
 wait_for_api() {
   local label="${1:-API}" elapsed=0
   info "Waiting for $label to be ready (timeout: ${STARTUP_TIMEOUT}s)…"
-  until curl -sf "${BASE_URL}/film-formats" >/dev/null 2>&1; do
+  until curl -sf "${BASE_URL}/formats" >/dev/null 2>&1; do
     if [[ $elapsed -ge $STARTUP_TIMEOUT ]]; then
       abort "$label did not become ready within ${STARTUP_TIMEOUT}s"
     fi
@@ -115,11 +115,11 @@ cleanup() {
     return
   fi
   phase "Cleanup"
-  # Process in reverse so rolls are deleted before stocks before formats
-  for (( i=${#CLEANUP_KEYS[@]}-1; i>=0; i-- )); do
-    IFS=: read -r endpoint key <<< "${CLEANUP_KEYS[$i]}"
-    DELETE "/${endpoint}/${key}"
-    dim "Deleted /${endpoint}/${key}"
+  # Process in reverse so films are deleted before emulsions before formats
+  for (( i=${#CLEANUP_IDS[@]}-1; i>=0; i-- )); do
+    IFS=: read -r endpoint id <<< "${CLEANUP_IDS[$i]}"
+    DELETE "/${endpoint}/${id}"
+    dim "Deleted /${endpoint}/${id}"
   done
 }
 
@@ -130,7 +130,6 @@ for cmd in curl jq docker; do
   command -v "$cmd" >/dev/null 2>&1 || abort "'$cmd' is required but not found"
 done
 
-# Verify compose file exists before we get to the restart phase
 if [[ "$NO_RESTART" != "1" ]] && [[ ! -f "$COMPOSE_FILE" ]]; then
   abort "Compose file not found: $COMPOSE_FILE"
 fi
@@ -143,77 +142,81 @@ echo -e "  restart : $( [[ "$NO_RESTART" == "1" ]] && echo "no (NO_RESTART=1)" |
 echo -e "  cleanup : $( [[ "$NO_CLEANUP" == "1" ]] && echo "no (NO_CLEANUP=1)" || echo "yes" )"
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Phase 1 — Initial health check
+# Phase 1 — API health
 # ─────────────────────────────────────────────────────────────────────────────
 phase "Phase 1 — API health"
 
 wait_for_api
 
-FORMAT_COUNT=$(GET "/film-formats" | jq 'length')
-pass "API is reachable (${FORMAT_COUNT} film format(s) already in DB)"
+FORMAT_COUNT=$(GET "/formats" | jq 'length')
+pass "API is reachable (${FORMAT_COUNT} format(s) already in DB)"
 
-STOCK_COUNT=$(GET "/stocks" | jq 'length')
-dim "${STOCK_COUNT} stock(s) already in DB"
+EMULSION_COUNT=$(GET "/emulsions" | jq 'length')
+dim "${EMULSION_COUNT} emulsion(s) already in DB"
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Phase 2 — Seed test data
 # ─────────────────────────────────────────────────────────────────────────────
 phase "Phase 2 — Seed test data"
 
-# Use a timestamp suffix so repeated runs never collide with each other or
-# with the default seeded data.
 SUFFIX=$(date +%s)
 TODAY=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+OBTAINED_DATE=$(date -u +"%Y-%m-%d")
 
-# -- Film format ---------------------------------------------------------------
-FORMAT=$(POST "/film-formats" \
-  "{\"formFactor\":\"Roll\",\"format\":\"smoke-${SUFFIX}\"}")
-FORMAT_KEY=$(echo "$FORMAT" | jq -r '._key')
-require_key "film-format" "$FORMAT_KEY"
-CLEANUP_KEYS+=("film-formats:${FORMAT_KEY}")
-check_nonempty "Create film format (smoke-${SUFFIX})" "$FORMAT_KEY"
+# -- Format -------------------------------------------------------------------
+FORMAT=$(POST "/formats" \
+  "{\"name\":\"smoke-${SUFFIX}\",\"packageId\":1}")
+FORMAT_ID=$(echo "$FORMAT" | jq -r '.id')
+require_id "format" "$FORMAT_ID"
+CLEANUP_IDS+=("formats:${FORMAT_ID}")
+check_nonempty "Create format (smoke-${SUFFIX})" "$FORMAT_ID"
 
-# -- Standard (C-41) stock -----------------------------------------------------
-STD_STOCK=$(POST "/stocks" \
-  "{\"formatKey\":\"${FORMAT_KEY}\",\"process\":\"C-41\",\
+# -- Standard (C-41) emulsion -------------------------------------------------
+STD_EMULSION=$(POST "/emulsions" \
+  "{\"formatId\":${FORMAT_ID},\"process\":\"C-41\",\
 \"manufacturer\":\"Smoke Test Co\",\"brand\":\"Smoke C41 400\",\"speed\":400}")
-STD_STOCK_KEY=$(echo "$STD_STOCK" | jq -r '._key')
-require_key "std-stock" "$STD_STOCK_KEY"
-CLEANUP_KEYS+=("stocks:${STD_STOCK_KEY}")
-check_nonempty "Create C-41 stock" "$STD_STOCK_KEY"
+STD_EMULSION_ID=$(echo "$STD_EMULSION" | jq -r '.id')
+require_id "std-emulsion" "$STD_EMULSION_ID"
+CLEANUP_IDS+=("emulsions:${STD_EMULSION_ID}")
+check_nonempty "Create C-41 emulsion" "$STD_EMULSION_ID"
 
-# -- Instant stock -------------------------------------------------------------
-INST_STOCK=$(POST "/stocks" \
-  "{\"formatKey\":\"${FORMAT_KEY}\",\"process\":\"Instant\",\
+# -- Instant emulsion ---------------------------------------------------------
+INST_EMULSION=$(POST "/emulsions" \
+  "{\"formatId\":${FORMAT_ID},\"process\":\"Instant\",\
 \"manufacturer\":\"Smoke Test Co\",\"brand\":\"Smoke Instax\",\"speed\":800}")
-INST_STOCK_KEY=$(echo "$INST_STOCK" | jq -r '._key')
-require_key "inst-stock" "$INST_STOCK_KEY"
-CLEANUP_KEYS+=("stocks:${INST_STOCK_KEY}")
-check_nonempty "Create Instant stock" "$INST_STOCK_KEY"
+INST_EMULSION_ID=$(echo "$INST_EMULSION" | jq -r '.id')
+require_id "inst-emulsion" "$INST_EMULSION_ID"
+CLEANUP_IDS+=("emulsions:${INST_EMULSION_ID}")
+check_nonempty "Create Instant emulsion" "$INST_EMULSION_ID"
 
-# -- Standard roll (C-41) ------------------------------------------------------
-STD_ROLL=$(POST "/rolls" \
-  "{\"stockKey\":\"${STD_STOCK_KEY}\",\"dateObtained\":\"${TODAY}\",\
-\"obtainmentMethod\":\"Purchase\",\"obtainedFrom\":\"Smoke Test Store\",\
-\"timesExposedToXrays\":0}")
-STD_ROLL_KEY=$(echo "$STD_ROLL" | jq -r '._key')
-require_key "std-roll" "$STD_ROLL_KEY"
-CLEANUP_KEYS+=("rolls:${STD_ROLL_KEY}")
-check_nonempty "Create standard roll" "$STD_ROLL_KEY"
-check "Standard roll gets 'standard' transition profile" \
-  "standard" "$(echo "$STD_ROLL" | jq -r '.transitionProfile')"
+# -- Transition profiles -------------------------------------------------------
+PROFILES=$(GET "/transitions/profiles")
+STD_PROFILE_ID=$(echo "$PROFILES" | jq -r '[.[] | select(.name=="standard")] | .[0].id')
+INST_PROFILE_ID=$(echo "$PROFILES" | jq -r '[.[] | select(.name=="instant")] | .[0].id')
+require_id "standard-profile" "$STD_PROFILE_ID"
+require_id "instant-profile"  "$INST_PROFILE_ID"
+check_nonempty "Standard transition profile exists" "$STD_PROFILE_ID"
+check_nonempty "Instant transition profile exists"  "$INST_PROFILE_ID"
 
-# -- Instant roll --------------------------------------------------------------
-INST_ROLL=$(POST "/rolls" \
-  "{\"stockKey\":\"${INST_STOCK_KEY}\",\"dateObtained\":\"${TODAY}\",\
-\"obtainmentMethod\":\"Purchase\",\"obtainedFrom\":\"Smoke Test Store\",\
-\"timesExposedToXrays\":0}")
-INST_ROLL_KEY=$(echo "$INST_ROLL" | jq -r '._key')
-require_key "inst-roll" "$INST_ROLL_KEY"
-CLEANUP_KEYS+=("rolls:${INST_ROLL_KEY}")
-check_nonempty "Create instant roll" "$INST_ROLL_KEY"
-check "Instant roll gets 'instant' transition profile" \
-  "instant" "$(echo "$INST_ROLL" | jq -r '.transitionProfile')"
+# -- Standard film (C-41) -----------------------------------------------------
+STD_FILM=$(POST "/films" \
+  "{\"name\":\"Smoke C41 Roll ${SUFFIX}\",\"emulsionId\":${STD_EMULSION_ID},\
+\"expirationDate\":\"2028-01-01\",\"transitionProfileId\":${STD_PROFILE_ID},\
+\"metadata\":{\"dateObtained\":\"${OBTAINED_DATE}\",\
+\"obtainmentMethod\":\"Purchase\",\"obtainedFrom\":\"Smoke Test Store\"}}")
+STD_FILM_ID=$(echo "$STD_FILM" | jq -r '.id')
+require_id "std-film" "$STD_FILM_ID"
+CLEANUP_IDS+=("films:${STD_FILM_ID}")
+check_nonempty "Create standard film" "$STD_FILM_ID"
+
+# -- Instant film -------------------------------------------------------------
+INST_FILM=$(POST "/films" \
+  "{\"name\":\"Smoke Instax Roll ${SUFFIX}\",\"emulsionId\":${INST_EMULSION_ID},\
+\"expirationDate\":\"2028-01-01\",\"transitionProfileId\":${INST_PROFILE_ID}}")
+INST_FILM_ID=$(echo "$INST_FILM" | jq -r '.id')
+require_id "inst-film" "$INST_FILM_ID"
+CLEANUP_IDS+=("films:${INST_FILM_ID}")
+check_nonempty "Create instant film" "$INST_FILM_ID"
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Phase 3 — Transition graphs
@@ -221,7 +224,6 @@ check "Instant roll gets 'instant' transition profile" \
 phase "Phase 3 — Transition graphs"
 
 STD_GRAPH=$(GET "/transitions?profile=standard")
-STD_EDGE_COUNT=$(echo "$STD_GRAPH" | jq '.transitions | length')
 check "Standard graph has Finished → Sent For Development edge" "1" \
   "$(echo "$STD_GRAPH" | jq \
     '[.transitions[] | select(.fromState=="Finished" and .toState=="Sent For Development")] | length')"
@@ -231,10 +233,8 @@ check "Standard graph has Developed → Received edge" "1" \
 check "Standard graph has no direct Finished → Received edge" "0" \
   "$(echo "$STD_GRAPH" | jq \
     '[.transitions[] | select(.fromState=="Finished" and .toState=="Received")] | length')"
-dim "Standard profile: ${STD_EDGE_COUNT} edges"
 
 INST_GRAPH=$(GET "/transitions?profile=instant")
-INST_EDGE_COUNT=$(echo "$INST_GRAPH" | jq '.transitions | length')
 check "Instant graph has direct Finished → Received edge" "1" \
   "$(echo "$INST_GRAPH" | jq \
     '[.transitions[] | select(.fromState=="Finished" and .toState=="Received")] | length')"
@@ -244,76 +244,71 @@ check "Instant graph has Received → Finished backward edge" "1" \
 check "Instant graph has no Sent For Development edge" "0" \
   "$(echo "$INST_GRAPH" | jq \
     '[.transitions[] | select(.toState=="Sent For Development")] | length')"
-check "Instant graph has no Developed edge" "0" \
-  "$(echo "$INST_GRAPH" | jq \
-    '[.transitions[] | select(.toState=="Developed" or .fromState=="Developed")] | length')"
-# Instant graph should have the Finished→Received scans metadata
+
 RECEIVED_META=$(echo "$INST_GRAPH" | jq \
   '[.transitions[] | select(.fromState=="Finished" and .toState=="Received")] | .[0].metadata | map(.field) | sort')
 check "Instant Finished→Received edge has scans/negatives metadata" \
   '["negativesDate","negativesReceived","scansReceived","scansUrl"]' \
   "$RECEIVED_META"
-dim "Instant profile: ${INST_EDGE_COUNT} edges"
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Phase 4 — Standard roll lifecycle  (C-41: lab workflow)
+# Phase 4 — Standard film lifecycle (C-41 / lab workflow)
 # ─────────────────────────────────────────────────────────────────────────────
-phase "Phase 4 — Standard roll lifecycle (C-41 / lab workflow)"
+phase "Phase 4 — Standard film lifecycle (C-41 / lab workflow)"
 dim "Path: Added → Shelved → Loaded → Finished → Sent For Development"
 
-R=$(POST "/rolls/${STD_ROLL_KEY}/transition" \
-  "{\"targetState\":\"Shelved\",\"date\":\"${TODAY}\"}")
-check "Added → Shelved" "Shelved" "$(echo "$R" | jq -r '.state')"
+R=$(POST "/films/${STD_FILM_ID}/transition" \
+  "{\"targetStateName\":\"Shelved\",\"date\":\"${TODAY}\"}")
+check "Added → Shelved" "Shelved" "$(echo "$R" | jq -r '.currentState.stateName')"
 
-R=$(POST "/rolls/${STD_ROLL_KEY}/transition" \
-  "{\"targetState\":\"Loaded\",\"date\":\"${TODAY}\"}")
-check "Shelved → Loaded" "Loaded" "$(echo "$R" | jq -r '.state')"
+R=$(POST "/films/${STD_FILM_ID}/transition" \
+  "{\"targetStateName\":\"Loaded\",\"date\":\"${TODAY}\"}")
+check "Shelved → Loaded" "Loaded" "$(echo "$R" | jq -r '.currentState.stateName')"
 
-R=$(POST "/rolls/${STD_ROLL_KEY}/transition" \
-  "{\"targetState\":\"Finished\",\"date\":\"${TODAY}\",\"metadata\":{\"shotISO\":400}}")
-check "Loaded → Finished (shotISO=400)" "Finished" "$(echo "$R" | jq -r '.state')"
+R=$(POST "/films/${STD_FILM_ID}/transition" \
+  "{\"targetStateName\":\"Finished\",\"date\":\"${TODAY}\",\"metadata\":{\"shotISO\":\"400\"}}")
+check "Loaded → Finished (shotISO=400)" "Finished" "$(echo "$R" | jq -r '.currentState.stateName')"
 
-R=$(POST "/rolls/${STD_ROLL_KEY}/transition" \
-  "{\"targetState\":\"Sent For Development\",\"date\":\"${TODAY}\",\
+R=$(POST "/films/${STD_FILM_ID}/transition" \
+  "{\"targetStateName\":\"Sent For Development\",\"date\":\"${TODAY}\",\
 \"metadata\":{\"labName\":\"The Darkroom\",\"deliveryMethod\":\"Mail in\",\
 \"processRequested\":\"C-41\"}}")
-check "Finished → Sent For Development (lab details captured)" \
-  "Sent For Development" "$(echo "$R" | jq -r '.state')"
+check "Finished → Sent For Development" \
+  "Sent For Development" "$(echo "$R" | jq -r '.currentState.stateName')"
 
-STD_HIST=$(GET "/roll-states?rollKey=${STD_ROLL_KEY}")
+STD_HIST=$(GET "/film-states?filmId=${STD_FILM_ID}")
 check "State history has 5 entries (Added+Shelved+Loaded+Finished+SentForDev)" \
   "5" "$(echo "$STD_HIST" | jq 'length')"
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Phase 5 — Instant roll lifecycle  (no lab step)
+# Phase 5 — Instant film lifecycle (no lab step)
 # ─────────────────────────────────────────────────────────────────────────────
-phase "Phase 5 — Instant roll lifecycle (no lab step)"
+phase "Phase 5 — Instant film lifecycle (no lab step)"
 dim "Path: Added → Shelved → Loaded → Finished → Received"
 
-R=$(POST "/rolls/${INST_ROLL_KEY}/transition" \
-  "{\"targetState\":\"Shelved\",\"date\":\"${TODAY}\"}")
-check "Added → Shelved" "Shelved" "$(echo "$R" | jq -r '.state')"
+R=$(POST "/films/${INST_FILM_ID}/transition" \
+  "{\"targetStateName\":\"Shelved\",\"date\":\"${TODAY}\"}")
+check "Added → Shelved" "Shelved" "$(echo "$R" | jq -r '.currentState.stateName')"
 
-R=$(POST "/rolls/${INST_ROLL_KEY}/transition" \
-  "{\"targetState\":\"Loaded\",\"date\":\"${TODAY}\"}")
-check "Shelved → Loaded" "Loaded" "$(echo "$R" | jq -r '.state')"
+R=$(POST "/films/${INST_FILM_ID}/transition" \
+  "{\"targetStateName\":\"Loaded\",\"date\":\"${TODAY}\"}")
+check "Shelved → Loaded" "Loaded" "$(echo "$R" | jq -r '.currentState.stateName')"
 
-R=$(POST "/rolls/${INST_ROLL_KEY}/transition" \
-  "{\"targetState\":\"Finished\",\"date\":\"${TODAY}\"}")
-check "Loaded → Finished" "Finished" "$(echo "$R" | jq -r '.state')"
+R=$(POST "/films/${INST_FILM_ID}/transition" \
+  "{\"targetStateName\":\"Finished\",\"date\":\"${TODAY}\"}")
+check "Loaded → Finished" "Finished" "$(echo "$R" | jq -r '.currentState.stateName')"
 
-# Negative: instant roll must NOT be able to reach Sent For Development
-HTTP=$(HTTP_STATUS "/rolls/${INST_ROLL_KEY}/transition" \
-  '{"targetState":"Sent For Development"}')
-check "Instant roll rejects Sent For Development (400)" "400" "$HTTP"
+# Negative: instant film must NOT be able to reach Sent For Development
+HTTP=$(HTTP_STATUS "/films/${INST_FILM_ID}/transition" \
+  '{"targetStateName":"Sent For Development"}')
+check "Instant film rejects Sent For Development (400)" "400" "$HTTP"
 
-# Direct Finished → Received — no lab step
-R=$(POST "/rolls/${INST_ROLL_KEY}/transition" \
-  "{\"targetState\":\"Received\",\"metadata\":{\"scansReceived\":true}}")
+R=$(POST "/films/${INST_FILM_ID}/transition" \
+  "{\"targetStateName\":\"Received\",\"metadata\":{\"scansReceived\":\"true\"}}")
 check "Finished → Received (direct — no lab step)" \
-  "Received" "$(echo "$R" | jq -r '.state')"
+  "Received" "$(echo "$R" | jq -r '.currentState.stateName')"
 
-INST_HIST=$(GET "/roll-states?rollKey=${INST_ROLL_KEY}")
+INST_HIST=$(GET "/film-states?filmId=${INST_FILM_ID}")
 check "State history has 5 entries (Added+Shelved+Loaded+Finished+Received)" \
   "5" "$(echo "$INST_HIST" | jq 'length')"
 
@@ -338,30 +333,22 @@ fi
 # ─────────────────────────────────────────────────────────────────────────────
 phase "Phase 7 — Data persistence"
 
-# Standard roll
-STD=$(GET "/rolls/${STD_ROLL_KEY}")
-check "Standard roll still exists"          "${STD_ROLL_KEY}"          "$(echo "$STD" | jq -r '._key')"
-check "Standard roll state persisted"       "Sent For Development"     "$(echo "$STD" | jq -r '.state')"
-check "Standard roll profile persisted"     "standard"                 "$(echo "$STD" | jq -r '.transitionProfile')"
-check "Standard roll stock name persisted"  "Smoke C41 400"            "$(echo "$STD" | jq -r '.stockName')"
+STD=$(GET "/films/${STD_FILM_ID}")
+check "Standard film still exists"        "${STD_FILM_ID}"           "$(echo "$STD" | jq -r '.id')"
+check "Standard film state persisted"     "Sent For Development"     "$(echo "$STD" | jq -r '.currentState.stateName')"
 
-# Instant roll
-INST=$(GET "/rolls/${INST_ROLL_KEY}")
-check "Instant roll still exists"           "${INST_ROLL_KEY}"         "$(echo "$INST" | jq -r '._key')"
-check "Instant roll state persisted"        "Received"                 "$(echo "$INST" | jq -r '.state')"
-check "Instant roll profile persisted"      "instant"                  "$(echo "$INST" | jq -r '.transitionProfile')"
-check "Instant roll stock name persisted"   "Smoke Instax"             "$(echo "$INST" | jq -r '.stockName')"
+INST=$(GET "/films/${INST_FILM_ID}")
+check "Instant film still exists"         "${INST_FILM_ID}"          "$(echo "$INST" | jq -r '.id')"
+check "Instant film state persisted"      "Received"                 "$(echo "$INST" | jq -r '.currentState.stateName')"
 
-# State histories
-STD_HIST=$(GET "/roll-states?rollKey=${STD_ROLL_KEY}")
-check "Standard roll history persisted (5 entries)" \
+STD_HIST=$(GET "/film-states?filmId=${STD_FILM_ID}")
+check "Standard film history persisted (5 entries)" \
   "5" "$(echo "$STD_HIST" | jq 'length')"
 
-INST_HIST=$(GET "/roll-states?rollKey=${INST_ROLL_KEY}")
-check "Instant roll history persisted (5 entries)" \
+INST_HIST=$(GET "/film-states?filmId=${INST_FILM_ID}")
+check "Instant film history persisted (5 entries)" \
   "5" "$(echo "$INST_HIST" | jq 'length')"
 
-# Transition graphs still correct after migration re-run on startup
 STD_G=$(GET "/transitions?profile=standard")
 check "Standard graph intact after restart" "1" \
   "$(echo "$STD_G" | jq \

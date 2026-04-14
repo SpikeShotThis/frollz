@@ -1,4 +1,4 @@
-export type EntityType = 'film' | 'emulsion' | 'package' | 'process' | 'profile' |'film_state';
+export type EntityType = 'film' | 'emulsion' | 'package' | 'process' | 'profile' | 'film_state' | 'camera';
 
 export class Note {
   constructor(
@@ -7,15 +7,15 @@ export class Note {
     public readonly entity_type: EntityType,
     public readonly text: string,
     public readonly created_at: Date,
-  ) {}
+  ) { }
 
-  static create(props: { 
+  static create(props: {
     id?: number,
     entity_id: number,
     entity_type: EntityType,
     text: string,
     created_at: Date,
-   }): Note {
+  }): Note {
     return new Note(props.id ?? 0, props.entity_id, props.entity_type, props.text, props.created_at);
   }
 }
