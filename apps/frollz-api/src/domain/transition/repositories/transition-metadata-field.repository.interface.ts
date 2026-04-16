@@ -1,6 +1,7 @@
-import { TransitionMetadataField } from '../entities/transition-metadata-field.entity';
+import { TransitionMetadataField } from "../entities/transition-metadata-field.entity";
 
-export const TRANSITION_METADATA_FIELD_REPOSITORY = 'TRANSITION_METADATA_FIELD_REPOSITORY';
+export const TRANSITION_METADATA_FIELD_REPOSITORY =
+  "TRANSITION_METADATA_FIELD_REPOSITORY";
 
 export interface ITransitionMetadataFieldRepository {
   findById(id: number): Promise<TransitionMetadataField | null>;

@@ -4,9 +4,13 @@
  */
 export function toTitleCase(str: string): string {
   return str
-    .split(' ')
-    .map(word => (word.length > 0 ? word[0].toUpperCase() + word.slice(1).toLowerCase() : word))
-    .join(' ')
+    .split(" ")
+    .map((word) =>
+      word.length > 0
+        ? word[0].toUpperCase() + word.slice(1).toLowerCase()
+        : word,
+    )
+    .join(" ");
 }
 
 /**
@@ -18,26 +22,26 @@ export function toTitleCase(str: string): string {
  * Returns an empty array when the query is blank.
  */
 export function buildSuggestions(query: string, dbBrands: string[]): string[] {
-  if (!query.trim()) return []
+  if (!query.trim()) return [];
 
-  const seen = new Set<string>()
-  const result: string[] = []
+  const seen = new Set<string>();
+  const result: string[] = [];
 
-  const titleCased = toTitleCase(query)
-  result.push(titleCased)
-  seen.add(titleCased)
+  const titleCased = toTitleCase(query);
+  result.push(titleCased);
+  seen.add(titleCased);
 
   if (!seen.has(query)) {
-    result.push(query)
-    seen.add(query)
+    result.push(query);
+    seen.add(query);
   }
 
   for (const brand of dbBrands) {
     if (!seen.has(brand)) {
-      result.push(brand)
-      seen.add(brand)
+      result.push(brand);
+      seen.add(brand);
     }
   }
 
-  return result
+  return result;
 }

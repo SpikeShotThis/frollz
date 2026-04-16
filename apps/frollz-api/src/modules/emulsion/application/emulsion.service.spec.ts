@@ -1,18 +1,19 @@
-import { randomInt } from 'crypto';
-import { NotFoundException } from '@nestjs/common';
-import { EmulsionService } from './emulsion.service';
-import { IEmulsionRepository } from '../../../domain/emulsion/repositories/emulsion.repository.interface';
-import { IEmulsionTagRepository } from '../../../domain/emulsion-tag/repositories/emulsion-tag.repository.interface';
-import { Emulsion } from '../../../domain/emulsion/entities/emulsion.entity';
+import { randomInt } from "crypto";
+import { NotFoundException } from "@nestjs/common";
+import { EmulsionService } from "./emulsion.service";
+import { IEmulsionRepository } from "../../../domain/emulsion/repositories/emulsion.repository.interface";
+import { IEmulsionTagRepository } from "../../../domain/emulsion-tag/repositories/emulsion-tag.repository.interface";
+import { Emulsion } from "../../../domain/emulsion/entities/emulsion.entity";
 
+const randomId = () => randomInt(1, 1000000);
 
-const randomId = () => randomInt(1, 1000000)
-
-const makeEmulsion = (overrides: Partial<Parameters<typeof Emulsion.create>[0]> = {}): Emulsion =>
+const makeEmulsion = (
+  overrides: Partial<Parameters<typeof Emulsion.create>[0]> = {},
+): Emulsion =>
   Emulsion.create({
     id: randomId(),
-    brand: 'Kodak',
-    manufacturer: 'Kodak',
+    brand: "Kodak",
+    manufacturer: "Kodak",
     speed: 400,
     processId: randomId(),
     formatId: randomId(),
@@ -20,7 +21,9 @@ const makeEmulsion = (overrides: Partial<Parameters<typeof Emulsion.create>[0]> 
     ...overrides,
   });
 
-const makeRepo = (overrides: Partial<IEmulsionRepository> = {}): IEmulsionRepository => ({
+const makeRepo = (
+  overrides: Partial<IEmulsionRepository> = {},
+): IEmulsionRepository => ({
   findAll: jest.fn().mockResolvedValue([]),
   findById: jest.fn().mockResolvedValue(null),
   findByBrand: jest.fn().mockResolvedValue(null),
@@ -37,15 +40,17 @@ const makeRepo = (overrides: Partial<IEmulsionRepository> = {}): IEmulsionReposi
   ...overrides,
 });
 
-const makeTagRepo = (overrides: Partial<IEmulsionTagRepository> = {}): IEmulsionTagRepository => ({
+const makeTagRepo = (
+  overrides: Partial<IEmulsionTagRepository> = {},
+): IEmulsionTagRepository => ({
   add: jest.fn().mockResolvedValue(undefined),
   remove: jest.fn().mockResolvedValue(undefined),
   ...overrides,
 });
 
-describe('EmulsionService', () => {
-  describe('findById', () => {
-    it('returns the emulsion when found', async () => {
+describe("EmulsionService", () => {
+  describe("findById", () => {
+    it("returns the emulsion when found", async () => {
       const emulsion = makeEmulsion();
       const service = new EmulsionService(
         makeRepo({ findById: jest.fn().mockResolvedValue(emulsion) }),
@@ -55,46 +60,53 @@ describe('EmulsionService', () => {
       await expect(service.findById(emulsion.id)).resolves.toEqual(emulsion);
     });
 
-    it('throws NotFoundException when not found', async () => {
+    it("throws NotFoundException when not found", async () => {
       const service = new EmulsionService(makeRepo(), makeTagRepo());
 
-      await expect(service.findById(randomId())).rejects.toThrow(NotFoundException);
+      await expect(service.findById(randomId())).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 
-  describe('create', () => {
-    it('saves and returns a new emulsion with a generated uuid', async () => {
-      const savedEmulsion = makeEmulsion({ brand: 'Kodak Portra 400' });
-      const repo = makeRepo({ findById: jest.fn().mockResolvedValue(savedEmulsion) });
+  describe("create", () => {
+    it("saves and returns a new emulsion with a generated uuid", async () => {
+      const savedEmulsion = makeEmulsion({ brand: "Kodak Portra 400" });
+      const repo = makeRepo({
+        findById: jest.fn().mockResolvedValue(savedEmulsion),
+      });
       const service = new EmulsionService(repo, makeTagRepo());
 
       const result = await service.create({
-        brand: 'Kodak Portra 400',
-        manufacturer: 'Kodak',
+        brand: "Kodak Portra 400",
+        manufacturer: "Kodak",
         speed: 400,
         processId: randomId(),
         formatId: randomId(),
       });
 
-      expect(result.brand).toBe('Kodak Portra 400');
-      expect(repo.save).toHaveBeenCalledWith(expect.objectContaining({ brand: 'Kodak Portra 400' }));
+      expect(result.brand).toBe("Kodak Portra 400");
+      expect(repo.save).toHaveBeenCalledWith(
+        expect.objectContaining({ brand: "Kodak Portra 400" }),
+      );
     });
   });
 
-  describe('createMultipleFormats', () => {
-    it('creates one emulsion per formatId', async () => {
+  describe("createMultipleFormats", () => {
+    it("creates one emulsion per formatId", async () => {
       const formatIds = [randomId(), randomId()];
       const emulsions = formatIds.map((formatId) => makeEmulsion({ formatId }));
       const repo = makeRepo({
-        findById: jest.fn()
+        findById: jest
+          .fn()
           .mockResolvedValueOnce(emulsions[0])
           .mockResolvedValueOnce(emulsions[1]),
       });
       const service = new EmulsionService(repo, makeTagRepo());
 
       const results = await service.createMultipleFormats({
-        brand: 'Ilford HP5',
-        manufacturer: 'Ilford',
+        brand: "Ilford HP5",
+        manufacturer: "Ilford",
         speed: 400,
         processId: randomId(),
         formatIds,
@@ -107,12 +119,13 @@ describe('EmulsionService', () => {
     });
   });
 
-  describe('update', () => {
-    it('merges partial changes onto the existing emulsion', async () => {
+  describe("update", () => {
+    it("merges partial changes onto the existing emulsion", async () => {
       const existing = makeEmulsion();
       const afterUpdate = makeEmulsion({ id: existing.id, speed: 800 });
       const repo = makeRepo({
-        findById: jest.fn()
+        findById: jest
+          .fn()
           .mockResolvedValueOnce(existing)
           .mockResolvedValueOnce(afterUpdate),
       });
@@ -124,15 +137,17 @@ describe('EmulsionService', () => {
       expect(result.speed).toBe(800);
     });
 
-    it('throws NotFoundException when emulsion not found', async () => {
+    it("throws NotFoundException when emulsion not found", async () => {
       const service = new EmulsionService(makeRepo(), makeTagRepo());
 
-      await expect(service.update(randomId(), { speed: 800 })).rejects.toThrow(NotFoundException);
+      await expect(service.update(randomId(), { speed: 800 })).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 
-  describe('addTag / removeTag', () => {
-    it('adds a tag association to an existing emulsion', async () => {
+  describe("addTag / removeTag", () => {
+    it("adds a tag association to an existing emulsion", async () => {
       const emulsion = makeEmulsion();
       const tagRepo = makeTagRepo();
       const tagId = randomId();
@@ -146,7 +161,7 @@ describe('EmulsionService', () => {
       expect(tagRepo.add).toHaveBeenCalledWith(emulsion.id, tagId);
     });
 
-    it('removes a tag association from an existing emulsion', async () => {
+    it("removes a tag association from an existing emulsion", async () => {
       const emulsion = makeEmulsion();
       const tagRepo = makeTagRepo();
       const tagId = randomId();
@@ -160,46 +175,56 @@ describe('EmulsionService', () => {
       expect(tagRepo.remove).toHaveBeenCalledWith(emulsion.id, tagId);
     });
 
-    it('throws NotFoundException when emulsion not found', async () => {
+    it("throws NotFoundException when emulsion not found", async () => {
       const service = new EmulsionService(makeRepo(), makeTagRepo());
 
-      await expect(service.addTag(randomId(), randomId())).rejects.toThrow(NotFoundException);
+      await expect(service.addTag(randomId(), randomId())).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 
-  describe('typeahead', () => {
-    it('delegates findBrands with query to repository', async () => {
-      const repo = makeRepo({ findBrands: jest.fn().mockResolvedValue(['Kodak', 'Ilford']) });
+  describe("typeahead", () => {
+    it("delegates findBrands with query to repository", async () => {
+      const repo = makeRepo({
+        findBrands: jest.fn().mockResolvedValue(["Kodak", "Ilford"]),
+      });
       const service = new EmulsionService(repo, makeTagRepo());
 
-      const result = await service.findBrands('Ko');
+      const result = await service.findBrands("Ko");
 
-      expect(result).toEqual(['Kodak', 'Ilford']);
-      expect(repo.findBrands).toHaveBeenCalledWith('Ko');
+      expect(result).toEqual(["Kodak", "Ilford"]);
+      expect(repo.findBrands).toHaveBeenCalledWith("Ko");
     });
 
-    it('delegates findBrands without query to repository', async () => {
-      const repo = makeRepo({ findBrands: jest.fn().mockResolvedValue(['Kodak', 'Ilford', 'Fuji']) });
+    it("delegates findBrands without query to repository", async () => {
+      const repo = makeRepo({
+        findBrands: jest.fn().mockResolvedValue(["Kodak", "Ilford", "Fuji"]),
+      });
       const service = new EmulsionService(repo, makeTagRepo());
 
       const result = await service.findBrands();
 
-      expect(result).toEqual(['Kodak', 'Ilford', 'Fuji']);
+      expect(result).toEqual(["Kodak", "Ilford", "Fuji"]);
       expect(repo.findBrands).toHaveBeenCalledWith(undefined);
     });
 
-    it('delegates findManufacturers with query to repository', async () => {
-      const repo = makeRepo({ findManufacturers: jest.fn().mockResolvedValue(['Kodak']) });
+    it("delegates findManufacturers with query to repository", async () => {
+      const repo = makeRepo({
+        findManufacturers: jest.fn().mockResolvedValue(["Kodak"]),
+      });
       const service = new EmulsionService(repo, makeTagRepo());
 
-      const result = await service.findManufacturers('Ko');
+      const result = await service.findManufacturers("Ko");
 
-      expect(result).toEqual(['Kodak']);
-      expect(repo.findManufacturers).toHaveBeenCalledWith('Ko');
+      expect(result).toEqual(["Kodak"]);
+      expect(repo.findManufacturers).toHaveBeenCalledWith("Ko");
     });
 
-    it('delegates findManufacturers without query to repository', async () => {
-      const repo = makeRepo({ findManufacturers: jest.fn().mockResolvedValue(['Kodak', 'Ilford']) });
+    it("delegates findManufacturers without query to repository", async () => {
+      const repo = makeRepo({
+        findManufacturers: jest.fn().mockResolvedValue(["Kodak", "Ilford"]),
+      });
       const service = new EmulsionService(repo, makeTagRepo());
 
       await service.findManufacturers();
@@ -207,18 +232,20 @@ describe('EmulsionService', () => {
       expect(repo.findManufacturers).toHaveBeenCalledWith(undefined);
     });
 
-    it('delegates findSpeeds with query to repository', async () => {
+    it("delegates findSpeeds with query to repository", async () => {
       const repo = makeRepo({ findSpeeds: jest.fn().mockResolvedValue([400]) });
       const service = new EmulsionService(repo, makeTagRepo());
 
-      const result = await service.findSpeeds('4');
+      const result = await service.findSpeeds("4");
 
       expect(result).toEqual([400]);
-      expect(repo.findSpeeds).toHaveBeenCalledWith('4');
+      expect(repo.findSpeeds).toHaveBeenCalledWith("4");
     });
 
-    it('delegates findSpeeds without query to repository', async () => {
-      const repo = makeRepo({ findSpeeds: jest.fn().mockResolvedValue([100, 200, 400]) });
+    it("delegates findSpeeds without query to repository", async () => {
+      const repo = makeRepo({
+        findSpeeds: jest.fn().mockResolvedValue([100, 200, 400]),
+      });
       const service = new EmulsionService(repo, makeTagRepo());
 
       await service.findSpeeds();
@@ -227,10 +254,12 @@ describe('EmulsionService', () => {
     });
   });
 
-  describe('findAll', () => {
-    it('returns all emulsions from the repository', async () => {
-      const emulsions = [makeEmulsion(), makeEmulsion({ brand: 'Ilford HP5' })];
-      const repo = makeRepo({ findAll: jest.fn().mockResolvedValue(emulsions) });
+  describe("findAll", () => {
+    it("returns all emulsions from the repository", async () => {
+      const emulsions = [makeEmulsion(), makeEmulsion({ brand: "Ilford HP5" })];
+      const repo = makeRepo({
+        findAll: jest.fn().mockResolvedValue(emulsions),
+      });
       const service = new EmulsionService(repo, makeTagRepo());
 
       const result = await service.findAll();
@@ -238,16 +267,18 @@ describe('EmulsionService', () => {
       expect(result).toEqual(emulsions);
     });
 
-    it('returns empty array when no emulsions exist', async () => {
+    it("returns empty array when no emulsions exist", async () => {
       const service = new EmulsionService(makeRepo(), makeTagRepo());
       await expect(service.findAll()).resolves.toEqual([]);
     });
   });
 
-  describe('delete', () => {
-    it('deletes an existing emulsion', async () => {
+  describe("delete", () => {
+    it("deletes an existing emulsion", async () => {
       const emulsion = makeEmulsion();
-      const repo = makeRepo({ findById: jest.fn().mockResolvedValue(emulsion) });
+      const repo = makeRepo({
+        findById: jest.fn().mockResolvedValue(emulsion),
+      });
       const service = new EmulsionService(repo, makeTagRepo());
 
       await service.delete(emulsion.id);
@@ -255,42 +286,54 @@ describe('EmulsionService', () => {
       expect(repo.delete).toHaveBeenCalledWith(emulsion.id);
     });
 
-    it('throws NotFoundException when emulsion does not exist', async () => {
+    it("throws NotFoundException when emulsion does not exist", async () => {
       const service = new EmulsionService(makeRepo(), makeTagRepo());
 
-      await expect(service.delete(randomId())).rejects.toThrow(NotFoundException);
+      await expect(service.delete(randomId())).rejects.toThrow(
+        NotFoundException,
+      );
     });
 
-    it('does not call delete when emulsion is not found', async () => {
+    it("does not call delete when emulsion is not found", async () => {
       const repo = makeRepo();
       const service = new EmulsionService(repo, makeTagRepo());
 
-      await expect(service.delete(randomId())).rejects.toThrow(NotFoundException);
+      await expect(service.delete(randomId())).rejects.toThrow(
+        NotFoundException,
+      );
       expect(repo.delete).not.toHaveBeenCalled();
     });
   });
 
-  describe('uploadBoxImage / getBoxImage', () => {
-    it('uploads a box image for an existing emulsion', async () => {
+  describe("uploadBoxImage / getBoxImage", () => {
+    it("uploads a box image for an existing emulsion", async () => {
       const emulsion = makeEmulsion();
-      const repo = makeRepo({ findById: jest.fn().mockResolvedValue(emulsion) });
+      const repo = makeRepo({
+        findById: jest.fn().mockResolvedValue(emulsion),
+      });
       const service = new EmulsionService(repo, makeTagRepo());
-      const buf = Buffer.from('fake-image');
+      const buf = Buffer.from("fake-image");
 
-      await service.uploadBoxImage(emulsion.id, buf, 'image/jpeg');
+      await service.uploadBoxImage(emulsion.id, buf, "image/jpeg");
 
-      expect(repo.updateBoxImage).toHaveBeenCalledWith(emulsion.id, buf, 'image/jpeg');
+      expect(repo.updateBoxImage).toHaveBeenCalledWith(
+        emulsion.id,
+        buf,
+        "image/jpeg",
+      );
     });
 
-    it('throws NotFoundException when uploading image for missing emulsion', async () => {
+    it("throws NotFoundException when uploading image for missing emulsion", async () => {
       const service = new EmulsionService(makeRepo(), makeTagRepo());
 
-      await expect(service.uploadBoxImage(randomId(), Buffer.from('x'), 'image/jpeg')).rejects.toThrow(NotFoundException);
+      await expect(
+        service.uploadBoxImage(randomId(), Buffer.from("x"), "image/jpeg"),
+      ).rejects.toThrow(NotFoundException);
     });
 
-    it('returns box image data for an existing emulsion', async () => {
+    it("returns box image data for an existing emulsion", async () => {
       const emulsion = makeEmulsion();
-      const imageData = { data: Buffer.from('img'), mimeType: 'image/jpeg' };
+      const imageData = { data: Buffer.from("img"), mimeType: "image/jpeg" };
       const repo = makeRepo({
         findById: jest.fn().mockResolvedValue(emulsion),
         getBoxImage: jest.fn().mockResolvedValue(imageData),
@@ -302,7 +345,7 @@ describe('EmulsionService', () => {
       expect(result).toEqual(imageData);
     });
 
-    it('throws NotFoundException when no box image has been set', async () => {
+    it("throws NotFoundException when no box image has been set", async () => {
       const emulsion = makeEmulsion();
       const repo = makeRepo({
         findById: jest.fn().mockResolvedValue(emulsion),
@@ -310,13 +353,17 @@ describe('EmulsionService', () => {
       });
       const service = new EmulsionService(repo, makeTagRepo());
 
-      await expect(service.getBoxImage(emulsion.id)).rejects.toThrow(NotFoundException);
+      await expect(service.getBoxImage(emulsion.id)).rejects.toThrow(
+        NotFoundException,
+      );
     });
 
-    it('throws NotFoundException when emulsion does not exist for getBoxImage', async () => {
+    it("throws NotFoundException when emulsion does not exist for getBoxImage", async () => {
       const service = new EmulsionService(makeRepo(), makeTagRepo());
 
-      await expect(service.getBoxImage(randomId())).rejects.toThrow(NotFoundException);
+      await expect(service.getBoxImage(randomId())).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 });

@@ -18,7 +18,7 @@ export interface TransitionDuration {
   avgDays: number | null;
 }
 
-export const FILM_STATS_REPOSITORY = 'FILM_STATS_REPOSITORY';
+export const FILM_STATS_REPOSITORY = "FILM_STATS_REPOSITORY";
 
 export interface IFilmStatsRepository {
   countByCurrentState(): Promise<StateCount[]>;

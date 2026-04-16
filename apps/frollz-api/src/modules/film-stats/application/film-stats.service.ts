@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable } from "@nestjs/common";
 import {
   EmulsionCount,
   FILM_STATS_REPOSITORY,
@@ -6,11 +6,14 @@ import {
   MonthCount,
   StateCount,
   TransitionDuration,
-} from '../../../domain/film-stats/repositories/film-stats.repository.interface';
+} from "../../../domain/film-stats/repositories/film-stats.repository.interface";
 
 @Injectable()
 export class FilmStatsService {
-  constructor(@Inject(FILM_STATS_REPOSITORY) private readonly statsRepo: IFilmStatsRepository) {}
+  constructor(
+    @Inject(FILM_STATS_REPOSITORY)
+    private readonly statsRepo: IFilmStatsRepository,
+  ) {}
 
   countByCurrentState(): Promise<StateCount[]> {
     return this.statsRepo.countByCurrentState();

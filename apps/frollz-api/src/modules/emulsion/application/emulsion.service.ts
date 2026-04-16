@@ -1,16 +1,24 @@
-import { Inject, Injectable, NotFoundException } from '@nestjs/common';
-import { Emulsion } from '../../../domain/emulsion/entities/emulsion.entity';
-import { IEmulsionRepository, EMULSION_REPOSITORY } from '../../../domain/emulsion/repositories/emulsion.repository.interface';
-import { IEmulsionTagRepository, EMULSION_TAG_REPOSITORY } from '../../../domain/emulsion-tag/repositories/emulsion-tag.repository.interface';
-import { CreateEmulsionDto } from '../dto/create-emulsion.dto';
-import { CreateEmulsionMultipleFormatsDto } from '../dto/create-emulsion-multiple-formats.dto';
-import { UpdateEmulsionDto } from '../dto/update-emulsion.dto';
+import { Inject, Injectable, NotFoundException } from "@nestjs/common";
+import { Emulsion } from "../../../domain/emulsion/entities/emulsion.entity";
+import {
+  IEmulsionRepository,
+  EMULSION_REPOSITORY,
+} from "../../../domain/emulsion/repositories/emulsion.repository.interface";
+import {
+  IEmulsionTagRepository,
+  EMULSION_TAG_REPOSITORY,
+} from "../../../domain/emulsion-tag/repositories/emulsion-tag.repository.interface";
+import { CreateEmulsionDto } from "../dto/create-emulsion.dto";
+import { CreateEmulsionMultipleFormatsDto } from "../dto/create-emulsion-multiple-formats.dto";
+import { UpdateEmulsionDto } from "../dto/update-emulsion.dto";
 
 @Injectable()
 export class EmulsionService {
   constructor(
-    @Inject(EMULSION_REPOSITORY) private readonly emulsionRepo: IEmulsionRepository,
-    @Inject(EMULSION_TAG_REPOSITORY) private readonly emulsionTagRepo: IEmulsionTagRepository,
+    @Inject(EMULSION_REPOSITORY)
+    private readonly emulsionRepo: IEmulsionRepository,
+    @Inject(EMULSION_TAG_REPOSITORY)
+    private readonly emulsionTagRepo: IEmulsionTagRepository,
   ) {}
 
   findAll(): Promise<Emulsion[]> {
@@ -24,12 +32,17 @@ export class EmulsionService {
   }
 
   async create(dto: CreateEmulsionDto): Promise<Emulsion> {
-    const emulsion = Emulsion.create({ ...dto, parentId: dto.parentId ?? null });
+    const emulsion = Emulsion.create({
+      ...dto,
+      parentId: dto.parentId ?? null,
+    });
     const id = await this.emulsionRepo.save(emulsion);
     return this.findById(id);
   }
 
-  async createMultipleFormats(dto: CreateEmulsionMultipleFormatsDto): Promise<Emulsion[]> {
+  async createMultipleFormats(
+    dto: CreateEmulsionMultipleFormatsDto,
+  ): Promise<Emulsion[]> {
     const emulsions = dto.formatIds.map((formatId) =>
       Emulsion.create({
         brand: dto.brand,
@@ -40,7 +53,9 @@ export class EmulsionService {
         parentId: dto.parentId ?? null,
       }),
     );
-    const ids = await Promise.all(emulsions.map((e) => this.emulsionRepo.save(e)));
+    const ids = await Promise.all(
+      emulsions.map((e) => this.emulsionRepo.save(e)),
+    );
     return Promise.all(
       ids.map((id) =>
         this.emulsionRepo.findById(id).then((e) => {
@@ -81,7 +96,11 @@ export class EmulsionService {
     await this.emulsionTagRepo.remove(emulsionId, tagId);
   }
 
-  async uploadBoxImage(id: number, data: Buffer, mimeType: string): Promise<void> {
+  async uploadBoxImage(
+    id: number,
+    data: Buffer,
+    mimeType: string,
+  ): Promise<void> {
     await this.findById(id);
     await this.emulsionRepo.updateBoxImage(id, data, mimeType);
   }
@@ -89,7 +108,8 @@ export class EmulsionService {
   async getBoxImage(id: number): Promise<{ data: Buffer; mimeType: string }> {
     await this.findById(id);
     const image = await this.emulsionRepo.getBoxImage(id);
-    if (!image) throw new NotFoundException(`No box image for emulsion '${id}'`);
+    if (!image)
+      throw new NotFoundException(`No box image for emulsion '${id}'`);
     return image;
   }
 

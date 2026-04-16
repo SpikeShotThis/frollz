@@ -9,7 +9,9 @@
       :aria-expanded="isOpen && suggestions.length > 0"
       aria-autocomplete="list"
       :aria-controls="listboxId"
-      :aria-activedescendant="highlightedIndex >= 0 ? optionId(highlightedIndex) : undefined"
+      :aria-activedescendant="
+        highlightedIndex >= 0 ? optionId(highlightedIndex) : undefined
+      "
       @input="onInput"
       @keydown.escape.prevent="close"
       @keydown.down.prevent="moveDown"
@@ -45,88 +47,96 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, useId } from 'vue'
-import { buildSuggestions } from '@/utils/brandSuggestions'
+import { ref, computed, useId } from "vue";
+import { buildSuggestions } from "@/utils/brandSuggestions";
 
-defineOptions({ inheritAttrs: false })
+defineOptions({ inheritAttrs: false });
 
-const uid = useId()
-const listboxId = `typeahead-listbox-${uid}`
-const optionId = (i: number) => `typeahead-option-${uid}-${i}`
+const uid = useId();
+const listboxId = `typeahead-listbox-${uid}`;
+const optionId = (i: number) => `typeahead-option-${uid}-${i}`;
 
 const props = defineProps<{
-  modelValue: string
-  fetchOptions: (query: string) => Promise<string[]>
-}>()
+  modelValue: string;
+  fetchOptions: (query: string) => Promise<string[]>;
+}>();
 
 const emit = defineEmits<{
-  'update:modelValue': [value: string]
-}>()
+  "update:modelValue": [value: string];
+}>();
 
 const inputValue = computed({
   get: () => props.modelValue,
-  set: (val: string) => emit('update:modelValue', val),
-})
+  set: (val: string) => emit("update:modelValue", val),
+});
 
-const dbOptions = ref<string[]>([])
-const isOpen = ref(false)
-const highlightedIndex = ref(-1)
-let debounceTimer: ReturnType<typeof setTimeout> | null = null
+const dbOptions = ref<string[]>([]);
+const isOpen = ref(false);
+const highlightedIndex = ref(-1);
+let debounceTimer: ReturnType<typeof setTimeout> | null = null;
 
-const suggestions = computed(() => buildSuggestions(inputValue.value, dbOptions.value))
+const suggestions = computed(() =>
+  buildSuggestions(inputValue.value, dbOptions.value),
+);
 
 const onInput = () => {
-  isOpen.value = true
-  highlightedIndex.value = -1
-  if (debounceTimer) clearTimeout(debounceTimer)
-  debounceTimer = setTimeout(() => fetchOptions(), 200)
-}
+  isOpen.value = true;
+  highlightedIndex.value = -1;
+  if (debounceTimer) clearTimeout(debounceTimer);
+  debounceTimer = setTimeout(() => fetchOptions(), 200);
+};
 
 const fetchOptions = async () => {
   if (!inputValue.value.trim()) {
-    dbOptions.value = []
-    return
+    dbOptions.value = [];
+    return;
   }
   try {
-    dbOptions.value = await props.fetchOptions(inputValue.value)
+    dbOptions.value = await props.fetchOptions(inputValue.value);
   } catch {
-    dbOptions.value = []
+    dbOptions.value = [];
   }
-}
+};
 
 const select = (value: string) => {
-  inputValue.value = value
-  close()
-}
+  inputValue.value = value;
+  close();
+};
 
 const close = () => {
-  isOpen.value = false
-  highlightedIndex.value = -1
-}
+  isOpen.value = false;
+  highlightedIndex.value = -1;
+};
 
 const onBlur = () => {
-  setTimeout(() => close(), 150)
-}
+  setTimeout(() => close(), 150);
+};
 
 const onFocus = () => {
   if (inputValue.value.trim()) {
-    isOpen.value = true
+    isOpen.value = true;
   }
-}
+};
 
 const moveDown = () => {
-  if (!isOpen.value) return
-  highlightedIndex.value = Math.min(highlightedIndex.value + 1, suggestions.value.length - 1)
-}
+  if (!isOpen.value) return;
+  highlightedIndex.value = Math.min(
+    highlightedIndex.value + 1,
+    suggestions.value.length - 1,
+  );
+};
 
 const moveUp = () => {
-  if (!isOpen.value) return
-  highlightedIndex.value = Math.max(highlightedIndex.value - 1, -1)
-}
+  if (!isOpen.value) return;
+  highlightedIndex.value = Math.max(highlightedIndex.value - 1, -1);
+};
 
 const selectHighlighted = () => {
-  if (highlightedIndex.value >= 0 && highlightedIndex.value < suggestions.value.length) {
-    select(suggestions.value[highlightedIndex.value])
+  if (
+    highlightedIndex.value >= 0 &&
+    highlightedIndex.value < suggestions.value.length
+  ) {
+    select(suggestions.value[highlightedIndex.value]);
   }
-}
+};
 </script>

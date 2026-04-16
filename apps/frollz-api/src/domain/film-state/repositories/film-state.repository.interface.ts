@@ -1,6 +1,6 @@
-import { FilmState } from '../entities/film-state.entity';
+import { FilmState } from "../entities/film-state.entity";
 
-export const FILM_STATE_REPOSITORY = 'FILM_STATE_REPOSITORY';
+export const FILM_STATE_REPOSITORY = "FILM_STATE_REPOSITORY";
 
 export interface IFilmStateRepository {
   findById(id: number): Promise<FilmState | null>;
@@ -8,7 +8,11 @@ export interface IFilmStateRepository {
   findLatestByFilmId(filmId: number): Promise<FilmState | null>;
   findFilmIdsByCurrentState(stateIds: number[]): Promise<number[]>;
   save(filmState: FilmState): Promise<number>;
-  saveMetadataValue(filmStateId: number, transitionStateMetadataId: number, value: string | null): Promise<void>;
+  saveMetadataValue(
+    filmStateId: number,
+    transitionStateMetadataId: number,
+    value: string | null,
+  ): Promise<void>;
   update(filmState: FilmState): Promise<void>;
   delete(id: number): Promise<void>;
 }

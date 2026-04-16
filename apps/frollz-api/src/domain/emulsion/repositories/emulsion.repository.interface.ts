@@ -1,6 +1,6 @@
-import { Emulsion } from '../entities/emulsion.entity';
+import { Emulsion } from "../entities/emulsion.entity";
 
-export const EMULSION_REPOSITORY = 'EMULSION_REPOSITORY';
+export const EMULSION_REPOSITORY = "EMULSION_REPOSITORY";
 
 export interface IEmulsionRepository {
   findById(id: number): Promise<Emulsion | null>;

@@ -1,12 +1,12 @@
-import { Injectable } from '@nestjs/common';
-import { FilmState } from '../../../domain/film-state/entities/film-state.entity';
-import { FilmStateMetadata } from '../../../domain/film-state/entities/film-state-metadata.entity';
-import { IFilmStateRepository } from '../../../domain/film-state/repositories/film-state.repository.interface';
-import { TransitionStateMetadata } from '../../../domain/transition/entities/transition-state-metadata.entity';
-import { TransitionMetadataField } from '../../../domain/transition/entities/transition-metadata-field.entity';
-import { FilmStateRow } from '../types/db.types';
-import { FilmStateMapper } from './film-state.mapper';
-import { BaseKnexRepository } from '../base.knex.repository';
+import { Injectable } from "@nestjs/common";
+import { FilmState } from "../../../domain/film-state/entities/film-state.entity";
+import { FilmStateMetadata } from "../../../domain/film-state/entities/film-state-metadata.entity";
+import { IFilmStateRepository } from "../../../domain/film-state/repositories/film-state.repository.interface";
+import { TransitionStateMetadata } from "../../../domain/transition/entities/transition-state-metadata.entity";
+import { TransitionMetadataField } from "../../../domain/transition/entities/transition-metadata-field.entity";
+import { FilmStateRow } from "../types/db.types";
+import { FilmStateMapper } from "./film-state.mapper";
+import { BaseKnexRepository } from "../base.knex.repository";
 
 interface MetadataJoinRow {
   fsm_id: number;
@@ -24,10 +24,12 @@ interface MetadataJoinRow {
 }
 
 @Injectable()
-export class FilmStateKnexRepository extends BaseKnexRepository implements IFilmStateRepository {
-
+export class FilmStateKnexRepository
+  extends BaseKnexRepository
+  implements IFilmStateRepository
+{
   async findById(id: number): Promise<FilmState | null> {
-    const row = await this.db<FilmStateRow>('film_state').where({ id }).first();
+    const row = await this.db<FilmStateRow>("film_state").where({ id }).first();
     if (!row) return null;
     const filmState = FilmStateMapper.toDomain(row);
     const metadata = await this.loadMetadata(id);
@@ -35,9 +37,9 @@ export class FilmStateKnexRepository extends BaseKnexRepository implements IFilm
   }
 
   async findByFilmId(filmId: number): Promise<FilmState[]> {
-    const rows = await this.db<FilmStateRow>('film_state')
+    const rows = await this.db<FilmStateRow>("film_state")
       .where({ film_id: filmId })
-      .orderBy('id', 'desc');
+      .orderBy("id", "desc");
     return Promise.all(
       rows.map(async (row) => {
         const filmState = FilmStateMapper.toDomain(row);
@@ -48,9 +50,9 @@ export class FilmStateKnexRepository extends BaseKnexRepository implements IFilm
   }
 
   async findLatestByFilmId(filmId: number): Promise<FilmState | null> {
-    const row = await this.db<FilmStateRow>('film_state')
+    const row = await this.db<FilmStateRow>("film_state")
       .where({ film_id: filmId })
-      .orderBy('id', 'desc')
+      .orderBy("id", "desc")
       .first();
     if (!row) return null;
     const filmState = FilmStateMapper.toDomain(row);
@@ -59,19 +61,19 @@ export class FilmStateKnexRepository extends BaseKnexRepository implements IFilm
   }
 
   async findFilmIdsByCurrentState(stateIds: number[]): Promise<number[]> {
-    const rows = await this.db<FilmStateRow>('film_state as fs')
-      .whereIn('fs.state_id', stateIds)
+    const rows = await this.db<FilmStateRow>("film_state as fs")
+      .whereIn("fs.state_id", stateIds)
       .whereRaw(
-        'fs.id = (SELECT fs2.id FROM film_state fs2 WHERE fs2.film_id = fs.film_id ORDER BY fs2.id DESC LIMIT 1)',
+        "fs.id = (SELECT fs2.id FROM film_state fs2 WHERE fs2.film_id = fs.film_id ORDER BY fs2.id DESC LIMIT 1)",
       )
-      .select('fs.film_id');
+      .select("fs.film_id");
     return rows.map((r) => r.film_id);
   }
 
   async save(filmState: FilmState): Promise<number> {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { id, ...data } = FilmStateMapper.toPersistence(filmState);
-    const [generatedId] = await this.db('film_state').insert(data);
+    const [generatedId] = await this.db("film_state").insert(data);
     return generatedId;
   }
 
@@ -80,7 +82,7 @@ export class FilmStateKnexRepository extends BaseKnexRepository implements IFilm
     transitionStateMetadataId: number,
     value: string | null,
   ): Promise<void> {
-    await this.db('film_state_metadata').insert({
+    await this.db("film_state_metadata").insert({
       film_state_id: filmStateId,
       transition_state_metadata_id: transitionStateMetadataId,
       value,
@@ -89,33 +91,39 @@ export class FilmStateKnexRepository extends BaseKnexRepository implements IFilm
 
   async update(filmState: FilmState): Promise<void> {
     const { id, ...data } = FilmStateMapper.toPersistence(filmState);
-    await this.db('film_state').where({ id }).update(data);
+    await this.db("film_state").where({ id }).update(data);
   }
 
   async delete(id: number): Promise<void> {
-    await this.db('film_state').where({ id }).delete();
+    await this.db("film_state").where({ id }).delete();
   }
 
-  private async loadMetadata(filmStateId: number): Promise<FilmStateMetadata[]> {
-    const rows = await this.db('film_state_metadata as fsm')
-      .join('transition_state_metadata as tsm', 'tsm.id', 'fsm.transition_state_metadata_id')
-      .join('transition_metadata_field as tmf', 'tmf.id', 'tsm.field_id')
-      .where('fsm.film_state_id', filmStateId)
-      .orderBy('fsm.id', 'asc')
+  private async loadMetadata(
+    filmStateId: number,
+  ): Promise<FilmStateMetadata[]> {
+    const rows = (await this.db("film_state_metadata as fsm")
+      .join(
+        "transition_state_metadata as tsm",
+        "tsm.id",
+        "fsm.transition_state_metadata_id",
+      )
+      .join("transition_metadata_field as tmf", "tmf.id", "tsm.field_id")
+      .where("fsm.film_state_id", filmStateId)
+      .orderBy("fsm.id", "asc")
       .select(
-        'fsm.id as fsm_id',
-        'fsm.film_state_id',
-        'fsm.transition_state_metadata_id',
-        'fsm.value as fsm_value',
-        'tsm.id as tsm_id',
-        'tsm.field_id',
-        'tsm.transition_state_id',
-        'tsm.default_value',
-        'tmf.id as tmf_id',
-        'tmf.name as field_name',
-        'tmf.field_type',
-        'tmf.allow_multiple',
-      ) as MetadataJoinRow[];
+        "fsm.id as fsm_id",
+        "fsm.film_state_id",
+        "fsm.transition_state_metadata_id",
+        "fsm.value as fsm_value",
+        "tsm.id as tsm_id",
+        "tsm.field_id",
+        "tsm.transition_state_id",
+        "tsm.default_value",
+        "tmf.id as tmf_id",
+        "tmf.name as field_name",
+        "tmf.field_type",
+        "tmf.allow_multiple",
+      )) as MetadataJoinRow[];
 
     // Group rows by transition_state_metadata_id. For allow_multiple fields,
     // each value is stored as a separate row — collect them into a string[].

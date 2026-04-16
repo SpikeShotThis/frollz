@@ -1,5 +1,5 @@
-import { Note, EntityType } from '../../../domain/shared/entities/note.entity';
-import { NoteRow } from '../types/db.types';
+import { Note, EntityType } from "../../../domain/shared/entities/note.entity";
+import { NoteRow } from "../types/db.types";
 
 export class NoteMapper {
   static toDomain(row: NoteRow): Note {

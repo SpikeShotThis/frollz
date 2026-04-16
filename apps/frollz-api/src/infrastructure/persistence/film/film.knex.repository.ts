@@ -1,17 +1,20 @@
-import { Injectable } from '@nestjs/common';
-import { Film } from '../../../domain/film/entities/film.entity';
-import { FilmFilters, IFilmRepository } from '../../../domain/film/repositories/film.repository.interface';
-import { EmulsionRow, FilmRow, FilmTagRow, TagRow } from '../types/db.types';
-import { FilmMapper } from './film.mapper';
-import { EmulsionMapper } from '../emulsion/emulsion.mapper';
-import { Emulsion } from '../../../domain/emulsion/entities/emulsion.entity';
-import { Tag } from '../../../domain/shared/entities/tag.entity';
-import { FilmState } from '../../../domain/film-state/entities/film-state.entity';
-import { FilmStateMetadata } from '../../../domain/film-state/entities/film-state-metadata.entity';
-import { TransitionState } from '../../../domain/transition/entities/transition-state.entity';
-import { TransitionStateMetadata } from '../../../domain/transition/entities/transition-state-metadata.entity';
-import { TransitionMetadataField } from '../../../domain/transition/entities/transition-metadata-field.entity';
-import { BaseKnexRepository } from '../base.knex.repository';
+import { Injectable } from "@nestjs/common";
+import { Film } from "../../../domain/film/entities/film.entity";
+import {
+  FilmFilters,
+  IFilmRepository,
+} from "../../../domain/film/repositories/film.repository.interface";
+import { EmulsionRow, FilmRow, FilmTagRow, TagRow } from "../types/db.types";
+import { FilmMapper } from "./film.mapper";
+import { EmulsionMapper } from "../emulsion/emulsion.mapper";
+import { Emulsion } from "../../../domain/emulsion/entities/emulsion.entity";
+import { Tag } from "../../../domain/shared/entities/tag.entity";
+import { FilmState } from "../../../domain/film-state/entities/film-state.entity";
+import { FilmStateMetadata } from "../../../domain/film-state/entities/film-state-metadata.entity";
+import { TransitionState } from "../../../domain/transition/entities/transition-state.entity";
+import { TransitionStateMetadata } from "../../../domain/transition/entities/transition-state-metadata.entity";
+import { TransitionMetadataField } from "../../../domain/transition/entities/transition-metadata-field.entity";
+import { BaseKnexRepository } from "../base.knex.repository";
 
 interface MetadataJoinRow {
   fsm_id: number;
@@ -29,108 +32,130 @@ interface MetadataJoinRow {
 }
 
 @Injectable()
-export class FilmKnexRepository extends BaseKnexRepository implements IFilmRepository {
-
+export class FilmKnexRepository
+  extends BaseKnexRepository
+  implements IFilmRepository
+{
   async findById(id: number): Promise<Film | null> {
-    const row = await this.db<FilmRow>('film').where({ id }).first();
+    const row = await this.db<FilmRow>("film").where({ id }).first();
     return row ? this.hydrate(row) : null;
   }
 
   async findAll(): Promise<Film[]> {
-    const rows = await this.db<FilmRow>('film').select('*');
+    const rows = await this.db<FilmRow>("film").select("*");
     return Promise.all(rows.map((row) => this.hydrate(row)));
   }
 
   async findWithFilters(filters: FilmFilters): Promise<Film[]> {
-    let query = this.db<FilmRow>('film');
+    let query = this.db<FilmRow>("film");
 
     if (filters.stateIds?.length) {
       query = query.whereIn(
-        'id',
-        this.db('film_state as fs2')
-          .select('fs2.film_id')
-          .whereIn('fs2.state_id', filters.stateIds)
+        "id",
+        this.db("film_state as fs2")
+          .select("fs2.film_id")
+          .whereIn("fs2.state_id", filters.stateIds)
           .whereRaw(
-            'fs2.id = (SELECT fs3.id FROM film_state fs3 WHERE fs3.film_id = fs2.film_id ORDER BY fs3.id DESC LIMIT 1)',
+            "fs2.id = (SELECT fs3.id FROM film_state fs3 WHERE fs3.film_id = fs2.film_id ORDER BY fs3.id DESC LIMIT 1)",
           ),
       );
     }
 
     if (filters.emulsionId !== undefined) {
-      query = query.where('emulsion_id', filters.emulsionId);
+      query = query.where("emulsion_id", filters.emulsionId);
     }
 
     if (filters.formatId !== undefined) {
       query = query.whereIn(
-        'emulsion_id',
-        this.db('emulsion').select('id').where('format_id', filters.formatId),
+        "emulsion_id",
+        this.db("emulsion").select("id").where("format_id", filters.formatId),
       );
     }
 
     if (filters.tagIds?.length) {
       query = query.whereIn(
-        'id',
-        this.db('film_tag').select('film_id').whereIn('tag_id', filters.tagIds),
+        "id",
+        this.db("film_tag").select("film_id").whereIn("tag_id", filters.tagIds),
       );
     }
 
-    if (filters.loadedStateId !== undefined && (filters.loadedDateFrom || filters.loadedDateTo)) {
-      let sub = this.db('film_state as fsd').select('fsd.film_id').where('fsd.state_id', filters.loadedStateId);
-      if (filters.loadedDateFrom) sub = sub.where('fsd.date', '>=', filters.loadedDateFrom);
-      if (filters.loadedDateTo) sub = sub.where('fsd.date', '<=', filters.loadedDateTo);
-      query = query.whereIn('id', sub);
+    if (
+      filters.loadedStateId !== undefined &&
+      (filters.loadedDateFrom || filters.loadedDateTo)
+    ) {
+      let sub = this.db("film_state as fsd")
+        .select("fsd.film_id")
+        .where("fsd.state_id", filters.loadedStateId);
+      if (filters.loadedDateFrom)
+        sub = sub.where("fsd.date", ">=", filters.loadedDateFrom);
+      if (filters.loadedDateTo)
+        sub = sub.where("fsd.date", "<=", filters.loadedDateTo);
+      query = query.whereIn("id", sub);
     }
 
     if (filters.searchQuery) {
       const pattern = `%${filters.searchQuery}%`;
       query = query.where((builder) => {
         builder
-          .whereILike('name', pattern)
-          .orWhereIn('id', this.db('note').select('entity_id').where('entity_type', 'film').whereILike('text', pattern))
+          .whereILike("name", pattern)
+          .orWhereIn(
+            "id",
+            this.db("note")
+              .select("entity_id")
+              .where("entity_type", "film")
+              .whereILike("text", pattern),
+          );
       });
     }
 
-    const rows = await query.select('*');
+    const rows = await query.select("*");
     return Promise.all(rows.map((row) => this.hydrate(row)));
   }
 
   async findByEmulsionId(emulsionId: number): Promise<Film[]> {
-    const rows = await this.db<FilmRow>('film').where({ emulsion_id: emulsionId });
+    const rows = await this.db<FilmRow>("film").where({
+      emulsion_id: emulsionId,
+    });
     return Promise.all(rows.map((row) => this.hydrate(row)));
   }
 
   async findChildren(parentId: number): Promise<Film[]> {
-    const rows = await this.db<FilmRow>('film').where({ parent_id: parentId });
+    const rows = await this.db<FilmRow>("film").where({ parent_id: parentId });
     return Promise.all(rows.map((row) => this.hydrate(row)));
   }
 
   async findByCurrentStateIds(stateIds: number[]): Promise<Film[]> {
-    const latestStateSubquery = this.db('film_state as fs2')
-      .select('fs2.film_id')
-      .whereIn('fs2.state_id', stateIds)
+    const latestStateSubquery = this.db("film_state as fs2")
+      .select("fs2.film_id")
+      .whereIn("fs2.state_id", stateIds)
       .where(
-        'fs2.date',
-        this.db('film_state as fs3').max('fs3.date').where('fs3.film_id', this.db.ref('fs2.film_id')),
+        "fs2.date",
+        this.db("film_state as fs3")
+          .max("fs3.date")
+          .where("fs3.film_id", this.db.ref("fs2.film_id")),
       );
 
-    const rows = await this.db<FilmRow>('film').whereIn('id', latestStateSubquery);
+    const rows = await this.db<FilmRow>("film").whereIn(
+      "id",
+      latestStateSubquery,
+    );
     return Promise.all(rows.map((row) => this.hydrate(row)));
   }
 
   async save(film: Film): Promise<number> {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { id, ...data } = FilmMapper.toPersistence(film);
-    const [generatedId] = await this.db('film').insert(data);
+    const [generatedId] = await this.db("film").insert(data);
     return generatedId;
   }
 
   async update(film: Film): Promise<void> {
     const { id, ...data } = FilmMapper.toPersistence(film);
-    await this.db('film').where({ id }).update(data);
+    await this.db("film").where({ id }).update(data);
   }
 
   async delete(id: number): Promise<void> {
-    await this.db('film').where({ id }).delete();
+    await this.db("film").where({ id }).delete();
   }
 
   private async hydrate(row: FilmRow): Promise<Film> {
@@ -143,19 +168,30 @@ export class FilmKnexRepository extends BaseKnexRepository implements IFilmRepos
     return Film.create({ ...film, tags, states, emulsion });
   }
 
-  private async loadEmulsion(emulsionId: number): Promise<Emulsion | undefined> {
-    const row = await this.db<EmulsionRow>('emulsion')
-      .select('id', 'parent_id', 'process_id', 'format_id', 'brand', 'manufacturer', 'speed', 'box_image_mime_type')
+  private async loadEmulsion(
+    emulsionId: number,
+  ): Promise<Emulsion | undefined> {
+    const row = await this.db<EmulsionRow>("emulsion")
+      .select(
+        "id",
+        "parent_id",
+        "process_id",
+        "format_id",
+        "brand",
+        "manufacturer",
+        "speed",
+        "box_image_mime_type",
+      )
       .where({ id: emulsionId })
       .first();
     return row ? EmulsionMapper.toDomain(row) : undefined;
   }
 
   private async loadTags(filmId: number): Promise<Tag[]> {
-    const rows = await this.db<TagRow>('tag')
-      .join<FilmTagRow>('film_tag', 'tag.id', 'film_tag.tag_id')
-      .where('film_tag.film_id', filmId)
-      .select('tag.*');
+    const rows = await this.db<TagRow>("tag")
+      .join<FilmTagRow>("film_tag", "tag.id", "film_tag.tag_id")
+      .where("film_tag.film_id", filmId)
+      .select("tag.*");
     return rows.map((r) =>
       Tag.create({
         id: r.id,
@@ -167,14 +203,25 @@ export class FilmKnexRepository extends BaseKnexRepository implements IFilmRepos
   }
 
   private async loadStates(filmId: number): Promise<FilmState[]> {
-    const rows = await this.db('film_state as fs')
-      .join('transition_state as ts', 'ts.id', 'fs.state_id')
-      .leftJoin('note as n', function () {
-        this.on('n.entity_id', '=', 'fs.id').andOnVal('n.entity_type', '=', 'film_state');
+    const rows = await this.db("film_state as fs")
+      .join("transition_state as ts", "ts.id", "fs.state_id")
+      .leftJoin("note as n", function () {
+        this.on("n.entity_id", "=", "fs.id").andOnVal(
+          "n.entity_type",
+          "=",
+          "film_state",
+        );
       })
-      .where('fs.film_id', filmId)
-      .orderBy('fs.id', 'desc')
-      .select('fs.id', 'fs.film_id', 'fs.state_id', 'fs.date', 'n.text', 'ts.name as state_name');
+      .where("fs.film_id", filmId)
+      .orderBy("fs.id", "desc")
+      .select(
+        "fs.id",
+        "fs.film_id",
+        "fs.state_id",
+        "fs.date",
+        "n.text",
+        "ts.name as state_name",
+      );
 
     const metadataMap = await this.loadMetadataForStates(rows.map((r) => r.id));
 
@@ -191,36 +238,44 @@ export class FilmKnexRepository extends BaseKnexRepository implements IFilmRepos
     );
   }
 
-  private async loadMetadataForStates(filmStateIds: number[]): Promise<Map<number, FilmStateMetadata[]>> {
+  private async loadMetadataForStates(
+    filmStateIds: number[],
+  ): Promise<Map<number, FilmStateMetadata[]>> {
     if (filmStateIds.length === 0) return new Map();
 
-    const rows = await this.db('film_state_metadata as fsm')
-      .join('transition_state_metadata as tsm', 'tsm.id', 'fsm.transition_state_metadata_id')
-      .join('transition_metadata_field as tmf', 'tmf.id', 'tsm.field_id')
-      .whereIn('fsm.film_state_id', filmStateIds)
-      .orderBy('fsm.film_state_id', 'asc')
-      .orderBy('fsm.id', 'asc')
+    const rows = (await this.db("film_state_metadata as fsm")
+      .join(
+        "transition_state_metadata as tsm",
+        "tsm.id",
+        "fsm.transition_state_metadata_id",
+      )
+      .join("transition_metadata_field as tmf", "tmf.id", "tsm.field_id")
+      .whereIn("fsm.film_state_id", filmStateIds)
+      .orderBy("fsm.film_state_id", "asc")
+      .orderBy("fsm.id", "asc")
       .select(
-        'fsm.id as fsm_id',
-        'fsm.film_state_id',
-        'fsm.transition_state_metadata_id',
-        'fsm.value as fsm_value',
-        'tsm.id as tsm_id',
-        'tsm.field_id',
-        'tsm.transition_state_id',
-        'tsm.default_value',
-        'tmf.id as tmf_id',
-        'tmf.name as field_name',
-        'tmf.field_type',
-        'tmf.allow_multiple',
-      ) as MetadataJoinRow[];
+        "fsm.id as fsm_id",
+        "fsm.film_state_id",
+        "fsm.transition_state_metadata_id",
+        "fsm.value as fsm_value",
+        "tsm.id as tsm_id",
+        "tsm.field_id",
+        "tsm.transition_state_id",
+        "tsm.default_value",
+        "tmf.id as tmf_id",
+        "tmf.name as field_name",
+        "tmf.field_type",
+        "tmf.allow_multiple",
+      )) as MetadataJoinRow[];
 
     // Group by film_state_id, then by transition_state_metadata_id (for allowMultiple fields)
     const byState = new Map<number, Map<number, MetadataJoinRow[]>>();
     for (const row of rows) {
-      if (!byState.has(row.film_state_id)) byState.set(row.film_state_id, new Map());
+      if (!byState.has(row.film_state_id))
+        byState.set(row.film_state_id, new Map());
       const byTsm = byState.get(row.film_state_id)!;
-      if (!byTsm.has(row.transition_state_metadata_id)) byTsm.set(row.transition_state_metadata_id, []);
+      if (!byTsm.has(row.transition_state_metadata_id))
+        byTsm.set(row.transition_state_metadata_id, []);
       byTsm.get(row.transition_state_metadata_id)!.push(row);
     }
 
@@ -232,7 +287,9 @@ export class FilmKnexRepository extends BaseKnexRepository implements IFilmRepos
           const first = group[0];
           const allowMultiple = Boolean(first.allow_multiple);
           const value: string | string[] | null = allowMultiple
-            ? group.map((r) => r.fsm_value).filter((v): v is string => v !== null)
+            ? group
+                .map((r) => r.fsm_value)
+                .filter((v): v is string => v !== null)
             : first.fsm_value;
 
           return FilmStateMetadata.create({

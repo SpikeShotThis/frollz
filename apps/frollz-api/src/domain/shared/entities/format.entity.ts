@@ -1,4 +1,4 @@
-import { Package } from './package.entity';
+import { Package } from "./package.entity";
 
 export class Format {
   constructor(
@@ -8,7 +8,12 @@ export class Format {
     public readonly pkg?: Package,
   ) {}
 
-  static create(props: { id?: number; packageId: number; name: string; pkg?: Package }): Format {
+  static create(props: {
+    id?: number;
+    packageId: number;
+    name: string;
+    pkg?: Package;
+  }): Format {
     return new Format(props.id ?? 0, props.packageId, props.name, props.pkg);
   }
 }

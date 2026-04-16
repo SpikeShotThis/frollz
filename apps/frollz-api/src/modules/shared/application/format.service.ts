@@ -1,13 +1,20 @@
-import { Inject, Injectable, NotFoundException } from '@nestjs/common';
-import { Format } from '../../../domain/shared/entities/format.entity';
-import { IFormatRepository, FORMAT_REPOSITORY } from '../../../domain/shared/repositories/format.repository.interface';
-import { IPackageRepository, PACKAGE_REPOSITORY } from '../../../domain/shared/repositories/package.repository.interface';
+import { Inject, Injectable, NotFoundException } from "@nestjs/common";
+import { Format } from "../../../domain/shared/entities/format.entity";
+import {
+  IFormatRepository,
+  FORMAT_REPOSITORY,
+} from "../../../domain/shared/repositories/format.repository.interface";
+import {
+  IPackageRepository,
+  PACKAGE_REPOSITORY,
+} from "../../../domain/shared/repositories/package.repository.interface";
 
 @Injectable()
 export class FormatService {
   constructor(
     @Inject(FORMAT_REPOSITORY) private readonly formatRepo: IFormatRepository,
-    @Inject(PACKAGE_REPOSITORY) private readonly packageRepo: IPackageRepository,
+    @Inject(PACKAGE_REPOSITORY)
+    private readonly packageRepo: IPackageRepository,
   ) {}
 
   async findAll(): Promise<Format[]> {
@@ -22,12 +29,18 @@ export class FormatService {
   }
 
   async create(data: { packageId: number; name: string }): Promise<Format> {
-    const format = Format.create({ packageId: data.packageId, name: data.name });
+    const format = Format.create({
+      packageId: data.packageId,
+      name: data.name,
+    });
     const id = await this.formatRepo.save(format);
     return this.findById(id);
   }
 
-  async update(id: number, data: { packageId?: number; name?: string }): Promise<Format> {
+  async update(
+    id: number,
+    data: { packageId?: number; name?: string },
+  ): Promise<Format> {
     const existing = await this.findById(id);
     const updated = Format.create({
       id: existing.id,
@@ -45,6 +58,11 @@ export class FormatService {
 
   private async withPackage(format: Format): Promise<Format> {
     const pkg = await this.packageRepo.findById(format.packageId);
-    return Format.create({ id: format.id, packageId: format.packageId, name: format.name, pkg: pkg ?? undefined });
+    return Format.create({
+      id: format.id,
+      packageId: format.packageId,
+      name: format.name,
+      pkg: pkg ?? undefined,
+    });
   }
 }

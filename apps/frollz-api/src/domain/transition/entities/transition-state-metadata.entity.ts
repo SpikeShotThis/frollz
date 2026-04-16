@@ -1,4 +1,4 @@
-import { TransitionMetadataField } from './transition-metadata-field.entity';
+import { TransitionMetadataField } from "./transition-metadata-field.entity";
 
 export class TransitionStateMetadata {
   constructor(

@@ -1,6 +1,6 @@
-import { Process } from '../entities/process.entity';
+import { Process } from "../entities/process.entity";
 
-export const PROCESS_REPOSITORY = 'PROCESS_REPOSITORY';
+export const PROCESS_REPOSITORY = "PROCESS_REPOSITORY";
 
 export interface IProcessRepository {
   findById(id: number): Promise<Process | null>;

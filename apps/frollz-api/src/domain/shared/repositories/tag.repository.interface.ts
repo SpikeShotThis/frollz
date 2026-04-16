@@ -1,6 +1,6 @@
-import { Tag } from '../entities/tag.entity';
+import { Tag } from "../entities/tag.entity";
 
-export const TAG_REPOSITORY = 'TAG_REPOSITORY';
+export const TAG_REPOSITORY = "TAG_REPOSITORY";
 
 export interface ITagRepository {
   findById(id: number): Promise<Tag | null>;

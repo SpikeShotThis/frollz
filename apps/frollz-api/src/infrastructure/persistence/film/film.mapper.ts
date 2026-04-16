@@ -1,5 +1,5 @@
-import { Film } from '../../../domain/film/entities/film.entity';
-import { FilmRow } from '../types/db.types';
+import { Film } from "../../../domain/film/entities/film.entity";
+import { FilmRow } from "../types/db.types";
 
 export class FilmMapper {
   static toDomain(row: FilmRow): Film {
@@ -7,7 +7,9 @@ export class FilmMapper {
       id: row.id,
       name: row.name,
       emulsionId: row.emulsion_id,
-      expirationDate: row.expiration_date ? new Date(row.expiration_date) : null,
+      expirationDate: row.expiration_date
+        ? new Date(row.expiration_date)
+        : null,
       parentId: row.parent_id,
       transitionProfileId: row.transition_profile_id,
     });

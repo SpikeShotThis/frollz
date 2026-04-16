@@ -1,5 +1,5 @@
-import { TransitionState } from '../../transition/entities/transition-state.entity';
-import { FilmStateMetadata } from './film-state-metadata.entity';
+import { TransitionState } from "../../transition/entities/transition-state.entity";
+import { FilmStateMetadata } from "./film-state-metadata.entity";
 
 export class FilmState {
   constructor(

@@ -1,5 +1,5 @@
-import { Emulsion } from '../../../domain/emulsion/entities/emulsion.entity';
-import { EmulsionRow } from '../types/db.types';
+import { Emulsion } from "../../../domain/emulsion/entities/emulsion.entity";
+import { EmulsionRow } from "../types/db.types";
 
 export class EmulsionMapper {
   static toDomain(row: EmulsionRow): Emulsion {

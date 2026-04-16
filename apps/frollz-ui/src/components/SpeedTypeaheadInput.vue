@@ -10,7 +10,9 @@
       :aria-expanded="isOpen && suggestions.length > 0"
       aria-autocomplete="list"
       :aria-controls="listboxId"
-      :aria-activedescendant="highlightedIndex >= 0 ? optionId(highlightedIndex) : undefined"
+      :aria-activedescendant="
+        highlightedIndex >= 0 ? optionId(highlightedIndex) : undefined
+      "
       @input="onInput"
       @keydown.escape.prevent="close"
       @keydown.down.prevent="moveDown"
@@ -46,103 +48,113 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, useId } from 'vue'
-import { buildSpeedSuggestions } from '@/utils/speedSuggestions'
+import { ref, computed, watch, useId } from "vue";
+import { buildSpeedSuggestions } from "@/utils/speedSuggestions";
 
-defineOptions({ inheritAttrs: false })
+defineOptions({ inheritAttrs: false });
 
-const uid = useId()
-const listboxId = `typeahead-listbox-${uid}`
-const optionId = (i: number) => `typeahead-option-${uid}-${i}`
+const uid = useId();
+const listboxId = `typeahead-listbox-${uid}`;
+const optionId = (i: number) => `typeahead-option-${uid}-${i}`;
 
 const props = defineProps<{
-  modelValue: number | undefined
-  fetchOptions: (query: string) => Promise<number[]>
-}>()
+  modelValue: number | undefined;
+  fetchOptions: (query: string) => Promise<number[]>;
+}>();
 
 const emit = defineEmits<{
-  'update:modelValue': [value: number | undefined]
-}>()
+  "update:modelValue": [value: number | undefined];
+}>();
 
-const rawInput = ref(props.modelValue !== undefined ? String(props.modelValue) : '')
+const rawInput = ref(
+  props.modelValue !== undefined ? String(props.modelValue) : "",
+);
 
 watch(
   () => props.modelValue,
   (newVal) => {
-    const str = newVal !== undefined ? String(newVal) : ''
+    const str = newVal !== undefined ? String(newVal) : "";
     if (rawInput.value !== str) {
-      rawInput.value = str
+      rawInput.value = str;
     }
   },
-)
+);
 
-const dbOptions = ref<number[]>([])
-const isOpen = ref(false)
-const highlightedIndex = ref(-1)
-let debounceTimer: ReturnType<typeof setTimeout> | null = null
+const dbOptions = ref<number[]>([]);
+const isOpen = ref(false);
+const highlightedIndex = ref(-1);
+let debounceTimer: ReturnType<typeof setTimeout> | null = null;
 
-const suggestions = computed(() => buildSpeedSuggestions(rawInput.value, dbOptions.value))
+const suggestions = computed(() =>
+  buildSpeedSuggestions(rawInput.value, dbOptions.value),
+);
 
 const onInput = (event: Event) => {
-  const val = (event.target as HTMLInputElement).value
-  const numeric = val.replace(/\D/g, '')
-  rawInput.value = numeric
-  ;(event.target as HTMLInputElement).value = numeric
+  const val = (event.target as HTMLInputElement).value;
+  const numeric = val.replace(/\D/g, "");
+  rawInput.value = numeric;
+  (event.target as HTMLInputElement).value = numeric;
 
-  emit('update:modelValue', numeric ? Number(numeric) : undefined)
+  emit("update:modelValue", numeric ? Number(numeric) : undefined);
 
-  isOpen.value = true
-  highlightedIndex.value = -1
-  if (debounceTimer) clearTimeout(debounceTimer)
-  debounceTimer = setTimeout(() => fetchOptions(), 200)
-}
+  isOpen.value = true;
+  highlightedIndex.value = -1;
+  if (debounceTimer) clearTimeout(debounceTimer);
+  debounceTimer = setTimeout(() => fetchOptions(), 200);
+};
 
 const fetchOptions = async () => {
   if (!rawInput.value.trim()) {
-    dbOptions.value = []
-    return
+    dbOptions.value = [];
+    return;
   }
   try {
-    dbOptions.value = await props.fetchOptions(rawInput.value)
+    dbOptions.value = await props.fetchOptions(rawInput.value);
   } catch {
-    dbOptions.value = []
+    dbOptions.value = [];
   }
-}
+};
 
 const select = (value: number) => {
-  rawInput.value = String(value)
-  emit('update:modelValue', value)
-  close()
-}
+  rawInput.value = String(value);
+  emit("update:modelValue", value);
+  close();
+};
 
 const close = () => {
-  isOpen.value = false
-  highlightedIndex.value = -1
-}
+  isOpen.value = false;
+  highlightedIndex.value = -1;
+};
 
 const onBlur = () => {
-  setTimeout(() => close(), 150)
-}
+  setTimeout(() => close(), 150);
+};
 
 const onFocus = () => {
   if (rawInput.value.trim()) {
-    isOpen.value = true
+    isOpen.value = true;
   }
-}
+};
 
 const moveDown = () => {
-  if (!isOpen.value) return
-  highlightedIndex.value = Math.min(highlightedIndex.value + 1, suggestions.value.length - 1)
-}
+  if (!isOpen.value) return;
+  highlightedIndex.value = Math.min(
+    highlightedIndex.value + 1,
+    suggestions.value.length - 1,
+  );
+};
 
 const moveUp = () => {
-  if (!isOpen.value) return
-  highlightedIndex.value = Math.max(highlightedIndex.value - 1, -1)
-}
+  if (!isOpen.value) return;
+  highlightedIndex.value = Math.max(highlightedIndex.value - 1, -1);
+};
 
 const selectHighlighted = () => {
-  if (highlightedIndex.value >= 0 && highlightedIndex.value < suggestions.value.length) {
-    select(suggestions.value[highlightedIndex.value])
+  if (
+    highlightedIndex.value >= 0 &&
+    highlightedIndex.value < suggestions.value.length
+  ) {
+    select(suggestions.value[highlightedIndex.value]);
   }
-}
+};
 </script>

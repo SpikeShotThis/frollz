@@ -1,6 +1,6 @@
-import { Package } from '../entities/package.entity';
+import { Package } from "../entities/package.entity";
 
-export const PACKAGE_REPOSITORY = 'PACKAGE_REPOSITORY';
+export const PACKAGE_REPOSITORY = "PACKAGE_REPOSITORY";
 
 export interface IPackageRepository {
   findById(id: number): Promise<Package | null>;

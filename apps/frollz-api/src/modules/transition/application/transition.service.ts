@@ -1,10 +1,22 @@
-import { Inject, Injectable, NotFoundException } from '@nestjs/common';
-import { ITransitionRuleRepository, TRANSITION_RULE_REPOSITORY } from '../../../domain/transition/repositories/transition-rule.repository.interface';
-import { ITransitionStateRepository, TRANSITION_STATE_REPOSITORY } from '../../../domain/transition/repositories/transition-state.repository.interface';
-import { ITransitionProfileRepository, TRANSITION_PROFILE_REPOSITORY } from '../../../domain/transition/repositories/transition-profile.repository.interface';
-import { ITransitionMetadataFieldRepository, TRANSITION_METADATA_FIELD_REPOSITORY } from '../../../domain/transition/repositories/transition-metadata-field.repository.interface';
-import { TransitionState } from '../../../domain/transition/entities/transition-state.entity';
-import { TransitionStateMetadata } from '../../../domain/transition/entities/transition-state-metadata.entity';
+import { Inject, Injectable, NotFoundException } from "@nestjs/common";
+import {
+  ITransitionRuleRepository,
+  TRANSITION_RULE_REPOSITORY,
+} from "../../../domain/transition/repositories/transition-rule.repository.interface";
+import {
+  ITransitionStateRepository,
+  TRANSITION_STATE_REPOSITORY,
+} from "../../../domain/transition/repositories/transition-state.repository.interface";
+import {
+  ITransitionProfileRepository,
+  TRANSITION_PROFILE_REPOSITORY,
+} from "../../../domain/transition/repositories/transition-profile.repository.interface";
+import {
+  ITransitionMetadataFieldRepository,
+  TRANSITION_METADATA_FIELD_REPOSITORY,
+} from "../../../domain/transition/repositories/transition-metadata-field.repository.interface";
+import { TransitionState } from "../../../domain/transition/entities/transition-state.entity";
+import { TransitionStateMetadata } from "../../../domain/transition/entities/transition-state-metadata.entity";
 
 export interface TransitionMetadataFieldResponse {
   field: string;
@@ -29,10 +41,14 @@ export interface TransitionGraphResponse {
 @Injectable()
 export class TransitionService {
   constructor(
-    @Inject(TRANSITION_RULE_REPOSITORY) private readonly ruleRepo: ITransitionRuleRepository,
-    @Inject(TRANSITION_STATE_REPOSITORY) private readonly stateRepo: ITransitionStateRepository,
-    @Inject(TRANSITION_PROFILE_REPOSITORY) private readonly profileRepo: ITransitionProfileRepository,
-    @Inject(TRANSITION_METADATA_FIELD_REPOSITORY) private readonly metadataFieldRepo: ITransitionMetadataFieldRepository,
+    @Inject(TRANSITION_RULE_REPOSITORY)
+    private readonly ruleRepo: ITransitionRuleRepository,
+    @Inject(TRANSITION_STATE_REPOSITORY)
+    private readonly stateRepo: ITransitionStateRepository,
+    @Inject(TRANSITION_PROFILE_REPOSITORY)
+    private readonly profileRepo: ITransitionProfileRepository,
+    @Inject(TRANSITION_METADATA_FIELD_REPOSITORY)
+    private readonly metadataFieldRepo: ITransitionMetadataFieldRepository,
   ) {}
 
   async listProfiles(): Promise<{ id: number; name: string }[]> {
@@ -40,9 +56,12 @@ export class TransitionService {
     return profiles.map((p) => ({ id: p.id, name: p.name }));
   }
 
-  async getGraph(profileName = 'standard'): Promise<TransitionGraphResponse> {
+  async getGraph(profileName = "standard"): Promise<TransitionGraphResponse> {
     const profile = await this.profileRepo.findByName(profileName);
-    if (!profile) throw new NotFoundException(`Transition profile '${profileName}' not found`);
+    if (!profile)
+      throw new NotFoundException(
+        `Transition profile '${profileName}' not found`,
+      );
 
     const [rules, allStates] = await Promise.all([
       this.ruleRepo.findByProfileId(profile.id),
@@ -58,8 +77,8 @@ export class TransitionService {
         const metadata = toState ? await this.resolveMetadata(toState) : [];
         return {
           id: rule.id,
-          fromState: fromState?.name ?? '',
-          toState: toState?.name ?? '',
+          fromState: fromState?.name ?? "",
+          toState: toState?.name ?? "",
           metadata,
         };
       }),
@@ -75,14 +94,19 @@ export class TransitionService {
     return { states: stateNames, transitions };
   }
 
-  private async resolveMetadata(state: TransitionState): Promise<TransitionMetadataFieldResponse[]> {
+  private async resolveMetadata(
+    state: TransitionState,
+  ): Promise<TransitionMetadataFieldResponse[]> {
     return Promise.all(
       state.metadata.map(async (m: TransitionStateMetadata) => {
         const field = await this.metadataFieldRepo.findById(m.fieldId);
-        if (!field) throw new NotFoundException(`Metadata field '${m.fieldId}' not found`);
+        if (!field)
+          throw new NotFoundException(
+            `Metadata field '${m.fieldId}' not found`,
+          );
         return {
           field: field.name,
-          fieldType: field.fieldType ?? 'string',
+          fieldType: field.fieldType ?? "string",
           allowMultiple: field.allowMultiple,
           defaultValue: m.defaultValue,
           isRequired: true, // TODO: model optional fields when schema supports it

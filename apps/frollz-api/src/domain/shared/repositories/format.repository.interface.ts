@@ -1,6 +1,6 @@
-import { Format } from '../entities/format.entity';
+import { Format } from "../entities/format.entity";
 
-export const FORMAT_REPOSITORY = 'FORMAT_REPOSITORY';
+export const FORMAT_REPOSITORY = "FORMAT_REPOSITORY";
 
 export interface IFormatRepository {
   findById(id: number): Promise<Format | null>;

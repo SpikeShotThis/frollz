@@ -1,6 +1,6 @@
 import { Note } from "../entities/note.entity";
 
-export const NOTE_REPOSITORY = Symbol('NOTE_REPOSITORY');
+export const NOTE_REPOSITORY = Symbol("NOTE_REPOSITORY");
 
 export interface INoteRepository {
   findById(id: number): Promise<Note | null>;

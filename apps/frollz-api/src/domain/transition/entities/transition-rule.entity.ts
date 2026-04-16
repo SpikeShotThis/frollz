@@ -1,5 +1,5 @@
-import { TransitionProfile } from './transition-profile.entity';
-import { TransitionState } from './transition-state.entity';
+import { TransitionProfile } from "./transition-profile.entity";
+import { TransitionState } from "./transition-state.entity";
 
 export class TransitionRule {
   constructor(

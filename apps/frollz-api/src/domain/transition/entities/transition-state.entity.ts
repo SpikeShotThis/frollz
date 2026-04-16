@@ -1,4 +1,4 @@
-import { TransitionStateMetadata } from './transition-state-metadata.entity';
+import { TransitionStateMetadata } from "./transition-state-metadata.entity";
 
 export class TransitionState {
   constructor(
@@ -7,7 +7,11 @@ export class TransitionState {
     public readonly metadata: TransitionStateMetadata[] = [],
   ) {}
 
-  static create(props: { id: number; name: string; metadata?: TransitionStateMetadata[] }): TransitionState {
+  static create(props: {
+    id: number;
+    name: string;
+    metadata?: TransitionStateMetadata[];
+  }): TransitionState {
     return new TransitionState(props.id, props.name, props.metadata ?? []);
   }
 }

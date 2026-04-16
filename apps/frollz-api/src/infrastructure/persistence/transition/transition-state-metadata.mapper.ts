@@ -1,5 +1,5 @@
-import { TransitionStateMetadata } from '../../../domain/transition/entities/transition-state-metadata.entity';
-import { TransitionStateMetadataRow } from '../types/db.types';
+import { TransitionStateMetadata } from "../../../domain/transition/entities/transition-state-metadata.entity";
+import { TransitionStateMetadataRow } from "../types/db.types";
 
 export class TransitionStateMetadataMapper {
   static toDomain(row: TransitionStateMetadataRow): TransitionStateMetadata {

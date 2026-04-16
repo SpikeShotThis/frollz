@@ -1,4 +1,4 @@
-import { CameraStatus } from "../../../domain/camera/entities/camera.entity"
+import { CameraStatus } from "../../../domain/camera/entities/camera.entity";
 
 export class FilterCameraDto {
   brand?: string = undefined;

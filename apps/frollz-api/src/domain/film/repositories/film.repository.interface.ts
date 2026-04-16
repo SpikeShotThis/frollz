@@ -1,6 +1,6 @@
-import { Film } from '../entities/film.entity';
+import { Film } from "../entities/film.entity";
 
-export const FILM_REPOSITORY = 'FILM_REPOSITORY';
+export const FILM_REPOSITORY = "FILM_REPOSITORY";
 
 export interface FilmFilters {
   stateIds?: number[];

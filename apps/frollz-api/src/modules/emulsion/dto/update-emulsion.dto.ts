@@ -1,14 +1,20 @@
-import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsNotEmpty, IsNumber, IsOptional, IsPositive, IsString } from 'class-validator';
+import { ApiPropertyOptional } from "@nestjs/swagger";
+import {
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsPositive,
+  IsString,
+} from "class-validator";
 
 export class UpdateEmulsionDto {
-  @ApiPropertyOptional({ example: 'Kodak' })
+  @ApiPropertyOptional({ example: "Kodak" })
   @IsOptional()
   @IsString()
   @IsNotEmpty()
   brand?: string;
 
-  @ApiPropertyOptional({ example: 'Kodak Alaris' })
+  @ApiPropertyOptional({ example: "Kodak Alaris" })
   @IsOptional()
   @IsString()
   @IsNotEmpty()
@@ -20,20 +26,20 @@ export class UpdateEmulsionDto {
   @IsPositive()
   speed?: number;
 
-  @ApiPropertyOptional({ description: 'ID of the process', example: '1' })
+  @ApiPropertyOptional({ description: "ID of the process", example: "1" })
   @IsOptional()
   @IsNumber()
   @IsPositive()
   @IsNotEmpty()
   processId?: number;
 
-  @ApiPropertyOptional({ description: 'ID of the format', example: '1' })
+  @ApiPropertyOptional({ description: "ID of the format", example: "1" })
   @IsOptional()
   @IsNumber()
   @IsPositive()
   formatId?: number;
 
-  @ApiPropertyOptional({ description: 'ID of the base emulsion', example: '1' })
+  @ApiPropertyOptional({ description: "ID of the base emulsion", example: "1" })
   @IsOptional()
   @IsNumber()
   @IsPositive()

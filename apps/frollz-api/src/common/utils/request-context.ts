@@ -1,6 +1,6 @@
-import { AsyncLocalStorage } from 'async_hooks';
-import { Knex } from 'knex';
-import { randomUUID } from 'crypto';
+import { AsyncLocalStorage } from "async_hooks";
+import { Knex } from "knex";
+import { randomUUID } from "crypto";
 
 type Store = {
   requestId: string;
@@ -24,7 +24,7 @@ export class RequestContext {
   static getStore(): Store {
     const store = this.als.getStore();
     if (!store) {
-      throw new Error('RequestContext not initialized');
+      throw new Error("RequestContext not initialized");
     }
     return store;
   }

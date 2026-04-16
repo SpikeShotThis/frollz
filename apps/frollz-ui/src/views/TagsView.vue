@@ -1,12 +1,23 @@
 <template>
   <div>
-    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-8">
+    <div
+      class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-8"
+    >
       <h1 class="text-3xl font-bold text-gray-900 dark:text-gray-100">Tags</h1>
     </div>
 
     <!-- Mobile card list (hidden on md+) -->
-    <div class="md:hidden space-y-3" :aria-busy="isLoading" aria-label="Tags list">
-      <p v-if="tags.length === 0" class="text-center py-8 text-gray-600 dark:text-gray-400 italic">No tags found.</p>
+    <div
+      class="md:hidden space-y-3"
+      :aria-busy="isLoading"
+      aria-label="Tags list"
+    >
+      <p
+        v-if="tags.length === 0"
+        class="text-center py-8 text-gray-600 dark:text-gray-400 italic"
+      >
+        No tags found.
+      </p>
       <div
         v-for="tag in paginatedTags"
         :key="tag.id"
@@ -23,27 +34,42 @@
               <span
                 class="px-2 py-1 rounded text-sm font-medium text-white truncate"
                 :style="{ backgroundColor: tag.colorCode }"
-              >{{ tag.name }}</span>
+                >{{ tag.name }}</span
+              >
             </div>
             <div class="flex gap-2 shrink-0">
               <button
                 @click="startEdit(tag)"
                 class="px-3 py-2.5 min-h-[44px] text-xs font-medium text-primary-600 dark:text-primary-400 border border-primary-300 dark:border-primary-600 rounded hover:bg-primary-50 dark:hover:bg-primary-900/30"
-              >Edit</button>
+              >
+                Edit
+              </button>
               <button
                 @click="confirmDelete(tag)"
                 class="px-3 py-2.5 min-h-[44px] text-xs font-medium text-red-600 dark:text-red-400 border border-red-300 dark:border-red-600 rounded hover:bg-red-50 dark:hover:bg-red-900/30"
-              >Delete</button>
+              >
+                Delete
+              </button>
             </div>
           </div>
-          <p v-if="tag.description" class="mt-2 text-xs text-gray-500 dark:text-gray-400">{{ tag.description }}</p>
+          <p
+            v-if="tag.description"
+            class="mt-2 text-xs text-gray-500 dark:text-gray-400"
+          >
+            {{ tag.description }}
+          </p>
         </template>
 
         <!-- Edit mode -->
         <template v-else>
           <div class="space-y-3">
             <div class="flex gap-3 items-center">
-              <input v-model="editForm.colorCode" type="color" aria-label="Color" class="h-10 w-16 rounded cursor-pointer border border-gray-300 dark:border-gray-600" />
+              <input
+                v-model="editForm.colorCode"
+                type="color"
+                aria-label="Color"
+                class="h-10 w-16 rounded cursor-pointer border border-gray-300 dark:border-gray-600"
+              />
               <input
                 v-model="editForm.name"
                 type="text"
@@ -55,11 +81,15 @@
               <button
                 @click="saveEdit(tag.id)"
                 class="flex-1 px-3 py-2 text-sm font-medium text-white bg-green-600 rounded hover:bg-green-700"
-              >Save</button>
+              >
+                Save
+              </button>
               <button
                 @click="cancelEdit"
                 class="flex-1 px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded hover:bg-gray-50 dark:hover:bg-gray-700"
-              >Cancel</button>
+              >
+                Cancel
+              </button>
             </div>
           </div>
         </template>
@@ -67,18 +97,36 @@
     </div>
 
     <!-- Desktop table (hidden below md) -->
-    <div class="hidden md:block bg-white dark:bg-gray-800 rounded-lg shadow-md" :aria-busy="isLoading" aria-label="Tags table">
+    <div
+      class="hidden md:block bg-white dark:bg-gray-800 rounded-lg shadow-md"
+      :aria-busy="isLoading"
+      aria-label="Tags table"
+    >
       <div class="overflow-x-auto">
         <table class="min-w-full">
           <thead class="bg-gray-50 dark:bg-gray-700">
             <tr>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Color</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Name</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Description</th>
+              <th
+                class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
+              >
+                Color
+              </th>
+              <th
+                class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
+              >
+                Name
+              </th>
+              <th
+                class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
+              >
+                Description
+              </th>
               <th class="px-6 py-3"></th>
             </tr>
           </thead>
-          <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+          <tbody
+            class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700"
+          >
             <tr v-for="tag in paginatedTags" :key="tag.id">
               <td class="px-6 py-4 whitespace-nowrap">
                 <template v-if="editingId === tag.id">
@@ -96,7 +144,9 @@
                   ></span>
                 </template>
               </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
+              <td
+                class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100"
+              >
                 <template v-if="editingId === tag.id">
                   <input
                     v-model="editForm.name"
@@ -109,7 +159,8 @@
                   <span
                     class="px-2 py-1 rounded text-xs font-medium text-white"
                     :style="{ backgroundColor: tag.colorCode }"
-                  >{{ tag.name }}</span>
+                    >{{ tag.name }}</span
+                  >
                 </template>
               </td>
               <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
@@ -122,7 +173,7 @@
                   />
                 </template>
                 <template v-else>
-                  {{ tag.description ?? '—' }}
+                  {{ tag.description ?? "—" }}
                 </template>
               </td>
               <td class="px-6 py-4 whitespace-nowrap text-right space-x-2">
@@ -130,26 +181,39 @@
                   <button
                     @click="saveEdit(tag.id)"
                     class="px-3 py-2 min-h-[44px] text-xs font-medium text-white bg-green-600 rounded hover:bg-green-700"
-                  >Save</button>
+                  >
+                    Save
+                  </button>
                   <button
                     @click="cancelEdit"
                     class="px-3 py-2 min-h-[44px] text-xs font-medium text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded hover:bg-gray-50 dark:hover:bg-gray-700"
-                  >Cancel</button>
+                  >
+                    Cancel
+                  </button>
                 </template>
                 <template v-else>
                   <button
                     @click="startEdit(tag)"
                     class="px-3 py-2 min-h-[44px] text-xs font-medium text-primary-600 dark:text-primary-400 border border-primary-300 dark:border-primary-600 rounded hover:bg-primary-50 dark:hover:bg-primary-900/30"
-                  >Edit</button>
+                  >
+                    Edit
+                  </button>
                   <button
                     @click="confirmDelete(tag)"
                     class="px-3 py-2 min-h-[44px] text-xs font-medium text-red-600 dark:text-red-400 border border-red-300 dark:border-red-600 rounded hover:bg-red-50 dark:hover:bg-red-900/30"
-                  >Delete</button>
+                  >
+                    Delete
+                  </button>
                 </template>
               </td>
             </tr>
             <tr v-if="tags.length === 0">
-              <td colspan="4" class="px-6 py-8 text-center text-sm text-gray-600 dark:text-gray-400">No tags found.</td>
+              <td
+                colspan="4"
+                class="px-6 py-8 text-center text-sm text-gray-600 dark:text-gray-400"
+              >
+                No tags found.
+              </td>
             </tr>
           </tbody>
         </table>
@@ -157,7 +221,10 @@
     </div>
 
     <!-- Pagination -->
-    <div v-if="totalPages > 1" class="flex items-center justify-between px-2 py-3 mt-3">
+    <div
+      v-if="totalPages > 1"
+      class="flex items-center justify-between px-2 py-3 mt-3"
+    >
       <span class="text-sm text-gray-500 dark:text-gray-400">
         Page {{ currentPage }} of {{ totalPages }}
       </span>
@@ -166,88 +233,107 @@
           @click="currentPage--"
           :disabled="currentPage === 1"
           class="px-3 py-2 min-h-[44px] text-sm border border-gray-300 dark:border-gray-600 rounded-md disabled:opacity-40 hover:bg-gray-50 dark:hover:bg-gray-700 dark:text-gray-300"
-        >Previous</button>
+        >
+          Previous
+        </button>
         <button
           @click="currentPage++"
           :disabled="currentPage === totalPages"
           class="px-3 py-2 min-h-[44px] text-sm border border-gray-300 dark:border-gray-600 rounded-md disabled:opacity-40 hover:bg-gray-50 dark:hover:bg-gray-700 dark:text-gray-300"
-        >Next</button>
+        >
+          Next
+        </button>
       </div>
     </div>
 
     <!-- Delete Confirmation Modal -->
-    <BaseModal :open="!!deleteTarget" title-id="delete-tag-title" @close="deleteTarget = null">
-      <h2 id="delete-tag-title" class="text-lg font-bold text-gray-900 dark:text-gray-100 mb-3">Delete Tag</h2>
+    <BaseModal
+      :open="!!deleteTarget"
+      title-id="delete-tag-title"
+      @close="deleteTarget = null"
+    >
+      <h2
+        id="delete-tag-title"
+        class="text-lg font-bold text-gray-900 dark:text-gray-100 mb-3"
+      >
+        Delete Tag
+      </h2>
       <p class="text-sm text-gray-700 dark:text-gray-300 mb-6">
         Are you sure you want to delete the tag
-        <span class="font-semibold">{{ deleteTarget?.name }}</span>?
-        All film and emulsion associations will be removed.
+        <span class="font-semibold">{{ deleteTarget?.name }}</span
+        >? All film and emulsion associations will be removed.
       </p>
       <div class="flex justify-end gap-3">
         <button
           @click="deleteTarget = null"
           class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
-        >Cancel</button>
+        >
+          Cancel
+        </button>
         <button
           @click="executeDelete"
           class="px-4 py-2 bg-red-600 text-white rounded-md text-sm hover:bg-red-700"
-        >Delete</button>
+        >
+          Delete
+        </button>
       </div>
     </BaseModal>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
-import { tagApi } from '@/services/api-client'
-import type { Tag } from '@/types'
-import BaseModal from '@/components/BaseModal.vue'
-import { useNotificationStore } from '@/stores/notification'
+import { ref, computed, onMounted } from "vue";
+import { tagApi } from "@/services/api-client";
+import type { Tag } from "@/types";
+import BaseModal from "@/components/BaseModal.vue";
+import { useNotificationStore } from "@/stores/notification";
 
-const notification = useNotificationStore()
+const notification = useNotificationStore();
 
-const PAGE_SIZE = 10
+const PAGE_SIZE = 10;
 
-const tags = ref<Tag[]>([])
-const isLoading = ref(false)
-const currentPage = ref(1)
+const tags = ref<Tag[]>([]);
+const isLoading = ref(false);
+const currentPage = ref(1);
 
-const editingId = ref<number | null>(null)
-const editForm = ref({ name: '', colorCode: '#000000', description: '' })
+const editingId = ref<number | null>(null);
+const editForm = ref({ name: "", colorCode: "#000000", description: "" });
 
-const deleteTarget = ref<Tag | null>(null)
+const deleteTarget = ref<Tag | null>(null);
 
-const totalPages = computed(() => Math.max(1, Math.ceil(tags.value.length / PAGE_SIZE)))
+const totalPages = computed(() =>
+  Math.max(1, Math.ceil(tags.value.length / PAGE_SIZE)),
+);
 
 const paginatedTags = computed(() => {
-  const start = (currentPage.value - 1) * PAGE_SIZE
-  return tags.value.slice(start, start + PAGE_SIZE)
-})
+  const start = (currentPage.value - 1) * PAGE_SIZE;
+  return tags.value.slice(start, start + PAGE_SIZE);
+});
 
 const loadTags = async () => {
-  isLoading.value = true
+  isLoading.value = true;
   try {
-    const response = await tagApi.getAll()
-    tags.value = response.data
+    const response = await tagApi.getAll();
+    tags.value = response.data;
   } catch (err) {
-    console.error('Error loading tags:', err)
+    console.error("Error loading tags:", err);
   } finally {
-    isLoading.value = false
+    isLoading.value = false;
   }
-}
+};
 
 const startEdit = (tag: Tag) => {
-  editingId.value = tag.id
+  editingId.value = tag.id;
   editForm.value = {
     name: tag.name,
     colorCode: tag.colorCode,
-    description: tag.description ?? '',
-  }
-}
+    description: tag.description ?? "",
+  };
+};
 
 const cancelEdit = () => {
-  editingId.value = null
-}
+  editingId.value = null;
+};
 
 const saveEdit = async (id: number) => {
   try {
@@ -255,31 +341,31 @@ const saveEdit = async (id: number) => {
       name: editForm.value.name,
       colorCode: editForm.value.colorCode,
       description: editForm.value.description || undefined,
-    })
-    editingId.value = null
-    await loadTags()
-    notification.announce('Tag saved')
+    });
+    editingId.value = null;
+    await loadTags();
+    notification.announce("Tag saved");
   } catch (err) {
-    console.error('Error saving tag:', err)
+    console.error("Error saving tag:", err);
   }
-}
+};
 
 const confirmDelete = (tag: Tag) => {
-  deleteTarget.value = tag
-}
+  deleteTarget.value = tag;
+};
 
 const executeDelete = async () => {
-  if (!deleteTarget.value) return
-  const tag = deleteTarget.value
+  if (!deleteTarget.value) return;
+  const tag = deleteTarget.value;
   try {
-    await tagApi.delete(tag.id)
-    deleteTarget.value = null
-    await loadTags()
-    notification.announce('Tag deleted')
+    await tagApi.delete(tag.id);
+    deleteTarget.value = null;
+    await loadTags();
+    notification.announce("Tag deleted");
   } catch (err) {
-    console.error('Error deleting tag:', err)
+    console.error("Error deleting tag:", err);
   }
-}
+};
 
-onMounted(loadTags)
+onMounted(loadTags);
 </script>

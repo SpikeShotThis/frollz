@@ -1,28 +1,32 @@
-import { randomInt } from 'crypto';
-import { ExportService } from './export.service';
-import { IFilmRepository } from '../../../domain/film/repositories/film.repository.interface';
-import { Film } from '../../../domain/film/entities/film.entity';
-import { IEmulsionRepository } from '../../../domain/emulsion/repositories/emulsion.repository.interface';
-import { Emulsion } from '../../../domain/emulsion/entities/emulsion.entity';
-import { IFormatRepository } from '../../../domain/shared/repositories/format.repository.interface';
-import { Format } from '../../../domain/shared/entities/format.entity';
-import { ITagRepository } from '../../../domain/shared/repositories/tag.repository.interface';
-import { Tag } from '../../../domain/shared/entities/tag.entity';
+import { randomInt } from "crypto";
+import { ExportService } from "./export.service";
+import { IFilmRepository } from "../../../domain/film/repositories/film.repository.interface";
+import { Film } from "../../../domain/film/entities/film.entity";
+import { IEmulsionRepository } from "../../../domain/emulsion/repositories/emulsion.repository.interface";
+import { Emulsion } from "../../../domain/emulsion/entities/emulsion.entity";
+import { IFormatRepository } from "../../../domain/shared/repositories/format.repository.interface";
+import { Format } from "../../../domain/shared/entities/format.entity";
+import { ITagRepository } from "../../../domain/shared/repositories/tag.repository.interface";
+import { Tag } from "../../../domain/shared/entities/tag.entity";
 
 const randomId = () => randomInt(1, 1_000_000);
 
-const makeFilm = (overrides: Partial<Parameters<typeof Film.create>[0]> = {}): Film =>
+const makeFilm = (
+  overrides: Partial<Parameters<typeof Film.create>[0]> = {},
+): Film =>
   Film.create({
     id: randomId(),
-    name: 'Roll 001',
+    name: "Roll 001",
     emulsionId: randomId(),
-    expirationDate: new Date('2026-12-31'),
+    expirationDate: new Date("2026-12-31"),
     parentId: null,
     transitionProfileId: randomId(),
     ...overrides,
   });
 
-const makeFilmRepo = (overrides: Partial<IFilmRepository> = {}): IFilmRepository => ({
+const makeFilmRepo = (
+  overrides: Partial<IFilmRepository> = {},
+): IFilmRepository => ({
   findAll: jest.fn().mockResolvedValue([]),
   findById: jest.fn().mockResolvedValue(null),
   findWithFilters: jest.fn().mockResolvedValue([]),
@@ -35,34 +39,42 @@ const makeFilmRepo = (overrides: Partial<IFilmRepository> = {}): IFilmRepository
   ...overrides,
 });
 
-const makeEmulsion = (overrides: Partial<Parameters<typeof Emulsion.create>[0]> = {}): Emulsion =>
+const makeEmulsion = (
+  overrides: Partial<Parameters<typeof Emulsion.create>[0]> = {},
+): Emulsion =>
   Emulsion.create({
     id: randomId(),
-    brand: 'Kodak Gold 200',
-    manufacturer: 'Kodak',
+    brand: "Kodak Gold 200",
+    manufacturer: "Kodak",
     speed: 200,
     processId: randomId(),
     formatId: randomId(),
     ...overrides,
   });
 
-const makeFormat = (overrides: Partial<Parameters<typeof Format.create>[0]> = {}): Format =>
+const makeFormat = (
+  overrides: Partial<Parameters<typeof Format.create>[0]> = {},
+): Format =>
   Format.create({
     id: randomId(),
     packageId: randomId(),
-    name: '35mm',
+    name: "35mm",
     ...overrides,
   });
 
-const makeTag = (overrides: Partial<Parameters<typeof Tag.create>[0]> = {}): Tag =>
+const makeTag = (
+  overrides: Partial<Parameters<typeof Tag.create>[0]> = {},
+): Tag =>
   Tag.create({
     id: randomId(),
-    name: 'Expired',
-    colorCode: '#6B7280',
+    name: "Expired",
+    colorCode: "#6B7280",
     ...overrides,
   });
 
-const makeEmulsionRepo = (overrides: Partial<IEmulsionRepository> = {}): IEmulsionRepository => ({
+const makeEmulsionRepo = (
+  overrides: Partial<IEmulsionRepository> = {},
+): IEmulsionRepository => ({
   findAll: jest.fn().mockResolvedValue([]),
   findById: jest.fn().mockResolvedValue(null),
   findByBrand: jest.fn().mockResolvedValue(null),
@@ -79,7 +91,9 @@ const makeEmulsionRepo = (overrides: Partial<IEmulsionRepository> = {}): IEmulsi
   ...overrides,
 });
 
-const makeFormatRepo = (overrides: Partial<IFormatRepository> = {}): IFormatRepository => ({
+const makeFormatRepo = (
+  overrides: Partial<IFormatRepository> = {},
+): IFormatRepository => ({
   findAll: jest.fn().mockResolvedValue([]),
   findById: jest.fn().mockResolvedValue(null),
   findByPackageId: jest.fn().mockResolvedValue([]),
@@ -89,7 +103,9 @@ const makeFormatRepo = (overrides: Partial<IFormatRepository> = {}): IFormatRepo
   ...overrides,
 });
 
-const makeTagRepo = (overrides: Partial<ITagRepository> = {}): ITagRepository => ({
+const makeTagRepo = (
+  overrides: Partial<ITagRepository> = {},
+): ITagRepository => ({
   findAll: jest.fn().mockResolvedValue([]),
   findById: jest.fn().mockResolvedValue(null),
   findByName: jest.fn().mockResolvedValue(null),
@@ -99,7 +115,7 @@ const makeTagRepo = (overrides: Partial<ITagRepository> = {}): ITagRepository =>
   ...overrides,
 });
 
-describe('ExportService', () => {
+describe("ExportService", () => {
   let service: ExportService;
   let filmRepo: jest.Mocked<IFilmRepository>;
   let emulsionRepo: jest.Mocked<IEmulsionRepository>;
@@ -114,26 +130,29 @@ describe('ExportService', () => {
     service = new ExportService(filmRepo, emulsionRepo, formatRepo, tagRepo);
   });
 
-  describe('exportFilmsJson', () => {
-    it('returns an empty films array when no films exist', async () => {
+  describe("exportFilmsJson", () => {
+    it("returns an empty films array when no films exist", async () => {
       filmRepo.findAll = jest.fn().mockResolvedValue([]);
       const result = await service.exportFilmsJson();
       expect(result.films).toEqual([]);
     });
 
-    it('returns all films from the repository', async () => {
-      const films = [makeFilm({ name: 'Roll 001' }), makeFilm({ name: 'Roll 002' })];
+    it("returns all films from the repository", async () => {
+      const films = [
+        makeFilm({ name: "Roll 001" }),
+        makeFilm({ name: "Roll 002" }),
+      ];
       filmRepo.findAll = jest.fn().mockResolvedValue(films);
       const result = await service.exportFilmsJson();
       expect(result.films).toEqual(films);
       expect(filmRepo.findAll).toHaveBeenCalledTimes(1);
     });
 
-    it('includes a version field from APP_VERSION env var', async () => {
-      process.env.APP_VERSION = 'v1.2.3';
+    it("includes a version field from APP_VERSION env var", async () => {
+      process.env.APP_VERSION = "v1.2.3";
       filmRepo.findAll = jest.fn().mockResolvedValue([]);
       const result = await service.exportFilmsJson();
-      expect(result.version).toBe('v1.2.3');
+      expect(result.version).toBe("v1.2.3");
       delete process.env.APP_VERSION;
     });
 
@@ -141,10 +160,10 @@ describe('ExportService', () => {
       delete process.env.APP_VERSION;
       filmRepo.findAll = jest.fn().mockResolvedValue([]);
       const result = await service.exportFilmsJson();
-      expect(result.version).toBe('unknown');
+      expect(result.version).toBe("unknown");
     });
 
-    it('includes an exportedAt ISO timestamp', async () => {
+    it("includes an exportedAt ISO timestamp", async () => {
       filmRepo.findAll = jest.fn().mockResolvedValue([]);
       const before = new Date().toISOString();
       const result = await service.exportFilmsJson();
@@ -154,18 +173,24 @@ describe('ExportService', () => {
     });
   });
 
-  describe('exportLibraryJson', () => {
-    it('returns empty arrays when no data exists', async () => {
+  describe("exportLibraryJson", () => {
+    it("returns empty arrays when no data exists", async () => {
       const result = await service.exportLibraryJson();
       expect(result.emulsions).toEqual([]);
       expect(result.formats).toEqual([]);
       expect(result.tags).toEqual([]);
     });
 
-    it('returns all emulsions, formats, and tags from their repositories', async () => {
-      const emulsions = [makeEmulsion({ brand: 'Kodak Gold 200' }), makeEmulsion({ brand: 'Fuji Superia 400' })];
-      const formats = [makeFormat({ name: '35mm' }), makeFormat({ name: '120' })];
-      const tags = [makeTag({ name: 'Expired' }), makeTag({ name: 'Push +1' })];
+    it("returns all emulsions, formats, and tags from their repositories", async () => {
+      const emulsions = [
+        makeEmulsion({ brand: "Kodak Gold 200" }),
+        makeEmulsion({ brand: "Fuji Superia 400" }),
+      ];
+      const formats = [
+        makeFormat({ name: "35mm" }),
+        makeFormat({ name: "120" }),
+      ];
+      const tags = [makeTag({ name: "Expired" }), makeTag({ name: "Push +1" })];
       emulsionRepo.findAll = jest.fn().mockResolvedValue(emulsions);
       formatRepo.findAll = jest.fn().mockResolvedValue(formats);
       tagRepo.findAll = jest.fn().mockResolvedValue(tags);
@@ -180,20 +205,20 @@ describe('ExportService', () => {
       expect(tagRepo.findAll).toHaveBeenCalledTimes(1);
     });
 
-    it('includes a version field from APP_VERSION env var', async () => {
-      process.env.APP_VERSION = 'v2.0.0';
+    it("includes a version field from APP_VERSION env var", async () => {
+      process.env.APP_VERSION = "v2.0.0";
       const result = await service.exportLibraryJson();
-      expect(result.version).toBe('v2.0.0');
+      expect(result.version).toBe("v2.0.0");
       delete process.env.APP_VERSION;
     });
 
     it('falls back to "unknown" when APP_VERSION is not set', async () => {
       delete process.env.APP_VERSION;
       const result = await service.exportLibraryJson();
-      expect(result.version).toBe('unknown');
+      expect(result.version).toBe("unknown");
     });
 
-    it('includes an exportedAt ISO timestamp', async () => {
+    it("includes an exportedAt ISO timestamp", async () => {
       const before = new Date().toISOString();
       const result = await service.exportLibraryJson();
       const after = new Date().toISOString();

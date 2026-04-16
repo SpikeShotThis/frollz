@@ -1,8 +1,11 @@
-import { Module } from '@nestjs/common';
-import { KNEX_CONNECTION, KnexProvider } from './knex.provider';
-import { MigrationRunnerService } from './migration-runner.service';
-import { APP_LOGGER, AppLogger } from '../../common/utils/app-logger';
-import { TRANSACTION_MANAGER, TransactionManager } from '../../common/utils/transaction-manager';
+import { Module } from "@nestjs/common";
+import { KNEX_CONNECTION, KnexProvider } from "./knex.provider";
+import { MigrationRunnerService } from "./migration-runner.service";
+import { APP_LOGGER, AppLogger } from "../../common/utils/app-logger";
+import {
+  TRANSACTION_MANAGER,
+  TransactionManager,
+} from "../../common/utils/transaction-manager";
 
 @Module({
   providers: [

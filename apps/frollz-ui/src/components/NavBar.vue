@@ -4,8 +4,13 @@
       <div class="flex justify-between items-center py-4">
         <!-- Brand -->
         <div class="flex items-center space-x-4">
-          <span class="text-2xl font-bold text-primary-600 dark:text-primary-400">Frollz</span>
-          <span class="text-gray-500 dark:text-gray-400">Film Roll Tracker</span>
+          <span
+            class="text-2xl font-bold text-primary-600 dark:text-primary-400"
+            >Frollz</span
+          >
+          <span class="text-gray-500 dark:text-gray-400"
+            >Film Roll Tracker</span
+          >
         </div>
 
         <!-- Desktop nav links — visible on md and wider -->
@@ -16,12 +21,15 @@
             :to="link.to"
             class="nav-link"
             :class="{ active: $route.name === link.name }"
-          >{{ link.label }}</RouterLink>
+            >{{ link.label }}</RouterLink
+          >
 
           <button
             @click="themeStore.toggle()"
             class="inline-flex items-center justify-center min-h-[44px] min-w-[44px] rounded-md text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200"
-            :aria-label="themeStore.isDark ? 'Switch to light mode' : 'Switch to dark mode'"
+            :aria-label="
+              themeStore.isDark ? 'Switch to light mode' : 'Switch to dark mode'
+            "
           >
             <SunIcon v-if="themeStore.isDark" class="w-5 h-5" />
             <MoonIcon v-else class="w-5 h-5" />
@@ -33,7 +41,9 @@
           <button
             @click="themeStore.toggle()"
             class="inline-flex items-center justify-center min-h-[44px] min-w-[44px] rounded-md text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200"
-            :aria-label="themeStore.isDark ? 'Switch to light mode' : 'Switch to dark mode'"
+            :aria-label="
+              themeStore.isDark ? 'Switch to light mode' : 'Switch to dark mode'
+            "
           >
             <SunIcon v-if="themeStore.isDark" class="w-5 h-5" />
             <MoonIcon v-else class="w-5 h-5" />
@@ -95,7 +105,8 @@
             class="drawer-link"
             :class="{ active: $route.name === link.name }"
             @click="closeMenu"
-          >{{ link.label }}</RouterLink>
+            >{{ link.label }}</RouterLink
+          >
         </nav>
       </div>
     </Transition>
@@ -103,83 +114,89 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, nextTick, onMounted, onUnmounted } from 'vue'
-import { RouterLink } from 'vue-router'
-import { SunIcon, MoonIcon } from '@heroicons/vue/24/outline'
-import { Bars3Icon } from '@heroicons/vue/24/outline'
-import { useThemeStore } from '@/stores/theme'
+import { ref, watch, nextTick, onMounted, onUnmounted } from "vue";
+import { RouterLink } from "vue-router";
+import { SunIcon, MoonIcon } from "@heroicons/vue/24/outline";
+import { Bars3Icon } from "@heroicons/vue/24/outline";
+import { useThemeStore } from "@/stores/theme";
 
-const themeStore = useThemeStore()
+const themeStore = useThemeStore();
 
 const navLinks = [
-  { to: '/', name: 'dashboard', label: 'Dashboard' },
-  { to: '/formats', name: 'formats', label: 'Film Formats' },
-  { to: '/emulsions', name: 'emulsions', label: 'Emulsions' },
-  { to: '/films', name: 'films', label: 'Films' },
-  { to: '/tags', name: 'tags', label: 'Tags' },
-  { to: '/stats', name: 'stats', label: 'Statistics' },
-] as const
+  { to: "/", name: "dashboard", label: "Dashboard" },
+  { to: "/formats", name: "formats", label: "Film Formats" },
+  { to: "/emulsions", name: "emulsions", label: "Emulsions" },
+  { to: "/films", name: "films", label: "Films" },
+  { to: "/tags", name: "tags", label: "Tags" },
+  { to: "/stats", name: "stats", label: "Statistics" },
+] as const;
 
-const menuOpen = ref(false)
-const hamburgerRef = ref<HTMLButtonElement | null>(null)
-const drawerRef = ref<HTMLElement | null>(null)
+const menuOpen = ref(false);
+const hamburgerRef = ref<HTMLButtonElement | null>(null);
+const drawerRef = ref<HTMLElement | null>(null);
 
 function openMenu() {
-  menuOpen.value = true
+  menuOpen.value = true;
 }
 
 function closeMenu() {
-  menuOpen.value = false
+  menuOpen.value = false;
 }
 
 // Focus first drawer element on open; return focus to hamburger on close.
 // Also lock body scroll while drawer is open.
 watch(menuOpen, async (open) => {
   if (open) {
-    document.body.style.overflow = 'hidden'
-    await nextTick()
-    const first = drawerRef.value?.querySelector<HTMLElement>('a, button, [tabindex="0"]')
-    first?.focus()
+    document.body.style.overflow = "hidden";
+    await nextTick();
+    const first = drawerRef.value?.querySelector<HTMLElement>(
+      'a, button, [tabindex="0"]',
+    );
+    first?.focus();
   } else {
-    document.body.style.overflow = ''
-    hamburgerRef.value?.focus()
+    document.body.style.overflow = "";
+    hamburgerRef.value?.focus();
   }
-})
+});
 
 // Tab trap + Escape handler for the drawer
 function handleKeydown(e: KeyboardEvent) {
-  if (e.key === 'Escape') {
-    closeMenu()
-    return
+  if (e.key === "Escape") {
+    closeMenu();
+    return;
   }
-  if (e.key !== 'Tab') return
+  if (e.key !== "Tab") return;
 
   const focusable = Array.from(
-    drawerRef.value?.querySelectorAll<HTMLElement>('a[href], button:not([disabled]), [tabindex="0"]') ?? [],
-  )
-  if (!focusable.length) return
+    drawerRef.value?.querySelectorAll<HTMLElement>(
+      'a[href], button:not([disabled]), [tabindex="0"]',
+    ) ?? [],
+  );
+  if (!focusable.length) return;
 
-  const first = focusable[0]
-  const last = focusable[focusable.length - 1]
+  const first = focusable[0];
+  const last = focusable[focusable.length - 1];
 
   if (e.shiftKey && document.activeElement === first) {
-    e.preventDefault()
-    last.focus()
+    e.preventDefault();
+    last.focus();
   } else if (!e.shiftKey && document.activeElement === last) {
-    e.preventDefault()
-    first.focus()
+    e.preventDefault();
+    first.focus();
   }
 }
 
 // Close drawer automatically when viewport expands past md breakpoint
-const mdQuery = window.matchMedia('(min-width: 768px)')
-const onBreakpoint = (e: MediaQueryListEvent) => { if (e.matches) closeMenu() }
-onMounted(() => mdQuery.addEventListener('change', onBreakpoint))
+const mdQuery = window.matchMedia("(min-width: 768px)");
+const onBreakpoint = (e: MediaQueryListEvent) => {
+  if (e.matches) closeMenu();
+};
+onMounted(() => mdQuery.addEventListener("change", onBreakpoint));
 onUnmounted(() => {
-  mdQuery.removeEventListener('change', onBreakpoint)
+  mdQuery.removeEventListener("change", onBreakpoint);
   // Restore scroll lock in case component unmounts while drawer is open
-  document.body.style.overflow = ''
-})
+  document.body.style.overflow = "";
+});
 </script>
 
 <style scoped>

@@ -1,5 +1,5 @@
-import { Tag } from '../../../domain/shared/entities/tag.entity';
-import { TagRow } from '../types/db.types';
+import { Tag } from "../../../domain/shared/entities/tag.entity";
+import { TagRow } from "../types/db.types";
 
 export class TagMapper {
   static toDomain(row: TagRow): Tag {

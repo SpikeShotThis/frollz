@@ -6,7 +6,17 @@ export class Tag {
     public readonly description: string | null,
   ) {}
 
-  static create(props: { id?: number; name: string; colorCode: string; description?: string | null }): Tag {
-    return new Tag(props.id ?? 0, props.name, props.colorCode, props.description ?? null);
+  static create(props: {
+    id?: number;
+    name: string;
+    colorCode: string;
+    description?: string | null;
+  }): Tag {
+    return new Tag(
+      props.id ?? 0,
+      props.name,
+      props.colorCode,
+      props.description ?? null,
+    );
   }
 }

@@ -1,6 +1,6 @@
 import { Format } from "../../shared/entities/format.entity";
 
-export type CameraStatus = 'active' | 'retired' | 'in_repair';
+export type CameraStatus = "active" | "retired" | "in_repair";
 
 export class CameraAcceptedFormats {
   constructor(
@@ -8,7 +8,7 @@ export class CameraAcceptedFormats {
     public readonly cameraId: number,
     public readonly formatId: number,
     public readonly format?: Format,
-  ) { }
+  ) {}
 
   static create(props: {
     id?: number;
@@ -25,7 +25,6 @@ export class CameraAcceptedFormats {
   }
 }
 
-
 export class Camera {
   constructor(
     public readonly id: number,
@@ -39,8 +38,7 @@ export class Camera {
     public readonly serialNumber?: string,
     public readonly purchasePrice?: number,
     public readonly acquiredAt?: Date,
-
-  ) { }
+  ) {}
 
   static create(props: {
     id?: number;

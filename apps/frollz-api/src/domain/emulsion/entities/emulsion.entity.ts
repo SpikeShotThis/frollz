@@ -1,6 +1,6 @@
-import { Format } from '../../shared/entities/format.entity';
-import { Process } from '../../shared/entities/process.entity';
-import { Tag } from '../../shared/entities/tag.entity';
+import { Format } from "../../shared/entities/format.entity";
+import { Process } from "../../shared/entities/process.entity";
+import { Tag } from "../../shared/entities/tag.entity";
 
 export class Emulsion {
   constructor(

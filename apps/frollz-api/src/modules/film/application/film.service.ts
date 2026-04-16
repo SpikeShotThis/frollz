@@ -1,19 +1,48 @@
-import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
-import { Film } from '../../../domain/film/entities/film.entity';
-import { IFilmRepository, FILM_REPOSITORY } from '../../../domain/film/repositories/film.repository.interface';
-import { IFilmTagRepository, FILM_TAG_REPOSITORY } from '../../../domain/film-tag/repositories/film-tag.repository.interface';
-import { FilmState } from '../../../domain/film-state/entities/film-state.entity';
-import { IFilmStateRepository, FILM_STATE_REPOSITORY } from '../../../domain/film-state/repositories/film-state.repository.interface';
-import { ITransitionStateRepository, TRANSITION_STATE_REPOSITORY } from '../../../domain/transition/repositories/transition-state.repository.interface';
-import { ITransitionRuleRepository, TRANSITION_RULE_REPOSITORY } from '../../../domain/transition/repositories/transition-rule.repository.interface';
-import { ITransitionStateMetadataRepository, TRANSITION_STATE_METADATA_REPOSITORY } from '../../../domain/transition/repositories/transition-state-metadata.repository.interface';
-import { ITransitionMetadataFieldRepository, TRANSITION_METADATA_FIELD_REPOSITORY } from '../../../domain/transition/repositories/transition-metadata-field.repository.interface';
-import { INoteRepository, NOTE_REPOSITORY } from '../../../domain/shared/repositories/note.repository.interface';
-import { FilmFilters } from '../../../domain/film/repositories/film.repository.interface';
-import { CreateFilmDto } from '../dto/create-film.dto';
-import { UpdateFilmDto } from '../dto/update-film.dto';
-import { TransitionFilmDto } from '../dto/transition-film.dto';
-import { Note } from '../../../domain/shared/entities/note.entity';
+import {
+  BadRequestException,
+  Inject,
+  Injectable,
+  NotFoundException,
+} from "@nestjs/common";
+import { Film } from "../../../domain/film/entities/film.entity";
+import {
+  IFilmRepository,
+  FILM_REPOSITORY,
+} from "../../../domain/film/repositories/film.repository.interface";
+import {
+  IFilmTagRepository,
+  FILM_TAG_REPOSITORY,
+} from "../../../domain/film-tag/repositories/film-tag.repository.interface";
+import { FilmState } from "../../../domain/film-state/entities/film-state.entity";
+import {
+  IFilmStateRepository,
+  FILM_STATE_REPOSITORY,
+} from "../../../domain/film-state/repositories/film-state.repository.interface";
+import {
+  ITransitionStateRepository,
+  TRANSITION_STATE_REPOSITORY,
+} from "../../../domain/transition/repositories/transition-state.repository.interface";
+import {
+  ITransitionRuleRepository,
+  TRANSITION_RULE_REPOSITORY,
+} from "../../../domain/transition/repositories/transition-rule.repository.interface";
+import {
+  ITransitionStateMetadataRepository,
+  TRANSITION_STATE_METADATA_REPOSITORY,
+} from "../../../domain/transition/repositories/transition-state-metadata.repository.interface";
+import {
+  ITransitionMetadataFieldRepository,
+  TRANSITION_METADATA_FIELD_REPOSITORY,
+} from "../../../domain/transition/repositories/transition-metadata-field.repository.interface";
+import {
+  INoteRepository,
+  NOTE_REPOSITORY,
+} from "../../../domain/shared/repositories/note.repository.interface";
+import { FilmFilters } from "../../../domain/film/repositories/film.repository.interface";
+import { CreateFilmDto } from "../dto/create-film.dto";
+import { UpdateFilmDto } from "../dto/update-film.dto";
+import { TransitionFilmDto } from "../dto/transition-film.dto";
+import { Note } from "../../../domain/shared/entities/note.entity";
 
 export interface FilmFindAllParams {
   stateNames?: string[];
@@ -29,20 +58,28 @@ export interface FilmFindAllParams {
 export class FilmService {
   constructor(
     @Inject(FILM_REPOSITORY) private readonly filmRepo: IFilmRepository,
-    @Inject(FILM_TAG_REPOSITORY) private readonly filmTagRepo: IFilmTagRepository,
-    @Inject(FILM_STATE_REPOSITORY) private readonly filmStateRepo: IFilmStateRepository,
-    @Inject(TRANSITION_STATE_REPOSITORY) private readonly transitionStateRepo: ITransitionStateRepository,
-    @Inject(TRANSITION_RULE_REPOSITORY) private readonly transitionRuleRepo: ITransitionRuleRepository,
-    @Inject(TRANSITION_STATE_METADATA_REPOSITORY) private readonly transitionStateMetadataRepo: ITransitionStateMetadataRepository,
-    @Inject(TRANSITION_METADATA_FIELD_REPOSITORY) private readonly metadataFieldRepo: ITransitionMetadataFieldRepository,
+    @Inject(FILM_TAG_REPOSITORY)
+    private readonly filmTagRepo: IFilmTagRepository,
+    @Inject(FILM_STATE_REPOSITORY)
+    private readonly filmStateRepo: IFilmStateRepository,
+    @Inject(TRANSITION_STATE_REPOSITORY)
+    private readonly transitionStateRepo: ITransitionStateRepository,
+    @Inject(TRANSITION_RULE_REPOSITORY)
+    private readonly transitionRuleRepo: ITransitionRuleRepository,
+    @Inject(TRANSITION_STATE_METADATA_REPOSITORY)
+    private readonly transitionStateMetadataRepo: ITransitionStateMetadataRepository,
+    @Inject(TRANSITION_METADATA_FIELD_REPOSITORY)
+    private readonly metadataFieldRepo: ITransitionMetadataFieldRepository,
     @Inject(NOTE_REPOSITORY) private readonly noteRepository: INoteRepository,
-  ) { }
+  ) {}
 
   async findAll(params: FilmFindAllParams = {}): Promise<Film[]> {
     const filters: FilmFilters = {};
 
     const needsStates = params.stateNames?.length || params.from || params.to;
-    const allStates = needsStates ? await this.transitionStateRepo.findAll() : [];
+    const allStates = needsStates
+      ? await this.transitionStateRepo.findAll()
+      : [];
 
     if (params.stateNames?.length) {
       const stateIds = allStates
@@ -58,16 +95,20 @@ export class FilmService {
     if (params.q?.trim()) filters.searchQuery = params.q.trim();
 
     if (params.from || params.to) {
-      const loadedState = allStates.find((s) => s.name === 'Loaded');
+      const loadedState = allStates.find((s) => s.name === "Loaded");
       if (loadedState) {
         filters.loadedStateId = loadedState.id;
-        if (params.from) filters.loadedDateFrom = new Date(`${params.from}T00:00:00.000Z`);
-        if (params.to) filters.loadedDateTo = new Date(`${params.to}T23:59:59.999Z`);
+        if (params.from)
+          filters.loadedDateFrom = new Date(`${params.from}T00:00:00.000Z`);
+        if (params.to)
+          filters.loadedDateTo = new Date(`${params.to}T23:59:59.999Z`);
       }
     }
 
     const hasFilters = Object.keys(filters).length > 0;
-    return hasFilters ? this.filmRepo.findWithFilters(filters) : this.filmRepo.findAll();
+    return hasFilters
+      ? this.filmRepo.findWithFilters(filters)
+      : this.filmRepo.findAll();
   }
 
   async findById(id: number): Promise<Film> {
@@ -81,8 +122,9 @@ export class FilmService {
   }
 
   async create(dto: CreateFilmDto): Promise<Film> {
-    const addedState = await this.transitionStateRepo.findByName('Added');
-    if (!addedState) throw new NotFoundException(`Initial state 'Added' not found`);
+    const addedState = await this.transitionStateRepo.findByName("Added");
+    if (!addedState)
+      throw new NotFoundException(`Initial state 'Added' not found`);
 
     const film = Film.create({
       name: dto.name,
@@ -101,7 +143,11 @@ export class FilmService {
     const initialStateId = await this.filmStateRepo.save(initialState);
 
     if (dto.metadata && Object.keys(dto.metadata).length > 0) {
-      await this.saveTransitionMetadata(addedState.id, initialStateId, dto.metadata);
+      await this.saveTransitionMetadata(
+        addedState.id,
+        initialStateId,
+        dto.metadata,
+      );
     }
 
     return this.findById(id);
@@ -113,9 +159,12 @@ export class FilmService {
       id: existing.id,
       name: dto.name ?? existing.name,
       emulsionId: dto.emulsionId ?? existing.emulsionId,
-      expirationDate: dto.expirationDate ? new Date(dto.expirationDate) : existing.expirationDate,
+      expirationDate: dto.expirationDate
+        ? new Date(dto.expirationDate)
+        : existing.expirationDate,
       parentId: existing.parentId,
-      transitionProfileId: dto.transitionProfileId ?? existing.transitionProfileId,
+      transitionProfileId:
+        dto.transitionProfileId ?? existing.transitionProfileId,
     });
     await this.filmRepo.update(updated);
     return this.findById(id);
@@ -139,8 +188,11 @@ export class FilmService {
   async transition(filmId: number, dto: TransitionFilmDto): Promise<Film> {
     const film = await this.findById(filmId);
 
-    const targetState = await this.transitionStateRepo.findByName(dto.targetStateName);
-    if (!targetState) throw new NotFoundException(`State '${dto.targetStateName}' not found`);
+    const targetState = await this.transitionStateRepo.findByName(
+      dto.targetStateName,
+    );
+    if (!targetState)
+      throw new NotFoundException(`State '${dto.targetStateName}' not found`);
 
     const currentState = film.currentState;
     // A film with no state history has no currentState yet — any target is
@@ -171,7 +223,11 @@ export class FilmService {
     }
 
     if (dto.metadata && Object.keys(dto.metadata).length > 0) {
-      await this.saveTransitionMetadata(targetState.id, newStateId, dto.metadata);
+      await this.saveTransitionMetadata(
+        targetState.id,
+        newStateId,
+        dto.metadata,
+      );
     }
 
     return this.findById(filmId);
@@ -182,7 +238,10 @@ export class FilmService {
     filmStateId: number,
     metadataInput: Record<string, string | string[]>,
   ): Promise<void> {
-    const stateMetadataFields = await this.transitionStateMetadataRepo.findByTransitionStateId(targetStateId);
+    const stateMetadataFields =
+      await this.transitionStateMetadataRepo.findByTransitionStateId(
+        targetStateId,
+      );
 
     for (const tsm of stateMetadataFields) {
       const field = await this.metadataFieldRepo.findById(tsm.fieldId);
@@ -195,7 +254,8 @@ export class FilmService {
         // One row per value — no JSON serialization
         const values = Array.isArray(inputValue) ? inputValue : [inputValue];
         for (const v of values) {
-          if (field.fieldType === 'string') this.validateHttpsUrl(v, field.name);
+          if (field.fieldType === "string")
+            this.validateHttpsUrl(v, field.name);
           await this.filmStateRepo.saveMetadataValue(filmStateId, tsm.id, v);
         }
       } else {
@@ -212,21 +272,29 @@ export class FilmService {
     try {
       parsed = new URL(url);
     } catch {
-      throw new BadRequestException(`Metadata field '${fieldName}' contains an invalid URL: ${url}`);
+      throw new BadRequestException(
+        `Metadata field '${fieldName}' contains an invalid URL: ${url}`,
+      );
     }
-    if (parsed.protocol !== 'https:') {
+    if (parsed.protocol !== "https:") {
       throw new BadRequestException(
         `Metadata field '${fieldName}' only accepts https:// URLs, got: ${url}`,
       );
     }
   }
 
-  private async addNote(entityId: number, text: string, createdAt: Date): Promise<void> {
-    await this.noteRepository.save(Note.create({
-      entity_id: entityId,
-      entity_type: 'film_state',
-      text: text,
-      created_at: createdAt,
-    }));
+  private async addNote(
+    entityId: number,
+    text: string,
+    createdAt: Date,
+  ): Promise<void> {
+    await this.noteRepository.save(
+      Note.create({
+        entity_id: entityId,
+        entity_type: "film_state",
+        text: text,
+        created_at: createdAt,
+      }),
+    );
   }
 }

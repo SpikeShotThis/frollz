@@ -1,6 +1,6 @@
-import { Emulsion } from '../../emulsion/entities/emulsion.entity';
-import { FilmState } from '../../film-state/entities/film-state.entity';
-import { Tag } from '../../shared/entities/tag.entity';
+import { Emulsion } from "../../emulsion/entities/emulsion.entity";
+import { FilmState } from "../../film-state/entities/film-state.entity";
+import { Tag } from "../../shared/entities/tag.entity";
 
 export class Film {
   constructor(
@@ -45,7 +45,9 @@ export class Film {
   get currentState(): FilmState | null {
     if (this.states.length === 0) return null;
     return this.states.reduce((latest, state) =>
-      new Date(state.date).getTime() > new Date(latest.date).getTime() ? state : latest,
+      new Date(state.date).getTime() > new Date(latest.date).getTime()
+        ? state
+        : latest,
     );
   }
 }

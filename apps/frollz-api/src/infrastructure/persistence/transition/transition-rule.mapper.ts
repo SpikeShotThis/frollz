@@ -1,5 +1,5 @@
-import { TransitionRule } from '../../../domain/transition/entities/transition-rule.entity';
-import { TransitionRuleRow } from '../types/db.types';
+import { TransitionRule } from "../../../domain/transition/entities/transition-rule.entity";
+import { TransitionRuleRow } from "../types/db.types";
 
 export class TransitionRuleMapper {
   static toDomain(row: TransitionRuleRow): TransitionRule {
