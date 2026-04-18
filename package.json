@@ -1,7 +1,7 @@
 {
     "name": "frollz",
     "version": "0.2.4",
-    "private":"true",
+    "private": "true",
     "scripts": {
         "dev": "turbo run dev",
         "build": "turbo run build",
@@ -9,9 +9,17 @@
         "lint": "turbo run lint",
         "check-types": "turbo run check-types",
         "format": "turbo run format",
-        "clean": "turbo run clean"
+        "clean": "turbo run clean",
+        "dev:api": "pnpm --filter @frollz/frollz-api dev",
+        "dev:ui": "pnpm --filter @frollz/frollz-ui dev",
+        "e2e": "NODE_OPTIONS=--max-old-space-size=4096 pnpm exec playwright test",
+        "e2e:ci": "NODE_OPTIONS=--max-old-space-size=4096 pnpm exec playwright test --workers=1",
+        "e2e:install": "pnpm exec playwright install"
     },
     "devDependencies": {
+        "@faker-js/faker": "^8.0.0",
+        "@playwright/test": "^1.40.0",
+        "npm-run-all2": "^8.0.4",
         "turbo": "~2.9.6",
         "typescript": "6.0.2"
     },

@@ -1,6 +1,7 @@
 ---
 name: commit
 description: Create a conventional commit for this project. Auto-detects scope from changed files, enforces the commit format required for GitHub release changelogs. Use after every logical unit of work.
+model: haiku-4.5
 ---
 
 # Commit Skill — Conventional Commits for Frollz
