@@ -5,7 +5,7 @@ import { createPinia, setActivePinia } from "pinia";
 import { createRouter, createMemoryHistory } from "vue-router";
 import { axe } from "vitest-axe";
 import FilmDetailView from "@/views/FilmDetailView.vue";
-import { filmApi, tagApi, transitionApi } from "@/services/api-client";
+import { filmApi, tagApi, transitionApi, cameraApi } from "@/services/api-client";
 import type {
   Film,
   Tag,
@@ -35,6 +35,9 @@ vi.mock("@/services/api-client", () => ({
   transitionApi: {
     getGraph: vi.fn(),
     getProfiles: vi.fn(),
+  },
+  cameraApi: {
+    getAll: vi.fn(),
   },
 }));
 
@@ -125,6 +128,7 @@ describe("RollDetailView", () => {
     vi.mocked(transitionApi.getProfiles).mockResolvedValue({
       data: mockProfiles,
     } as any);
+    vi.mocked(cameraApi.getAll).mockResolvedValue({ data: [] } as any);
   });
 
   describe("accessibility", () => {

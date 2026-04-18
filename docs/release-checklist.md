@@ -42,7 +42,7 @@ Pushing the tag triggers the CI/CD pipeline automatically.
 
 - [ ] Open **Actions** tab: `https://github.com/joshholl/frollz/actions`
 - [ ] Confirm `CI / CD` triggered on the tag push
-- [ ] Wait for **API — Lint & Test** and **UI — Lint, Type-check & Test** to go green
+- [ ] Wait for **API — Lint & Test** and **UI — Lint, Check-Types & Test** to go green
 - [ ] Wait for **Build & Push Images** to complete
 - [ ] If any job fails — fix on the release branch, re-merge, re-tag
 

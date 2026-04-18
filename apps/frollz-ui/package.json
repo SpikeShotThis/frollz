@@ -9,7 +9,7 @@
     "build": "vite build",
     "dev": "vite --host 0.0.0.0",
     "preview": "vite preview",
-    "type-check": "vue-tsc --build --force",
+    "check-types": "vue-tsc --build --force",
     "lint": "eslint . --fix",
     "format": "prettier --write src/",
     "test": "vitest run"

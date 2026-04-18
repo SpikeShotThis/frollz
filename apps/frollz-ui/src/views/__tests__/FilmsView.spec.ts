@@ -11,6 +11,7 @@ import {
   transitionApi,
   formatApi,
   tagApi,
+  cameraApi,
 } from "@/services/api-client";
 import type { Film } from "@/types";
 import { randomInt } from "crypto";
@@ -37,6 +38,9 @@ vi.mock("@/services/api-client", () => ({
   },
   transitionApi: {
     getProfiles: vi.fn(),
+  },
+  cameraApi: {
+    getAll: vi.fn(),
   },
 }));
 
@@ -81,6 +85,7 @@ describe("FilmsView", () => {
     vi.mocked(transitionApi.getProfiles).mockResolvedValue({
       data: mockProfiles,
     } as any);
+    vi.mocked(cameraApi.getAll).mockResolvedValue({ data: [] } as any);
   });
 
   describe("accessibility", () => {

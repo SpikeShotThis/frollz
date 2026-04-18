@@ -78,6 +78,12 @@
                 >
               </dd>
             </div>
+            <div v-if="loadedCamera" class="flex justify-between text-sm">
+              <dt class="text-gray-500 dark:text-gray-400">Camera</dt>
+              <dd class="text-gray-900 dark:text-gray-100">
+                {{ loadedCamera.brand }} {{ loadedCamera.model }}
+              </dd>
+            </div>
             <div
               v-if="film.expirationDate"
               class="flex justify-between text-sm"
@@ -195,6 +201,32 @@
                     + Add URL
                   </button>
                 </div>
+                <template v-else-if="field.fieldType === 'camera'">
+                  <div v-if="cameras.length === 0" class="mb-2 text-xs text-gray-500 dark:text-gray-400">
+                    Camera — <RouterLink to="/cameras" class="text-primary-600 dark:text-primary-400 hover:underline">add a camera first</RouterLink>
+                  </div>
+                  <label
+                    v-else
+                    :for="`meta-${field.field}`"
+                    class="block text-xs text-gray-600 dark:text-gray-400 mb-2"
+                  >
+                    Camera — optional
+                    <select
+                      :id="`meta-${field.field}`"
+                      v-model="metadataValues[field.field] as string"
+                      class="mt-1 w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1 text-base sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                    >
+                      <option value="">None</option>
+                      <option
+                        v-for="camera in cameras"
+                        :key="camera.id"
+                        :value="String(camera.id)"
+                      >
+                        {{ camera.brand }} {{ camera.model }}
+                      </option>
+                    </select>
+                  </label>
+                </template>
                 <label
                   v-else
                   :for="`meta-${field.field}`"
@@ -450,22 +482,44 @@
                       }}:</span
                     >
                     <template v-if="Array.isArray(m.value)">
-                      <span v-if="m.value.length === 0" class="ml-1 italic"
-                        >none</span
-                      >
-                      <span v-else class="ml-1 space-x-1">
-                        <a
-                          v-for="(url, i) in m.value"
-                          :key="i"
-                          :href="url"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          class="text-primary-600 dark:text-primary-400 hover:underline"
-                          >Scan {{ i + 1 }}</a
+                      <template v-if="isCameraMetadataField(m)">
+                        <span v-if="m.value.length === 0" class="ml-1 italic"
+                          >none</span
                         >
-                      </span>
+                        <span v-else class="ml-1 space-x-1">
+                          <span
+                            v-for="(value, i) in resolveMetadataValue(m)"
+                            :key="i"
+                            class="text-primary-600 dark:text-primary-400"
+                          >
+                            {{ value }}
+                          </span>
+                        </span>
+                      </template>
+                      <template v-else>
+                        <span v-if="m.value.length === 0" class="ml-1 italic"
+                          >none</span
+                        >
+                        <span v-else class="ml-1 space-x-1">
+                          <a
+                            v-for="(url, i) in m.value"
+                            :key="i"
+                            :href="url"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            class="text-primary-600 dark:text-primary-400 hover:underline"
+                            >Scan {{ i + 1 }}</a
+                          >
+                        </span>
+                      </template>
                     </template>
-                    <span v-else class="ml-1">{{ m.value ?? "—" }}</span>
+                    <span v-else class="ml-1">
+                      {{
+                        isCameraMetadataField(m)
+                          ? resolveMetadataValue(m)
+                          : m.value ?? "—"
+                      }}
+                    </span>
                   </li>
                 </ul>
               </div>
@@ -479,8 +533,8 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from "vue";
-import { useRoute, useRouter } from "vue-router";
-import { filmApi, tagApi, transitionApi } from "@/services/api-client";
+import { RouterLink, useRoute, useRouter } from "vue-router";
+import { filmApi, tagApi, transitionApi, cameraApi } from "@/services/api-client";
 import type {
   Film,
   FilmTag,
@@ -488,6 +542,7 @@ import type {
   TransitionGraph,
   TransitionProfile,
   TransitionMetadataField,
+  Camera,
 } from "@frollz/shared";
 import { currentStateName } from "@/types";
 import { useNotificationStore } from "@/stores/notification";
@@ -513,10 +568,23 @@ const transitionNote = ref("");
 const metadataValues = ref<Record<string, string | string[]>>({});
 
 const transitionGraph = ref<TransitionGraph>({ states: [], transitions: [] });
+const cameras = ref<Camera[]>([]);
 
 const stateName = computed(() =>
   film.value ? currentStateName(film.value) : "",
 );
+
+const loadedCamera = computed((): Camera | null => {
+  if (!film.value) return null;
+  const loadedState = film.value.states.find((s) => s.state?.name === "Loaded");
+  const meta = loadedState?.metadata.find(
+    (m) => m.transitionStateMetadata?.field?.name === "cameraId",
+  );
+  const val = meta?.value;
+  if (!val || Array.isArray(val)) return null;
+  const id = parseInt(val, 10);
+  return cameras.value.find((c) => c.id === id) ?? null;
+});
 
 const getChildStateName = (child: Film): string => currentStateName(child);
 
@@ -579,6 +647,34 @@ const formatFieldLabel = (fieldName: string): string =>
     .replace(/([A-Z])/g, " $1")
     .replace(/^./, (s) => s.toUpperCase())
     .trim();
+
+const isCameraMetadataField = (
+  metadata: {
+    transitionStateMetadata?: { field?: { name?: string } };
+  },
+): boolean => metadata.transitionStateMetadata?.field?.name === "cameraId";
+
+const resolveMetadataValue = (
+  metadata: {
+    value: string | string[] | null;
+    transitionStateMetadata?: { field?: { name?: string } };
+  },
+): string | string[] | null => {
+  if (!isCameraMetadataField(metadata)) return metadata.value;
+
+  const resolveId = (value: string): string => {
+    const id = parseInt(value, 10);
+    const camera = cameras.value.find((c) => c.id === id);
+    return camera ? `${camera.brand} ${camera.model}` : value;
+  };
+
+  if (Array.isArray(metadata.value)) {
+    return metadata.value.map((value) => resolveId(value));
+  }
+
+  if (!metadata.value) return metadata.value;
+  return resolveId(metadata.value);
+};
 
 const handleTransition = (targetState: string) => {
   pendingTransition.value = targetState;
@@ -726,6 +822,9 @@ const reload = async () => {
       loadData(),
       transitionApi.getProfiles().then((r) => {
         transitionProfiles.value = r.data;
+      }),
+      cameraApi.getAll().then((r) => {
+        cameras.value = r.data;
       }),
     ]);
     const profileName =

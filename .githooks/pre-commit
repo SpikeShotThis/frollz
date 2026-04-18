@@ -8,8 +8,8 @@ ROOT="$(git rev-parse --show-toplevel)"
 echo "▶ pre-commit: UI lint"
 (cd "$ROOT/apps/frollz-ui" && pnpm lint)
 
-echo "▶ pre-commit: UI type-check"
-(cd "$ROOT/apps/frollz-ui" && pnpm type-check)
+echo "▶ pre-commit: UI check-types"
+(cd "$ROOT/apps/frollz-ui" && pnpm check-types)
 
 echo "▶ pre-commit: UI tests"
 (cd "$ROOT/apps/frollz-ui" && pnpm test -- --run)

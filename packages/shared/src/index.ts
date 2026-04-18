@@ -49,7 +49,7 @@ export const Emulsion = z.strictObject({
   speed: z.int().nonnegative(),
   formatId: z.int().nonnegative(),
   processId: z.int().nonnegative(),
-  parentId: z.int().nonnegative().optional(),
+  parentId: z.int().nonnegative().optional().nullable(),
   boxImageMimeType: z.string().nonempty().optional(),
   tags: z.array(Tag),
 })
@@ -111,6 +111,7 @@ export const FilmState = z.strictObject({
   state: z.strictObject({
     id: z.int().nonnegative(),
     name: z.string().nonempty(),
+    metadata: FilmStateMetadata.array().optional(),
   }).optional(),
 })
 export type FilmState = z.infer<typeof FilmState>
@@ -233,7 +234,7 @@ export type TransitionDuration = z.infer<typeof TransitionDuration>
 export const CreateFilmInput = z.strictObject({
   name: z.string().nonempty(),
   emulsionId: z.int().positive(),
-  expirationDate: z.iso.date().nullable().optional(),
+  expirationDate: z.iso.datetime().nullable().optional(),
   parentId: z.int().positive().optional(),
   transitionProfileId: z.int().positive(),
   metadata: z.record(z.string(), z.union([z.string(), z.array(z.string())])).optional(),

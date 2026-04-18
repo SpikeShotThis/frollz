@@ -505,6 +505,12 @@
               >
                 {{ film.emulsion?.brand ?? "—" }}
               </p>
+              <p
+                v-if="getLoadedCamera(film)"
+                class="text-xs text-gray-500 dark:text-gray-400 mt-0.5 truncate"
+              >
+                {{ getLoadedCamera(film)!.brand }} {{ getLoadedCamera(film)!.model }}
+              </p>
             </div>
             <div class="shrink-0 flex items-center gap-2">
               <!-- Scan link indicator -->
@@ -609,6 +615,11 @@
               <th
                 class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider select-none"
               >
+                Camera
+              </th>
+              <th
+                class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider select-none"
+              >
                 Scans
               </th>
               <th class="px-6 py-3"></th>
@@ -635,6 +646,11 @@
                     class="h-5 bg-gray-200 dark:bg-gray-700 rounded-full w-20"
                   ></div>
                 </td>
+                <td class="px-6 py-4">
+                  <div
+                    class="h-4 bg-gray-200 dark:bg-gray-700 rounded w-24"
+                  ></div>
+                </td>
                 <td class="px-6 py-4"></td>
                 <td class="px-6 py-4"></td>
               </tr>
@@ -642,7 +658,7 @@
             <template v-else>
               <tr v-if="filteredFilms.length === 0">
                 <td
-                  colspan="5"
+                  colspan="6"
                   class="px-6 py-8 text-center text-sm text-gray-600 dark:text-gray-400 italic"
                 >
                   No films found.
@@ -675,6 +691,15 @@
                     :class="getStateColor(getStateName(film))"
                     >{{ getStateName(film) || "No state" }}</span
                   >
+                </td>
+                <td
+                  class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400"
+                >
+                  {{
+                    getLoadedCamera(film)
+                      ? `${getLoadedCamera(film)!.brand} ${getLoadedCamera(film)!.model}`
+                      : "—"
+                  }}
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
                   <template v-if="getScanUrls(film).length > 0">
@@ -944,9 +969,11 @@ import {
   tagApi,
   exportApi,
   importApi,
+  cameraApi,
 } from "@/services/api-client";
 import BaseModal from "@/components/BaseModal.vue";
 import type { Film, Emulsion, TransitionProfile, Format, Tag } from "@/types";
+import type { Camera } from "@frollz/shared";
 import { currentStateName, getScanUrls } from "@/types";
 import { getStateColor } from "@/utils/stateColors";
 import { triggerDownload } from "@/utils/download";
@@ -958,6 +985,7 @@ const films = ref<Film[]>([]);
 const emulsions = ref<Emulsion[]>([]);
 const formats = ref<Format[]>([]);
 const tags = ref<Tag[]>([]);
+const cameras = ref<Camera[]>([]);
 const transitionProfiles = ref<TransitionProfile[]>([]);
 const isLoading = ref(true);
 const exportingJson = ref(false);
@@ -1117,6 +1145,17 @@ const clearAllFilters = () => {
 };
 
 const getStateName = (film: Film): string => currentStateName(film);
+
+const getLoadedCamera = (film: Film): Camera | null => {
+  const loadedState = film.states.find((s) => s.state?.name === "Loaded");
+  const meta = loadedState?.metadata.find(
+    (m) => m.transitionStateMetadata?.field?.name === "cameraId",
+  );
+  const val = meta?.value;
+  if (!val || Array.isArray(val)) return null;
+  const id = parseInt(val, 10);
+  return cameras.value.find((c) => c.id === id) ?? null;
+};
 
 const emptyForm = () => ({
   name: "",
@@ -1386,6 +1425,9 @@ onMounted(async () => {
     }),
     transitionApi.getProfiles().then((r) => {
       transitionProfiles.value = r.data;
+    }),
+    cameraApi.getAll().then((r) => {
+      cameras.value = r.data;
     }),
   ]);
 

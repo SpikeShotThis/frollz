@@ -66,8 +66,8 @@ jobs:
       - name: Lint UI
         run: pnpm --filter @frollz/frollz-ui run lint
 
-      - name: Type-check UI
-        run: pnpm --filter @frollz/frollz-ui run type-check
+      - name: Check-types UI
+        run: pnpm --filter @frollz/frollz-ui run check-types
 
       - name: Test UI
         run: pnpm --filter @frollz/frollz-ui test
