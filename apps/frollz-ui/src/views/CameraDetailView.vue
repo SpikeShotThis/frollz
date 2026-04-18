@@ -131,7 +131,8 @@
                 :to="{ name: 'film-detail', params: { key: film.id } }"
                 class="text-primary-600 dark:text-primary-400 hover:underline font-medium"
               >
-                {{ film.name }}
+                {{ film.name }} — {{ film.emulsion.manufacturer }}
+                {{ film.emulsion.brand }} ISO {{ film.emulsion.speed }}
               </RouterLink>
               <span
                 class="px-2 text-xs leading-5 font-semibold rounded-full shrink-0"

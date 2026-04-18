@@ -506,10 +506,10 @@
                 {{ film.emulsion?.brand ?? "—" }}
               </p>
               <p
-                v-if="getLoadedCamera(film)"
+                v-if="loadedCameraByFilmId.has(film.id)"
                 class="text-xs text-gray-500 dark:text-gray-400 mt-0.5 truncate"
               >
-                {{ getLoadedCamera(film)!.brand }} {{ getLoadedCamera(film)!.model }}
+                {{ loadedCameraByFilmId.get(film.id)!.brand }} {{ loadedCameraByFilmId.get(film.id)!.model }}
               </p>
             </div>
             <div class="shrink-0 flex items-center gap-2">
@@ -667,7 +667,7 @@
               <tr
                 v-for="film in filteredFilms"
                 :key="film.id"
-                v-memo="[film, film.states]"
+                v-memo="[film, film.states, loadedCameraByFilmId.get(film.id)]"
               >
                 <td
                   class="px-6 py-4 whitespace-nowrap text-sm font-medium text-primary-600 dark:text-primary-400 cursor-pointer hover:underline"
@@ -696,8 +696,8 @@
                   class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400"
                 >
                   {{
-                    getLoadedCamera(film)
-                      ? `${getLoadedCamera(film)!.brand} ${getLoadedCamera(film)!.model}`
+                    loadedCameraByFilmId.has(film.id)
+                      ? `${loadedCameraByFilmId.get(film.id)!.brand} ${loadedCameraByFilmId.get(film.id)!.model}`
                       : "—"
                   }}
                 </td>
@@ -1146,16 +1146,26 @@ const clearAllFilters = () => {
 
 const getStateName = (film: Film): string => currentStateName(film);
 
-const getLoadedCamera = (film: Film): Camera | null => {
+function extractLoadedCameraId(film: Film): number | null {
   const loadedState = film.states.find((s) => s.state?.name === "Loaded");
   const meta = loadedState?.metadata.find(
     (m) => m.transitionStateMetadata?.field?.name === "cameraId",
   );
   const val = meta?.value;
   if (!val || Array.isArray(val)) return null;
-  const id = parseInt(val, 10);
-  return cameras.value.find((c) => c.id === id) ?? null;
-};
+  return parseInt(val, 10) || null;
+}
+
+const loadedCameraByFilmId = computed(() => {
+  const map = new Map<number, Camera>();
+  for (const film of films.value) {
+    const cameraId = extractLoadedCameraId(film);
+    if (cameraId === null) continue;
+    const camera = cameras.value.find((c) => c.id === cameraId);
+    if (camera) map.set(film.id, camera);
+  }
+  return map;
+});
 
 const emptyForm = () => ({
   name: "",
