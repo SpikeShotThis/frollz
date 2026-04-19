@@ -34,7 +34,7 @@ export const Tag = z.strictObject({
   colorCode: z.string().regex(/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/, {
     message: 'Invalid hex color format',
   }),
-  description: z.string().nonempty().optional(),
+  description: z.string().nonempty().optional().nullable(),
 })
 export type Tag = z.infer<typeof Tag>
 

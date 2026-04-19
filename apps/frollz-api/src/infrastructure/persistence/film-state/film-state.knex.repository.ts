@@ -8,6 +8,10 @@ import { FilmStateRow } from "../types/db.types";
 import { FilmStateMapper } from "./film-state.mapper";
 import { BaseKnexRepository } from "../base.knex.repository";
 
+interface FilmStateRowWithState extends FilmStateRow {
+  state_name: string;
+}
+
 interface MetadataJoinRow {
   fsm_id: number;
   film_state_id: number;
@@ -26,10 +30,13 @@ interface MetadataJoinRow {
 @Injectable()
 export class FilmStateKnexRepository
   extends BaseKnexRepository
-  implements IFilmStateRepository
-{
+  implements IFilmStateRepository {
   async findById(id: number): Promise<FilmState | null> {
-    const row = await this.db<FilmStateRow>("film_state").where({ id }).first();
+    const row = await this.db<FilmStateRowWithState>("film_state as fs")
+      .join("transition_state as ts", "ts.id", "fs.state_id")
+      .select("fs.*", "ts.name as state_name")
+      .where("fs.id", id)
+      .first();
     if (!row) return null;
     const filmState = FilmStateMapper.toDomain(row);
     const metadata = await this.loadMetadata(id);
@@ -37,9 +44,11 @@ export class FilmStateKnexRepository
   }
 
   async findByFilmId(filmId: number): Promise<FilmState[]> {
-    const rows = await this.db<FilmStateRow>("film_state")
-      .where({ film_id: filmId })
-      .orderBy("id", "desc");
+    const rows = await this.db<FilmStateRowWithState>("film_state as fs")
+      .join("transition_state as ts", "ts.id", "fs.state_id")
+      .select("fs.*", "ts.name as state_name")
+      .where("fs.film_id", filmId)
+      .orderBy("fs.id", "desc");
     return Promise.all(
       rows.map(async (row) => {
         const filmState = FilmStateMapper.toDomain(row);
@@ -50,9 +59,11 @@ export class FilmStateKnexRepository
   }
 
   async findLatestByFilmId(filmId: number): Promise<FilmState | null> {
-    const row = await this.db<FilmStateRow>("film_state")
-      .where({ film_id: filmId })
-      .orderBy("id", "desc")
+    const row = await this.db<FilmStateRowWithState>("film_state as fs")
+      .join("transition_state as ts", "ts.id", "fs.state_id")
+      .select("fs.*", "ts.name as state_name")
+      .where("fs.film_id", filmId)
+      .orderBy("fs.id", "desc")
       .first();
     if (!row) return null;
     const filmState = FilmStateMapper.toDomain(row);

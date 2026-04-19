@@ -92,16 +92,32 @@ export const emulsionApi = {
     apiFetch(z.number().array(), "GET", "/emulsions/speeds", undefined, { q }),
 };
 
+const normalizeTag = (tag: Tag) => ({
+  ...tag,
+  description: tag.description ?? "",
+});
+
 // Tag API
 export const tagApi = {
-  getAll: () => apiFetch(Tag.array(), "GET", "/tags"),
-  getById: (id: number) => apiFetch(Tag, "GET", `/tags/${id}`),
+  getAll: () =>
+    apiFetch(Tag.array(), "GET", "/tags").then((result) => ({
+      data: result.data.map(normalizeTag),
+    })),
+  getById: (id: number) =>
+    apiFetch(Tag, "GET", `/tags/${id}`).then((result) => ({
+      data: normalizeTag(result.data),
+    })),
   create: (data: { name: string; colorCode: string; description?: string }) =>
-    apiFetch(Tag, "POST", "/tags", data),
+    apiFetch(Tag, "POST", "/tags", data).then((result) => ({
+      data: normalizeTag(result.data),
+    })),
   update: (
     id: number,
     data: Partial<{ name: string; colorCode: string; description: string }>,
-  ) => apiFetch(Tag, "PATCH", `/tags/${id}`, data),
+  ) =>
+    apiFetch(Tag, "PATCH", `/tags/${id}`, data).then((result) => ({
+      data: normalizeTag(result.data),
+    })),
   delete: (id: number) => api.delete(`/tags/${id}`),
 };
 
