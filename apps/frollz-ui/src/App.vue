@@ -19,7 +19,7 @@
     >
       <RouterView />
     </main>
-    <footer class="py-4 text-center text-sm text-gray-600 dark:text-gray-500">
+    <footer class="py-4 text-center text-sm text-gray-600 dark:text-gray-400" style="color: var(--footer-dark, #a0a8b0);">
       <p>Frollz &mdash; Film Roll Tracker</p>
     </footer>
     <AppAnnouncer />

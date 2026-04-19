@@ -200,6 +200,7 @@ onUnmounted(() => {
 });
 </script>
 
+
 <style scoped>
 @reference "../style.css";
 
@@ -208,7 +209,14 @@ onUnmounted(() => {
   @apply inline-flex items-center px-3 min-h-[44px] rounded-md text-sm font-medium text-gray-500 hover:text-primary-600 hover:bg-gray-100 transition-colors duration-200 dark:text-gray-400 dark:hover:text-primary-400 dark:hover:bg-gray-700;
 }
 .nav-link.active {
-  @apply text-primary-600 bg-primary-50 dark:text-primary-400 dark:bg-gray-700;
+  @apply text-primary-600 bg-primary-50 dark:text-primary-300;
+  background-color: var(--nav-active-dark, #2a3f5f);
+}
+
+@media (prefers-color-scheme: dark) {
+  .nav-link.active {
+    background-color: #2a3f5f !important;
+  }
 }
 
 /* Mobile drawer links — min 44px tap target (WCAG 2.5.5) */

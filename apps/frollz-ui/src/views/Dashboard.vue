@@ -85,7 +85,7 @@
           <p class="text-gray-500 dark:text-gray-400 mb-4">No films yet.</p>
           <RouterLink
             to="/films?action=create"
-            class="inline-block bg-primary-600 text-white px-4 py-2 rounded-md hover:bg-primary-700 font-medium text-sm"
+            class="inline-block bg-primary-600 text-white px-6 py-3 sm:px-4 sm:py-2 rounded-md hover:bg-primary-700 font-medium text-sm min-h-[44px] min-w-[44px]"
           >
             Add your first film
           </RouterLink>
@@ -96,7 +96,9 @@
           <div
             v-for="film in recentFilms"
             :key="film.id"
-            class="flex justify-between items-center py-2 border-b border-gray-100 dark:border-gray-700 last:border-b-0"
+            tabindex="0"
+            class="flex justify-between items-center py-2 border-b border-gray-100 dark:border-gray-700 last:border-b-0 rounded-lg transition-shadow focus:outline-none hover:shadow-md focus-visible:shadow-lg hover:border-primary-300 focus-visible:border-primary-400"
+            style="outline: none;"
           >
             <div>
               <p class="font-medium">{{ film.name }}</p>
@@ -121,19 +123,19 @@
         <div class="space-y-4">
           <RouterLink
             to="/films?action=create"
-            class="block w-full bg-primary-600 text-white text-center py-3 px-4 rounded-md hover:bg-primary-700 font-medium"
+            class="block w-full bg-primary-600 text-white text-center py-4 px-6 sm:py-3 sm:px-4 rounded-md hover:bg-primary-700 font-medium min-h-[44px] min-w-[44px]"
           >
             Add New Film
           </RouterLink>
           <RouterLink
             to="/emulsions?action=create"
-            class="block w-full bg-green-600 text-white text-center py-3 px-4 rounded-md hover:bg-green-700 font-medium"
+            class="block w-full bg-green-700 text-white text-center py-4 px-6 sm:py-3 sm:px-4 rounded-md hover:bg-green-800 font-medium min-h-[44px] min-w-[44px]"
           >
             Add New Emulsion
           </RouterLink>
           <RouterLink
             to="/formats?action=create"
-            class="block w-full bg-blue-600 text-white text-center py-3 px-4 rounded-md hover:bg-blue-700 font-medium"
+            class="block w-full bg-blue-600 text-white text-center py-4 px-6 sm:py-3 sm:px-4 rounded-md hover:bg-blue-700 font-medium min-h-[44px] min-w-[44px]"
           >
             Add Film Format
           </RouterLink>
