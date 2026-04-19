@@ -426,7 +426,7 @@
                 type="file"
                 accept="image/jpeg,image/png,image/webp,image/gif"
                 @change="onBoxImageChange"
-                class="mt-1 w-full text-sm text-gray-700 dark:text-gray-300 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-primary-50 file:text-primary-700 dark:file:bg-primary-900 dark:file:text-primary-200 hover:file:bg-primary-100"
+                class="mt-1 w-full text-sm text-gray-700 dark:text-gray-300 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-primary-600 file:text-white dark:file:bg-primary-600 dark:file:text-white hover:file:bg-primary-700 dark:hover:file:bg-primary-700 focus-visible:file:outline-2 focus-visible:file:outline-offset-2 focus-visible:file:outline-primary-500"
               />
             </label>
             <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
