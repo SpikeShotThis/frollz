@@ -791,30 +791,27 @@
             </label>
           </div>
 
-          <!-- Bulk film toggle -->
-          <div class="flex items-center gap-3">
+          <!-- Create as bulk toggle: only for roll format emulsions -->
+          <div v-if="selectedFormatIsRoll">
             <label
-              for="film-bulk-canister"
+              for="film-create-as-bulk"
               class="flex items-center gap-2 cursor-pointer"
             >
               <input
-                id="film-bulk-canister"
-                v-model="form.isBulkFilm"
+                id="film-create-as-bulk"
+                v-model="form.isCreatingAsBulk"
                 type="checkbox"
                 class="rounded"
-                @change="onBulkFilmToggle"
+                @change="onCreateAsBulkChange"
               />
               <span class="text-sm font-medium text-gray-700 dark:text-gray-300"
-                >Bulk canister</span
+                >Create as bulk canister</span
               >
             </label>
-            <span class="text-xs text-gray-600 dark:text-gray-400"
-              >(100ft spool or similar)</span
-            >
           </div>
 
-          <!-- Parent bulk film selector -->
-          <div v-if="!form.isBulkFilm">
+          <!-- Parent bulk film selector: hidden for bulk canisters or when creating as bulk -->
+          <div v-if="!selectedEmulsionIsBulk && !form.isCreatingAsBulk">
             <label
               for="film-parent"
               class="block text-sm font-medium text-gray-700 dark:text-gray-300"
@@ -850,6 +847,7 @@
                 :required="!form.parentId"
                 aria-required="true"
                 class="mt-1 w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 text-base sm:text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                @change="onEmulsionChange"
               >
                 <option value="" disabled>Select an emulsion</option>
                 <option
@@ -870,6 +868,14 @@
             Emulsion inherited from parent bulk canister
           </div>
 
+          <!-- Contextual note for bulk roll emulsions -->
+          <div
+            v-if="selectedEmulsionIsBulk"
+            class="text-sm text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-900/20 rounded px-3 py-2 border border-blue-200 dark:border-blue-800"
+          >
+            This film will be a bulk canister — child rolls are cut from it
+          </div>
+
           <div>
             <label
               for="film-expiration-date"
@@ -881,31 +887,6 @@
                 type="date"
                 class="mt-1 w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 text-base sm:text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
               />
-            </label>
-          </div>
-
-          <div>
-            <label
-              for="film-profile"
-              class="block text-sm font-medium text-gray-700 dark:text-gray-300"
-              >Transition Profile
-              <span class="text-red-500" aria-hidden="true">*</span>
-              <select
-                id="film-profile"
-                v-model="form.transitionProfileId"
-                required
-                aria-required="true"
-                class="mt-1 w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 text-base sm:text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
-              >
-                <option value="" disabled>Select a profile</option>
-                <option
-                  v-for="profile in transitionProfiles"
-                  :key="profile.id"
-                  :value="profile.id"
-                >
-                  {{ profile.name }}
-                </option>
-              </select>
             </label>
           </div>
         </div>
@@ -1147,13 +1128,21 @@ const loadedCameraByFilmId = computed(() => {
   return map;
 });
 
+const getTodayString = () => {
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = String(today.getMonth() + 1).padStart(2, "0");
+  const day = String(today.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+};
+
 const emptyForm = () => ({
   name: "",
   emulsionId: "",
-  expirationDate: "",
+  expirationDate: getTodayString(),
   transitionProfileId: "" as string | number,
-  isBulkFilm: false,
   parentId: "",
+  isCreatingAsBulk: false,
 });
 
 const form = ref(emptyForm());
@@ -1166,6 +1155,29 @@ const sortedEmulsions = computed(() =>
     .sort((a, b) => a.brand.toLowerCase().localeCompare(b.brand.toLowerCase())),
 );
 
+const selectedEmulsion = computed(() => {
+  if (!form.value.emulsionId) return null;
+  return emulsions.value.find((e) => e.id === Number(form.value.emulsionId)) ?? null;
+});
+
+const selectedFormat = computed(() => {
+  const emulsion = selectedEmulsion.value;
+  if (!emulsion) return null;
+  return formats.value.find((f) => f.id === emulsion.formatId) ?? null;
+});
+
+const selectedFormatIsRoll = computed(() => {
+  const fmt = selectedFormat.value;
+  if (!fmt) return false;
+  return fmt.packageId === 2;
+});
+
+const selectedEmulsionIsBulk = computed(() => {
+  const fmt = selectedFormat.value;
+  if (!fmt) return false;
+  return fmt.packageId === 3;
+});
+
 const bulkprofileId = computed(
   () => transitionProfiles.value.find((p) => p.name === "bulk")?.id ?? "",
 );
@@ -1174,14 +1186,32 @@ const bulkFilms = computed(() =>
   films.value.filter((f) => f.transitionProfileId === bulkprofileId.value),
 );
 
-const onBulkFilmToggle = () => {
-  if (form.value.isBulkFilm) {
-    form.value.parentId = "";
-    form.value.transitionProfileId = bulkprofileId.value;
-  } else {
-    const standardId =
-      transitionProfiles.value.find((p) => p.name === "standard")?.id ?? "";
-    form.value.transitionProfileId = standardId;
+const onEmulsionChange = () => {
+  const fmt = selectedFormat.value;
+  if (!fmt) return;
+
+  const packageId = fmt.packageId;
+  let profileName = "standard";
+
+  if (packageId === 3) {
+    profileName = "bulk";
+  } else if (packageId === 4) {
+    profileName = "instant";
+  }
+
+  form.value.isCreatingAsBulk = false;
+  setProfile(profileName);
+};
+
+const onCreateAsBulkChange = () => {
+  const profileName = form.value.isCreatingAsBulk ? "bulk" : "standard";
+  setProfile(profileName);
+};
+
+const setProfile = (profileName: string) => {
+  const profile = transitionProfiles.value.find((p) => p.name === profileName);
+  if (profile) {
+    form.value.transitionProfileId = profile.id;
   }
 };
 
@@ -1367,11 +1397,10 @@ const onFilmsJsonSelected = async (event: Event) => {
 };
 
 const openAddFilm = (emulsionId?: string) => {
-  if (emulsionId) form.value.emulsionId = emulsionId;
-  // Default to standard profile
-  const standardId =
-    transitionProfiles.value.find((p) => p.name === "standard")?.id ?? "";
-  form.value.transitionProfileId = standardId;
+  if (emulsionId) {
+    form.value.emulsionId = emulsionId;
+    onEmulsionChange();
+  }
   showModal.value = true;
 };
 

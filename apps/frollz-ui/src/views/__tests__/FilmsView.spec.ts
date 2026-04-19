@@ -368,7 +368,7 @@ describe("FilmsView", () => {
   });
 
   describe("add film form", () => {
-    it("should open modal and set standard profile on openAddFilm", async () => {
+    it("should open modal and leave profile unset until emulsion selected", async () => {
       const wrapper = mount(FilmsView, { global: { plugins: [router] } });
       await flushPromises();
 
@@ -377,35 +377,70 @@ describe("FilmsView", () => {
       await wrapper.vm.$nextTick();
 
       expect(vm.showModal).toBe(true);
-      expect(vm.form.transitionProfileId).toBe("prof-standard");
+      expect(vm.form.transitionProfileId).toBe("");
     });
 
-    it("should set bulk profile when isBulkFilm is toggled on", async () => {
+    it("should set bulk profile when bulk roll emulsion is selected", async () => {
       const wrapper = mount(FilmsView, { global: { plugins: [router] } });
       await flushPromises();
 
       const vm = wrapper.vm as any;
       vm.openAddFilm();
-      vm.form.isBulkFilm = true;
-      vm.onBulkFilmToggle();
-      await wrapper.vm.$nextTick();
+      // Simulate selecting an emulsion with packageId = 3 (bulk)
+      const bulkEmulsion = vm.emulsions.find((e: any) => e.formatId === 3);
+      if (bulkEmulsion) {
+        vm.form.emulsionId = String(bulkEmulsion.id);
+        vm.onEmulsionChange();
+        await wrapper.vm.$nextTick();
 
-      expect(vm.form.transitionProfileId).toBe("prof-bulk");
+        expect(vm.form.transitionProfileId).toBe("prof-bulk");
+      }
     });
 
-    it("should reset to standard profile when isBulkFilm is toggled off", async () => {
+    it("should set standard profile when non-bulk emulsion is selected", async () => {
       const wrapper = mount(FilmsView, { global: { plugins: [router] } });
       await flushPromises();
 
       const vm = wrapper.vm as any;
       vm.openAddFilm();
-      vm.form.isBulkFilm = true;
-      vm.onBulkFilmToggle();
-      vm.form.isBulkFilm = false;
-      vm.onBulkFilmToggle();
-      await wrapper.vm.$nextTick();
+      // Simulate selecting an emulsion with packageId != 3 (not bulk)
+      const standardEmulsion = vm.emulsions.find((e: any) => e.formatId !== 3);
+      if (standardEmulsion) {
+        vm.form.emulsionId = String(standardEmulsion.id);
+        vm.onEmulsionChange();
+        await wrapper.vm.$nextTick();
 
-      expect(vm.form.transitionProfileId).toBe("prof-standard");
+        expect(vm.form.transitionProfileId).toBe("prof-standard");
+      }
+    });
+
+    it("should toggle bulk profile when user checks create as bulk for roll format", async () => {
+      const wrapper = mount(FilmsView, { global: { plugins: [router] } });
+      await flushPromises();
+
+      const vm = wrapper.vm as any;
+      vm.openAddFilm();
+      // Select an emulsion with packageId = 2 (roll)
+      const rollEmulsion = vm.emulsions.find((e: any) => {
+        const fmt = vm.formats.find((f: any) => f.id === e.formatId);
+        return fmt && fmt.packageId === 2;
+      });
+      if (rollEmulsion) {
+        vm.form.emulsionId = String(rollEmulsion.id);
+        vm.onEmulsionChange();
+        await wrapper.vm.$nextTick();
+
+        // Profile should be standard initially
+        expect(vm.form.transitionProfileId).toBe("prof-standard");
+
+        // Check the "create as bulk" toggle
+        vm.form.isCreatingAsBulk = true;
+        vm.onCreateAsBulkChange();
+        await wrapper.vm.$nextTick();
+
+        // Profile should now be bulk
+        expect(vm.form.transitionProfileId).toBe("prof-bulk");
+      }
     });
 
     it("should close modal and reset form on closeModal", async () => {
