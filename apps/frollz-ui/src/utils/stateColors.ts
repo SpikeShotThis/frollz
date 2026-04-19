@@ -23,3 +23,21 @@ const DEFAULT_COLOR =
 
 export const getStateColor = (state: string): string =>
   STATE_COLORS[state] ?? DEFAULT_COLOR;
+
+const STATE_BORDER_COLORS: Record<string, string> = {
+  Imported: "border-teal-400 dark:border-teal-500",
+  Added: "border-orange-400 dark:border-orange-500",
+  Frozen: "border-blue-400 dark:border-blue-500",
+  Refrigerated: "border-cyan-400 dark:border-cyan-500",
+  Shelved: "border-gray-400 dark:border-gray-500",
+  Loaded: "border-yellow-400 dark:border-yellow-500",
+  Finished: "border-green-400 dark:border-green-500",
+  "Sent For Development": "border-orange-400 dark:border-orange-500",
+  Developed: "border-purple-400 dark:border-purple-500",
+  Received: "border-indigo-400 dark:border-indigo-500",
+};
+
+const DEFAULT_BORDER_COLOR = "border-gray-400 dark:border-gray-500";
+
+export const getStateBorderColor = (state: string): string =>
+  STATE_BORDER_COLORS[state] ?? DEFAULT_BORDER_COLOR;

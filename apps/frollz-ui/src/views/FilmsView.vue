@@ -95,12 +95,12 @@
       class="mb-3 bg-white dark:bg-gray-800 rounded-lg shadow-md p-4"
     >
       <!-- State -->
-      <div class="mb-4">
-        <div
-          class="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-2"
+      <fieldset class="mb-6">
+        <legend
+          class="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-300 mb-2"
         >
           State
-        </div>
+        </legend>
         <div class="flex flex-wrap gap-2">
           <label
             v-for="state in filmStateOptions"
@@ -109,7 +109,7 @@
             class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md border cursor-pointer text-sm transition-colors"
             :class="
               selectedStates.includes(state)
-                ? 'bg-primary-100 dark:bg-primary-900 border-primary-600 dark:border-primary-400 text-primary-800 dark:text-primary-200'
+                ? `${getStateColor(state)} ${getStateBorderColor(state)}`
                 : 'bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600'
             "
           >
@@ -123,10 +123,10 @@
             {{ state }}
           </label>
         </div>
-      </div>
+      </fieldset>
 
       <!-- Emulsion / Format -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6 border-t border-gray-700 pt-4">
         <div>
           <label
             for="filter-emulsion"
@@ -174,21 +174,21 @@
       </div>
 
       <!-- Tags (searchable multi-select) -->
-      <div class="mb-4" v-if="tags.length > 0">
-        <div
-          class="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-2"
+      <fieldset class="mb-6 border-t border-gray-700 pt-4" v-if="tags.length > 0">
+        <legend
+          class="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-300 mb-2"
         >
           Tags
-        </div>
+        </legend>
         <TagMultiSelect
           v-model="selectedTagIds"
           :available-tags="tags"
           placeholder="Search tags…"
         />
-      </div>
+      </fieldset>
 
       <!-- Loaded date range -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 border-t border-gray-700 pt-4">
         <div>
           <label
             for="filter-from"
@@ -224,6 +224,9 @@
         class="mt-2 text-sm text-red-600 dark:text-red-400"
       >
         {{ dateRangeError }}
+      </p>
+      <p class="mt-4 border-t border-gray-700 pt-3 text-sm text-gray-500 dark:text-gray-400">
+        {{ filteredFilms.length }} result(s)
       </p>
     </div>
 
@@ -408,31 +411,30 @@
           <thead class="bg-gray-50 dark:bg-gray-700">
             <tr>
               <th
-                class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer select-none"
+                class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer select-none"
               >
                 Name
               </th>
               <th
-                class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer select-none"
+                class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer select-none"
               >
                 Emulsion
               </th>
               <th
-                class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer select-none"
+                class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer select-none"
               >
                 State
               </th>
               <th
-                class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider select-none"
+                class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider select-none"
               >
                 Camera
               </th>
               <th
-                class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider select-none"
+                class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider select-none"
               >
                 Scans
               </th>
-              <th class="px-6 py-3"></th>
             </tr>
           </thead>
           <tbody
@@ -462,13 +464,12 @@
                   ></div>
                 </td>
                 <td class="px-6 py-4"></td>
-                <td class="px-6 py-4"></td>
               </tr>
             </template>
             <template v-else>
               <tr v-if="filteredFilms.length === 0">
                 <td
-                  colspan="6"
+                  colspan="5"
                   class="px-6 py-8 text-center text-sm text-gray-600 dark:text-gray-400 italic"
                 >
                   No films found.
@@ -479,16 +480,11 @@
                 :key="film.id"
                 v-memo="[film, film.states, loadedCameraByFilmId.get(film.id)]"
               >
-                <td
-                  class="px-6 py-4 whitespace-nowrap text-sm font-medium text-primary-600 dark:text-primary-400 cursor-pointer hover:underline"
-                  @click="
-                    $router.push({
-                      name: 'film-detail',
-                      params: { key: film.id },
-                    })
-                  "
-                >
-                  {{ film.name }}
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                  <RouterLink
+                    :to="{ name: 'film-detail', params: { key: film.id } }"
+                    class="text-primary-600 dark:text-primary-400 hover:underline"
+                  >{{ film.name }}</RouterLink>
                 </td>
                 <td
                   class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400"
@@ -574,19 +570,6 @@
                       {{ getScanUrls(film).length }}
                     </RouterLink>
                   </template>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap text-right">
-                  <button
-                    @click="
-                      $router.push({
-                        name: 'film-detail',
-                        params: { key: film.id },
-                      })
-                    "
-                    class="px-3 py-2 min-h-[44px] text-xs font-medium text-primary-600 dark:text-primary-400 border border-primary-300 dark:border-primary-600 rounded hover:bg-primary-50 dark:hover:bg-primary-900/30"
-                  >
-                    View
-                  </button>
                 </td>
               </tr>
             </template>
@@ -765,7 +748,7 @@ import TagMultiSelect from "@/components/TagMultiSelect.vue";
 import type { Film, Emulsion, TransitionProfile, Format, Tag } from "@/types";
 import type { Camera } from "@frollz/shared";
 import { currentStateName, getScanUrls } from "@/types";
-import { getStateColor } from "@/utils/stateColors";
+import { getStateColor, getStateBorderColor } from "@/utils/stateColors";
 
 const route = useRoute();
 const router = useRouter();
