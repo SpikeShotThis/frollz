@@ -405,33 +405,16 @@
             />
           </div>
           <div>
-            <p
+            <div
               class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
             >
               Tags
-            </p>
-            <div
-              class="flex flex-wrap gap-2 p-2 border border-gray-300 dark:border-gray-600 rounded-md min-h-[2.5rem] bg-white dark:bg-gray-700"
-            >
-              <button
-                v-for="tag in allTags"
-                :key="tag.id"
-                type="button"
-                @click="toggleTag(tag.id)"
-                class="px-3 py-2 min-h-[44px] rounded text-xs font-medium transition-opacity"
-                :class="
-                  selectedTagIds.includes(tag.id)
-                    ? 'opacity-100 text-white'
-                    : 'opacity-40 text-white'
-                "
-                :style="{ backgroundColor: tag.colorCode }"
-              >
-                {{ tag.name }}
-              </button>
             </div>
-            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
-              Click tags to select
-            </p>
+            <TagMultiSelect
+              v-model="selectedTagIds"
+              :available-tags="allTags"
+              placeholder="Search tags…"
+            />
           </div>
           <div>
             <label
@@ -492,6 +475,7 @@ import type { Emulsion, Format, Process, Tag } from "@/types";
 import TypeaheadInput from "@/components/TypeaheadInput.vue";
 import BaseModal from "@/components/BaseModal.vue";
 import SpeedTypeaheadInput from "@/components/SpeedTypeaheadInput.vue";
+import TagMultiSelect from "@/components/TagMultiSelect.vue";
 import { useNotificationStore } from "@/stores/notification";
 import placeholderColorNegative from "@/components/placeholder/color-negative.svg";
 import placeholderBlackAndWhite from "@/components/placeholder/black-and-white.svg";
@@ -624,12 +608,6 @@ const filteredAndSortedEmulsions = computed(() => {
 });
 
 const sortedEmulsions = filteredAndSortedEmulsions;
-
-const toggleTag = (tagId: number) => {
-  const idx = selectedTagIds.value.indexOf(tagId);
-  if (idx === -1) selectedTagIds.value.push(tagId);
-  else selectedTagIds.value.splice(idx, 1);
-};
 
 const createFilm = (emulsionId: number) => {
   router.push({ name: "films", query: { emulsionId } });
