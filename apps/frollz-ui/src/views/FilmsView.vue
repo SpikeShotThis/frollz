@@ -342,39 +342,18 @@
         </div>
       </div>
 
-      <!-- Tags (full-width, scrollable) -->
+      <!-- Tags (searchable multi-select) -->
       <div class="mb-4" v-if="tags.length > 0">
         <div
           class="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-2"
         >
           Tags
         </div>
-        <div class="flex flex-wrap gap-2 max-h-28 overflow-y-auto pr-1">
-          <label
-            v-for="tag in tags"
-            :key="tag.id"
-            :for="`tag-filter-${tag.id}`"
-            class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md border cursor-pointer text-sm transition-colors"
-            :class="
-              selectedTagIds.includes(tag.id)
-                ? 'bg-primary-100 dark:bg-primary-900 border-primary-600 dark:border-primary-400 text-primary-800 dark:text-primary-200'
-                : 'bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600'
-            "
-          >
-            <input
-              :id="`tag-filter-${tag.id}`"
-              type="checkbox"
-              :value="tag.id"
-              v-model="selectedTagIds"
-              class="sr-only"
-            />
-            <span
-              class="inline-block w-2 h-2 rounded-full shrink-0"
-              :style="{ backgroundColor: tag.colorCode }"
-            ></span>
-            {{ tag.name }}
-          </label>
-        </div>
+        <TagMultiSelect
+          v-model="selectedTagIds"
+          :available-tags="tags"
+          placeholder="Search tags…"
+        />
       </div>
 
       <!-- Loaded date range -->
@@ -972,6 +951,7 @@ import {
   cameraApi,
 } from "@/services/api-client";
 import BaseModal from "@/components/BaseModal.vue";
+import TagMultiSelect from "@/components/TagMultiSelect.vue";
 import type { Film, Emulsion, TransitionProfile, Format, Tag } from "@/types";
 import type { Camera } from "@frollz/shared";
 import { currentStateName, getScanUrls } from "@/types";
