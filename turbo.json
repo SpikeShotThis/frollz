@@ -1,24 +1,16 @@
 {
   "$schema": "https://turbo.build/schema.json",
+  "globalDependencies": [".env"],
   "tasks": {
     "build": {
-      "dependsOn": [
-        "^build"
-      ],
-      "outputs": [
-        "dist/**",
-        "coverage/**"
-      ]
+      "dependsOn": ["^build"],
+      "outputs": ["dist/**", "coverage/**"]
     },
     "@frollz2/api#build": {
-      "outputs": [
-        "dist/**"
-      ]
+      "outputs": ["dist/**"]
     },
     "@frollz2/ui#build": {
-      "outputs": [
-        "dist/**"
-      ]
+      "outputs": ["dist/**"]
     },
     "@frollz2/schema#build": {
       "outputs": []
@@ -28,9 +20,7 @@
       "persistent": true
     },
     "test": {
-      "dependsOn": [
-        "build"
-      ],
+      "dependsOn": ["build"],
       "outputs": []
     },
     "@frollz2/api#test": {
@@ -50,3 +40,4 @@
     }
   }
 }
+

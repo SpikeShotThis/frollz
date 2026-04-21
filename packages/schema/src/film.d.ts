@@ -1,4 +1,5 @@
 import { z } from 'zod';
+export declare const filmTransitionMap: Map<string, string[]>;
 export declare const filmSummarySchema: z.ZodObject<{
     id: z.ZodNumber;
     userId: z.ZodNumber;

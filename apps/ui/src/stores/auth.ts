@@ -1,6 +1,6 @@
 import { computed, ref } from 'vue';
 import { defineStore } from 'pinia';
-import { currentUserSchema, loginRequestSchema, registerRequestSchema, tokenPairSchema, type CurrentUser, type LoginRequest, type RegisterRequest, type TokenPair } from '@frollz2/schema';
+import { currentUserSchema, tokenPairSchema, type CurrentUser, type LoginRequest, type RegisterRequest, type TokenPair } from '@frollz2/schema';
 
 const REFRESH_TOKEN_STORAGE_KEY = 'frollz2.refreshToken';
 
@@ -13,6 +13,32 @@ export const useAuthStore = defineStore('auth', () => {
   const isSessionInitialized = ref(false);
 
   const isAuthenticated = computed(() => accessToken.value !== null);
+
+  async function readErrorMessage(response: Response, fallbackMessage: string): Promise<string> {
+    const payload: unknown = await response.json().catch(() => null);
+
+    if (payload && typeof payload === 'object' && 'error' in payload) {
+      const error = (payload as { error?: { message?: unknown } }).error;
+
+      if (error && typeof error.message === 'string' && error.message.length > 0) {
+        return error.message;
+      }
+    }
+
+    return fallbackMessage;
+  }
+
+  async function loadCurrentUser(accessTokenValue: string): Promise<void> {
+    const userResponse = await fetch('/api/v1/auth/me', {
+      headers: { authorization: `Bearer ${accessTokenValue}` }
+    });
+
+    if (!userResponse.ok) {
+      throw new Error(await readErrorMessage(userResponse, 'Failed to load current user'));
+    }
+
+    user.value = currentUserSchema.parse(await userResponse.json());
+  }
 
   async function restoreSession(): Promise<void> {
     if (!refreshToken.value) {
@@ -34,12 +60,11 @@ export const useAuthStore = defineStore('auth', () => {
 
     const tokenPair = tokenPairSchema.parse(await response.json());
     setTokens(tokenPair);
-    const userResponse = await fetch('/api/v1/auth/me', {
-      headers: { authorization: `Bearer ${tokenPair.accessToken}` }
-    });
 
-    if (userResponse.ok) {
-      user.value = currentUserSchema.parse(await userResponse.json());
+    try {
+      await loadCurrentUser(tokenPair.accessToken);
+    } catch {
+      clearTokens();
     }
 
     isSessionInitialized.value = true;
@@ -65,12 +90,19 @@ export const useAuthStore = defineStore('auth', () => {
       body: JSON.stringify(input)
     });
 
+    if (!response.ok) {
+      throw new Error(await readErrorMessage(response, 'Login failed'));
+    }
+
     const tokenPair = tokenPairSchema.parse(await response.json());
     setTokens(tokenPair);
-    const meResponse = await fetch('/api/v1/auth/me', {
-      headers: { authorization: `Bearer ${tokenPair.accessToken}` }
-    });
-    user.value = currentUserSchema.parse(await meResponse.json());
+
+    try {
+      await loadCurrentUser(tokenPair.accessToken);
+    } catch (error) {
+      clearTokens();
+      throw error;
+    }
   }
 
   async function register(input: RegisterRequest): Promise<void> {
@@ -80,12 +112,19 @@ export const useAuthStore = defineStore('auth', () => {
       body: JSON.stringify(input)
     });
 
+    if (!response.ok) {
+      throw new Error(await readErrorMessage(response, 'Registration failed'));
+    }
+
     const tokenPair = tokenPairSchema.parse(await response.json());
     setTokens(tokenPair);
-    const meResponse = await fetch('/api/v1/auth/me', {
-      headers: { authorization: `Bearer ${tokenPair.accessToken}` }
-    });
-    user.value = currentUserSchema.parse(await meResponse.json());
+
+    try {
+      await loadCurrentUser(tokenPair.accessToken);
+    } catch (error) {
+      clearTokens();
+      throw error;
+    }
   }
 
   async function logout(): Promise<void> {

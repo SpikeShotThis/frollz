@@ -4,18 +4,17 @@ import { filmHolderSlotSchema, filmReceiverSchema, type FilmHolderSlot, type Fil
 import { useApi } from '../composables/useApi.js';
 
 export const useReceiverStore = defineStore('receiver', () => {
+  const { request } = useApi();
   const receivers = ref<FilmReceiver[]>([]);
   const currentReceiver = ref<FilmReceiver | null>(null);
   const currentSlots = ref<FilmHolderSlot[]>([]);
 
   async function loadReceivers(): Promise<void> {
-    const { request } = useApi();
     const response = await request('/api/v1/receivers');
     receivers.value = filmReceiverSchema.array().parse(await response.json());
   }
 
   async function loadReceiver(id: number): Promise<void> {
-    const { request } = useApi();
     const response = await request(`/api/v1/receivers/${id}`);
     currentReceiver.value = filmReceiverSchema.parse(await response.json());
     if (currentReceiver.value.receiverTypeCode === 'film_holder') {
@@ -26,7 +25,6 @@ export const useReceiverStore = defineStore('receiver', () => {
   }
 
   async function createReceiver(input: CreateFilmReceiverRequest): Promise<void> {
-    const { request } = useApi();
     const response = await request('/api/v1/receivers', {
       method: 'POST',
       body: JSON.stringify(input)
@@ -36,7 +34,6 @@ export const useReceiverStore = defineStore('receiver', () => {
   }
 
   async function updateReceiver(id: number, input: UpdateFilmReceiverRequest): Promise<void> {
-    const { request } = useApi();
     const response = await request(`/api/v1/receivers/${id}`, {
       method: 'PATCH',
       body: JSON.stringify(input)
@@ -46,7 +43,6 @@ export const useReceiverStore = defineStore('receiver', () => {
   }
 
   async function deleteReceiver(id: number): Promise<void> {
-    const { request } = useApi();
     await request(`/api/v1/receivers/${id}`, { method: 'DELETE' });
     currentReceiver.value = null;
     currentSlots.value = [];

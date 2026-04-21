@@ -18,6 +18,7 @@ import {
 import { useApi } from '../composables/useApi.js';
 
 export const useFilmStore = defineStore('film', () => {
+  const { request } = useApi();
   const films = ref<FilmSummary[]>([]);
   const currentFilm = ref<FilmDetail | null>(null);
   const currentEvents = ref<FilmJourneyEvent[]>([]);
@@ -38,7 +39,6 @@ export const useFilmStore = defineStore('film', () => {
 
     isLoading.value = true;
     try {
-      const { request } = useApi();
       const response = await request(`/api/v1/film${searchParams.size > 0 ? `?${searchParams.toString()}` : ''}`);
       films.value = filmSummarySchema.array().parse(await response.json());
     } finally {
@@ -47,7 +47,6 @@ export const useFilmStore = defineStore('film', () => {
   }
 
   async function loadFilm(id: number): Promise<void> {
-    const { request } = useApi();
     const response = await request(`/api/v1/film/${id}`);
     currentFilm.value = filmDetailSchema.parse(await response.json());
     const eventsResponse = await request(`/api/v1/film/${id}/events`);
@@ -55,7 +54,6 @@ export const useFilmStore = defineStore('film', () => {
   }
 
   async function createFilm(input: FilmCreateRequest): Promise<void> {
-    const { request } = useApi();
     const response = await request('/api/v1/film', {
       method: 'POST',
       body: JSON.stringify(input)
@@ -65,7 +63,6 @@ export const useFilmStore = defineStore('film', () => {
   }
 
   async function updateFilm(id: number, input: FilmUpdateRequest): Promise<void> {
-    const { request } = useApi();
     const response = await request(`/api/v1/film/${id}`, {
       method: 'PATCH',
       body: JSON.stringify(input)
@@ -75,7 +72,6 @@ export const useFilmStore = defineStore('film', () => {
   }
 
   async function addEvent(id: number, input: CreateFilmJourneyEventRequest): Promise<void> {
-    const { request } = useApi();
     const response = await request(`/api/v1/film/${id}/events`, {
       method: 'POST',
       body: JSON.stringify(createFilmJourneyEventRequestSchema.parse(input))
@@ -85,7 +81,6 @@ export const useFilmStore = defineStore('film', () => {
   }
 
   async function deleteFilm(id: number): Promise<void> {
-    const { request } = useApi();
     await request(`/api/v1/film/${id}`, { method: 'DELETE' });
     currentFilm.value = null;
     currentEvents.value = [];

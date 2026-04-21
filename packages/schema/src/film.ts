@@ -13,6 +13,18 @@ import {
 } from './reference.js';
 import { idSchema, isoDateTimeSchema, nullableTextSchema } from './common.js';
 
+export const filmTransitionMap = new Map<string, string[]>([
+  ['purchased', ['stored', 'loaded']],
+  ['stored', ['stored', 'loaded']],
+  ['loaded', ['exposed']],
+  ['exposed', ['removed']],
+  ['removed', ['stored', 'sent_for_dev']],
+  ['sent_for_dev', ['developed']],
+  ['developed', ['scanned', 'archived']],
+  ['scanned', ['archived']],
+  ['archived', []]
+]);
+
 export const filmSummarySchema = z.object({
   id: idSchema,
   userId: idSchema,

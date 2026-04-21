@@ -23,6 +23,7 @@ import {
 } from 'naive-ui';
 import type { DataTableColumns } from 'naive-ui';
 import type { CreateFilmJourneyEventRequest, FilmJourneyEvent } from '@frollz2/schema';
+import { filmTransitionMap } from '@frollz2/schema';
 import { useFilmStore } from '../stores/film.js';
 import { useReferenceStore } from '../stores/reference.js';
 import { useReceiverStore } from '../stores/receivers.js';
@@ -32,13 +33,14 @@ const router = useRouter();
 const filmStore = useFilmStore();
 const referenceStore = useReferenceStore();
 const receiverStore = useReceiverStore();
+type FilmStateCode = CreateFilmJourneyEventRequest['filmStateCode'];
 
 const filmId = computed(() => Number(route.params.id));
 const isEventDrawerOpen = ref(false);
 const occurredAtTimestamp = ref<number | null>(Date.now());
 
 const eventForm = reactive<{
-  filmStateCode: string | null;
+  filmStateCode: FilmStateCode | null;
   notes: string;
   storageLocationId: number | null;
   receiverId: number | null;
@@ -75,26 +77,14 @@ const stateTypeByCode: Record<string, 'default' | 'info' | 'primary' | 'warning'
   archived: 'default'
 };
 
-const nextStateMap: Record<string, string[]> = {
-  purchased: ['stored', 'loaded'],
-  stored: ['stored', 'loaded'],
-  loaded: ['exposed'],
-  exposed: ['removed'],
-  removed: ['stored', 'sent_for_dev'],
-  sent_for_dev: ['developed'],
-  developed: ['scanned', 'archived'],
-  scanned: ['archived'],
-  archived: []
-};
-
 const selectedFilm = computed(() => filmStore.currentFilm);
-const transitions = computed(() => {
+const transitions = computed<Array<{ label: string; value: FilmStateCode }>>(() => {
   const current = selectedFilm.value?.currentStateCode;
   if (!current) {
     return [];
   }
 
-  const allowed = nextStateMap[current] ?? [];
+  const allowed = filmTransitionMap.get(current) ?? [];
   return referenceStore.filmStates
     .filter((state) => allowed.includes(state.code))
     .map((state) => ({ label: state.label, value: state.code }));
@@ -142,7 +132,7 @@ function eventDataSummary(event: FilmJourneyEvent): string {
 }
 
 function onChangeFilmState(code: string | null): void {
-  eventForm.filmStateCode = code;
+  eventForm.filmStateCode = code as FilmStateCode | null;
   eventForm.storageLocationId = null;
   eventForm.receiverId = null;
   eventForm.slotSideNumber = null;
@@ -216,106 +206,116 @@ onMounted(async () => {
 </script>
 
 <template>
-  <NGrid cols="1" y-gap="16">
-    <NGridItem>
-      <NCard>
-        <NFlex justify="space-between" align="center">
-          <NSpace>
-            <NButton tertiary @click="router.push('/film')">Back to inventory</NButton>
-            <NText v-if="selectedFilm" strong>{{ selectedFilm.name }}</NText>
-          </NSpace>
-          <NButton type="primary" :disabled="transitions.length === 0" @click="isEventDrawerOpen = true">Add transition
-            event</NButton>
-        </NFlex>
-        <template v-if="selectedFilm">
-          <NFlex vertical size="small">
-            <NTag :type="stateTypeByCode[selectedFilm.currentStateCode] ?? 'default'">{{ selectedFilm.currentState.label
-              }}</NTag>
-            <NText>Emulsion: {{ selectedFilm.emulsion.manufacturer }} {{ selectedFilm.emulsion.brand }} {{
-              selectedFilm.emulsion.isoSpeed }}</NText>
-            <NText>Format: {{ selectedFilm.filmFormat.code }} · Package: {{ selectedFilm.packageType.code }}</NText>
-            <NText v-if="selectedFilm.expirationDate">Expiration: {{ selectedFilm.expirationDate }}</NText>
+  <NFlex vertical size="large">
+    <NGrid cols="1" y-gap="16">
+      <NGridItem>
+        <NCard>
+          <NFlex justify="space-between" align="center">
+            <NSpace>
+              <NButton tertiary @click="router.push('/film')">Back to inventory</NButton>
+              <NText v-if="selectedFilm" strong>{{ selectedFilm.name }}</NText>
+            </NSpace>
+            <NButton type="primary" :disabled="transitions.length === 0" @click="isEventDrawerOpen = true">Add
+              transition event</NButton>
           </NFlex>
-        </template>
-        <NEmpty v-else description="Film not found" />
-      </NCard>
-    </NGridItem>
+          <template v-if="selectedFilm">
+            <NFlex vertical size="small">
+              <NTag :type="stateTypeByCode[selectedFilm.currentStateCode] ?? 'default'">{{
+                selectedFilm.currentState.label }}</NTag>
+              <NText>Emulsion: {{ selectedFilm.emulsion.manufacturer }} {{ selectedFilm.emulsion.brand }} {{
+                selectedFilm.emulsion.isoSpeed }}</NText>
+              <NText>Format: {{ selectedFilm.filmFormat.code }} · Package: {{ selectedFilm.packageType.code }}</NText>
+              <NText v-if="selectedFilm.expirationDate">Expiration: {{ selectedFilm.expirationDate }}</NText>
+            </NFlex>
+          </template>
+          <NEmpty v-else description="Film not found" />
+        </NCard>
+      </NGridItem>
 
-    <NGridItem>
-      <NCard title="Journey timeline">
-        <NDataTable :columns="eventsColumns" :data="filmStore.currentEvents" :row-key="(row) => row.id" />
-      </NCard>
-    </NGridItem>
-  </NGrid>
+      <NGridItem>
+        <NCard title="Journey timeline">
+          <NDataTable :columns="eventsColumns" :data="filmStore.currentEvents" :row-key="(row) => row.id" />
+        </NCard>
+      </NGridItem>
+    </NGrid>
 
-  <NDrawer v-model:show="isEventDrawerOpen" placement="right" width="460">
-    <NDrawerContent title="Add journey event" closable>
-      <NForm label-placement="top">
-        <NFormItem label="Target state">
-          <NSelect v-model:value="eventForm.filmStateCode" :options="transitions" placeholder="Select next state"
-            @update:value="onChangeFilmState" />
-        </NFormItem>
+    <NDrawer :show="isEventDrawerOpen" placement="right" width="460"
+      @update:show="(value) => { isEventDrawerOpen = value; }">
+      <NDrawerContent title="Add journey event" closable>
+        <NForm label-placement="top">
+          <NFormItem label="Target state">
+            <NSelect :value="eventForm.filmStateCode" :options="transitions" placeholder="Select next state"
+              @update:value="onChangeFilmState" />
+          </NFormItem>
 
-        <NFormItem label="Occurred at">
-          <NDatePicker v-model:value="occurredAtTimestamp" type="datetime" />
-        </NFormItem>
+          <NFormItem label="Occurred at">
+            <NDatePicker :value="occurredAtTimestamp" type="datetime"
+              @update:value="(value) => { occurredAtTimestamp = value; }" />
+          </NFormItem>
 
-        <NFormItem label="Notes">
-          <NInput v-model:value="eventForm.notes" type="textarea" />
-        </NFormItem>
+          <NFormItem label="Notes">
+            <NInput :value="eventForm.notes" type="textarea" @update:value="(value) => { eventForm.notes = value; }" />
+          </NFormItem>
 
-        <NFormItem v-if="eventForm.filmStateCode === 'stored'" label="Storage location">
-          <NSelect v-model:value="eventForm.storageLocationId" :options="storageLocationOptions"
-            placeholder="Select location" />
-        </NFormItem>
+          <NFormItem v-if="eventForm.filmStateCode === 'stored'" label="Storage location">
+            <NSelect :value="eventForm.storageLocationId" :options="storageLocationOptions"
+              placeholder="Select location" @update:value="(value) => { eventForm.storageLocationId = value; }" />
+          </NFormItem>
 
-        <template v-if="eventForm.filmStateCode === 'loaded'">
-          <NFormItem label="Receiver">
-            <NSelect v-model:value="eventForm.receiverId" :options="receiverOptions" placeholder="Select receiver" />
-          </NFormItem>
-          <NFormItem label="Holder slot side (holders only)">
-            <NInputNumber v-model:value="eventForm.slotSideNumber" />
-          </NFormItem>
-          <NFormItem label="Intended push/pull">
-            <NInputNumber v-model:value="eventForm.intendedPushPull" />
-          </NFormItem>
-        </template>
+          <template v-if="eventForm.filmStateCode === 'loaded'">
+            <NFormItem label="Receiver">
+              <NSelect :value="eventForm.receiverId" :options="receiverOptions" placeholder="Select receiver"
+                @update:value="(value) => { eventForm.receiverId = value; }" />
+            </NFormItem>
+            <NFormItem label="Holder slot side (holders only)">
+              <NInputNumber :value="eventForm.slotSideNumber"
+                @update:value="(value) => { eventForm.slotSideNumber = value; }" />
+            </NFormItem>
+            <NFormItem label="Intended push/pull">
+              <NInputNumber :value="eventForm.intendedPushPull"
+                @update:value="(value) => { eventForm.intendedPushPull = value; }" />
+            </NFormItem>
+          </template>
 
-        <template v-if="eventForm.filmStateCode === 'sent_for_dev'">
-          <NFormItem label="Lab name">
-            <NInput v-model:value="eventForm.labName" />
-          </NFormItem>
-          <NFormItem label="Lab contact">
-            <NInput v-model:value="eventForm.labContact" />
-          </NFormItem>
-          <NFormItem label="Actual push/pull">
-            <NInputNumber v-model:value="eventForm.actualPushPull" />
-          </NFormItem>
-        </template>
+          <template v-if="eventForm.filmStateCode === 'sent_for_dev'">
+            <NFormItem label="Lab name">
+              <NInput :value="eventForm.labName" @update:value="(value) => { eventForm.labName = value; }" />
+            </NFormItem>
+            <NFormItem label="Lab contact">
+              <NInput :value="eventForm.labContact" @update:value="(value) => { eventForm.labContact = value; }" />
+            </NFormItem>
+            <NFormItem label="Actual push/pull">
+              <NInputNumber :value="eventForm.actualPushPull"
+                @update:value="(value) => { eventForm.actualPushPull = value; }" />
+            </NFormItem>
+          </template>
 
-        <template v-if="eventForm.filmStateCode === 'developed'">
-          <NFormItem label="Lab name">
-            <NInput v-model:value="eventForm.labName" />
-          </NFormItem>
-          <NFormItem label="Actual push/pull">
-            <NInputNumber v-model:value="eventForm.actualPushPull" />
-          </NFormItem>
-        </template>
+          <template v-if="eventForm.filmStateCode === 'developed'">
+            <NFormItem label="Lab name">
+              <NInput :value="eventForm.labName" @update:value="(value) => { eventForm.labName = value; }" />
+            </NFormItem>
+            <NFormItem label="Actual push/pull">
+              <NInputNumber :value="eventForm.actualPushPull"
+                @update:value="(value) => { eventForm.actualPushPull = value; }" />
+            </NFormItem>
+          </template>
 
-        <template v-if="eventForm.filmStateCode === 'scanned'">
-          <NFormItem label="Scanner or software">
-            <NInput v-model:value="eventForm.scannerOrSoftware" />
-          </NFormItem>
-          <NFormItem label="Scan link">
-            <NInput v-model:value="eventForm.scanLink" />
-          </NFormItem>
-        </template>
+          <template v-if="eventForm.filmStateCode === 'scanned'">
+            <NFormItem label="Scanner or software">
+              <NInput :value="eventForm.scannerOrSoftware"
+                @update:value="(value) => { eventForm.scannerOrSoftware = value; }" />
+            </NFormItem>
+            <NFormItem label="Scan link">
+              <NInput :value="eventForm.scanLink" @update:value="(value) => { eventForm.scanLink = value; }" />
+            </NFormItem>
+          </template>
 
-        <NFlex justify="end">
-          <NButton tertiary @click="isEventDrawerOpen = false">Cancel</NButton>
-          <NButton type="primary" @click="submitEvent">Save event</NButton>
-        </NFlex>
-      </NForm>
-    </NDrawerContent>
-  </NDrawer>
+          <NFlex justify="end">
+            <NButton tertiary @click="isEventDrawerOpen = false">Cancel</NButton>
+            <NButton type="primary" @click="submitEvent">Save event</NButton>
+          </NFlex>
+        </NForm>
+      </NDrawerContent>
+    </NDrawer>
+  </NFlex>
 </template>
