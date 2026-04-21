@@ -23,6 +23,10 @@
       "dependsOn": ["build"],
       "outputs": []
     },
+    "check-types": {
+      "dependsOn": ["^check-types"],
+      "outputs": []
+    },
     "@frollz2/api#test": {
       "outputs": []
     },
@@ -40,4 +44,3 @@
     }
   }
 }
-

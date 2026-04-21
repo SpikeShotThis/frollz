@@ -1,10 +1,62 @@
 {
   "mcpServers": {
-    "shadcnVue": {
+    "filesystem": {
       "command": "npx",
       "args": [
-        "shadcn-vue@latest",
-        "mcp"
+        "-y",
+        "@modelcontextprotocol/server-filesystem",
+        "/Users/joshholl/Source/frollz"
+      ]
+    },
+    "shell": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-shell"
+      ],
+      "env": {
+        "ALLOWED_COMMANDS": "pnpm,node,npx",
+        "ALLOWED_DIRECTORIES": "/Users/joshholl/Source/frollz"
+      }
+    },
+    "sqlite": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-sqlite",
+        "--db-path",
+        "/Users/joshholl/Source/frollz/apps/api/frollz2.sqlite"
+      ]
+    },
+    "git": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-git",
+        "--repository",
+        "/Users/joshholl/Source/frollz"
+      ]
+    },
+    "playwright": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@playwright/mcp"
+      ]
+    },
+    "docker": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-docker"
+      ]
+    },
+    "chrome-devtools": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "chrome-devtools-mcp@latest",
+        "--no-usage-statistics"
       ]
     }
   }

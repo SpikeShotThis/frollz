@@ -1,6 +1,7 @@
 import { computed, ref } from 'vue';
 import { defineStore } from 'pinia';
 import { currentUserSchema, tokenPairSchema, type CurrentUser, type LoginRequest, type RegisterRequest, type TokenPair } from '@frollz2/schema';
+import { readApiData } from '../composables/api-envelope.js';
 
 const REFRESH_TOKEN_STORAGE_KEY = 'frollz2.refreshToken';
 
@@ -37,7 +38,7 @@ export const useAuthStore = defineStore('auth', () => {
       throw new Error(await readErrorMessage(userResponse, 'Failed to load current user'));
     }
 
-    user.value = currentUserSchema.parse(await userResponse.json());
+    user.value = currentUserSchema.parse(await readApiData(userResponse));
   }
 
   async function restoreSession(): Promise<void> {
@@ -58,7 +59,7 @@ export const useAuthStore = defineStore('auth', () => {
       return;
     }
 
-    const tokenPair = tokenPairSchema.parse(await response.json());
+    const tokenPair = tokenPairSchema.parse(await readApiData(response));
     setTokens(tokenPair);
 
     try {
@@ -94,7 +95,7 @@ export const useAuthStore = defineStore('auth', () => {
       throw new Error(await readErrorMessage(response, 'Login failed'));
     }
 
-    const tokenPair = tokenPairSchema.parse(await response.json());
+    const tokenPair = tokenPairSchema.parse(await readApiData(response));
     setTokens(tokenPair);
 
     try {
@@ -116,7 +117,7 @@ export const useAuthStore = defineStore('auth', () => {
       throw new Error(await readErrorMessage(response, 'Registration failed'));
     }
 
-    const tokenPair = tokenPairSchema.parse(await response.json());
+    const tokenPair = tokenPairSchema.parse(await readApiData(response));
     setTokens(tokenPair);
 
     try {
@@ -129,9 +130,14 @@ export const useAuthStore = defineStore('auth', () => {
 
   async function logout(): Promise<void> {
     if (refreshToken.value) {
+      const headers: Record<string, string> = { 'content-type': 'application/json' };
+      if (accessToken.value) {
+        headers.authorization = `Bearer ${accessToken.value}`;
+      }
+
       await fetch('/api/v1/auth/logout', {
         method: 'POST',
-        headers: { 'content-type': 'application/json' },
+        headers,
         body: JSON.stringify({ refreshToken: refreshToken.value })
       });
     }

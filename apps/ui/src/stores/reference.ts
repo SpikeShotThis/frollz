@@ -13,6 +13,7 @@ import {
   type StorageLocation
 } from '@frollz2/schema';
 import { useApi } from '../composables/useApi.js';
+import { readApiData } from '../composables/api-envelope.js';
 
 export const useReferenceStore = defineStore('reference', () => {
   const { request } = useApi();
@@ -27,20 +28,31 @@ export const useReferenceStore = defineStore('reference', () => {
   const emulsions = ref<Emulsion[]>([]);
 
   const loaded = computed(() => filmFormats.value.length > 0);
+  const isLoading = ref(false);
+  const loadError = ref<string | null>(null);
 
   async function loadAll(): Promise<void> {
-    const response = await request('/api/v1/reference');
-    const referenceTables = referenceTablesSchema.parse(await response.json());
+    isLoading.value = true;
+    loadError.value = null;
+    try {
+      const response = await request('/api/v1/reference');
+      const referenceTables = referenceTablesSchema.parse(await readApiData(response));
 
-    filmFormats.value = referenceTables.filmFormats;
-    developmentProcesses.value = referenceTables.developmentProcesses;
-    packageTypes.value = referenceTables.packageTypes;
-    filmStates.value = referenceTables.filmStates;
-    storageLocations.value = referenceTables.storageLocations;
-    slotStates.value = referenceTables.slotStates;
-    receiverTypes.value = referenceTables.receiverTypes;
-    holderTypes.value = referenceTables.holderTypes;
-    emulsions.value = referenceTables.emulsions;
+      filmFormats.value = referenceTables.filmFormats;
+      developmentProcesses.value = referenceTables.developmentProcesses;
+      packageTypes.value = referenceTables.packageTypes;
+      filmStates.value = referenceTables.filmStates;
+      storageLocations.value = referenceTables.storageLocations;
+      slotStates.value = referenceTables.slotStates;
+      receiverTypes.value = referenceTables.receiverTypes;
+      holderTypes.value = referenceTables.holderTypes;
+      emulsions.value = referenceTables.emulsions;
+    } catch (error) {
+      loadError.value = error instanceof Error ? error.message : 'Failed to load reference data';
+      throw error;
+    } finally {
+      isLoading.value = false;
+    }
   }
 
   function packageTypesByFormat(filmFormatId: number): PackageType[] {
@@ -58,6 +70,8 @@ export const useReferenceStore = defineStore('reference', () => {
     holderTypes,
     emulsions,
     loaded,
+    isLoading,
+    loadError,
     loadAll,
     packageTypesByFormat
   };

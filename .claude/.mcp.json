@@ -5,7 +5,7 @@
       "args": [
         "-y",
         "@modelcontextprotocol/server-filesystem",
-        "/path/to/your/analog-film-tracker"
+        "/Users/joshholl/Source/frollz"
       ]
     },
     "shell": {
@@ -16,7 +16,7 @@
       ],
       "env": {
         "ALLOWED_COMMANDS": "pnpm,node,npx",
-        "ALLOWED_DIRECTORIES": "/path/to/your/analog-film-tracker"
+        "ALLOWED_DIRECTORIES": "/Users/joshholl/Source/frollz"
       }
     },
     "sqlite": {
@@ -25,7 +25,7 @@
         "-y",
         "@modelcontextprotocol/server-sqlite",
         "--db-path",
-        "/path/to/your/analog-film-tracker/apps/api/data/dev.db"
+        "/Users/joshholl/Source/frollz/apps/api/frollz2.sqlite"
       ]
     },
     "git": {
@@ -34,7 +34,7 @@
         "-y",
         "@modelcontextprotocol/server-git",
         "--repository",
-        "/path/to/your/analog-film-tracker"
+        "/Users/joshholl/Source/frollz"
       ]
     },
     "playwright": {
@@ -49,6 +49,14 @@
       "args": [
         "-y",
         "@modelcontextprotocol/server-docker"
+      ]
+    },
+    "chrome-devtools": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "chrome-devtools-mcp@latest",
+        "--no-usage-statistics"
       ]
     }
   }

@@ -1,0 +1,18 @@
+:root {
+  color-scheme: light;
+}
+
+body {
+  background: #f4f6fa;
+  color: #18222d;
+  margin: 0;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+*:focus-visible {
+  outline: 2px solid #2f7fef;
+  outline-offset: 2px;
+}

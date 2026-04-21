@@ -1,42 +1,13 @@
 import { z } from 'zod';
 import { codeSchema, idSchema, labelSchema } from './common.js';
 
-export const filmFormatCodes = [
-  '35mm',
-  '120',
-  '220',
-  '4x5',
-  '2x3',
-  '8x10',
-  'InstaxMini',
-  'InstaxWide',
-  'InstaxSquare'
-] as const;
-
-export const developmentProcessCodes = ['C41', 'E6', 'ECN2', 'BW'] as const;
-export const filmStateCodes = [
-  'purchased',
-  'stored',
-  'loaded',
-  'exposed',
-  'removed',
-  'sent_for_dev',
-  'developed',
-  'scanned',
-  'archived'
-] as const;
-export const storageLocationCodes = ['freezer', 'refrigerator', 'shelf', 'other'] as const;
-export const slotStateCodes = ['empty', 'loaded', 'exposed', 'removed'] as const;
-export const receiverTypeCodes = ['camera', 'interchangeable_back', 'film_holder'] as const;
-export const holderTypeCodes = ['standard', 'grafmatic', 'readyload', 'quickload'] as const;
-
-export const filmFormatCodeSchema = z.enum(filmFormatCodes);
-export const developmentProcessCodeSchema = z.enum(developmentProcessCodes);
-export const filmStateCodeSchema = z.enum(filmStateCodes);
-export const storageLocationCodeSchema = z.enum(storageLocationCodes);
-export const slotStateCodeSchema = z.enum(slotStateCodes);
-export const receiverTypeCodeSchema = z.enum(receiverTypeCodes);
-export const holderTypeCodeSchema = z.enum(holderTypeCodes);
+export const filmFormatCodeSchema = codeSchema;
+export const developmentProcessCodeSchema = codeSchema;
+export const filmStateCodeSchema = codeSchema;
+export const storageLocationCodeSchema = codeSchema;
+export const slotStateCodeSchema = codeSchema;
+export const receiverTypeCodeSchema = codeSchema;
+export const holderTypeCodeSchema = codeSchema;
 
 export const filmFormatSchema = z.object({
   id: idSchema,

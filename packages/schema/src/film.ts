@@ -4,7 +4,6 @@ import {
   filmFormatSchema,
   filmStateCodeSchema,
   filmStateSchema,
-  filmFormatCodes,
   holderTypeSchema,
   packageTypeSchema,
   receiverTypeSchema,

@@ -1,5 +1,6 @@
 import { useAuthStore } from '../stores/auth.js';
 import { tokenPairSchema } from '@frollz2/schema';
+import { readApiData, readApiError } from './api-envelope.js';
 
 export function useApi() {
   const authStore = useAuthStore();
@@ -25,7 +26,7 @@ export function useApi() {
       });
 
       if (refreshResponse.ok) {
-        const tokenPair = tokenPairSchema.parse(await refreshResponse.json());
+        const tokenPair = tokenPairSchema.parse(await readApiData(refreshResponse));
         authStore.setTokens(tokenPair);
 
         const retryHeaders = new Headers(init.headers);
@@ -36,6 +37,10 @@ export function useApi() {
         authStore.clearTokens();
         window.location.assign('/login');
       }
+    }
+
+    if (!response.ok) {
+      throw new Error(await readApiError(response, 'Request failed'));
     }
 
     return response;

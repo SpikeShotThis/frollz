@@ -4,9 +4,7 @@ import {
   createFilmJourneyEventRequestSchema,
   filmDetailSchema,
   filmJourneyEventSchema,
-  filmListQuerySchema,
   filmSummarySchema,
-  filmUpdateRequestSchema,
   type CreateFilmJourneyEventRequest,
   type FilmDetail,
   type FilmJourneyEvent,
@@ -16,6 +14,7 @@ import {
   type FilmCreateRequest
 } from '@frollz2/schema';
 import { useApi } from '../composables/useApi.js';
+import { readApiData } from '../composables/api-envelope.js';
 
 export const useFilmStore = defineStore('film', () => {
   const { request } = useApi();
@@ -23,6 +22,9 @@ export const useFilmStore = defineStore('film', () => {
   const currentFilm = ref<FilmDetail | null>(null);
   const currentEvents = ref<FilmJourneyEvent[]>([]);
   const isLoading = ref(false);
+  const isDetailLoading = ref(false);
+  const filmsError = ref<string | null>(null);
+  const detailError = ref<string | null>(null);
 
   async function loadFilms(query: FilmListQuery = {}): Promise<void> {
     const searchParams = new URLSearchParams();
@@ -38,27 +40,48 @@ export const useFilmStore = defineStore('film', () => {
     }
 
     isLoading.value = true;
+    filmsError.value = null;
     try {
       const response = await request(`/api/v1/film${searchParams.size > 0 ? `?${searchParams.toString()}` : ''}`);
-      films.value = filmSummarySchema.array().parse(await response.json());
+      films.value = filmSummarySchema.array().parse(await readApiData(response));
+    } catch (error) {
+      filmsError.value = error instanceof Error ? error.message : 'Failed to load films';
+      films.value = [];
+      throw error;
     } finally {
       isLoading.value = false;
     }
   }
 
   async function loadFilm(id: number): Promise<void> {
-    const response = await request(`/api/v1/film/${id}`);
-    currentFilm.value = filmDetailSchema.parse(await response.json());
-    const eventsResponse = await request(`/api/v1/film/${id}/events`);
-    currentEvents.value = filmJourneyEventSchema.array().parse(await eventsResponse.json());
+    isDetailLoading.value = true;
+    detailError.value = null;
+    try {
+      const response = await request(`/api/v1/film/${id}`);
+      currentFilm.value = filmDetailSchema.parse(await readApiData(response));
+      const eventsResponse = await request(`/api/v1/film/${id}/events`);
+      currentEvents.value = filmJourneyEventSchema.array().parse(await readApiData(eventsResponse));
+    } catch (error) {
+      detailError.value = error instanceof Error ? error.message : 'Failed to load film detail';
+      currentFilm.value = null;
+      currentEvents.value = [];
+      throw error;
+    } finally {
+      isDetailLoading.value = false;
+    }
   }
 
-  async function createFilm(input: FilmCreateRequest): Promise<void> {
-    const response = await request('/api/v1/film', {
+  async function createFilm(input: FilmCreateRequest, idempotencyKey?: string): Promise<void> {
+    const init: RequestInit = {
       method: 'POST',
       body: JSON.stringify(input)
-    });
-    currentFilm.value = filmDetailSchema.parse(await response.json());
+    };
+    if (idempotencyKey) {
+      init.headers = { 'idempotency-key': idempotencyKey };
+    }
+
+    const response = await request('/api/v1/film', init);
+    currentFilm.value = filmDetailSchema.parse(await readApiData(response));
     await loadFilms();
   }
 
@@ -67,24 +90,22 @@ export const useFilmStore = defineStore('film', () => {
       method: 'PATCH',
       body: JSON.stringify(input)
     });
-    filmSummarySchema.parse(await response.json());
+    filmSummarySchema.parse(await readApiData(response));
     await loadFilms();
   }
 
-  async function addEvent(id: number, input: CreateFilmJourneyEventRequest): Promise<void> {
-    const response = await request(`/api/v1/film/${id}/events`, {
+  async function addEvent(id: number, input: CreateFilmJourneyEventRequest, idempotencyKey?: string): Promise<void> {
+    const init: RequestInit = {
       method: 'POST',
       body: JSON.stringify(createFilmJourneyEventRequestSchema.parse(input))
-    });
-    filmJourneyEventSchema.parse(await response.json());
-    await loadFilm(id);
-  }
+    };
+    if (idempotencyKey) {
+      init.headers = { 'idempotency-key': idempotencyKey };
+    }
 
-  async function deleteFilm(id: number): Promise<void> {
-    await request(`/api/v1/film/${id}`, { method: 'DELETE' });
-    currentFilm.value = null;
-    currentEvents.value = [];
-    await loadFilms();
+    const response = await request(`/api/v1/film/${id}/events`, init);
+    filmJourneyEventSchema.parse(await readApiData(response));
+    await loadFilm(id);
   }
 
   return {
@@ -92,11 +113,13 @@ export const useFilmStore = defineStore('film', () => {
     currentFilm,
     currentEvents,
     isLoading,
+    isDetailLoading,
+    filmsError,
+    detailError,
     loadFilms,
     loadFilm,
     createFilm,
     updateFilm,
-    addEvent,
-    deleteFilm
+    addEvent
   };
 });
