@@ -51,3 +51,8 @@ frollz-ui/coverage
 **/*/.env
 
 
+report.html
+apps/api/src/infrastructure/migrations/.snapshot-frollz2.sqlite.json
+apps/api/src/infrastructure/migrations/.snapshot-test.sqlite.json
+report.json
+trace-mobile-film.json

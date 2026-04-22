@@ -70,3 +70,12 @@ approval_mode = "approve"
 
 [mcp_servers.chrome-devtools.tools.performance_start_trace]
 approval_mode = "approve"
+
+[mcp_servers.chrome-devtools.tools.new_page]
+approval_mode = "approve"
+
+[mcp_servers.chrome-devtools.tools.fill_form]
+approval_mode = "approve"
+
+[mcp_servers.chrome-devtools.tools.navigate_page]
+approval_mode = "approve"
