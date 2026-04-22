@@ -318,7 +318,7 @@ async function submitCreateDevice(): Promise<void> {
     </MiniDashboardLayout>
   </PageShell>
 
-  <NDrawer :show="isCreateDrawerOpen" placement="right" width="440" @update:show="(value) => { isCreateDrawerOpen = value; }">
+  <NDrawer :show="isCreateDrawerOpen" placement="right" width="min(100vw, 440px)" @update:show="(value) => { isCreateDrawerOpen = value; }">
     <NDrawerContent title="Add device" closable>
       <NForm label-placement="top" @submit.prevent="submitCreateDevice">
         <NAlert v-if="createState.formError" type="error" :show-icon="true" style="margin-bottom: 10px;">
@@ -328,62 +328,120 @@ async function submitCreateDevice(): Promise<void> {
         <NFormItem
           label="Device type"
           required
+          :label-props="{ for: 'device-create-type-input' }"
           :feedback="createState.fieldErrors.deviceTypeCode || ''"
         >
-          <NSelect :value="createForm.deviceTypeCode" :options="deviceTypeOptions" @update:value="(value) => { createForm.deviceTypeCode = value; }" />
+          <NSelect
+            :value="createForm.deviceTypeCode"
+            :options="deviceTypeOptions"
+            :input-props="{ id: 'device-create-type-input', name: 'deviceTypeCode' }"
+            @update:value="(value) => { createForm.deviceTypeCode = value; }"
+          />
         </NFormItem>
         <NFormItem
           label="Film format"
           required
+          :label-props="{ for: 'device-create-format-input' }"
           :feedback="createState.fieldErrors.filmFormatId || ''"
         >
-          <NSelect :value="createForm.filmFormatId" :options="filmFormatOptions" @update:value="(value) => { createForm.filmFormatId = value; }" />
+          <NSelect
+            :value="createForm.filmFormatId"
+            :options="filmFormatOptions"
+            :input-props="{ id: 'device-create-format-input', name: 'filmFormatId' }"
+            @update:value="(value) => { createForm.filmFormatId = value; }"
+          />
         </NFormItem>
         <NFormItem
           label="Frame size"
           required
+          :label-props="{ for: 'device-create-frame-size-input' }"
           :feedback="createState.fieldErrors.frameSize || ''"
         >
-          <NInput :value="createForm.frameSize" placeholder="36x24, 6x7, 4x5" @update:value="(value) => { createForm.frameSize = value; }" />
+          <NInput
+            :value="createForm.frameSize"
+            placeholder="36x24, 6x7, 4x5"
+            :input-props="{ id: 'device-create-frame-size-input', name: 'frameSize' }"
+            @update:value="(value) => { createForm.frameSize = value; }"
+          />
         </NFormItem>
 
         <template v-if="createForm.deviceTypeCode === 'camera'">
-          <NFormItem label="Make" required :feedback="createState.fieldErrors.make || ''">
-            <NInput :value="createForm.make" @update:value="(value) => { createForm.make = value; }" />
+          <NFormItem label="Make" required :label-props="{ for: 'device-create-make-input' }" :feedback="createState.fieldErrors.make || ''">
+            <NInput
+              :value="createForm.make"
+              :input-props="{ id: 'device-create-make-input', name: 'make' }"
+              @update:value="(value) => { createForm.make = value; }"
+            />
           </NFormItem>
-          <NFormItem label="Model" required :feedback="createState.fieldErrors.model || ''">
-            <NInput :value="createForm.model" @update:value="(value) => { createForm.model = value; }" />
+          <NFormItem label="Model" required :label-props="{ for: 'device-create-model-input' }" :feedback="createState.fieldErrors.model || ''">
+            <NInput
+              :value="createForm.model"
+              :input-props="{ id: 'device-create-model-input', name: 'model' }"
+              @update:value="(value) => { createForm.model = value; }"
+            />
           </NFormItem>
-          <NFormItem label="Serial number">
-            <NInput :value="createForm.serialNumber" @update:value="(value) => { createForm.serialNumber = value; }" />
+          <NFormItem label="Serial number" :label-props="{ for: 'device-create-serial-input' }">
+            <NInput
+              :value="createForm.serialNumber"
+              :input-props="{ id: 'device-create-serial-input', name: 'serialNumber' }"
+              @update:value="(value) => { createForm.serialNumber = value; }"
+            />
           </NFormItem>
-          <NFormItem label="Date acquired">
-            <NDatePicker :value="cameraDateAcquiredTimestamp" type="datetime" clearable @update:value="(value) => { cameraDateAcquiredTimestamp = value; }" />
+          <NFormItem label="Date acquired" :label-props="{ for: 'device-create-date-acquired-input' }">
+            <NDatePicker
+              :value="cameraDateAcquiredTimestamp"
+              type="datetime"
+              clearable
+              :input-props="{ id: 'device-create-date-acquired-input', name: 'dateAcquired' }"
+              @update:value="(value) => { cameraDateAcquiredTimestamp = value; }"
+            />
           </NFormItem>
         </template>
 
         <template v-if="createForm.deviceTypeCode === 'interchangeable_back'">
-          <NFormItem label="Name" required :feedback="createState.fieldErrors.name || ''">
-            <NInput :value="createForm.name" @update:value="(value) => { createForm.name = value; }" />
+          <NFormItem label="Name" required :label-props="{ for: 'device-create-back-name-input' }" :feedback="createState.fieldErrors.name || ''">
+            <NInput
+              :value="createForm.name"
+              :input-props="{ id: 'device-create-back-name-input', name: 'name' }"
+              @update:value="(value) => { createForm.name = value; }"
+            />
           </NFormItem>
-          <NFormItem label="System" required :feedback="createState.fieldErrors.system || ''">
-            <NInput :value="createForm.system" @update:value="(value) => { createForm.system = value; }" />
+          <NFormItem label="System" required :label-props="{ for: 'device-create-system-input' }" :feedback="createState.fieldErrors.system || ''">
+            <NInput
+              :value="createForm.system"
+              :input-props="{ id: 'device-create-system-input', name: 'system' }"
+              @update:value="(value) => { createForm.system = value; }"
+            />
           </NFormItem>
         </template>
 
         <template v-if="createForm.deviceTypeCode === 'film_holder'">
-          <NFormItem label="Name" required :feedback="createState.fieldErrors.name || ''">
-            <NInput :value="createForm.name" @update:value="(value) => { createForm.name = value; }" />
+          <NFormItem label="Name" required :label-props="{ for: 'device-create-holder-name-input' }" :feedback="createState.fieldErrors.name || ''">
+            <NInput
+              :value="createForm.name"
+              :input-props="{ id: 'device-create-holder-name-input', name: 'name' }"
+              @update:value="(value) => { createForm.name = value; }"
+            />
           </NFormItem>
-          <NFormItem label="Brand" required :feedback="createState.fieldErrors.brand || ''">
-            <NInput :value="createForm.brand" @update:value="(value) => { createForm.brand = value; }" />
+          <NFormItem label="Brand" required :label-props="{ for: 'device-create-holder-brand-input' }" :feedback="createState.fieldErrors.brand || ''">
+            <NInput
+              :value="createForm.brand"
+              :input-props="{ id: 'device-create-holder-brand-input', name: 'brand' }"
+              @update:value="(value) => { createForm.brand = value; }"
+            />
           </NFormItem>
           <NFormItem
             label="Holder type"
             required
+            :label-props="{ for: 'device-create-holder-type-input' }"
             :feedback="createState.fieldErrors.holderTypeId || ''"
           >
-            <NSelect :value="createForm.holderTypeId" :options="holderTypeOptions" @update:value="(value) => { createForm.holderTypeId = value; }" />
+            <NSelect
+              :value="createForm.holderTypeId"
+              :options="holderTypeOptions"
+              :input-props="{ id: 'device-create-holder-type-input', name: 'holderTypeId' }"
+              @update:value="(value) => { createForm.holderTypeId = value; }"
+            />
           </NFormItem>
         </template>
 

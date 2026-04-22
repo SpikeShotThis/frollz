@@ -25,8 +25,15 @@ export const useFilmStore = defineStore('film', () => {
   const isDetailLoading = ref(false);
   const filmsError = ref<string | null>(null);
   const detailError = ref<string | null>(null);
+  let loadFilmsInFlight: Promise<void> | null = null;
+  let loadFilmInFlight: Promise<void> | null = null;
+  let loadFilmInFlightId: number | null = null;
 
   async function loadFilms(query: FilmListQuery = {}): Promise<void> {
+    if (loadFilmsInFlight) {
+      return loadFilmsInFlight;
+    }
+
     const searchParams = new URLSearchParams();
 
     if (query.stateCode) {
@@ -41,34 +48,50 @@ export const useFilmStore = defineStore('film', () => {
 
     isLoading.value = true;
     filmsError.value = null;
-    try {
-      const response = await request(`/api/v1/film${searchParams.size > 0 ? `?${searchParams.toString()}` : ''}`);
-      films.value = filmSummarySchema.array().parse(await readApiData(response));
-    } catch (error) {
-      filmsError.value = error instanceof Error ? error.message : 'Failed to load films';
-      films.value = [];
-      throw error;
-    } finally {
-      isLoading.value = false;
-    }
+    loadFilmsInFlight = (async () => {
+      try {
+        const response = await request(`/api/v1/film${searchParams.size > 0 ? `?${searchParams.toString()}` : ''}`);
+        films.value = filmSummarySchema.array().parse(await readApiData(response));
+      } catch (error) {
+        filmsError.value = error instanceof Error ? error.message : 'Failed to load films';
+        films.value = [];
+        throw error;
+      } finally {
+        isLoading.value = false;
+        loadFilmsInFlight = null;
+      }
+    })();
+
+    return loadFilmsInFlight;
   }
 
   async function loadFilm(id: number): Promise<void> {
+    if (loadFilmInFlight && loadFilmInFlightId === id) {
+      return loadFilmInFlight;
+    }
+
     isDetailLoading.value = true;
     detailError.value = null;
-    try {
-      const response = await request(`/api/v1/film/${id}`);
-      currentFilm.value = filmDetailSchema.parse(await readApiData(response));
-      const eventsResponse = await request(`/api/v1/film/${id}/events`);
-      currentEvents.value = filmJourneyEventSchema.array().parse(await readApiData(eventsResponse));
-    } catch (error) {
-      detailError.value = error instanceof Error ? error.message : 'Failed to load film detail';
-      currentFilm.value = null;
-      currentEvents.value = [];
-      throw error;
-    } finally {
-      isDetailLoading.value = false;
-    }
+    loadFilmInFlightId = id;
+    loadFilmInFlight = (async () => {
+      try {
+        const response = await request(`/api/v1/film/${id}`);
+        currentFilm.value = filmDetailSchema.parse(await readApiData(response));
+        const eventsResponse = await request(`/api/v1/film/${id}/events`);
+        currentEvents.value = filmJourneyEventSchema.array().parse(await readApiData(eventsResponse));
+      } catch (error) {
+        detailError.value = error instanceof Error ? error.message : 'Failed to load film detail';
+        currentFilm.value = null;
+        currentEvents.value = [];
+        throw error;
+      } finally {
+        isDetailLoading.value = false;
+        loadFilmInFlight = null;
+        loadFilmInFlightId = null;
+      }
+    })();
+
+    return loadFilmInFlight;
   }
 
   async function createFilm(input: FilmCreateRequest, idempotencyKey?: string): Promise<void> {

@@ -13,41 +13,64 @@ export const useDeviceStore = defineStore('device', () => {
   const isLoadingDetail = ref(false);
   const listError = ref<string | null>(null);
   const detailError = ref<string | null>(null);
+  let loadDevicesInFlight: Promise<void> | null = null;
+  let loadDeviceInFlight: Promise<void> | null = null;
+  let loadDeviceInFlightId: number | null = null;
 
   async function loadDevices(): Promise<void> {
+    if (loadDevicesInFlight) {
+      return loadDevicesInFlight;
+    }
+
     isLoading.value = true;
     listError.value = null;
-    try {
-      const response = await request('/api/v1/devices');
-      devices.value = filmDeviceSchema.array().parse(await readApiData(response));
-    } catch (error) {
-      listError.value = error instanceof Error ? error.message : 'Failed to load devices';
-      devices.value = [];
-      throw error;
-    } finally {
-      isLoading.value = false;
-    }
+    loadDevicesInFlight = (async () => {
+      try {
+        const response = await request('/api/v1/devices');
+        devices.value = filmDeviceSchema.array().parse(await readApiData(response));
+      } catch (error) {
+        listError.value = error instanceof Error ? error.message : 'Failed to load devices';
+        devices.value = [];
+        throw error;
+      } finally {
+        isLoading.value = false;
+        loadDevicesInFlight = null;
+      }
+    })();
+
+    return loadDevicesInFlight;
   }
 
   async function loadDevice(id: number): Promise<void> {
+    if (loadDeviceInFlight && loadDeviceInFlightId === id) {
+      return loadDeviceInFlight;
+    }
+
     isLoadingDetail.value = true;
     detailError.value = null;
-    try {
-      const response = await request(`/api/v1/devices/${id}`);
-      currentDevice.value = filmDeviceSchema.parse(await readApiData(response));
-      if (currentDevice.value.deviceTypeCode === 'film_holder') {
-        currentSlots.value = filmHolderSlotSchema.array().parse(currentDevice.value.slots);
-      } else {
+    loadDeviceInFlightId = id;
+    loadDeviceInFlight = (async () => {
+      try {
+        const response = await request(`/api/v1/devices/${id}`);
+        currentDevice.value = filmDeviceSchema.parse(await readApiData(response));
+        if (currentDevice.value.deviceTypeCode === 'film_holder') {
+          currentSlots.value = filmHolderSlotSchema.array().parse(currentDevice.value.slots);
+        } else {
+          currentSlots.value = [];
+        }
+      } catch (error) {
+        detailError.value = error instanceof Error ? error.message : 'Failed to load device detail';
+        currentDevice.value = null;
         currentSlots.value = [];
+        throw error;
+      } finally {
+        isLoadingDetail.value = false;
+        loadDeviceInFlight = null;
+        loadDeviceInFlightId = null;
       }
-    } catch (error) {
-      detailError.value = error instanceof Error ? error.message : 'Failed to load device detail';
-      currentDevice.value = null;
-      currentSlots.value = [];
-      throw error;
-    } finally {
-      isLoadingDetail.value = false;
-    }
+    })();
+
+    return loadDeviceInFlight;
   }
 
   async function createDevice(input: CreateFilmDeviceRequest, idempotencyKey?: string): Promise<void> {

@@ -70,29 +70,29 @@ async function submit(): Promise<void> {
       <NSpace vertical>
         <NAlert v-if="state.formError" type="error" :show-icon="true">{{ state.formError }}</NAlert>
         <NForm @submit.prevent="submit">
-          <NFormItem label="Name" required :feedback="state.fieldErrors.name || ''">
+          <NFormItem label="Name" required :feedback="state.fieldErrors.name || ''" :label-props="{ for: 'register-name-input' }">
             <NInput
               :value="values.name"
-              :input-props="{ autocomplete: 'name' }"
+              :input-props="{ id: 'register-name-input', name: 'name', autocomplete: 'name' }"
               placeholder="Your name"
               @update:value="(value) => { values.name = value; }"
             />
           </NFormItem>
-          <NFormItem label="Email" required :feedback="state.fieldErrors.email || ''">
+          <NFormItem label="Email" required :feedback="state.fieldErrors.email || ''" :label-props="{ for: 'register-email-input' }">
             <NInput
               :value="values.email"
               type="text"
-              :input-props="{ autocomplete: 'email' }"
+              :input-props="{ id: 'register-email-input', name: 'email', autocomplete: 'email' }"
               placeholder="you@example.com"
               @update:value="(value) => { values.email = value; }"
             />
           </NFormItem>
-          <NFormItem label="Password" required :feedback="state.fieldErrors.password || ''">
+          <NFormItem label="Password" required :feedback="state.fieldErrors.password || ''" :label-props="{ for: 'register-password-input' }">
             <NInput
               :value="values.password"
               type="password"
               show-password-on="click"
-              :input-props="{ autocomplete: 'new-password' }"
+              :input-props="{ id: 'register-password-input', name: 'password', autocomplete: 'new-password' }"
               @update:value="(value) => { values.password = value; }"
             />
           </NFormItem>

@@ -69,22 +69,22 @@ async function submit(): Promise<void> {
       <NSpace vertical>
         <NAlert v-if="state.formError" type="error" :show-icon="true">{{ state.formError }}</NAlert>
         <NForm @submit.prevent="submit">
-          <NFormItem label="Email" required :feedback="state.fieldErrors.email || ''">
+          <NFormItem label="Email" required :feedback="state.fieldErrors.email || ''" :label-props="{ for: 'login-email-input' }">
             <NInput
               :value="values.email"
               type="text"
-              :input-props="{ autocomplete: 'email' }"
+              :input-props="{ id: 'login-email-input', name: 'email', autocomplete: 'email' }"
               placeholder="you@example.com"
               data-testid="login-email"
               @update:value="(value) => { values.email = value; }"
             />
           </NFormItem>
-          <NFormItem label="Password" required :feedback="state.fieldErrors.password || ''">
+          <NFormItem label="Password" required :feedback="state.fieldErrors.password || ''" :label-props="{ for: 'login-password-input' }">
             <NInput
               :value="values.password"
               type="password"
               show-password-on="click"
-              :input-props="{ autocomplete: 'current-password' }"
+              :input-props="{ id: 'login-password-input', name: 'password', autocomplete: 'current-password' }"
               data-testid="login-password"
               @update:value="(value) => { values.password = value; }"
             />

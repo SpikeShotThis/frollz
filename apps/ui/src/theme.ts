@@ -67,7 +67,7 @@ export const themeOverrides: GlobalThemeOverrides = {
     textColorBase: '#e2e8f0',       // slightly warm white, Lara style
     textColor1: '#e2e8f0',
     textColor2: '#94a3b8',
-    textColor3: '#64809b',       // ocean[400]
+    textColor3: '#8fa3b8',       // ocean[300]
     textColorDisabled: ocean[500],
     placeholderColor: ocean[400],
     placeholderColorDisabled: ocean[500],
@@ -123,11 +123,11 @@ export const themeOverrides: GlobalThemeOverrides = {
     infoColorSuppl: cyan[300],
 
     // ── Heights (Lara compact-ish density) ────────────────────────────────
-    heightTiny: '22px',
-    heightSmall: '28px',
-    heightMedium: '36px',
-    heightLarge: '40px',
-    heightHuge: '46px',
+    heightTiny: '28px',
+    heightSmall: '36px',
+    heightMedium: '44px',
+    heightLarge: '48px',
+    heightHuge: '52px',
   },
 
   // ── Component-level tweaks to match Lara's Bootstrap-inspired style ────────

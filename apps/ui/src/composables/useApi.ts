@@ -1,5 +1,6 @@
 import { useAuthStore } from '../stores/auth.js';
 import { readApiError } from './api-envelope.js';
+import { router } from '../router/index.js';
 
 export function useApi() {
   const authStore = useAuthStore();
@@ -26,7 +27,10 @@ export function useApi() {
 
         response = await fetch(input, { ...init, headers: retryHeaders });
       } else {
-        window.location.assign('/login');
+        authStore.clearTokens();
+        if (router.currentRoute.value.path !== '/login') {
+          await router.replace('/login');
+        }
       }
     }
 

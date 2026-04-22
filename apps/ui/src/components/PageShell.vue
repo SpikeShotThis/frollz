@@ -51,7 +51,7 @@ defineProps<{
 }
 
 .page-shell__subtitle {
-  color: #93a4b8;
+  color: #b9c5d4;
   margin: 6px 0 0;
   max-width: 74ch;
 }

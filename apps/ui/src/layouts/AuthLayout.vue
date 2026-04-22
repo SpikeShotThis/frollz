@@ -6,13 +6,19 @@ import { NLayout, NLayoutContent } from 'naive-ui';
 <template>
   <NLayout class="auth-layout">
     <NLayoutContent>
-      <RouterView />
+      <main id="auth-main-content" class="auth-layout__main">
+        <RouterView />
+      </main>
     </NLayoutContent>
   </NLayout>
 </template>
 
 <style scoped>
 .auth-layout {
+  min-height: 100vh;
+}
+
+.auth-layout__main {
   min-height: 100vh;
 }
 </style>

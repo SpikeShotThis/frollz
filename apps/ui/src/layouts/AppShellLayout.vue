@@ -163,23 +163,48 @@ function badgeCountForRoute(path: string): number | undefined {
   }
 }
 
+function navCountDescription(routePath: string, count: number): string {
+  if (routePath.startsWith('/devices/')) {
+    return `${count} devices`;
+  }
+  if (routePath.startsWith('/film/')) {
+    return `${count} films`;
+  }
+  if (routePath.startsWith('/emulsions/')) {
+    return `${count} emulsions`;
+  }
+  return `${count} items`;
+}
+
 function toMenuOption(record: (typeof navRoutes.value)[number], includeBadge: boolean): MenuOption {
+  const titleText = String(record.meta.title ?? record.name ?? record.path);
   const iconKey = String(record.meta.icon ?? '');
   const icon = navIconByKey[iconKey as keyof typeof navIconByKey];
   const subIcon = subNavIconByPath[record.path as keyof typeof subNavIconByPath];
   const count = includeBadge ? badgeCountForRoute(record.path) : undefined;
+  const ariaLabel = typeof count === 'number' ? `${titleText}, ${navCountDescription(record.path, count)}` : titleText;
   const option: MenuOption = {
     key: record.path,
     label: () =>
       h('div', {
         class: 'app-shell__menu-label',
+        'aria-label': ariaLabel,
         onClick: (event: MouseEvent) => {
           handleMenuLabelClick(event, record.path);
         }
       }, [
-        h('span', { class: 'app-shell__menu-text' }, String(record.meta.title ?? record.name ?? record.path)),
+        h('span', { class: 'app-shell__menu-text' }, titleText),
         ...(typeof count === 'number'
-          ? [h(NBadge, { class: 'app-shell__menu-badge', value: count, showZero: true, offset: [16, 0] })]
+          ? [h('span', { class: 'sr-only' }, navCountDescription(record.path, count))]
+          : []),
+        ...(typeof count === 'number'
+          ? [h(NBadge, {
+            class: 'app-shell__menu-badge',
+            value: count,
+            showZero: true,
+            offset: [16, 0],
+            'aria-hidden': 'true'
+          })]
           : [])
       ])
   };
@@ -296,28 +321,10 @@ function ensureParentExpanded(menuKey: string | null): void {
   }
 }
 
-async function hydrateNavCounts(): Promise<void> {
-  const jobs: Promise<unknown>[] = [];
-
-  if (!referenceStore.loaded) {
-    jobs.push(referenceStore.loadAll());
-  }
-
-  if (deviceStore.devices.length === 0 && !deviceStore.isLoading) {
-    jobs.push(deviceStore.loadDevices());
-  }
-
-  if (filmStore.films.length === 0 && !filmStore.isLoading) {
-    jobs.push(filmStore.loadFilms());
-  }
-
-  await Promise.allSettled(jobs);
-}
-
 async function handleLogout(): Promise<void> {
   await authStore.logout();
   isMobileMenuOpen.value = false;
-  await router.push('/login');
+  await router.replace('/login');
 }
 
 watch(
@@ -353,7 +360,6 @@ watch(
 onMounted(() => {
   readShellState();
   syncViewportState();
-  void hydrateNavCounts();
   window.addEventListener('resize', syncViewportState);
 });
 
@@ -404,12 +410,14 @@ onBeforeUnmount(() => {
       </NLayoutHeader>
 
       <NLayoutContent class="app-shell__content">
-        <RouterView />
+        <main id="app-main-content" class="app-shell__main">
+          <RouterView />
+        </main>
       </NLayoutContent>
     </NLayout>
   </NLayout>
 
-  <NDrawer v-model:show="isMobileMenuOpen" placement="left" width="320">
+  <NDrawer v-model:show="isMobileMenuOpen" placement="left" width="min(100vw, 360px)">
     <NDrawerContent title="Navigation" closable>
       <NSpace vertical size="large">
         <NMenu :value="selectedKey" :indent="14" :options="menuOptions" :expanded-keys="expandedKeys"
@@ -471,6 +479,10 @@ onBeforeUnmount(() => {
 }
 
 .app-shell__content {
+  min-height: calc(100vh - 64px);
+}
+
+.app-shell__main {
   min-height: calc(100vh - 64px);
 }
 

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, reactive, ref, watch } from 'vue';
+import { computed, onMounted, reactive, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import {
   NAlert,
@@ -167,13 +167,6 @@ onMounted(async () => {
   }
 });
 
-watch(
-  () => route.fullPath,
-  () => {
-    void refresh();
-  }
-);
-
 function resetCreateForm(): void {
   createForm.name = '';
   createForm.emulsionId = null;
@@ -212,7 +205,6 @@ async function submitCreateFilm(): Promise<void> {
     isCreateDrawerOpen.value = false;
     resetCreateForm();
     feedback.success('Film created successfully.');
-    await refresh();
   } catch (error) {
     createState.value.formError = feedback.toErrorMessage(error, 'Could not create film.');
   } finally {
@@ -269,7 +261,7 @@ async function submitCreateFilm(): Promise<void> {
     </MiniDashboardLayout>
   </PageShell>
 
-  <NDrawer v-model:show="isCreateDrawerOpen" placement="right" width="420">
+  <NDrawer v-model:show="isCreateDrawerOpen" placement="right" width="min(100vw, 420px)">
     <NDrawerContent title="Add film" closable>
       <NForm label-placement="top" @submit.prevent="submitCreateFilm">
         <NAlert v-if="createState.formError" type="error" :show-icon="true" style="margin-bottom: 10px;">
@@ -279,13 +271,19 @@ async function submitCreateFilm(): Promise<void> {
         <NFormItem
           label="Name"
           required
+          :label-props="{ for: 'film-create-name-input' }"
           :feedback="createState.fieldErrors.name || ''"
         >
-          <NInput v-model:value="createForm.name" placeholder="Film label" />
+          <NInput
+            v-model:value="createForm.name"
+            placeholder="Film label"
+            :input-props="{ id: 'film-create-name-input', name: 'name' }"
+          />
         </NFormItem>
         <NFormItem
           label="Emulsion"
           required
+          :label-props="{ for: 'film-create-emulsion-input' }"
           :feedback="createState.fieldErrors.emulsionId || ''"
         >
           <NSelect
@@ -294,11 +292,13 @@ async function submitCreateFilm(): Promise<void> {
             filterable
             placeholder="Select emulsion"
             data-testid="create-film-emulsion"
+            :input-props="{ id: 'film-create-emulsion-input', name: 'emulsionId' }"
           />
         </NFormItem>
         <NFormItem
           label="Film format"
           required
+          :label-props="{ for: 'film-create-format-input' }"
           :feedback="createState.fieldErrors.filmFormatId || ''"
         >
           <NSelect
@@ -306,12 +306,14 @@ async function submitCreateFilm(): Promise<void> {
             :options="formatOptions"
             placeholder="Select format"
             data-testid="create-film-format"
+            :input-props="{ id: 'film-create-format-input', name: 'filmFormatId' }"
             @update:value="createForm.packageTypeId = null"
           />
         </NFormItem>
         <NFormItem
           label="Package type"
           required
+          :label-props="{ for: 'film-create-package-input' }"
           :feedback="createState.fieldErrors.packageTypeId || ''"
         >
           <NSelect
@@ -319,10 +321,16 @@ async function submitCreateFilm(): Promise<void> {
             :options="packageTypeOptions"
             placeholder="Select package"
             data-testid="create-film-package"
+            :input-props="{ id: 'film-create-package-input', name: 'packageTypeId' }"
           />
         </NFormItem>
-        <NFormItem label="Expiration date">
-          <NDatePicker v-model:value="expirationTimestamp" type="datetime" clearable />
+        <NFormItem label="Expiration date" :label-props="{ for: 'film-create-expiration-input' }">
+          <NDatePicker
+            v-model:value="expirationTimestamp"
+            type="datetime"
+            clearable
+            :input-props="{ id: 'film-create-expiration-input', name: 'expirationDate' }"
+          />
         </NFormItem>
         <NFlex justify="space-between" align="center">
           <NText depth="3">Required fields are marked with an asterisk.</NText>

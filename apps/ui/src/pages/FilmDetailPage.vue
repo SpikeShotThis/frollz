@@ -324,13 +324,14 @@ onMounted(async () => {
       <NEmpty v-else description="Film not found" />
     </NCard>
 
-    <NCard title="Journey timeline">
+    <h2 class="film-detail__section-title">Journey timeline</h2>
+    <NCard>
       <NDataTable :columns="eventsColumns" :data="filmStore.currentEvents" :loading="filmStore.isDetailLoading" :row-key="(row) => row.id" />
       <NEmpty v-if="!filmStore.isDetailLoading && filmStore.currentEvents.length === 0" description="No events yet for this film." />
     </NCard>
   </PageShell>
 
-  <NDrawer :show="isEventDrawerOpen" placement="right" width="460" @update:show="(value) => { isEventDrawerOpen = value; }">
+  <NDrawer :show="isEventDrawerOpen" placement="right" width="min(100vw, 460px)" @update:show="(value) => { isEventDrawerOpen = value; }">
     <NDrawerContent title="Add journey event" closable>
       <NForm label-placement="top" @submit.prevent="submitEvent">
         <NAlert v-if="eventState.formError" type="error" :show-icon="true" style="margin-bottom: 10px;">
@@ -340,6 +341,7 @@ onMounted(async () => {
         <NFormItem
           label="Target state"
           required
+          :label-props="{ for: 'event-target-state-input' }"
           :feedback="eventState.fieldErrors.filmStateCode || ''"
         >
           <NSelect
@@ -347,6 +349,7 @@ onMounted(async () => {
             :options="transitions"
             placeholder="Select next state"
             data-testid="event-target-state"
+            :input-props="{ id: 'event-target-state-input', name: 'filmStateCode' }"
             @update:value="onChangeFilmState"
           />
         </NFormItem>
@@ -354,13 +357,25 @@ onMounted(async () => {
         <NFormItem
           label="Occurred at"
           required
+          :label-props="{ for: 'event-occurred-at-input' }"
           :feedback="eventState.fieldErrors.occurredAt || ''"
         >
-          <NDatePicker :value="occurredAtTimestamp" type="datetime" @update:value="(value) => { occurredAtTimestamp = value; }" />
+          <NDatePicker
+            :value="occurredAtTimestamp"
+            type="datetime"
+            :input-props="{ id: 'event-occurred-at-input', name: 'occurredAt' }"
+            @update:value="(value) => { occurredAtTimestamp = value; }"
+          />
         </NFormItem>
 
-        <NFormItem label="Notes">
-          <NInput :value="eventForm.notes" type="textarea" placeholder="Optional context" @update:value="(value) => { eventForm.notes = value; }" />
+        <NFormItem label="Notes" :label-props="{ for: 'event-notes-input' }">
+          <NInput
+            :value="eventForm.notes"
+            type="textarea"
+            placeholder="Optional context"
+            :input-props="{ id: 'event-notes-input', name: 'notes' }"
+            @update:value="(value) => { eventForm.notes = value; }"
+          />
         </NFormItem>
 
         <NText depth="3">
@@ -371,6 +386,7 @@ onMounted(async () => {
           v-if="eventForm.filmStateCode === 'stored'"
           label="Storage location"
           required
+          :label-props="{ for: 'event-storage-location-input' }"
           :feedback="eventState.fieldErrors.storageLocationId || ''"
         >
           <NSelect
@@ -378,6 +394,7 @@ onMounted(async () => {
             :options="storageLocationOptions"
             placeholder="Select location"
             data-testid="event-storage-location"
+            :input-props="{ id: 'event-storage-location-input', name: 'storageLocationId' }"
             @update:value="(value) => { eventForm.storageLocationId = value; }"
           />
         </NFormItem>
@@ -386,45 +403,88 @@ onMounted(async () => {
           <NFormItem
             label="Device"
             required
+            :label-props="{ for: 'event-device-input' }"
             :feedback="eventState.fieldErrors.deviceId || ''"
           >
-            <NSelect :value="eventForm.deviceId" :options="deviceOptions" placeholder="Select device" @update:value="(value) => { eventForm.deviceId = value; }" />
+            <NSelect
+              :value="eventForm.deviceId"
+              :options="deviceOptions"
+              placeholder="Select device"
+              :input-props="{ id: 'event-device-input', name: 'deviceId' }"
+              @update:value="(value) => { eventForm.deviceId = value; }"
+            />
           </NFormItem>
-          <NFormItem label="Holder slot side (holders only)">
-            <NInputNumber :value="eventForm.slotSideNumber" @update:value="(value) => { eventForm.slotSideNumber = value; }" />
+          <NFormItem label="Holder slot side (holders only)" :label-props="{ for: 'event-slot-side-input' }">
+            <NInputNumber
+              :value="eventForm.slotSideNumber"
+              :input-props="{ id: 'event-slot-side-input', name: 'slotSideNumber' }"
+              @update:value="(value) => { eventForm.slotSideNumber = value; }"
+            />
           </NFormItem>
-          <NFormItem label="Intended push/pull">
-            <NInputNumber :value="eventForm.intendedPushPull" @update:value="(value) => { eventForm.intendedPushPull = value; }" />
+          <NFormItem label="Intended push/pull" :label-props="{ for: 'event-intended-push-pull-input' }">
+            <NInputNumber
+              :value="eventForm.intendedPushPull"
+              :input-props="{ id: 'event-intended-push-pull-input', name: 'intendedPushPull' }"
+              @update:value="(value) => { eventForm.intendedPushPull = value; }"
+            />
           </NFormItem>
         </template>
 
         <template v-if="eventForm.filmStateCode === 'sent_for_dev'">
-          <NFormItem label="Lab name">
-            <NInput :value="eventForm.labName" @update:value="(value) => { eventForm.labName = value; }" />
+          <NFormItem label="Lab name" :label-props="{ for: 'event-lab-name-sent-input' }">
+            <NInput
+              :value="eventForm.labName"
+              :input-props="{ id: 'event-lab-name-sent-input', name: 'labName' }"
+              @update:value="(value) => { eventForm.labName = value; }"
+            />
           </NFormItem>
-          <NFormItem label="Lab contact">
-            <NInput :value="eventForm.labContact" @update:value="(value) => { eventForm.labContact = value; }" />
+          <NFormItem label="Lab contact" :label-props="{ for: 'event-lab-contact-input' }">
+            <NInput
+              :value="eventForm.labContact"
+              :input-props="{ id: 'event-lab-contact-input', name: 'labContact' }"
+              @update:value="(value) => { eventForm.labContact = value; }"
+            />
           </NFormItem>
-          <NFormItem label="Actual push/pull">
-            <NInputNumber :value="eventForm.actualPushPull" @update:value="(value) => { eventForm.actualPushPull = value; }" />
+          <NFormItem label="Actual push/pull" :label-props="{ for: 'event-actual-push-pull-sent-input' }">
+            <NInputNumber
+              :value="eventForm.actualPushPull"
+              :input-props="{ id: 'event-actual-push-pull-sent-input', name: 'actualPushPull' }"
+              @update:value="(value) => { eventForm.actualPushPull = value; }"
+            />
           </NFormItem>
         </template>
 
         <template v-if="eventForm.filmStateCode === 'developed'">
-          <NFormItem label="Lab name">
-            <NInput :value="eventForm.labName" @update:value="(value) => { eventForm.labName = value; }" />
+          <NFormItem label="Lab name" :label-props="{ for: 'event-lab-name-developed-input' }">
+            <NInput
+              :value="eventForm.labName"
+              :input-props="{ id: 'event-lab-name-developed-input', name: 'labName' }"
+              @update:value="(value) => { eventForm.labName = value; }"
+            />
           </NFormItem>
-          <NFormItem label="Actual push/pull">
-            <NInputNumber :value="eventForm.actualPushPull" @update:value="(value) => { eventForm.actualPushPull = value; }" />
+          <NFormItem label="Actual push/pull" :label-props="{ for: 'event-actual-push-pull-developed-input' }">
+            <NInputNumber
+              :value="eventForm.actualPushPull"
+              :input-props="{ id: 'event-actual-push-pull-developed-input', name: 'actualPushPull' }"
+              @update:value="(value) => { eventForm.actualPushPull = value; }"
+            />
           </NFormItem>
         </template>
 
         <template v-if="eventForm.filmStateCode === 'scanned'">
-          <NFormItem label="Scanner or software">
-            <NInput :value="eventForm.scannerOrSoftware" @update:value="(value) => { eventForm.scannerOrSoftware = value; }" />
+          <NFormItem label="Scanner or software" :label-props="{ for: 'event-scanner-software-input' }">
+            <NInput
+              :value="eventForm.scannerOrSoftware"
+              :input-props="{ id: 'event-scanner-software-input', name: 'scannerOrSoftware' }"
+              @update:value="(value) => { eventForm.scannerOrSoftware = value; }"
+            />
           </NFormItem>
-          <NFormItem label="Scan link">
-            <NInput :value="eventForm.scanLink" @update:value="(value) => { eventForm.scanLink = value; }" />
+          <NFormItem label="Scan link" :label-props="{ for: 'event-scan-link-input' }">
+            <NInput
+              :value="eventForm.scanLink"
+              :input-props="{ id: 'event-scan-link-input', name: 'scanLink' }"
+              @update:value="(value) => { eventForm.scanLink = value; }"
+            />
           </NFormItem>
         </template>
 
@@ -438,3 +498,11 @@ onMounted(async () => {
     </NDrawerContent>
   </NDrawer>
 </template>
+
+<style scoped>
+.film-detail__section-title {
+  font-size: 1rem;
+  line-height: 1.3;
+  margin: 0;
+}
+</style>

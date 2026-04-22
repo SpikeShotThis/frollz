@@ -30,29 +30,43 @@ export const useReferenceStore = defineStore('reference', () => {
   const loaded = computed(() => filmFormats.value.length > 0);
   const isLoading = ref(false);
   const loadError = ref<string | null>(null);
+  let loadAllInFlight: Promise<void> | null = null;
 
   async function loadAll(): Promise<void> {
+    if (loaded.value) {
+      return;
+    }
+
+    if (loadAllInFlight) {
+      return loadAllInFlight;
+    }
+
     isLoading.value = true;
     loadError.value = null;
-    try {
-      const response = await request('/api/v1/reference');
-      const referenceTables = referenceTablesSchema.parse(await readApiData(response));
+    loadAllInFlight = (async () => {
+      try {
+        const response = await request('/api/v1/reference');
+        const referenceTables = referenceTablesSchema.parse(await readApiData(response));
 
-      filmFormats.value = referenceTables.filmFormats;
-      developmentProcesses.value = referenceTables.developmentProcesses;
-      packageTypes.value = referenceTables.packageTypes;
-      filmStates.value = referenceTables.filmStates;
-      storageLocations.value = referenceTables.storageLocations;
-      slotStates.value = referenceTables.slotStates;
-      deviceTypes.value = referenceTables.deviceTypes;
-      holderTypes.value = referenceTables.holderTypes;
-      emulsions.value = referenceTables.emulsions;
-    } catch (error) {
-      loadError.value = error instanceof Error ? error.message : 'Failed to load reference data';
-      throw error;
-    } finally {
-      isLoading.value = false;
-    }
+        filmFormats.value = referenceTables.filmFormats;
+        developmentProcesses.value = referenceTables.developmentProcesses;
+        packageTypes.value = referenceTables.packageTypes;
+        filmStates.value = referenceTables.filmStates;
+        storageLocations.value = referenceTables.storageLocations;
+        slotStates.value = referenceTables.slotStates;
+        deviceTypes.value = referenceTables.deviceTypes;
+        holderTypes.value = referenceTables.holderTypes;
+        emulsions.value = referenceTables.emulsions;
+      } catch (error) {
+        loadError.value = error instanceof Error ? error.message : 'Failed to load reference data';
+        throw error;
+      } finally {
+        isLoading.value = false;
+        loadAllInFlight = null;
+      }
+    })();
+
+    return loadAllInFlight;
   }
 
   function packageTypesByFormat(filmFormatId: number): PackageType[] {

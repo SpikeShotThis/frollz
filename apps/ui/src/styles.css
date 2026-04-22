@@ -25,3 +25,38 @@ body {
   outline: 2px solid #2f7fef;
   outline-offset: 2px;
 }
+
+.sr-only {
+  border: 0;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  padding: 0;
+  position: absolute;
+  white-space: nowrap;
+  width: 1px;
+}
+
+@media (max-width: 900px) {
+  button.n-button {
+    min-height: 44px;
+  }
+
+  button.n-button.n-button--circle {
+    height: 44px;
+    min-width: 44px;
+    width: 44px;
+  }
+
+  .n-input .n-input__input-el,
+  .n-base-selection {
+    min-height: 44px;
+  }
+
+  .n-drawer .n-base-close {
+    height: 44px;
+    width: 44px;
+  }
+}

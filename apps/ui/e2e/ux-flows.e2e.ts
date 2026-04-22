@@ -391,7 +391,101 @@ test('mobile navigation uses drawer menu', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await loginThroughUi(page);
 
-  await expect(page.getByRole('button', { name: 'Menu' })).toBeVisible();
-  await page.getByRole('button', { name: 'Menu' }).click();
+  const menuButton = page.getByRole('button', { name: 'Menu' });
+  await expect(menuButton).toBeVisible();
+  const menuButtonBox = await menuButton.boundingBox();
+  expect(menuButtonBox?.width ?? 0).toBeGreaterThanOrEqual(44);
+  expect(menuButtonBox?.height ?? 0).toBeGreaterThanOrEqual(44);
+
+  await menuButton.click();
   await expect(page.getByText('Navigation')).toBeVisible();
+
+  const closeButton = page.locator('.n-drawer .n-base-close').first();
+  await expect(closeButton).toBeVisible();
+  const closeButtonBox = await closeButton.boundingBox();
+  expect(closeButtonBox?.width ?? 0).toBeGreaterThanOrEqual(44);
+  expect(closeButtonBox?.height ?? 0).toBeGreaterThanOrEqual(44);
+
+  const drawerBody = page.locator('.n-drawer-body-content-wrapper').first();
+  const drawerBox = await drawerBody.boundingBox();
+  expect(drawerBox?.width ?? 9999).toBeLessThanOrEqual(390);
+});
+
+test('layouts expose one main landmark in auth and app routes', async ({ page }) => {
+  await mockLogin(page);
+  await page.route('**/api/v1/reference', async (route) => {
+    await route.fulfill({ json: referencePayload });
+  });
+  await page.route('**/api/v1/film*', async (route) => {
+    await route.fulfill({ json: { data: [] } });
+  });
+
+  await page.goto('/login');
+  await expect(page.locator('main')).toHaveCount(1);
+  await expect(page.locator('main#auth-main-content')).toHaveCount(1);
+
+  await loginThroughUi(page);
+  await page.goto('/film');
+  await expect(page.locator('main')).toHaveCount(1);
+  await expect(page.locator('main#app-main-content')).toHaveCount(1);
+});
+
+test('route entry performs one bootstrap fetch per dataset', async ({ page }) => {
+  await mockLogin(page);
+
+  let referenceRequests = 0;
+  let filmRequests = 0;
+  let deviceRequests = 0;
+
+  await page.route('**/api/v1/reference', async (route) => {
+    referenceRequests += 1;
+    await route.fulfill({ json: referencePayload });
+  });
+
+  await page.route('**/api/v1/film*', async (route) => {
+    filmRequests += 1;
+    await route.fulfill({ json: { data: [] } });
+  });
+
+  await page.route('**/api/v1/devices*', async (route) => {
+    deviceRequests += 1;
+    await route.fulfill({ json: { data: [] } });
+  });
+
+  await loginThroughUi(page);
+
+  await page.goto('/film');
+  await expect(page.getByRole('heading', { name: 'Film Inventory' })).toBeVisible();
+  expect(referenceRequests).toBe(1);
+  expect(filmRequests).toBe(1);
+
+  await page.goto('/devices');
+  await expect(page.getByRole('heading', { name: 'Devices', exact: true })).toBeVisible();
+  expect(deviceRequests).toBe(1);
+});
+
+test('refresh failure gracefully routes to login without hard reload', async ({ page }) => {
+  await mockLogin(page);
+
+  await page.route('**/api/v1/reference', async (route) => {
+    await route.fulfill({
+      status: 401,
+      json: { error: { message: 'Unauthorized' } }
+    });
+  });
+
+  await page.route('**/api/v1/auth/refresh', async (route) => {
+    await route.fulfill({
+      status: 401,
+      json: { error: { message: 'Refresh token expired' } }
+    });
+  });
+
+  await page.route('**/api/v1/film*', async (route) => {
+    await route.fulfill({ json: { data: [] } });
+  });
+
+  await loginThroughUi(page);
+  await page.goto('/film');
+  await expect(page).toHaveURL(/\/login$/);
 });
