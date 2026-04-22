@@ -74,6 +74,7 @@ export const filmJourneyEventDataStoredSchema = z.object({
 export const filmJourneyEventDataLoadedLegacySchema = z.object({
   deviceId: idSchema,
   slotSideNumber: z.number().int().nullable(),
+  filmUnitId: idSchema.optional(),
   intendedPushPull: z.number().int().nullable()
 });
 export const filmUnitLoadTargetCameraDirectSchema = z.object({

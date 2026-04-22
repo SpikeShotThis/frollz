@@ -4,6 +4,7 @@ import { FilmStateEntity } from './reference.entities.js';
 import { UserEntity } from './user.entity.js';
 import { FilmStockEntity } from './film-stock.entity.js';
 import { FilmDeviceEntity } from './device.entities.js';
+import { FilmEntity } from './film.entity.js';
 
 @Entity({ tableName: 'film_unit' })
 export class FilmUnitEntity extends AutoIncrementEntity {
@@ -12,6 +13,9 @@ export class FilmUnitEntity extends AutoIncrementEntity {
 
   @ManyToOne(() => FilmStockEntity, { fieldName: 'film_stock_id' })
   filmStock!: FilmStockEntity;
+
+  @ManyToOne(() => FilmEntity, { nullable: true, fieldName: 'legacy_film_id' })
+  legacyFilm!: FilmEntity | null;
 
   @Property({ type: 'integer' })
   ordinal!: number;
