@@ -12,7 +12,7 @@
         "src/*"
       ],
       "@frollz2/schema": [
-        "../../packages/schema/src/index.ts"
+        "../../packages/schema/dist/index.d.ts"
       ]
     }
   },

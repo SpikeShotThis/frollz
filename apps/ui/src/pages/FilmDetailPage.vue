@@ -166,12 +166,39 @@ const storageLocationOptions = computed(() =>
 
 const deviceOptions = computed(() =>
   deviceStore.devices
-    .filter((device) => selectedFilm.value && device.filmFormatId === selectedFilm.value.filmFormatId)
+    .filter((device) => {
+      if (!selectedFilm.value || device.filmFormatId !== selectedFilm.value.filmFormatId) {
+        return false;
+      }
+
+      if (device.deviceTypeCode === 'camera') {
+        return device.loadMode === 'direct';
+      }
+
+      return true;
+    })
     .map((device) => ({
       label: humanizeDevice(device),
       value: device.id
     }))
 );
+
+const selectedLoadDevice = computed(() =>
+  eventForm.filmStateCode === 'loaded' && eventForm.deviceId
+    ? deviceStore.devices.find((device) => device.id === eventForm.deviceId) ?? null
+    : null
+);
+
+const holderSlotOptions = computed(() => {
+  if (!selectedLoadDevice.value || selectedLoadDevice.value.deviceTypeCode !== 'film_holder') {
+    return [];
+  }
+
+  return Array.from({ length: selectedLoadDevice.value.slotCount }, (_, index) => {
+    const slotNumber = index + 1;
+    return { label: `Slot ${slotNumber}`, value: slotNumber };
+  });
+});
 
 const availableUnitOptions = computed(() =>
   filmStore.currentUnits
@@ -314,6 +341,28 @@ function onChangeFilmState(code: string | null): void {
   eventForm.scanLink = '';
   eventState.value.fieldErrors = {};
   eventState.value.formError = null;
+}
+
+function onChangeDevice(value: number | null): void {
+  eventForm.deviceId = value;
+  if (!value) {
+    eventForm.slotSideNumber = null;
+    return;
+  }
+
+  const selectedDevice = deviceStore.devices.find((entry) => entry.id === value);
+  if (selectedDevice?.deviceTypeCode === 'film_holder') {
+    if (
+      typeof eventForm.slotSideNumber !== 'number'
+      || eventForm.slotSideNumber < 1
+      || eventForm.slotSideNumber > selectedDevice.slotCount
+    ) {
+      eventForm.slotSideNumber = 1;
+    }
+    return;
+  }
+
+  eventForm.slotSideNumber = null;
 }
 
 function validateEventForm(): Record<string, string> {
@@ -623,16 +672,20 @@ onBeforeUnmount(() => {
               :options="deviceOptions"
               placeholder="Select device"
               :input-props="{ id: 'event-device-input', name: 'deviceId' }"
-              @update:value="(value) => { eventForm.deviceId = value; }"
+              @update:value="onChangeDevice"
             />
           </NFormItem>
           <NFormItem
-            label="Holder slot side (holders only)"
+            v-if="selectedLoadDevice?.deviceTypeCode === 'film_holder'"
+            label="Holder slot"
+            required
             :label-props="{ for: 'event-slot-side-input' }"
             :feedback="eventState.fieldErrors.slotSideNumber || ''"
           >
-            <NInputNumber
+            <NSelect
               :value="eventForm.slotSideNumber"
+              :options="holderSlotOptions"
+              placeholder="Select holder slot"
               :input-props="{ id: 'event-slot-side-input', name: 'slotSideNumber' }"
               @update:value="(value) => { eventForm.slotSideNumber = value; }"
             />

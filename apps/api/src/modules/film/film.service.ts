@@ -241,6 +241,18 @@ export class FilmService {
         await this.applyRemovedEventSideEffects(transactionalEntityManager, userId, film);
       }
 
+      const transitionUnit = await this.resolveFilmUnitForTransition(
+        transactionalEntityManager,
+        userId,
+        film.id,
+        input.filmStateCode,
+        persistedEventData
+      );
+      if (transitionUnit) {
+        transitionUnit.currentState = targetState;
+        transactionalEntityManager.persist(transitionUnit);
+      }
+
       film.currentState = targetState;
 
       const event = transactionalEntityManager.create(FilmJourneyEventEntity, {
@@ -588,6 +600,42 @@ export class FilmService {
 
   private withFilmUnitId(eventData: Record<string, unknown>, filmUnitId: number): Record<string, unknown> {
     return { ...eventData, filmUnitId };
+  }
+
+  private async resolveFilmUnitForTransition(
+    entityManager: EntityManager,
+    userId: number,
+    filmId: number,
+    filmStateCode: CreateFilmJourneyEventRequest['filmStateCode'],
+    eventData: Record<string, unknown>
+  ): Promise<FilmUnitEntity | null> {
+    if (filmStateCode === 'loaded') {
+      const loadedData = this.parseLoadedEventData(eventData);
+      if (!loadedData?.filmUnitId) {
+        return null;
+      }
+      return entityManager.findOne(
+        FilmUnitEntity,
+        { id: loadedData.filmUnitId, user: userId, legacyFilm: filmId },
+        { populate: ['currentState'] }
+      );
+    }
+
+    const loadedEvent = await this.findLatestEventByState(entityManager, userId, filmId, 'loaded');
+    if (!loadedEvent) {
+      return null;
+    }
+
+    const loadedData = this.parseLoadedEventData(loadedEvent.eventData);
+    if (!loadedData?.filmUnitId) {
+      return null;
+    }
+
+    return entityManager.findOne(
+      FilmUnitEntity,
+      { id: loadedData.filmUnitId, user: userId, legacyFilm: filmId },
+      { populate: ['currentState'] }
+    );
   }
 
   private async resolveFilmUnitForLoad(

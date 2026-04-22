@@ -11,7 +11,7 @@ export default defineConfig(() => {
     plugins,
     resolve: {
       alias: {
-        '@frollz2/schema': fileURLToPath(new URL('../../packages/schema/src/index.ts', import.meta.url))
+        '@frollz2/schema': fileURLToPath(new URL('../../packages/schema/dist/index.js', import.meta.url))
       }
     },
     server: {
