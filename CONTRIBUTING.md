@@ -6,6 +6,7 @@ Thanks for your interest in contributing. Whether you're fixing a bug, adding a 
 
 - [Getting started](#getting-started)
 - [Development setup](#development-setup)
+- [Editor setup](#editor-setup)
 - [Making changes](#making-changes)
 - [Submitting a pull request](#submitting-a-pull-request)
 - [Coding conventions](#coding-conventions)
@@ -71,6 +72,58 @@ npm run type-check
 ```
 
 The pre-commit hook runs all of the above plus a Semgrep SAST scan automatically before every commit. If the hook passes, CI will pass.
+
+---
+
+## Editor setup
+
+### VS Code (recommended)
+
+The repo ships a `.vscode/` directory with settings, extension recommendations, and tasks pre-configured for this stack.
+
+#### Recommended extensions
+
+Open the command palette (`Cmd+Shift+P`) → **"Extensions: Show Recommended Extensions"** to install the full set in one click. The key extensions and what they do:
+
+| Extension | Purpose |
+|---|---|
+| **Vue - Official** (`vue.volar`) | Vue 3 language server — type-checking, template intellisense, inlay hints |
+| **ESLint** (`dbaeumer.vscode-eslint`) | Auto-fixes lint errors on save |
+| **Vitest** (`vitest.explorer`) | In-editor test runner — pass/fail gutter icons and a test sidebar panel |
+| **Turbo Console** (`ms-vscode.vscode-turbo`) | Run turbo tasks from the command palette; visualise the task dependency graph |
+| **Playwright** (`ms-playwright.playwright`) | E2E test runner UI and interaction codegen |
+| **Pretty TypeScript Errors** (`yoavbls.pretty-ts-errors`) | Renders raw TypeScript error output as readable prose |
+| **DotENV** (`mikestead.dotenv`) | Syntax highlighting for `.env` files |
+
+#### What the workspace settings do
+
+- **Format on save** is enabled. TypeScript and JavaScript files use the VS Code built-in formatter; Vue files use Volar; JSON files use the built-in JSON formatter.
+- **ESLint auto-fix on save** runs alongside formatting to catch lint violations (unused imports, consistent type imports, Vue template rules).
+- **`dist/`, `coverage/`, and `.turbo/`** are excluded from both the file explorer and search results so generated output stays out of your way.
+- **Workspace TypeScript** — VS Code will prompt you to switch to the workspace version of TypeScript (hoisted to `node_modules/typescript/lib` by pnpm). Accept the prompt or set it manually via `Cmd+Shift+P` → **"TypeScript: Select TypeScript Version"** → **"Use Workspace Version"**.
+- **Volar inlay hints** — missing required props and inline handler event types are shown inline in templates.
+
+#### Tasks
+
+`Cmd+Shift+B` runs the default build task (`dev: all` — starts both the API and UI in watch mode via Turborepo).
+
+`Cmd+Shift+T` runs the default test task (`pnpm test` across all packages).
+
+All other tasks are available via `Cmd+Shift+P` → **"Tasks: Run Task"**:
+
+| Task | Command |
+|---|---|
+| `dev: all` | `pnpm dev` — API + UI in parallel watch mode |
+| `check-types` | `pnpm check-types` — full monorepo type check |
+| `lint` | `pnpm lint` — ESLint across all packages |
+| `test` | `pnpm test` — all Vitest suites |
+| `ui: e2e` | Playwright end-to-end tests |
+| `db: migrate` | Apply MikroORM migrations |
+| `db: seed` | Run the idempotent reference data seed |
+
+#### Other editors
+
+JetBrains IDEs (WebStorm / IntelliJ) work well with this stack out of the box — enable **Volar** (or the bundled Vue plugin in recent versions) and configure ESLint to use the flat config at the repo root. No `.idea/` config is committed to keep the repo editor-agnostic.
 
 ---
 

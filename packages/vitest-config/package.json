@@ -1,29 +1,9 @@
 {
-    "name": "@frollz/vitest-config",
-    "version": "0.2.4",
-    "private": true,
-    "type": "module",
-    "main": "./dist/index.js",
-    "types": "./dist/index.d.ts",
-    "exports": {
-        ".": "./dist/index.js",
-        "./node": "./dist/configs/node-config.js",
-        "./vue": "./dist/configs/vue-config.js"
-    },
-    "scripts": {
-        "build": "tsc",
-        "dev": "tsc --watch"
-    },
-    "dependencies": {
-        "@swc/core": "^1.15.26",
-        "@vitejs/plugin-vue": "6.0.6",
-        "jsdom": "^29.0.2",
-        "unplugin-swc": "^1.5.9",
-        "vitest": "^4.1.4"
-    },
-    "devDependencies": {
-        "@frollz/typescript-config": "workspace:*",
-        "typescript": "*",
-        "vue": "^3.5.32"
-    }
+  "name": "@frollz2/vitest-config",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "peerDependencies": {
+    "vitest": "*"
+  }
 }

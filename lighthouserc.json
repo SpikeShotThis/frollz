@@ -1,0 +1,18 @@
+{
+  "ci": {
+    "collect": {
+      "startServerCommand": "pnpm --filter @frollz2/ui exec vite preview --host 127.0.0.1 --port 4173",
+      "startServerReadyPattern": "4173",
+      "startServerReadyTimeout": 60000,
+      "url": [
+        "http://127.0.0.1:4173/",
+        "http://127.0.0.1:4173/login",
+        "http://127.0.0.1:4173/register"
+      ],
+      "numberOfRuns": 1
+    },
+    "upload": {
+      "target": "lhci"
+    }
+  }
+}

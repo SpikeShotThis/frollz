@@ -1,7 +1,0 @@
-User-agent: *
-Allow: /
-Disallow: /api/
-Disallow: /*.json$
-Disallow: /?*
-
-Sitemap: https://frollz.example.com/sitemap.xml

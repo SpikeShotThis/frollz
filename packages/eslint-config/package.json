@@ -1,24 +1,17 @@
 {
-    "name": "@frollz/eslint-config",
-    "version": "0.2.4",
-    "private": true,
-    "type": "module",
-    "exports": {
-        "./base": "./base.js",
-        "./nestjs": "./nestjs.js",
-        "./vue": "./vue.js"
-    },
-    "dependencies": {
-        "@eslint/js": "^10.0.1",
-        "@eslint/markdown": "^8.0.1",
-        "@stylistic/eslint-plugin": "^5.10.0",
-        "eslint": "^10.2.0",
-        "eslint-config-flat-gitignore": "^2.3.0",
-        "eslint-plugin-jsonc": "^3.1.2",
-        "eslint-plugin-simple-import-sort": "^13.0.0",
-        "eslint-plugin-vue": "^10.8.0",
-        "eslint-plugin-vuejs-accessibility": "^2.0.0",
-        "globals": "^17.5.0",
-        "typescript-eslint": "^8.58.2"
-    }
+  "name": "@frollz2/eslint-config",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "clean": ""
+  },
+  "peerDependencies": {
+    "eslint": "^10.2.1"
+  },
+  "dependencies": {
+    "@typescript-eslint/eslint-plugin": "^8.59.0",
+    "@typescript-eslint/parser": "^8.59.0",
+    "eslint-plugin-vue": "^10.9.0"
+  }
 }

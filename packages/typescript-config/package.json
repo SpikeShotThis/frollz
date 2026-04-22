@@ -1,9 +1,10 @@
 {
-    "name": "@frollz/typescript-config",
-    "version": "0.2.4",
-    "private": true,
-    "license": "MIT",
-    "dependencies": {
-        "@vue/tsconfig": "^0.9.1"
-    }
+  "name": "@frollz2/typescript-config",
+  "private": true,
+  "version": "0.0.0",
+  "exports": {
+    "./base": "./base.json",
+    "./node": "./node.json",
+    "./vue": "./vue.json"
+  }
 }

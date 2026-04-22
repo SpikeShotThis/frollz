@@ -1,10 +1,14 @@
 {
-    "$schema": "https://json.schemastore.org/tsconfig",
-    "extends": "@vue/tsconfig/tsconfig.dom.json",
-    "compilerOptions": {
-        "composite": true,
-        "noUncheckedIndexedAccess": true,
-        "noImplicitReturns": true,
-        "noFallthroughCasesInSwitch": true,
-    }
+  "extends": "./base.json",
+  "compilerOptions": {
+    "jsx": "preserve",
+    "types": [
+      "node"
+    ]
+  },
+  "include": [
+    "../../apps/ui/src/**/*.ts",
+    "../../apps/ui/src/**/*.tsx",
+    "../../apps/ui/src/**/*.vue"
+  ]
 }

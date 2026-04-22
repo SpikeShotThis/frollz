@@ -40,9 +40,19 @@ Thumbs.db
 .claude/settings.local.json
 frollz-api/coverage
 frollz-ui/coverage
+**/*/*.sqlite.json
 **/frollz-api/dev.db
 .turbo/**
 **/.turbo/**
 
 # ── codebase-memory MCP tool output (generated, not for version control) ──────
-.codebase-memory/
+.codebase-memory/*.sqlite
+**/*.sqlite
+**/*/.env
+
+
+report.html
+apps/api/src/infrastructure/migrations/.snapshot-frollz2.sqlite.json
+apps/api/src/infrastructure/migrations/.snapshot-test.sqlite.json
+report.json
+trace-mobile-film.json

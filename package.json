@@ -1,31 +1,23 @@
 {
-    "name": "frollz",
-    "version": "0.2.4",
-    "private": "true",
-    "scripts": {
-        "dev": "turbo run dev",
-        "build": "turbo run build",
-        "test": "turbo run test",
-        "lint": "turbo run lint",
-        "check-types": "turbo run check-types",
-        "format": "turbo run format",
-        "clean": "turbo run clean",
-        "dev:api": "pnpm --filter @frollz/frollz-api dev",
-        "dev:ui": "pnpm --filter @frollz/frollz-ui dev",
-        "e2e": "NODE_OPTIONS=--max-old-space-size=4096 pnpm exec playwright test",
-        "e2e:ci": "NODE_OPTIONS=--max-old-space-size=4096 pnpm exec playwright test --workers=1",
-        "e2e:install": "pnpm exec playwright install"
-    },
-    "devDependencies": {
-        "@faker-js/faker": "^8.0.0",
-        "@playwright/test": "^1.40.0",
-        "npm-run-all2": "^8.0.4",
-        "turbo": "~2.9.6",
-        "typescript": "6.0.2"
-    },
-    "engines": {
-        "node": ">=24",
-        "pnpm": ">=10"
-    },
-    "packageManager": "pnpm@10.33.0"
+  "name": "frollz2",
+  "private": true,
+  "packageManager": "pnpm@10.33.0",
+  "scripts": {
+    "dev": "cross-env NODE_ENV=development turbo run dev --parallel",
+    "build": "turbo run build",
+    "clean": "turbo run build",
+    "check-types": "turbo run check-types",
+    "test": "turbo run test",
+    "lint": "turbo run lint",
+    "db:migrate": "pnpm --filter @frollz2/api db:migrate",
+    "db:seed": "pnpm --filter @frollz2/api db:seed"
+  },
+  "devDependencies": {
+    "@types/node": "^25.6.0",
+    "cross-env": "^10.1.0",
+    "eslint": "^10.2.1",
+    "turbo": "^2.9.6",
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.5"
+  }
 }
