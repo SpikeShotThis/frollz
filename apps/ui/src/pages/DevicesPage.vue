@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, h, onMounted, reactive, ref } from 'vue';
+import { useRoute } from 'vue-router';
 import {
   NAlert,
   NButton,
@@ -33,6 +34,7 @@ import type { FormState } from '../composables/ui-state.js';
 const referenceStore = useReferenceStore();
 const deviceStore = useDeviceStore();
 const feedback = useUiFeedback();
+const route = useRoute();
 
 const isCreateDrawerOpen = ref(false);
 const isEditDrawerOpen = ref(false);
@@ -149,6 +151,19 @@ const filmFormatOptions = computed(() =>
 );
 const holderTypeOptions = computed(() =>
   referenceStore.holderTypes.map((entry) => ({ label: entry.label, value: entry.id }))
+);
+const lockedDeviceType = computed(() =>
+  typeof route.meta.deviceTypeFilter === 'string' ? route.meta.deviceTypeFilter : null
+);
+const filteredDevices = computed(() =>
+  lockedDeviceType.value
+    ? deviceStore.devices.filter((device) => device.deviceTypeCode === lockedDeviceType.value)
+    : deviceStore.devices
+);
+const pageSubtitle = computed(() =>
+  lockedDeviceType.value
+    ? 'Filtered by device category selected in navigation.'
+    : 'Manage cameras, interchangeable backs, and holders in one place.'
 );
 
 function validateCreateForm(): Record<string, string> {
@@ -408,7 +423,7 @@ async function handleDelete(id: number): Promise<void> {
 </script>
 
 <template>
-  <PageShell title="Devices" subtitle="Manage cameras, interchangeable backs, and holders in one place.">
+  <PageShell title="Devices" :subtitle="pageSubtitle">
     <template #actions>
       <NButton type="primary" @click="isCreateDrawerOpen = true">Add device</NButton>
     </template>
@@ -420,8 +435,8 @@ async function handleDelete(id: number): Promise<void> {
     <NGrid cols="1 1 2" x-gap="16" y-gap="16">
       <NGridItem>
         <NCard title="Inventory">
-          <NDataTable :columns="columns" :data="deviceStore.devices" :loading="deviceStore.isLoading" :row-key="(row) => row.id" />
-          <NEmpty v-if="!deviceStore.isLoading && deviceStore.devices.length === 0" description="No devices found" />
+          <NDataTable :columns="columns" :data="filteredDevices" :loading="deviceStore.isLoading" :row-key="(row) => row.id" />
+          <NEmpty v-if="!deviceStore.isLoading && filteredDevices.length === 0" description="No devices found" />
         </NCard>
       </NGridItem>
       <NGridItem>

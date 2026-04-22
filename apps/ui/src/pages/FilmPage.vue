@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { computed, h, onMounted, reactive, ref } from 'vue';
-import { useRouter } from 'vue-router';
+import { computed, h, onMounted, reactive, ref, watch } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 import {
   NAlert,
   NButton,
@@ -33,6 +33,7 @@ import type { FormState, TableState } from '../composables/ui-state.js';
 const referenceStore = useReferenceStore();
 const filmStore = useFilmStore();
 const router = useRouter();
+const route = useRoute();
 const feedback = useUiFeedback();
 
 const isCreateDrawerOpen = ref(false);
@@ -67,9 +68,30 @@ const createState = ref<FormState>({
   formError: null
 });
 
+const lockedFilmFormatCodes = computed<string[]>(() => {
+  if (!Array.isArray(route.meta.filmFormatFilters)) {
+    return [];
+  }
+
+  return route.meta.filmFormatFilters.filter((code): code is string => typeof code === 'string');
+});
+const isLockedBreakout = computed(() => lockedFilmFormatCodes.value.length > 0);
+const pageSubtitle = computed(() =>
+  isLockedBreakout.value
+    ? 'Route-locked category view from navigation.'
+    : 'Track each roll through its lifecycle and quickly continue work.'
+);
+const displayedFilms = computed(() => {
+  if (!isLockedBreakout.value) {
+    return filmStore.films;
+  }
+
+  return filmStore.films.filter((film) => lockedFilmFormatCodes.value.includes(film.filmFormat.code));
+});
+
 const tableState = computed<TableState>(() => ({
   loading: filmStore.isLoading,
-  empty: !filmStore.isLoading && filmStore.films.length === 0,
+  empty: !filmStore.isLoading && displayedFilms.value.length === 0,
   error: filmStore.filmsError,
   retry: refresh
 }));
@@ -87,10 +109,17 @@ const stateTypeByCode: Record<string, 'default' | 'info' | 'primary' | 'warning'
 };
 
 const activeFilterCount = computed(
-  () => Number(Boolean(filters.stateCode)) + Number(Boolean(filters.filmFormatId)) + Number(Boolean(filters.emulsionId))
+  () =>
+    isLockedBreakout.value
+      ? 0
+      : Number(Boolean(filters.stateCode)) + Number(Boolean(filters.filmFormatId)) + Number(Boolean(filters.emulsionId))
 );
 
 const activeFilters = computed(() => {
+  if (isLockedBreakout.value) {
+    return [];
+  }
+
   const items: string[] = [];
 
   if (filters.stateCode) {
@@ -212,15 +241,32 @@ onMounted(async () => {
     if (!referenceStore.loaded) {
       await referenceStore.loadAll();
     }
-    await filmStore.loadFilms();
+    if (isLockedBreakout.value) {
+      filters.stateCode = null;
+      filters.filmFormatId = null;
+      filters.emulsionId = null;
+    }
+    await refresh();
   } catch (error) {
     feedback.error(feedback.toErrorMessage(error, 'Could not load film inventory.'));
   }
 });
 
+watch(
+  () => route.fullPath,
+  () => {
+    if (isLockedBreakout.value) {
+      filters.stateCode = null;
+      filters.filmFormatId = null;
+      filters.emulsionId = null;
+    }
+    void refresh();
+  }
+);
+
 async function refresh(): Promise<void> {
   try {
-    await filmStore.loadFilms(buildQuery());
+    await filmStore.loadFilms(isLockedBreakout.value ? {} : buildQuery());
   } catch (error) {
     feedback.error(feedback.toErrorMessage(error, 'Could not refresh film inventory.'));
   }
@@ -235,10 +281,18 @@ function buildQuery(): FilmListQuery {
 }
 
 async function applyFilters(): Promise<void> {
+  if (isLockedBreakout.value) {
+    return;
+  }
+
   await refresh();
 }
 
 function resetFilters(): void {
+  if (isLockedBreakout.value) {
+    return;
+  }
+
   filters.stateCode = null;
   filters.filmFormatId = null;
   filters.emulsionId = null;
@@ -294,13 +348,13 @@ async function submitCreateFilm(): Promise<void> {
 </script>
 
 <template>
-  <PageShell title="Film Inventory" subtitle="Track each roll through its lifecycle and quickly continue work.">
+  <PageShell title="Film Inventory" :subtitle="pageSubtitle">
     <template #actions>
       <NButton type="primary" @click="isCreateDrawerOpen = true">Add film</NButton>
       <NButton tertiary @click="refresh">Refresh</NButton>
     </template>
 
-    <NCard title="Filters" size="small">
+    <NCard v-if="!isLockedBreakout" title="Filters" size="small">
       <NGrid cols="1 1 3" x-gap="12" y-gap="12">
         <NGridItem>
           <NSelect v-model:value="filters.stateCode" :options="stateOptions" clearable placeholder="Filter by state" />
@@ -334,7 +388,7 @@ async function submitCreateFilm(): Promise<void> {
         <NAlert v-if="tableState.error" type="error" :show-icon="true">
           {{ tableState.error }}
         </NAlert>
-        <NDataTable :columns="columns" :data="filmStore.films" :loading="filmStore.isLoading" :row-key="(row) => row.id" />
+        <NDataTable :columns="columns" :data="displayedFilms" :loading="filmStore.isLoading" :row-key="(row) => row.id" />
         <NEmpty v-if="tableState.empty && !tableState.error" description="No films match these filters yet." />
       </NFlex>
     </NCard>
