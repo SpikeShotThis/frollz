@@ -1,0 +1,51 @@
+sandbox_mode = "workspace-write"
+
+[sandbox_workspace_write]
+network_access = true
+
+[mcp_servers.filesystem]
+command = "npx"
+args = [
+  "-y",
+  "@modelcontextprotocol/server-filesystem",
+  "/Users/joshholl/Source/frollz"
+]
+
+[mcp_servers.shell]
+command = "npx"
+args = [ "-y", "@modelcontextprotocol/server-shell" ]
+
+[mcp_servers.shell.env]
+ALLOWED_COMMANDS = "pnpm,node,npx,npm"
+ALLOWED_DIRECTORIES = "/Users/joshholl/Source/frollz"
+NPM_CONFIG_REGISTRY = "https://registry.npmjs.org/"
+
+[mcp_servers.sqlite]
+command = "npx"
+args = [
+  "-y",
+  "@modelcontextprotocol/server-sqlite",
+  "--db-path",
+  "/Users/joshholl/Source/frollz/apps/api/frollz2.sqlite"
+]
+
+[mcp_servers.git]
+command = "npx"
+args = [
+  "-y",
+  "@modelcontextprotocol/server-git",
+  "--repository",
+  "/Users/joshholl/Source/frollz"
+]
+
+[mcp_servers.playwright]
+command = "npx"
+args = [ "-y", "@playwright/mcp" ]
+
+[mcp_servers.docker]
+command = "npx"
+args = [ "-y", "@modelcontextprotocol/server-docker" ]
+
+[mcp_servers.chrome-devtools]
+command = "npx"
+args = [ "-y", "chrome-devtools-mcp@latest", "--no-usage-statistics" ]

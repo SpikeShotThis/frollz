@@ -12,6 +12,8 @@ export const useAuthStore = defineStore('auth', () => {
   const refreshToken = ref<string | null>(localStorage.getItem(REFRESH_TOKEN_STORAGE_KEY));
   const user = ref<CurrentUser | null>(null);
   const isSessionInitialized = ref(false);
+  let restoreSessionInFlight: Promise<void> | null = null;
+  let refreshInFlight: Promise<TokenPair | null> | null = null;
 
   const isAuthenticated = computed(() => accessToken.value !== null);
 
@@ -42,33 +44,78 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   async function restoreSession(): Promise<void> {
-    if (!refreshToken.value) {
-      isSessionInitialized.value = true;
-      return;
+    if (restoreSessionInFlight) {
+      return restoreSessionInFlight;
     }
 
-    const response = await fetch('/api/v1/auth/refresh', {
-      method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ refreshToken: refreshToken.value })
-    });
+    restoreSessionInFlight = (async () => {
+      if (!refreshToken.value) {
+        isSessionInitialized.value = true;
+        return;
+      }
 
-    if (!response.ok) {
-      clearTokens();
+      const tokenPair = await refreshAccessToken();
+
+      if (!tokenPair) {
+        isSessionInitialized.value = true;
+        return;
+      }
+
+      try {
+        await loadCurrentUser(tokenPair.accessToken);
+      } catch {
+        clearTokens();
+      }
+
       isSessionInitialized.value = true;
-      return;
-    }
-
-    const tokenPair = tokenPairSchema.parse(await readApiData(response));
-    setTokens(tokenPair);
+    })();
 
     try {
-      await loadCurrentUser(tokenPair.accessToken);
-    } catch {
-      clearTokens();
+      await restoreSessionInFlight;
+    } finally {
+      restoreSessionInFlight = null;
+    }
+  }
+
+  async function refreshAccessToken(): Promise<TokenPair | null> {
+    if (!refreshToken.value) {
+      return null;
     }
 
-    isSessionInitialized.value = true;
+    if (refreshInFlight) {
+      return refreshInFlight;
+    }
+
+    refreshInFlight = (async () => {
+      const activeRefreshToken = refreshToken.value;
+
+      if (!activeRefreshToken) {
+        return null;
+      }
+
+      const response = await fetch('/api/v1/auth/refresh', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ refreshToken: activeRefreshToken })
+      });
+
+      if (!response.ok) {
+        if (refreshToken.value === activeRefreshToken) {
+          clearTokens();
+        }
+        return null;
+      }
+
+      const tokenPair = tokenPairSchema.parse(await readApiData(response));
+      setTokens(tokenPair);
+      return tokenPair;
+    })();
+
+    try {
+      return await refreshInFlight;
+    } finally {
+      refreshInFlight = null;
+    }
   }
 
   function setTokens(tokenPair: TokenPair): void {
@@ -152,6 +199,7 @@ export const useAuthStore = defineStore('auth', () => {
     isSessionInitialized,
     isAuthenticated,
     restoreSession,
+    refreshAccessToken,
     setTokens,
     clearTokens,
     login,

@@ -78,17 +78,6 @@ export class AuthService {
       throw new DomainError('UNAUTHORIZED', 'Invalid refresh token');
     }
 
-    const nextRefreshToken = this.generateRefreshToken();
-    const nextRefreshTokenHash = hashRefreshToken(nextRefreshToken);
-
-    await this.authRepository.rotateRefreshToken({
-      userId: user.id,
-      oldTokenHash: tokenHash,
-      newTokenHash: nextRefreshTokenHash,
-      createdAt: nowIso(),
-      expiresAt: refreshExpiresAt()
-    });
-
     const accessToken = await this.jwtService.signAsync(
       { sub: user.id, email: user.email },
       {
@@ -99,7 +88,7 @@ export class AuthService {
 
     return {
       accessToken,
-      refreshToken: nextRefreshToken
+      refreshToken
     };
   }
 
