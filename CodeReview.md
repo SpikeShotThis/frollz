@@ -218,11 +218,11 @@ export const filmTransitionMap: Record<string, string[]> = {
 
 ---
 
-#### CR-10: N+1 query in `findOccupiedFilmForReceiver` — duplicated in two services
+#### CR-10: N+1 query in `findOccupiedFilmForDevice` — duplicated in two services
 
-Both `FilmService` and `ReceiversService` contain identical logic that loads all `loaded`/`exposed` films then calls `findLatestEvent` for each one individually.
+Both `FilmService` and `DevicesService` contain identical logic that loads all `loaded`/`exposed` films then calls `findLatestEvent` for each one individually.
 
-**Fix:** Extract a single repository method that joins films and their latest events in one query. Remove the duplicate in `ReceiversService` and have both services call the shared method.
+**Fix:** Extract a single repository method that joins films and their latest events in one query. Remove the duplicate in `DevicesService` and have both services call the shared method.
 
 ---
 

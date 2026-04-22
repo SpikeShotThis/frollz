@@ -3,6 +3,7 @@ import { Global, Module } from '@nestjs/common';
 import * as dotenv from 'dotenv';
 dotenv.config({ path: process.env['DOTENV_CONFIG_PATH'] || '.env' });
 import { MikroOrmModule } from '@mikro-orm/nestjs';
+// eslint-disable-next-line @typescript-eslint/consistent-type-imports
 import { MikroORM } from '@mikro-orm/core';
 import ormConfig from './mikro-orm.config.js';
 import { seedDatabase } from './seed.js';

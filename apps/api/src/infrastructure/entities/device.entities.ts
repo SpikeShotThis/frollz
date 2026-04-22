@@ -4,19 +4,19 @@ import { AutoIncrementEntity } from './base.entity.js';
 import {
   FilmFormatEntity,
   HolderTypeEntity,
-  ReceiverTypeEntity,
+  DeviceTypeEntity,
   SlotStateEntity
 } from './reference.entities.js';
 import { UserEntity } from './user.entity.js';
 import { FilmEntity } from './film.entity.js';
 
-@Entity({ tableName: 'film_receiver' })
-export class FilmReceiverEntity extends AutoIncrementEntity {
+@Entity({ tableName: 'film_device' })
+export class FilmDeviceEntity extends AutoIncrementEntity {
   @ManyToOne(() => UserEntity, { fieldName: 'user_id' })
   user!: UserEntity;
 
-  @ManyToOne(() => ReceiverTypeEntity, { fieldName: 'receiver_type_id' })
-  receiverType!: ReceiverTypeEntity;
+  @ManyToOne(() => DeviceTypeEntity, { fieldName: 'device_type_id' })
+  deviceType!: DeviceTypeEntity;
 
   @ManyToOne(() => FilmFormatEntity, { fieldName: 'film_format_id' })
   filmFormat!: FilmFormatEntity;
@@ -24,20 +24,20 @@ export class FilmReceiverEntity extends AutoIncrementEntity {
   @Property({ type: 'text', fieldName: 'frame_size' })
   frameSize!: string;
 
-  @OneToOne(() => CameraEntity, (camera) => camera.filmReceiver, { nullable: true })
+  @OneToOne(() => CameraEntity, (camera) => camera.filmDevice, { nullable: true })
   camera?: CameraEntity | null;
 
-  @OneToOne(() => InterchangeableBackEntity, (back) => back.filmReceiver, { nullable: true })
+  @OneToOne(() => InterchangeableBackEntity, (back) => back.filmDevice, { nullable: true })
   interchangeableBack?: InterchangeableBackEntity | null;
 
-  @OneToOne(() => FilmHolderEntity, (holder) => holder.filmReceiver, { nullable: true })
+  @OneToOne(() => FilmHolderEntity, (holder) => holder.filmDevice, { nullable: true })
   filmHolder?: FilmHolderEntity | null;
 }
 
 @Entity({ tableName: 'camera' })
 export class CameraEntity {
-  @OneToOne(() => FilmReceiverEntity, { primary: true, fieldName: 'film_receiver_id' })
-  filmReceiver!: FilmReceiverEntity;
+  @OneToOne(() => FilmDeviceEntity, { primary: true, fieldName: 'film_device_id' })
+  filmDevice!: FilmDeviceEntity;
 
   @Property({ type: 'text' })
   make!: string;
@@ -54,8 +54,8 @@ export class CameraEntity {
 
 @Entity({ tableName: 'interchangeable_back' })
 export class InterchangeableBackEntity {
-  @OneToOne(() => FilmReceiverEntity, { primary: true, fieldName: 'film_receiver_id' })
-  filmReceiver!: FilmReceiverEntity;
+  @OneToOne(() => FilmDeviceEntity, { primary: true, fieldName: 'film_device_id' })
+  filmDevice!: FilmDeviceEntity;
 
   @Property({ type: 'text' })
   name!: string;
@@ -66,8 +66,8 @@ export class InterchangeableBackEntity {
 
 @Entity({ tableName: 'film_holder' })
 export class FilmHolderEntity {
-  @OneToOne(() => FilmReceiverEntity, { primary: true, fieldName: 'film_receiver_id' })
-  filmReceiver!: FilmReceiverEntity;
+  @OneToOne(() => FilmDeviceEntity, { primary: true, fieldName: 'film_device_id' })
+  filmDevice!: FilmDeviceEntity;
 
   @Property({ type: 'text' })
   name!: string;
@@ -87,7 +87,7 @@ export class FilmHolderSlotEntity extends AutoIncrementEntity {
   @ManyToOne(() => UserEntity, { fieldName: 'user_id' })
   user!: UserEntity;
 
-  @ManyToOne(() => FilmHolderEntity, { fieldName: 'film_receiver_id' })
+  @ManyToOne(() => FilmHolderEntity, { fieldName: 'film_device_id' })
   filmHolder!: FilmHolderEntity;
 
   @Property({ type: 'integer', fieldName: 'side_number' })

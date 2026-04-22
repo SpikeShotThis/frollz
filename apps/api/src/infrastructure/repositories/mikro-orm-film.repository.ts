@@ -93,7 +93,7 @@ export class MikroOrmFilmRepository extends FilmRepository {
     return events.map(mapFilmJourneyEventEntity);
   }
 
-  async findOccupiedFilmForReceiverId(userId: number, receiverId: number): Promise<number | null> {
+  async findOccupiedFilmForDeviceId(userId: number, deviceId: number): Promise<number | null> {
     const loadedEvents = await this.entityManager.find(
       FilmJourneyEventEntity,
       { user: userId, filmState: { code: 'loaded' } },
@@ -117,7 +117,7 @@ export class MikroOrmFilmRepository extends FilmRepository {
 
       const loadedEventData = filmJourneyEventDataLoadedSchema.parse(loadedEvent.eventData);
 
-      if (loadedEventData.receiverId === receiverId) {
+      if (loadedEventData.deviceId === deviceId) {
         return filmId;
       }
     }

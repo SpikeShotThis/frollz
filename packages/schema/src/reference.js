@@ -25,14 +25,14 @@ export const filmStateCodes = [
 ];
 export const storageLocationCodes = ['freezer', 'refrigerator', 'shelf', 'other'];
 export const slotStateCodes = ['empty', 'loaded', 'exposed', 'removed'];
-export const receiverTypeCodes = ['camera', 'interchangeable_back', 'film_holder'];
+export const deviceTypeCodes = ['camera', 'interchangeable_back', 'film_holder'];
 export const holderTypeCodes = ['standard', 'grafmatic', 'readyload', 'quickload'];
 export const filmFormatCodeSchema = z.enum(filmFormatCodes);
 export const developmentProcessCodeSchema = z.enum(developmentProcessCodes);
 export const filmStateCodeSchema = z.enum(filmStateCodes);
 export const storageLocationCodeSchema = z.enum(storageLocationCodes);
 export const slotStateCodeSchema = z.enum(slotStateCodes);
-export const receiverTypeCodeSchema = z.enum(receiverTypeCodes);
+export const deviceTypeCodeSchema = z.enum(deviceTypeCodes);
 export const holderTypeCodeSchema = z.enum(holderTypeCodes);
 export const filmFormatSchema = z.object({
     id: idSchema,
@@ -66,9 +66,9 @@ export const slotStateSchema = z.object({
     code: slotStateCodeSchema,
     label: labelSchema
 });
-export const receiverTypeSchema = z.object({
+export const deviceTypeSchema = z.object({
     id: idSchema,
-    code: receiverTypeCodeSchema,
+    code: deviceTypeCodeSchema,
     label: labelSchema
 });
 export const holderTypeSchema = z.object({
@@ -93,7 +93,7 @@ export const referenceTablesSchema = z.object({
     filmStates: z.array(filmStateSchema),
     storageLocations: z.array(storageLocationSchema),
     slotStates: z.array(slotStateSchema),
-    receiverTypes: z.array(receiverTypeSchema),
+    deviceTypes: z.array(deviceTypeSchema),
     holderTypes: z.array(holderTypeSchema),
     emulsions: z.array(emulsionSchema)
 });

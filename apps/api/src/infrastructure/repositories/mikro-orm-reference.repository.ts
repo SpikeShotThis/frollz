@@ -8,12 +8,12 @@ import {
   FilmStateEntity,
   HolderTypeEntity,
   PackageTypeEntity,
-  ReceiverTypeEntity,
+  DeviceTypeEntity,
   SlotStateEntity,
   StorageLocationEntity
 } from '../entities/index.js';
 import { mapReferenceTables, mapEmulsionEntity } from '../mappers/index.js';
-import type { DevelopmentProcess, FilmFormat, FilmState, HolderType, PackageType, ReceiverType, SlotState, StorageLocation } from '@frollz2/schema';
+import type { DevelopmentProcess, FilmFormat, FilmState, HolderType, PackageType, DeviceType, SlotState, StorageLocation } from '@frollz2/schema';
 
 @Injectable()
 export class MikroOrmReferenceRepository extends ReferenceRepository {
@@ -22,7 +22,7 @@ export class MikroOrmReferenceRepository extends ReferenceRepository {
   }
 
   async getAll() {
-    const [filmFormats, developmentProcesses, packageTypes, filmStates, storageLocations, slotStates, receiverTypes, holderTypes, emulsions] =
+    const [filmFormats, developmentProcesses, packageTypes, filmStates, storageLocations, slotStates, deviceTypes, holderTypes, emulsions] =
       await Promise.all([
         this.entityManager.find(FilmFormatEntity, {}, { orderBy: { id: 'asc' } }),
         this.entityManager.find(DevelopmentProcessEntity, {}, { orderBy: { id: 'asc' } }),
@@ -30,7 +30,7 @@ export class MikroOrmReferenceRepository extends ReferenceRepository {
         this.entityManager.find(FilmStateEntity, {}, { orderBy: { id: 'asc' } }),
         this.entityManager.find(StorageLocationEntity, {}, { orderBy: { id: 'asc' } }),
         this.entityManager.find(SlotStateEntity, {}, { orderBy: { id: 'asc' } }),
-        this.entityManager.find(ReceiverTypeEntity, {}, { orderBy: { id: 'asc' } }),
+        this.entityManager.find(DeviceTypeEntity, {}, { orderBy: { id: 'asc' } }),
         this.entityManager.find(HolderTypeEntity, {}, { orderBy: { id: 'asc' } }),
         this.entityManager.find(EmulsionEntity, {}, { populate: ['developmentProcess', 'filmFormats'], orderBy: { id: 'asc' } })
       ]);
@@ -42,7 +42,7 @@ export class MikroOrmReferenceRepository extends ReferenceRepository {
       filmStates,
       storageLocations,
       slotStates,
-      receiverTypes,
+      deviceTypes,
       holderTypes,
       emulsions
     });
@@ -104,10 +104,10 @@ export class MikroOrmReferenceRepository extends ReferenceRepository {
     }));
   }
 
-  async listReceiverTypes() {
-    return (await this.entityManager.find(ReceiverTypeEntity, {}, { orderBy: { id: 'asc' } })).map((entity) => ({
+  async listDeviceTypes() {
+    return (await this.entityManager.find(DeviceTypeEntity, {}, { orderBy: { id: 'asc' } })).map((entity) => ({
       id: entity.id,
-      code: entity.code as ReceiverType['code'],
+      code: entity.code as DeviceType['code'],
       label: entity.label
     }));
   }

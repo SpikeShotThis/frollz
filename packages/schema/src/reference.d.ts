@@ -4,7 +4,7 @@ export declare const developmentProcessCodes: readonly ["C41", "E6", "ECN2", "BW
 export declare const filmStateCodes: readonly ["purchased", "stored", "loaded", "exposed", "removed", "sent_for_dev", "developed", "scanned", "archived"];
 export declare const storageLocationCodes: readonly ["freezer", "refrigerator", "shelf", "other"];
 export declare const slotStateCodes: readonly ["empty", "loaded", "exposed", "removed"];
-export declare const receiverTypeCodes: readonly ["camera", "interchangeable_back", "film_holder"];
+export declare const deviceTypeCodes: readonly ["camera", "interchangeable_back", "film_holder"];
 export declare const holderTypeCodes: readonly ["standard", "grafmatic", "readyload", "quickload"];
 export declare const filmFormatCodeSchema: z.ZodEnum<{
     "35mm": "35mm";
@@ -46,7 +46,7 @@ export declare const slotStateCodeSchema: z.ZodEnum<{
     removed: "removed";
     empty: "empty";
 }>;
-export declare const receiverTypeCodeSchema: z.ZodEnum<{
+export declare const deviceTypeCodeSchema: z.ZodEnum<{
     camera: "camera";
     interchangeable_back: "interchangeable_back";
     film_holder: "film_holder";
@@ -138,7 +138,7 @@ export declare const slotStateSchema: z.ZodObject<{
     }>;
     label: z.ZodString;
 }, z.core.$strip>;
-export declare const receiverTypeSchema: z.ZodObject<{
+export declare const deviceTypeSchema: z.ZodObject<{
     id: z.ZodNumber;
     code: z.ZodEnum<{
         camera: "camera";
@@ -272,7 +272,7 @@ export declare const referenceTablesSchema: z.ZodObject<{
         }>;
         label: z.ZodString;
     }, z.core.$strip>>;
-    receiverTypes: z.ZodArray<z.ZodObject<{
+    deviceTypes: z.ZodArray<z.ZodObject<{
         id: z.ZodNumber;
         code: z.ZodEnum<{
             camera: "camera";
@@ -331,7 +331,7 @@ export type PackageType = z.infer<typeof packageTypeSchema>;
 export type FilmState = z.infer<typeof filmStateSchema>;
 export type StorageLocation = z.infer<typeof storageLocationSchema>;
 export type SlotState = z.infer<typeof slotStateSchema>;
-export type ReceiverType = z.infer<typeof receiverTypeSchema>;
+export type DeviceType = z.infer<typeof deviceTypeSchema>;
 export type HolderType = z.infer<typeof holderTypeSchema>;
 export type Emulsion = z.infer<typeof emulsionSchema>;
 export type ReferenceTables = z.infer<typeof referenceTablesSchema>;

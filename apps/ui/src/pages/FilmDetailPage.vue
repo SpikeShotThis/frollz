@@ -30,7 +30,7 @@ import { filmTransitionMap } from '@frollz2/schema';
 import { createIdempotencyKey } from '../composables/idempotency.js';
 import { useFilmStore } from '../stores/film.js';
 import { useReferenceStore } from '../stores/reference.js';
-import { useReceiverStore } from '../stores/receivers.js';
+import { useDeviceStore } from '../stores/devices.js';
 import PageShell from '../components/PageShell.vue';
 import { useUiFeedback } from '../composables/useUiFeedback.js';
 import type { FormState } from '../composables/ui-state.js';
@@ -41,7 +41,7 @@ const route = useRoute();
 const router = useRouter();
 const filmStore = useFilmStore();
 const referenceStore = useReferenceStore();
-const receiverStore = useReceiverStore();
+const deviceStore = useDeviceStore();
 const feedback = useUiFeedback();
 
 const filmId = computed(() => Number(route.params.id));
@@ -53,7 +53,7 @@ const eventForm = reactive<{
   filmStateCode: FilmStateCode | null;
   notes: string;
   storageLocationId: number | null;
-  receiverId: number | null;
+  deviceId: number | null;
   slotSideNumber: number | null;
   intendedPushPull: number | null;
   labName: string;
@@ -65,7 +65,7 @@ const eventForm = reactive<{
   filmStateCode: null,
   notes: '',
   storageLocationId: null,
-  receiverId: null,
+  deviceId: null,
   slotSideNumber: null,
   intendedPushPull: null,
   labName: '',
@@ -110,17 +110,17 @@ const storageLocationOptions = computed(() =>
   referenceStore.storageLocations.map((location) => ({ label: location.label, value: location.id }))
 );
 
-const receiverOptions = computed(() =>
-  receiverStore.receivers
-    .filter((receiver) => selectedFilm.value && receiver.filmFormatId === selectedFilm.value.filmFormatId)
-    .map((receiver) => ({
+const deviceOptions = computed(() =>
+  deviceStore.devices
+    .filter((device) => selectedFilm.value && device.filmFormatId === selectedFilm.value.filmFormatId)
+    .map((device) => ({
       label:
-        receiver.receiverTypeCode === 'camera'
-          ? `${receiver.make} ${receiver.model}`
-          : receiver.receiverTypeCode === 'interchangeable_back'
-            ? `${receiver.name} ${receiver.system}`
-            : `${receiver.name} ${receiver.brand}`,
-      value: receiver.id
+        device.deviceTypeCode === 'camera'
+          ? `${device.make} ${device.model}`
+          : device.deviceTypeCode === 'interchangeable_back'
+            ? `${device.name} ${device.system}`
+            : `${device.name} ${device.brand}`,
+      value: device.id
     }))
 );
 
@@ -170,7 +170,7 @@ function eventDataSummary(event: FilmJourneyEvent): string {
 function onChangeFilmState(code: string | null): void {
   eventForm.filmStateCode = code as FilmStateCode | null;
   eventForm.storageLocationId = null;
-  eventForm.receiverId = null;
+  eventForm.deviceId = null;
   eventForm.slotSideNumber = null;
   eventForm.intendedPushPull = null;
   eventForm.labName = '';
@@ -197,8 +197,8 @@ function validateEventForm(): Record<string, string> {
     errors.storageLocationId = 'Select a storage location.';
   }
 
-  if (eventForm.filmStateCode === 'loaded' && !eventForm.receiverId) {
-    errors.receiverId = 'Select a receiver.';
+  if (eventForm.filmStateCode === 'loaded' && !eventForm.deviceId) {
+    errors.deviceId = 'Select a device.';
   }
 
   return errors;
@@ -215,7 +215,7 @@ function buildEventData(): Record<string, unknown> {
     }
     case 'loaded':
       return {
-        receiverId: eventForm.receiverId,
+        deviceId: eventForm.deviceId,
         slotSideNumber: eventForm.slotSideNumber,
         intendedPushPull: eventForm.intendedPushPull
       };
@@ -279,7 +279,7 @@ onMounted(async () => {
     if (!referenceStore.loaded) {
       await referenceStore.loadAll();
     }
-    await receiverStore.loadReceivers();
+    await deviceStore.loadDevices();
     await filmStore.loadFilm(filmId.value);
 
     if (route.query.openEvent === '1' && transitions.value.length > 0) {
@@ -384,11 +384,11 @@ onMounted(async () => {
 
         <template v-if="eventForm.filmStateCode === 'loaded'">
           <NFormItem
-            label="Receiver"
+            label="Device"
             required
-            :feedback="eventState.fieldErrors.receiverId || ''"
+            :feedback="eventState.fieldErrors.deviceId || ''"
           >
-            <NSelect :value="eventForm.receiverId" :options="receiverOptions" placeholder="Select receiver" @update:value="(value) => { eventForm.receiverId = value; }" />
+            <NSelect :value="eventForm.deviceId" :options="deviceOptions" placeholder="Select device" @update:value="(value) => { eventForm.deviceId = value; }" />
           </NFormItem>
           <NFormItem label="Holder slot side (holders only)">
             <NInputNumber :value="eventForm.slotSideNumber" @update:value="(value) => { eventForm.slotSideNumber = value; }" />

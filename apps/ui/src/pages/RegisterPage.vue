@@ -65,7 +65,7 @@ async function submit(): Promise<void> {
 </script>
 
 <template>
-  <PageShell title="Create your account" subtitle="Start organizing film, receivers, and journey events." compact>
+  <PageShell title="Create your account" subtitle="Start organizing film, devices, and journey events." compact>
     <NCard>
       <NSpace vertical>
         <NAlert v-if="state.formError" type="error" :show-icon="true">{{ state.formError }}</NAlert>

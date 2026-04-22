@@ -2,7 +2,7 @@
 import { useRouter } from 'vue-router';
 import { NButton, NCard, NGrid, NGridItem, NIcon, NList, NListItem, NSpace, NText } from 'naive-ui';
 import PageShell from '../components/PageShell.vue';
-import { EmulsionIcon, FilmIcon, ReceiverIcon } from '../components/shell/icons.js';
+import { EmulsionIcon, FilmIcon, DeviceIcon } from '../components/shell/icons.js';
 
 const router = useRouter();
 
@@ -15,11 +15,11 @@ const quickLinks = [
     actionLabel: 'Open film'
   },
   {
-    title: 'Receivers',
+    title: 'Devices',
     description: 'Manage cameras, interchangeable backs, and holders.',
-    path: '/receivers',
-    icon: ReceiverIcon,
-    actionLabel: 'Open receivers'
+    path: '/devices',
+    icon: DeviceIcon,
+    actionLabel: 'Open devices'
   },
   {
     title: 'Emulsions',

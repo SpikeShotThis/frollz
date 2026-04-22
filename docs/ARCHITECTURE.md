@@ -8,7 +8,7 @@
 - `packages/schema` is the shared contract layer and should be the only place where request/response shape types are defined.
 
 ## Reference vs User Data
-- Reference tables are globally shared (`film_format`, `development_process`, `package_type`, `film_state`, `storage_location`, `slot_state`, `receiver_type`, `holder_type`, `emulsion`) and exposed as authenticated read-only endpoints.
+- Reference tables are globally shared (`film_format`, `development_process`, `package_type`, `film_state`, `storage_location`, `slot_state`, `device_type`, `holder_type`, `emulsion`) and exposed as authenticated read-only endpoints.
 - User-owned tables include `user_id` and every repository query on those tables is scoped by `userId`.
 - Cross-user lookups return `404` to avoid leaking existence.
 - Future admin mutation endpoints for reference data should live in a dedicated module with elevated authorization.
@@ -35,8 +35,8 @@
 - Event creation, current-state updates, and holder-slot side effects execute in one DB transaction.
 - Event payloads are validated against per-state Zod schemas before persistence.
 
-## FilmReceiver CTI
-- Base table: `film_receiver`; subtype tables: `camera`, `interchangeable_back`, `film_holder`.
+## FilmDevice CTI
+- Base table: `film_device`; subtype tables: `camera`, `interchangeable_back`, `film_holder`.
 - Writes create base + subtype rows in one transaction.
 - Reads join base and subtype data and map to discriminated union types.
 
@@ -55,7 +55,7 @@
 - Error responses are wrapped as `{ error: { code, message, details } }` by filters/exception handlers.
 
 ## Idempotency
-- `POST /film`, `POST /film/:id/events`, and `POST /receivers` support idempotent replay with an `Idempotency-Key` header.
+- `POST /film`, `POST /film/:id/events`, and `POST /devices` support idempotent replay with an `Idempotency-Key` header.
 - Keys are scoped by `(userId, scope, key)` and persisted in `idempotency_key`.
 - Reusing the same key with identical payload returns the original response without creating a duplicate row.
 - Reusing the same key with a different payload returns `409 CONFLICT`.

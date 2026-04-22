@@ -9,7 +9,7 @@ describe('filmJourneyEventPayloadSchema', () => {
       filmJourneyEventPayloadSchema.parse({
         filmStateCode: 'loaded',
         eventData: {
-          receiverId: 1,
+          deviceId: 1,
           slotSideNumber: 1,
           intendedPushPull: null
         }

@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { emulsionSchema, filmFormatSchema, filmStateCodeSchema, filmStateSchema, holderTypeSchema, packageTypeSchema, receiverTypeSchema, slotStateSchema, storageLocationSchema } from './reference.js';
+import { emulsionSchema, filmFormatSchema, filmStateCodeSchema, filmStateSchema, holderTypeSchema, packageTypeSchema, deviceTypeSchema, slotStateSchema, storageLocationSchema } from './reference.js';
 import { idSchema, isoDateTimeSchema, nullableTextSchema } from './common.js';
 export const filmTransitionMap = new Map([
     ['purchased', ['stored', 'loaded']],
@@ -52,7 +52,7 @@ export const filmJourneyEventDataStoredSchema = z.object({
     storageLocationCode: storageLocationSchema.shape.code
 });
 export const filmJourneyEventDataLoadedSchema = z.object({
-    receiverId: idSchema,
+    deviceId: idSchema,
     slotSideNumber: z.number().int().nullable(),
     intendedPushPull: z.number().int().nullable()
 });
@@ -103,50 +103,50 @@ export const createFilmJourneyEventRequestSchema = z.object({
 export const filmHolderSlotSchema = z.object({
     id: idSchema,
     userId: idSchema,
-    filmReceiverId: idSchema,
+    filmDeviceId: idSchema,
     sideNumber: z.number().int().positive(),
     slotStateId: idSchema,
     slotStateCode: slotStateSchema.shape.code,
     loadedFilmId: idSchema.nullable(),
     createdAt: isoDateTimeSchema
 });
-export const filmReceiverSummarySchema = z.object({
+export const filmDeviceSummarySchema = z.object({
     id: idSchema,
     userId: idSchema,
-    receiverTypeId: idSchema,
-    receiverTypeCode: receiverTypeSchema.shape.code,
+    deviceTypeId: idSchema,
+    deviceTypeCode: deviceTypeSchema.shape.code,
     filmFormatId: idSchema,
     frameSize: z.string().min(1)
 });
-export const cameraSchema = filmReceiverSummarySchema.extend({
-    receiverTypeCode: z.literal('camera'),
+export const cameraSchema = filmDeviceSummarySchema.extend({
+    deviceTypeCode: z.literal('camera'),
     make: z.string().min(1),
     model: z.string().min(1),
     serialNumber: z.string().nullable(),
     dateAcquired: isoDateTimeSchema.nullable()
 });
-export const interchangeableBackSchema = filmReceiverSummarySchema.extend({
-    receiverTypeCode: z.literal('interchangeable_back'),
+export const interchangeableBackSchema = filmDeviceSummarySchema.extend({
+    deviceTypeCode: z.literal('interchangeable_back'),
     name: z.string().min(1),
     system: z.string().min(1)
 });
-export const filmHolderSchema = filmReceiverSummarySchema.extend({
-    receiverTypeCode: z.literal('film_holder'),
+export const filmHolderSchema = filmDeviceSummarySchema.extend({
+    deviceTypeCode: z.literal('film_holder'),
     name: z.string().min(1),
     brand: z.string().min(1),
     holderTypeId: idSchema,
     holderTypeCode: holderTypeSchema.shape.code,
     slots: z.array(filmHolderSlotSchema)
 });
-export const filmReceiverSchema = z.discriminatedUnion('receiverTypeCode', [
+export const filmDeviceSchema = z.discriminatedUnion('deviceTypeCode', [
     cameraSchema,
     interchangeableBackSchema,
     filmHolderSchema
 ]);
-export const createFilmReceiverRequestSchema = z.discriminatedUnion('receiverTypeCode', [
+export const createFilmDeviceRequestSchema = z.discriminatedUnion('deviceTypeCode', [
     z.object({
-        receiverTypeCode: z.literal('camera'),
-        receiverTypeId: idSchema,
+        deviceTypeCode: z.literal('camera'),
+        deviceTypeId: idSchema,
         filmFormatId: idSchema,
         frameSize: z.string().min(1),
         make: z.string().min(1),
@@ -155,16 +155,16 @@ export const createFilmReceiverRequestSchema = z.discriminatedUnion('receiverTyp
         dateAcquired: isoDateTimeSchema.nullable().optional()
     }),
     z.object({
-        receiverTypeCode: z.literal('interchangeable_back'),
-        receiverTypeId: idSchema,
+        deviceTypeCode: z.literal('interchangeable_back'),
+        deviceTypeId: idSchema,
         filmFormatId: idSchema,
         frameSize: z.string().min(1),
         name: z.string().min(1),
         system: z.string().min(1)
     }),
     z.object({
-        receiverTypeCode: z.literal('film_holder'),
-        receiverTypeId: idSchema,
+        deviceTypeCode: z.literal('film_holder'),
+        deviceTypeId: idSchema,
         filmFormatId: idSchema,
         frameSize: z.string().min(1),
         name: z.string().min(1),
@@ -172,7 +172,7 @@ export const createFilmReceiverRequestSchema = z.discriminatedUnion('receiverTyp
         holderTypeId: idSchema
     })
 ]);
-export const updateFilmReceiverRequestSchema = z.object({
+export const updateFilmDeviceRequestSchema = z.object({
     filmFormatId: idSchema.optional(),
     frameSize: z.string().min(1).optional(),
     make: z.string().min(1).optional(),

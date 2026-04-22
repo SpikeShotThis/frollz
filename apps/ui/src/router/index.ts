@@ -40,12 +40,12 @@ const routes: RouteRecordRaw[] = [
         }
       },
       {
-        path: 'receivers',
-        component: () => import('../pages/ReceiversPage.vue'),
+        path: 'devices',
+        component: () => import('../pages/DevicesPage.vue'),
         meta: {
           layout: 'app',
-          title: 'Receivers',
-          icon: 'receivers',
+          title: 'Devices',
+          icon: 'devices',
           order: 3,
           showInNav: true
         }

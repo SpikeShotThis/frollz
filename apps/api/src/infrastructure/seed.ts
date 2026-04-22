@@ -11,7 +11,7 @@ import {
   FilmStateEntity,
   HolderTypeEntity,
   PackageTypeEntity,
-  ReceiverTypeEntity,
+  DeviceTypeEntity,
   SlotStateEntity,
   StorageLocationEntity,
   UserEntity
@@ -62,7 +62,7 @@ const slotStates = [
   { code: 'removed', label: 'Removed' }
 ];
 
-const receiverTypes = [
+const deviceTypes = [
   { code: 'camera', label: 'Camera' },
   { code: 'interchangeable_back', label: 'Interchangeable back' },
   { code: 'film_holder', label: 'Film holder' }
@@ -150,8 +150,8 @@ export async function seedDatabase(orm: MikroORM, options: { skipMigrations?: bo
     await ensureByCode(em, SlotStateEntity, seed);
   }
 
-  for (const seed of receiverTypes) {
-    await ensureByCode(em, ReceiverTypeEntity, seed);
+  for (const seed of deviceTypes) {
+    await ensureByCode(em, DeviceTypeEntity, seed);
   }
 
   for (const seed of holderTypes) {

@@ -4,10 +4,10 @@ import {
   filmDetailSchema,
   filmJourneyEventSchema,
   filmFormatSchema,
-  filmReceiverSchema,
+  filmDeviceSchema,
   holderTypeSchema,
   packageTypeSchema,
-  receiverTypeSchema,
+  deviceTypeSchema,
   storageLocationSchema,
   tokenPairSchema
 } from '../../../packages/schema/src/index.js';
@@ -45,8 +45,8 @@ describe('API integration', () => {
     const packageTypesResponse = await harness.app.inject({ method: 'GET', url: '/api/v1/reference/package-types', headers: authHeaders });
     const packageTypes = packageTypeSchema.array().parse(packageTypesResponse.json());
 
-    const receiverTypesResponse = await harness.app.inject({ method: 'GET', url: '/api/v1/reference/receiver-types', headers: authHeaders });
-    const receiverTypes = receiverTypeSchema.array().parse(receiverTypesResponse.json());
+    const deviceTypesResponse = await harness.app.inject({ method: 'GET', url: '/api/v1/reference/device-types', headers: authHeaders });
+    const deviceTypes = deviceTypeSchema.array().parse(deviceTypesResponse.json());
 
     const holderTypesResponse = await harness.app.inject({ method: 'GET', url: '/api/v1/reference/holder-types', headers: authHeaders });
     const holderTypes = holderTypeSchema.array().parse(holderTypesResponse.json());
@@ -58,8 +58,8 @@ describe('API integration', () => {
       filmFormat: filmFormats.find((item) => item.code === '35mm')!,
       emulsion: emulsions.find((item) => item.brand === 'Gold')!,
       packageType: packageTypes.find((item) => item.code === '24exp' && item.filmFormat.code === '35mm')!,
-      receiverType: receiverTypes.find((item) => item.code === 'film_holder')!,
-      cameraType: receiverTypes.find((item) => item.code === 'camera')!,
+      deviceType: deviceTypes.find((item) => item.code === 'film_holder')!,
+      cameraType: deviceTypes.find((item) => item.code === 'camera')!,
       holderType: holderTypes.find((item) => item.code === 'standard')!,
       freezer: storageLocations.find((item) => item.code === 'freezer')!,
       refrigerator: storageLocations.find((item) => item.code === 'refrigerator')!
@@ -170,8 +170,8 @@ describe('API integration', () => {
     const packageTypesResponse = await harness.app.inject({ method: 'GET', url: '/api/v1/reference/package-types', headers: authHeaders });
     const packageTypes = packageTypeSchema.array().parse(packageTypesResponse.json());
 
-    const receiverTypesResponse = await harness.app.inject({ method: 'GET', url: '/api/v1/reference/receiver-types', headers: authHeaders });
-    const receiverTypes = receiverTypeSchema.array().parse(receiverTypesResponse.json());
+    const deviceTypesResponse = await harness.app.inject({ method: 'GET', url: '/api/v1/reference/device-types', headers: authHeaders });
+    const deviceTypes = deviceTypeSchema.array().parse(deviceTypesResponse.json());
 
     const holderTypesResponse = await harness.app.inject({ method: 'GET', url: '/api/v1/reference/holder-types', headers: authHeaders });
     const holderTypes = holderTypeSchema.array().parse(holderTypesResponse.json());
@@ -182,7 +182,7 @@ describe('API integration', () => {
     const filmFormat = filmFormats.find((item) => item.code === '35mm');
     const emulsion = emulsions.find((item) => item.brand === 'Gold');
     const packageType = packageTypes.find((item) => item.code === '24exp' && item.filmFormat.code === '35mm');
-    const receiverType = receiverTypes.find((item) => item.code === 'film_holder');
+    const deviceType = deviceTypes.find((item) => item.code === 'film_holder');
     const holderType = holderTypes.find((item) => item.code === 'standard');
     const freezer = storageLocations.find((item) => item.code === 'freezer');
     const refrigerator = storageLocations.find((item) => item.code === 'refrigerator');
@@ -190,7 +190,7 @@ describe('API integration', () => {
     expect(filmFormat).toBeTruthy();
     expect(emulsion).toBeTruthy();
     expect(packageType).toBeTruthy();
-    expect(receiverType).toBeTruthy();
+    expect(deviceType).toBeTruthy();
     expect(holderType).toBeTruthy();
     expect(freezer).toBeTruthy();
     expect(refrigerator).toBeTruthy();
@@ -253,13 +253,13 @@ describe('API integration', () => {
     });
     expect(secondStorageEventResponse.statusCode).toBe(201);
 
-    const receiverCreateResponse = await harness.app.inject({
+    const deviceCreateResponse = await harness.app.inject({
       method: 'POST',
-      url: '/api/v1/receivers',
+      url: '/api/v1/devices',
       headers: { ...authHeaders, 'content-type': 'application/json' },
       payload: {
-        receiverTypeCode: 'film_holder',
-        receiverTypeId: receiverType!.id,
+        deviceTypeCode: 'film_holder',
+        deviceTypeId: deviceType!.id,
         filmFormatId: filmFormat!.id,
         frameSize: '6x7',
         name: 'Hasselblad A12',
@@ -268,9 +268,9 @@ describe('API integration', () => {
       }
     });
 
-    expect(receiverCreateResponse.statusCode).toBe(201);
-    const receiver = filmReceiverSchema.parse(receiverCreateResponse.json());
-    expect(receiver.receiverTypeCode).toBe('film_holder');
+    expect(deviceCreateResponse.statusCode).toBe(201);
+    const device = filmDeviceSchema.parse(deviceCreateResponse.json());
+    expect(device.deviceTypeCode).toBe('film_holder');
 
     const loadedEventResponse = await harness.app.inject({
       method: 'POST',
@@ -281,7 +281,7 @@ describe('API integration', () => {
         occurredAt: new Date().toISOString(),
         notes: 'Loaded into holder',
         eventData: {
-          receiverId: receiver.id,
+          deviceId: device.id,
           slotSideNumber: 1,
           intendedPushPull: null
         }
@@ -289,14 +289,14 @@ describe('API integration', () => {
     });
     expect(loadedEventResponse.statusCode).toBe(201);
 
-    const receiverAfterLoadedResponse = await harness.app.inject({
+    const deviceAfterLoadedResponse = await harness.app.inject({
       method: 'GET',
-      url: `/api/v1/receivers/${receiver.id}`,
+      url: `/api/v1/devices/${device.id}`,
       headers: authHeaders
     });
-    const receiverAfterLoaded = filmReceiverSchema.parse(receiverAfterLoadedResponse.json());
-    if (receiverAfterLoaded.receiverTypeCode === 'film_holder') {
-      expect(receiverAfterLoaded.slots.at(-1)?.slotStateCode).toBe('loaded');
+    const deviceAfterLoaded = filmDeviceSchema.parse(deviceAfterLoadedResponse.json());
+    if (deviceAfterLoaded.deviceTypeCode === 'film_holder') {
+      expect(deviceAfterLoaded.slots.at(-1)?.slotStateCode).toBe('loaded');
     }
 
     const exposedEventResponse = await harness.app.inject({
@@ -311,14 +311,14 @@ describe('API integration', () => {
     });
     expect(exposedEventResponse.statusCode).toBe(201);
 
-    const receiverAfterExposedResponse = await harness.app.inject({
+    const deviceAfterExposedResponse = await harness.app.inject({
       method: 'GET',
-      url: `/api/v1/receivers/${receiver.id}`,
+      url: `/api/v1/devices/${device.id}`,
       headers: authHeaders
     });
-    const receiverAfterExposed = filmReceiverSchema.parse(receiverAfterExposedResponse.json());
-    if (receiverAfterExposed.receiverTypeCode === 'film_holder') {
-      expect(receiverAfterExposed.slots.at(-1)?.slotStateCode).toBe('exposed');
+    const deviceAfterExposed = filmDeviceSchema.parse(deviceAfterExposedResponse.json());
+    if (deviceAfterExposed.deviceTypeCode === 'film_holder') {
+      expect(deviceAfterExposed.slots.at(-1)?.slotStateCode).toBe('exposed');
     }
 
     const removedEventResponse = await harness.app.inject({
@@ -333,14 +333,14 @@ describe('API integration', () => {
     });
     expect(removedEventResponse.statusCode).toBe(201);
 
-    const receiverAfterRemovedResponse = await harness.app.inject({
+    const deviceAfterRemovedResponse = await harness.app.inject({
       method: 'GET',
-      url: `/api/v1/receivers/${receiver.id}`,
+      url: `/api/v1/devices/${device.id}`,
       headers: authHeaders
     });
-    const receiverAfterRemoved = filmReceiverSchema.parse(receiverAfterRemovedResponse.json());
-    if (receiverAfterRemoved.receiverTypeCode === 'film_holder') {
-      expect(receiverAfterRemoved.slots.at(-1)?.slotStateCode).toBe('removed');
+    const deviceAfterRemoved = filmDeviceSchema.parse(deviceAfterRemovedResponse.json());
+    if (deviceAfterRemoved.deviceTypeCode === 'film_holder') {
+      expect(deviceAfterRemoved.slots.at(-1)?.slotStateCode).toBe('removed');
     }
 
     const sentForDevResponse = await harness.app.inject({
@@ -419,15 +419,15 @@ describe('API integration', () => {
     expect(allEvents).toHaveLength(10);
     expect(allEvents.at(-1)?.filmStateCode).toBe('archived');
 
-    const receiverDetailResponse = await harness.app.inject({
+    const deviceDetailResponse = await harness.app.inject({
       method: 'GET',
-      url: `/api/v1/receivers/${receiver.id}`,
+      url: `/api/v1/devices/${device.id}`,
       headers: authHeaders
     });
-    const finalReceiver = filmReceiverSchema.parse(receiverDetailResponse.json());
-    expect(finalReceiver.receiverTypeCode).toBe('film_holder');
-    if (finalReceiver.receiverTypeCode === 'film_holder') {
-      expect(finalReceiver.slots[0]?.slotStateCode).toBe('removed');
+    const finalDevice = filmDeviceSchema.parse(deviceDetailResponse.json());
+    expect(finalDevice.deviceTypeCode).toBe('film_holder');
+    if (finalDevice.deviceTypeCode === 'film_holder') {
+      expect(finalDevice.slots[0]?.slotStateCode).toBe('removed');
     }
   });
 
@@ -437,13 +437,13 @@ describe('API integration', () => {
     const authHeaders = { authorization: `Bearer ${tokens.accessToken}` };
 
     const refs = await loadCoreReferenceData(authHeaders);
-    const receiverCreateResponse = await harness.app.inject({
+    const deviceCreateResponse = await harness.app.inject({
       method: 'POST',
-      url: '/api/v1/receivers',
+      url: '/api/v1/devices',
       headers: { ...authHeaders, 'content-type': 'application/json' },
       payload: {
-        receiverTypeCode: 'film_holder',
-        receiverTypeId: refs.receiverType.id,
+        deviceTypeCode: 'film_holder',
+        deviceTypeId: refs.deviceType.id,
         filmFormatId: refs.filmFormat.id,
         frameSize: '6x7',
         name: 'A12',
@@ -451,7 +451,7 @@ describe('API integration', () => {
         holderTypeId: refs.holderType.id
       }
     });
-    const receiver = filmReceiverSchema.parse(receiverCreateResponse.json());
+    const device = filmDeviceSchema.parse(deviceCreateResponse.json());
 
     const firstFilm = await createFilmForUser(authHeaders, 'First slot film');
     await harness.app.inject({
@@ -476,7 +476,7 @@ describe('API integration', () => {
         filmStateCode: 'loaded',
         occurredAt: new Date().toISOString(),
         eventData: {
-          receiverId: receiver.id,
+          deviceId: device.id,
           slotSideNumber: 1,
           intendedPushPull: null
         }
@@ -506,7 +506,7 @@ describe('API integration', () => {
         filmStateCode: 'loaded',
         occurredAt: new Date().toISOString(),
         eventData: {
-          receiverId: receiver.id,
+          deviceId: device.id,
           slotSideNumber: 1,
           intendedPushPull: null
         }
@@ -516,16 +516,16 @@ describe('API integration', () => {
     expect(conflictResponse.statusCode).toBe(409);
   });
 
-  it('replays create receiver responses for the same idempotency key without duplicating rows', async () => {
+  it('replays create device responses for the same idempotency key without duplicating rows', async () => {
     const email = `idempotent-${Date.now()}@example.com`;
     const tokens = await registerUser(email);
     const authHeaders = { authorization: `Bearer ${tokens.accessToken}` };
     const refs = await loadCoreReferenceData(authHeaders);
-    const idempotencyKey = `receivers-create-${Date.now()}`;
+    const idempotencyKey = `devices-create-${Date.now()}`;
 
     const payload = {
-      receiverTypeCode: 'camera' as const,
-      receiverTypeId: refs.cameraType.id,
+      deviceTypeCode: 'camera' as const,
+      deviceTypeId: refs.cameraType.id,
       filmFormatId: refs.filmFormat.id,
       frameSize: 'Half Frame',
       make: 'Minolta',
@@ -536,55 +536,55 @@ describe('API integration', () => {
 
     const first = await harness.app.inject({
       method: 'POST',
-      url: '/api/v1/receivers',
+      url: '/api/v1/devices',
       headers: { ...authHeaders, 'content-type': 'application/json', 'idempotency-key': idempotencyKey },
       payload
     });
     expect(first.statusCode).toBe(201);
-    const firstReceiver = filmReceiverSchema.parse(first.json());
+    const firstDevice = filmDeviceSchema.parse(first.json());
 
     const second = await harness.app.inject({
       method: 'POST',
-      url: '/api/v1/receivers',
+      url: '/api/v1/devices',
       headers: { ...authHeaders, 'content-type': 'application/json', 'idempotency-key': idempotencyKey },
       payload
     });
     expect(second.statusCode).toBe(201);
-    const secondReceiver = filmReceiverSchema.parse(second.json());
+    const secondDevice = filmDeviceSchema.parse(second.json());
 
-    expect(secondReceiver.id).toBe(firstReceiver.id);
+    expect(secondDevice.id).toBe(firstDevice.id);
 
     const all = await harness.app.inject({
       method: 'GET',
-      url: '/api/v1/receivers',
+      url: '/api/v1/devices',
       headers: authHeaders
     });
     expect(all.statusCode).toBe(200);
-    const receivers = filmReceiverSchema.array().parse(all.json());
-    const matching = receivers.filter(
-      (receiver) =>
-        receiver.receiverTypeCode === 'camera' &&
-        receiver.frameSize === payload.frameSize &&
-        ('make' in receiver && receiver.make === payload.make) &&
-        ('model' in receiver && receiver.model === payload.model)
+    const devices = filmDeviceSchema.array().parse(all.json());
+    const matching = devices.filter(
+      (device) =>
+        device.deviceTypeCode === 'camera' &&
+        device.frameSize === payload.frameSize &&
+        ('make' in device && device.make === payload.make) &&
+        ('model' in device && device.model === payload.model)
     );
     expect(matching).toHaveLength(1);
   });
 
-  it('returns 409 when an idempotency key is reused with a different create receiver payload', async () => {
+  it('returns 409 when an idempotency key is reused with a different create device payload', async () => {
     const email = `idempotent-conflict-${Date.now()}@example.com`;
     const tokens = await registerUser(email);
     const authHeaders = { authorization: `Bearer ${tokens.accessToken}` };
     const refs = await loadCoreReferenceData(authHeaders);
-    const idempotencyKey = `receivers-create-conflict-${Date.now()}`;
+    const idempotencyKey = `devices-create-conflict-${Date.now()}`;
 
     const first = await harness.app.inject({
       method: 'POST',
-      url: '/api/v1/receivers',
+      url: '/api/v1/devices',
       headers: { ...authHeaders, 'content-type': 'application/json', 'idempotency-key': idempotencyKey },
       payload: {
-        receiverTypeCode: 'camera',
-        receiverTypeId: refs.cameraType.id,
+        deviceTypeCode: 'camera',
+        deviceTypeId: refs.cameraType.id,
         filmFormatId: refs.filmFormat.id,
         frameSize: 'Half Frame',
         make: 'Minolta',
@@ -597,11 +597,11 @@ describe('API integration', () => {
 
     const second = await harness.app.inject({
       method: 'POST',
-      url: '/api/v1/receivers',
+      url: '/api/v1/devices',
       headers: { ...authHeaders, 'content-type': 'application/json', 'idempotency-key': idempotencyKey },
       payload: {
-        receiverTypeCode: 'camera',
-        receiverTypeId: refs.cameraType.id,
+        deviceTypeCode: 'camera',
+        deviceTypeId: refs.cameraType.id,
         filmFormatId: refs.filmFormat.id,
         frameSize: 'Half Frame',
         make: 'Minolta',
@@ -637,11 +637,11 @@ describe('API integration', () => {
 
     const cameraCreateResponse = await harness.app.inject({
       method: 'POST',
-      url: '/api/v1/receivers',
+      url: '/api/v1/devices',
       headers: { ...authHeaders, 'content-type': 'application/json' },
       payload: {
-        receiverTypeCode: 'camera',
-        receiverTypeId: refs.cameraType.id,
+        deviceTypeCode: 'camera',
+        deviceTypeId: refs.cameraType.id,
         filmFormatId: refs.filmFormat.id,
         frameSize: '36x24',
         make: 'Nikon',
@@ -650,7 +650,7 @@ describe('API integration', () => {
         dateAcquired: null
       }
     });
-    const camera = filmReceiverSchema.parse(cameraCreateResponse.json());
+    const camera = filmDeviceSchema.parse(cameraCreateResponse.json());
 
     const stored = await harness.app.inject({
       method: 'POST',
@@ -675,7 +675,7 @@ describe('API integration', () => {
         filmStateCode: 'loaded',
         occurredAt: new Date().toISOString(),
         eventData: {
-          receiverId: camera.id,
+          deviceId: camera.id,
           slotSideNumber: null,
           intendedPushPull: null
         }
@@ -700,19 +700,19 @@ describe('API integration', () => {
     expect(backwards.statusCode).toBe(422);
   });
 
-  it('returns 409 when deleting a receiver that still has a loaded film', async () => {
-    const email = `receiver-delete-${Date.now()}@example.com`;
+  it('returns 409 when deleting a device that still has a loaded film', async () => {
+    const email = `device-delete-${Date.now()}@example.com`;
     const tokens = await registerUser(email);
     const authHeaders = { authorization: `Bearer ${tokens.accessToken}` };
     const { refs, film } = await createFilmForUser(authHeaders, 'Delete conflict film');
 
     const cameraCreateResponse = await harness.app.inject({
       method: 'POST',
-      url: '/api/v1/receivers',
+      url: '/api/v1/devices',
       headers: { ...authHeaders, 'content-type': 'application/json' },
       payload: {
-        receiverTypeCode: 'camera',
-        receiverTypeId: refs.cameraType.id,
+        deviceTypeCode: 'camera',
+        deviceTypeId: refs.cameraType.id,
         filmFormatId: refs.filmFormat.id,
         frameSize: '36x24',
         make: 'Canon',
@@ -721,7 +721,7 @@ describe('API integration', () => {
         dateAcquired: null
       }
     });
-    const camera = filmReceiverSchema.parse(cameraCreateResponse.json());
+    const camera = filmDeviceSchema.parse(cameraCreateResponse.json());
 
     await harness.app.inject({
       method: 'POST',
@@ -745,7 +745,7 @@ describe('API integration', () => {
         filmStateCode: 'loaded',
         occurredAt: new Date().toISOString(),
         eventData: {
-          receiverId: camera.id,
+          deviceId: camera.id,
           slotSideNumber: null,
           intendedPushPull: null
         }
@@ -754,7 +754,7 @@ describe('API integration', () => {
 
     const deleteResponse = await harness.app.inject({
       method: 'DELETE',
-      url: `/api/v1/receivers/${camera.id}`,
+      url: `/api/v1/devices/${camera.id}`,
       headers: authHeaders
     });
 

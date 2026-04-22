@@ -5,7 +5,7 @@ declare module 'vue-router' {
     public?: boolean;
     layout?: 'app' | 'auth';
     title?: string;
-    icon?: 'dashboard' | 'film' | 'receivers' | 'emulsions';
+    icon?: 'dashboard' | 'film' | 'devices' | 'emulsions';
     order?: number;
     showInNav?: boolean;
     navGroup?: string;

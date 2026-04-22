@@ -4,11 +4,11 @@ import { MikroOrmMiddleware } from '@mikro-orm/nestjs';
 import { DatabaseModule } from './infrastructure/database.module.js';
 import { AuthModule } from './modules/auth/auth.module.js';
 import { FilmModule } from './modules/film/film.module.js';
-import { ReceiversModule } from './modules/receivers/receivers.module.js';
+import { DevicesModule } from './modules/devices/devices.module.js';
 import { ReferenceModule } from './modules/reference/reference.module.js';
 
 @Module({
-  imports: [DatabaseModule, AuthModule, ReferenceModule, FilmModule, ReceiversModule]
+  imports: [DatabaseModule, AuthModule, ReferenceModule, FilmModule, DevicesModule]
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer): void {

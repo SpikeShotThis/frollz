@@ -5,7 +5,7 @@ import type {
   FilmState,
   HolderType,
   PackageType,
-  ReceiverType,
+  DeviceType,
   ReferenceTables,
   SlotState,
   StorageLocation
@@ -18,6 +18,6 @@ export type ReferencePackageType = PackageType;
 export type ReferenceFilmState = FilmState;
 export type ReferenceStorageLocation = StorageLocation;
 export type ReferenceSlotState = SlotState;
-export type ReferenceReceiverType = ReceiverType;
+export type ReferenceDeviceType = DeviceType;
 export type ReferenceHolderType = HolderType;
 export type ReferenceEmulsion = Emulsion;

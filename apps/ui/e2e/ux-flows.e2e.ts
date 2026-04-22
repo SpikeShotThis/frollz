@@ -22,7 +22,7 @@ const referencePayload = {
     ],
     storageLocations: [{ id: 1, code: 'fridge', label: 'Fridge' }],
     slotStates: [{ id: 1, code: 'empty', label: 'Empty' }],
-    receiverTypes: [{ id: 1, code: 'camera', label: 'Camera' }],
+    deviceTypes: [{ id: 1, code: 'camera', label: 'Camera' }],
     holderTypes: [{ id: 1, code: 'sheet', label: 'Sheet' }],
     emulsions: [
       {
@@ -252,7 +252,7 @@ test('event composer opens from inventory and supports conditional fields', asyn
     });
   });
 
-  await page.route('**/api/v1/receivers', async (route) => {
+  await page.route('**/api/v1/devices', async (route) => {
     await route.fulfill({ json: { data: [] } });
   });
 

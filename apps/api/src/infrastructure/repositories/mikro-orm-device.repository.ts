@@ -1,33 +1,33 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { EntityManager } from '@mikro-orm/core';
-import { ReceiverRepository } from './receiver.repository.js';
+import { DeviceRepository } from './device.repository.js';
 import {
   CameraEntity,
   FilmFormatEntity,
   FilmHolderEntity,
   FilmHolderSlotEntity,
-  FilmReceiverEntity,
+  FilmDeviceEntity,
   HolderTypeEntity,
   InterchangeableBackEntity,
-  ReceiverTypeEntity,
+  DeviceTypeEntity,
   UserEntity
 } from '../entities/index.js';
-import { mapFilmHolderSlotEntity, mapFilmReceiverEntity } from '../mappers/index.js';
+import { mapFilmHolderSlotEntity, mapFilmDeviceEntity } from '../mappers/index.js';
 
 @Injectable()
-export class MikroOrmReceiverRepository extends ReceiverRepository {
+export class MikroOrmDeviceRepository extends DeviceRepository {
   constructor(@Inject(EntityManager) private readonly entityManager: EntityManager) {
     super();
   }
 
   async list(userId: number) {
-    const receivers = await this.entityManager.find(
-      FilmReceiverEntity,
+    const devices = await this.entityManager.find(
+      FilmDeviceEntity,
       { user: userId },
       {
         populate: [
           'user',
-          'receiverType',
+          'deviceType',
           'filmFormat',
           'camera',
           'interchangeableBack',
@@ -41,17 +41,17 @@ export class MikroOrmReceiverRepository extends ReceiverRepository {
       }
     );
 
-    return receivers.map(mapFilmReceiverEntity);
+    return devices.map(mapFilmDeviceEntity);
   }
 
-  async findById(userId: number, receiverId: number) {
-    const receiver = await this.entityManager.findOne(
-      FilmReceiverEntity,
-      { id: receiverId, user: userId },
+  async findById(userId: number, deviceId: number) {
+    const device = await this.entityManager.findOne(
+      FilmDeviceEntity,
+      { id: deviceId, user: userId },
       {
         populate: [
           'user',
-          'receiverType',
+          'deviceType',
           'filmFormat',
           'camera',
           'interchangeableBack',
@@ -64,18 +64,18 @@ export class MikroOrmReceiverRepository extends ReceiverRepository {
       }
     );
 
-    return receiver ? mapFilmReceiverEntity(receiver) : null;
+    return device ? mapFilmDeviceEntity(device) : null;
   }
 
-  async create(userId: number, input: { receiverTypeCode: 'camera' | 'interchangeable_back' | 'film_holder'; receiverTypeId: number; filmFormatId: number; frameSize: string;[key: string]: unknown }) {
+  async create(userId: number, input: { deviceTypeCode: 'camera' | 'interchangeable_back' | 'film_holder'; deviceTypeId: number; filmFormatId: number; frameSize: string;[key: string]: unknown }) {
     return this.entityManager.transactional(async (transactionalEntityManager) => {
       const user = transactionalEntityManager.getReference(UserEntity, userId);
-      const receiverType = transactionalEntityManager.getReference(ReceiverTypeEntity, input.receiverTypeId);
+      const deviceType = transactionalEntityManager.getReference(DeviceTypeEntity, input.deviceTypeId);
       const filmFormat = transactionalEntityManager.getReference(FilmFormatEntity, input.filmFormatId);
 
-      const base = transactionalEntityManager.create(FilmReceiverEntity, {
+      const base = transactionalEntityManager.create(FilmDeviceEntity, {
         user,
-        receiverType,
+        deviceType,
         filmFormat,
         frameSize: input.frameSize
       });
@@ -83,9 +83,9 @@ export class MikroOrmReceiverRepository extends ReceiverRepository {
       transactionalEntityManager.persist(base);
       await transactionalEntityManager.flush();
 
-      if (input.receiverTypeCode === 'camera') {
+      if (input.deviceTypeCode === 'camera') {
         const camera = transactionalEntityManager.create(CameraEntity, {
-          filmReceiver: base,
+          filmDevice: base,
           make: String(input.make),
           model: String(input.model),
           serialNumber: input.serialNumber ? String(input.serialNumber) : null,
@@ -95,9 +95,9 @@ export class MikroOrmReceiverRepository extends ReceiverRepository {
         await transactionalEntityManager.flush();
       }
 
-      if (input.receiverTypeCode === 'interchangeable_back') {
+      if (input.deviceTypeCode === 'interchangeable_back') {
         const interchangeableBack = transactionalEntityManager.create(InterchangeableBackEntity, {
-          filmReceiver: base,
+          filmDevice: base,
           name: String(input.name),
           system: String(input.system)
         });
@@ -105,10 +105,10 @@ export class MikroOrmReceiverRepository extends ReceiverRepository {
         await transactionalEntityManager.flush();
       }
 
-      if (input.receiverTypeCode === 'film_holder') {
+      if (input.deviceTypeCode === 'film_holder') {
         const holderType = transactionalEntityManager.getReference(HolderTypeEntity, Number(input.holderTypeId));
         const filmHolder = transactionalEntityManager.create(FilmHolderEntity, {
-          filmReceiver: base,
+          filmDevice: base,
           name: String(input.name),
           brand: String(input.brand),
           holderType
@@ -118,12 +118,12 @@ export class MikroOrmReceiverRepository extends ReceiverRepository {
       }
 
       const persisted = await transactionalEntityManager.findOneOrFail(
-        FilmReceiverEntity,
+        FilmDeviceEntity,
         { id: base.id, user: userId },
         {
           populate: [
             'user',
-            'receiverType',
+            'deviceType',
             'filmFormat',
             'camera',
             'interchangeableBack',
@@ -136,75 +136,75 @@ export class MikroOrmReceiverRepository extends ReceiverRepository {
         }
       );
 
-      return mapFilmReceiverEntity(persisted);
+      return mapFilmDeviceEntity(persisted);
     });
   }
 
-  async update(userId: number, receiverId: number, input: { filmFormatId?: number; frameSize?: string; make?: string; model?: string; serialNumber?: string | null; dateAcquired?: string | null; name?: string; system?: string; brand?: string; holderTypeId?: number }) {
-    const receiver = await this.entityManager.findOne(
-      FilmReceiverEntity,
-      { id: receiverId, user: userId },
+  async update(userId: number, deviceId: number, input: { filmFormatId?: number; frameSize?: string; make?: string; model?: string; serialNumber?: string | null; dateAcquired?: string | null; name?: string; system?: string; brand?: string; holderTypeId?: number }) {
+    const device = await this.entityManager.findOne(
+      FilmDeviceEntity,
+      { id: deviceId, user: userId },
       { populate: ['camera', 'interchangeableBack', 'filmHolder', 'filmHolder.holderType', 'filmHolder.slots', 'filmHolder.slots.slotState', 'filmHolder.slots.loadedFilm'] }
     );
 
-    if (!receiver) {
+    if (!device) {
       return null;
     }
 
     if (input.filmFormatId !== undefined) {
-      receiver.filmFormat = this.entityManager.getReference(FilmFormatEntity, input.filmFormatId);
+      device.filmFormat = this.entityManager.getReference(FilmFormatEntity, input.filmFormatId);
     }
 
     if (input.frameSize !== undefined) {
-      receiver.frameSize = input.frameSize;
+      device.frameSize = input.frameSize;
     }
 
-    if (receiver.camera) {
+    if (device.camera) {
       if (input.make !== undefined) {
-        receiver.camera.make = input.make;
+        device.camera.make = input.make;
       }
       if (input.model !== undefined) {
-        receiver.camera.model = input.model;
+        device.camera.model = input.model;
       }
       if (input.serialNumber !== undefined) {
-        receiver.camera.serialNumber = input.serialNumber;
+        device.camera.serialNumber = input.serialNumber;
       }
       if (input.dateAcquired !== undefined) {
-        receiver.camera.dateAcquired = input.dateAcquired;
+        device.camera.dateAcquired = input.dateAcquired;
       }
     }
 
-    if (receiver.interchangeableBack) {
+    if (device.interchangeableBack) {
       if (input.name !== undefined) {
-        receiver.interchangeableBack.name = input.name;
+        device.interchangeableBack.name = input.name;
       }
       if (input.system !== undefined) {
-        receiver.interchangeableBack.system = input.system;
+        device.interchangeableBack.system = input.system;
       }
     }
 
-    if (receiver.filmHolder) {
+    if (device.filmHolder) {
       if (input.name !== undefined) {
-        receiver.filmHolder.name = input.name;
+        device.filmHolder.name = input.name;
       }
       if (input.brand !== undefined) {
-        receiver.filmHolder.brand = input.brand;
+        device.filmHolder.brand = input.brand;
       }
       if (input.holderTypeId !== undefined) {
-        receiver.filmHolder.holderType = this.entityManager.getReference(HolderTypeEntity, input.holderTypeId);
+        device.filmHolder.holderType = this.entityManager.getReference(HolderTypeEntity, input.holderTypeId);
       }
     }
 
-    this.entityManager.persist(receiver);
+    this.entityManager.persist(device);
     await this.entityManager.flush();
 
     const persisted = await this.entityManager.findOneOrFail(
-      FilmReceiverEntity,
-      { id: receiverId, user: userId },
+      FilmDeviceEntity,
+      { id: deviceId, user: userId },
       {
         populate: [
           'user',
-          'receiverType',
+          'deviceType',
           'filmFormat',
           'camera',
           'interchangeableBack',
@@ -217,49 +217,49 @@ export class MikroOrmReceiverRepository extends ReceiverRepository {
       }
     );
 
-    return mapFilmReceiverEntity(persisted);
+    return mapFilmDeviceEntity(persisted);
   }
 
-  async delete(userId: number, receiverId: number) {
-    const receiver = await this.entityManager.findOne(
-      FilmReceiverEntity,
-      { id: receiverId, user: userId },
+  async delete(userId: number, deviceId: number) {
+    const device = await this.entityManager.findOne(
+      FilmDeviceEntity,
+      { id: deviceId, user: userId },
       { populate: ['camera', 'interchangeableBack', 'filmHolder'] }
     );
 
-    if (!receiver) {
+    if (!device) {
       return;
     }
 
     await this.entityManager.transactional(async (transactionalEntityManager) => {
-      if (receiver.camera) {
-        await transactionalEntityManager.nativeDelete(CameraEntity, { filmReceiver: receiver.id });
+      if (device.camera) {
+        await transactionalEntityManager.nativeDelete(CameraEntity, { filmDevice: device.id });
       }
-      if (receiver.interchangeableBack) {
-        await transactionalEntityManager.nativeDelete(InterchangeableBackEntity, { filmReceiver: receiver.id });
+      if (device.interchangeableBack) {
+        await transactionalEntityManager.nativeDelete(InterchangeableBackEntity, { filmDevice: device.id });
       }
-      if (receiver.filmHolder) {
-        await transactionalEntityManager.nativeDelete(FilmHolderSlotEntity, { filmHolder: receiver.filmHolder });
-        await transactionalEntityManager.nativeDelete(FilmHolderEntity, { filmReceiver: receiver.id });
+      if (device.filmHolder) {
+        await transactionalEntityManager.nativeDelete(FilmHolderSlotEntity, { filmHolder: device.filmHolder });
+        await transactionalEntityManager.nativeDelete(FilmHolderEntity, { filmDevice: device.id });
       }
-      await transactionalEntityManager.nativeDelete(FilmReceiverEntity, { id: receiver.id, user: userId });
+      await transactionalEntityManager.nativeDelete(FilmDeviceEntity, { id: device.id, user: userId });
     });
   }
 
-  async listHolderSlots(userId: number, filmReceiverId: number) {
+  async listHolderSlots(userId: number, filmDeviceId: number) {
     const slots = await this.entityManager.find(
       FilmHolderSlotEntity,
-      { user: userId, filmHolder: { filmReceiver: filmReceiverId } },
+      { user: userId, filmHolder: { filmDevice: filmDeviceId } },
       { populate: ['user', 'filmHolder', 'slotState', 'loadedFilm'], orderBy: { sideNumber: 'asc', createdAt: 'asc', id: 'asc' } }
     );
 
     return slots.map(mapFilmHolderSlotEntity);
   }
 
-  async findActiveHolderSlot(userId: number, filmReceiverId: number, sideNumber: number) {
+  async findActiveHolderSlot(userId: number, filmDeviceId: number, sideNumber: number) {
     const slot = await this.entityManager.findOne(
       FilmHolderSlotEntity,
-      { user: userId, filmHolder: { filmReceiver: filmReceiverId }, sideNumber },
+      { user: userId, filmHolder: { filmDevice: filmDeviceId }, sideNumber },
       { populate: ['user', 'filmHolder', 'slotState', 'loadedFilm'], orderBy: { createdAt: 'desc', id: 'desc' } }
     );
 

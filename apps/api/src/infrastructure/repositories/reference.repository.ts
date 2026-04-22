@@ -5,7 +5,7 @@ import type {
   FilmState,
   HolderType,
   PackageType,
-  ReceiverType,
+  DeviceType,
   ReferenceTables,
   SlotState,
   StorageLocation
@@ -20,7 +20,7 @@ export abstract class ReferenceRepository {
   abstract listFilmStates(): Promise<FilmState[]>;
   abstract listStorageLocations(): Promise<StorageLocation[]>;
   abstract listSlotStates(): Promise<SlotState[]>;
-  abstract listReceiverTypes(): Promise<ReceiverType[]>;
+  abstract listDeviceTypes(): Promise<DeviceType[]>;
   abstract listHolderTypes(): Promise<HolderType[]>;
   abstract listEmulsions(): Promise<Emulsion[]>;
   abstract findEmulsionById(id: number): Promise<Emulsion | null>;

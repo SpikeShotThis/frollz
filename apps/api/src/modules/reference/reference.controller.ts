@@ -56,11 +56,11 @@ export class ReferenceController {
     return this.referenceService.listSlotStates();
   }
 
-  @Get('receiver-types')
-  @ApiOperation({ summary: 'List all receiver types' })
-  @ApiResponse({ status: 200, description: 'Receiver types' })
-  listReceiverTypes() {
-    return this.referenceService.listReceiverTypes();
+  @Get('device-types')
+  @ApiOperation({ summary: 'List all device types' })
+  @ApiResponse({ status: 200, description: 'Device types' })
+  listDeviceTypes() {
+    return this.referenceService.listDeviceTypes();
   }
 
   @Get('holder-types')

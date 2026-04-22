@@ -17,7 +17,7 @@ import {
   type MenuOption
 } from 'naive-ui';
 import { useAuthStore } from '../stores/auth.js';
-import { CollapseIcon, DashboardIcon, EmulsionIcon, ExpandIcon, FilmIcon, MenuIcon, ReceiverIcon } from '../components/shell/icons.js';
+import { CollapseIcon, DashboardIcon, EmulsionIcon, ExpandIcon, FilmIcon, MenuIcon, DeviceIcon } from '../components/shell/icons.js';
 
 const SIDEBAR_COLLAPSED_KEY = 'frollz.shell.sider.collapsed';
 const LAST_ACTIVE_SECTION_KEY = 'frollz.shell.last-section';
@@ -35,7 +35,7 @@ const lastActiveSection = ref<string | null>(null);
 const navIconByKey = {
   dashboard: DashboardIcon,
   film: FilmIcon,
-  receivers: ReceiverIcon,
+  devices: DeviceIcon,
   emulsions: EmulsionIcon
 } as const;
 

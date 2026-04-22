@@ -1,1 +1,1 @@
-export { FilmHolderSlotEntity } from './receiver.entities.js';
+export { FilmHolderSlotEntity } from './device.entities.js';

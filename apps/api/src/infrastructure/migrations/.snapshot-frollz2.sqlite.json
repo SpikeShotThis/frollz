@@ -2,9 +2,10 @@
   "namespaces": [],
   "tables": [
     {
+      "name": "camera",
       "columns": {
-        "film_receiver_id": {
-          "name": "film_receiver_id",
+        "film_device_id": {
+          "name": "film_device_id",
           "type": "INTEGER",
           "unsigned": false,
           "autoincrement": false,
@@ -84,11 +85,10 @@
           "mappedType": "text"
         }
       },
-      "name": "camera",
       "indexes": [
         {
           "columnNames": [
-            "film_receiver_id"
+            "film_device_id"
           ],
           "keyName": "primary",
           "constraint": true,
@@ -98,14 +98,14 @@
       ],
       "checks": [],
       "foreignKeys": {
-        "film_receiver_id": {
-          "constraintName": "camera_film_receiver_id_foreign",
-          "columnName": "film_receiver_id",
+        "camera_film_device_id_foreign": {
+          "constraintName": "camera_film_device_id_foreign",
+          "columnName": "film_device_id",
           "columnNames": [
-            "film_receiver_id"
+            "film_device_id"
           ],
           "localTableName": "camera",
-          "referencedTableName": "film_receiver",
+          "referencedTableName": "film_device",
           "referencedColumnName": "id",
           "referencedColumnNames": [
             "id"
@@ -117,6 +117,7 @@
       "nativeEnums": {}
     },
     {
+      "name": "development_process",
       "columns": {
         "id": {
           "name": "id",
@@ -167,7 +168,6 @@
           "mappedType": "text"
         }
       },
-      "name": "development_process",
       "indexes": [
         {
           "columnNames": [
@@ -193,6 +193,83 @@
       "nativeEnums": {}
     },
     {
+      "name": "device_type",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "INTEGER",
+          "unsigned": false,
+          "autoincrement": true,
+          "primary": true,
+          "nullable": false,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "enumItems": [],
+          "mappedType": "integer"
+        },
+        "code": {
+          "name": "code",
+          "type": "TEXT",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": true,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "enumItems": [],
+          "mappedType": "text"
+        },
+        "label": {
+          "name": "label",
+          "type": "TEXT",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "enumItems": [],
+          "mappedType": "text"
+        }
+      },
+      "indexes": [
+        {
+          "columnNames": [
+            "id"
+          ],
+          "keyName": "primary",
+          "constraint": true,
+          "unique": true,
+          "primary": true
+        },
+        {
+          "columnNames": [
+            "code"
+          ],
+          "keyName": "device_type_code_unique",
+          "unique": true,
+          "constraint": true,
+          "primary": false
+        }
+      ],
+      "checks": [],
+      "foreignKeys": {},
+      "nativeEnums": {}
+    },
+    {
+      "name": "emulsion",
       "columns": {
         "id": {
           "name": "id",
@@ -291,7 +368,6 @@
           "mappedType": "text"
         }
       },
-      "name": "emulsion",
       "indexes": [
         {
           "columnNames": [
@@ -326,7 +402,7 @@
       ],
       "checks": [],
       "foreignKeys": {
-        "development_process_id": {
+        "emulsion_development_process_id_foreign": {
           "constraintName": "emulsion_development_process_id_foreign",
           "columnName": "development_process_id",
           "columnNames": [
@@ -345,6 +421,7 @@
       "nativeEnums": {}
     },
     {
+      "name": "emulsion_film_format",
       "columns": {
         "emulsion_entity_id": {
           "name": "emulsion_entity_id",
@@ -379,7 +456,6 @@
           "mappedType": "integer"
         }
       },
-      "name": "emulsion_film_format",
       "indexes": [
         {
           "columnNames": [
@@ -413,7 +489,7 @@
       ],
       "checks": [],
       "foreignKeys": {
-        "film_format_entity_id": {
+        "emulsion_film_format_film_format_entity_id_foreign": {
           "constraintName": "emulsion_film_format_film_format_entity_id_foreign",
           "columnName": "film_format_entity_id",
           "columnNames": [
@@ -428,7 +504,7 @@
           "updateRule": "cascade",
           "deleteRule": "cascade"
         },
-        "emulsion_entity_id": {
+        "emulsion_film_format_emulsion_entity_id_foreign": {
           "constraintName": "emulsion_film_format_emulsion_entity_id_foreign",
           "columnName": "emulsion_entity_id",
           "columnNames": [
@@ -447,6 +523,7 @@
       "nativeEnums": {}
     },
     {
+      "name": "film",
       "columns": {
         "id": {
           "name": "id",
@@ -577,7 +654,6 @@
           "mappedType": "integer"
         }
       },
-      "name": "film",
       "indexes": [
         {
           "columnNames": [
@@ -647,7 +723,7 @@
       ],
       "checks": [],
       "foreignKeys": {
-        "current_state_id": {
+        "film_current_state_id_foreign": {
           "constraintName": "film_current_state_id_foreign",
           "columnName": "current_state_id",
           "columnNames": [
@@ -662,7 +738,7 @@
           "updateRule": "cascade",
           "deleteRule": "no action"
         },
-        "film_format_id": {
+        "film_film_format_id_foreign": {
           "constraintName": "film_film_format_id_foreign",
           "columnName": "film_format_id",
           "columnNames": [
@@ -677,7 +753,7 @@
           "updateRule": "cascade",
           "deleteRule": "no action"
         },
-        "package_type_id": {
+        "film_package_type_id_foreign": {
           "constraintName": "film_package_type_id_foreign",
           "columnName": "package_type_id",
           "columnNames": [
@@ -692,7 +768,7 @@
           "updateRule": "cascade",
           "deleteRule": "no action"
         },
-        "emulsion_id": {
+        "film_emulsion_id_foreign": {
           "constraintName": "film_emulsion_id_foreign",
           "columnName": "emulsion_id",
           "columnNames": [
@@ -707,7 +783,7 @@
           "updateRule": "cascade",
           "deleteRule": "no action"
         },
-        "user_id": {
+        "film_user_id_foreign": {
           "constraintName": "film_user_id_foreign",
           "columnName": "user_id",
           "columnNames": [
@@ -726,6 +802,179 @@
       "nativeEnums": {}
     },
     {
+      "name": "film_device",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "INTEGER",
+          "unsigned": false,
+          "autoincrement": true,
+          "primary": true,
+          "nullable": false,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "enumItems": [],
+          "mappedType": "integer"
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "INTEGER",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "enumItems": [],
+          "mappedType": "integer"
+        },
+        "device_type_id": {
+          "name": "device_type_id",
+          "type": "INTEGER",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "enumItems": [],
+          "mappedType": "integer"
+        },
+        "film_format_id": {
+          "name": "film_format_id",
+          "type": "INTEGER",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "enumItems": [],
+          "mappedType": "integer"
+        },
+        "frame_size": {
+          "name": "frame_size",
+          "type": "TEXT",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "enumItems": [],
+          "mappedType": "text"
+        }
+      },
+      "indexes": [
+        {
+          "columnNames": [
+            "id"
+          ],
+          "keyName": "primary",
+          "constraint": true,
+          "unique": true,
+          "primary": true
+        },
+        {
+          "columnNames": [
+            "film_format_id"
+          ],
+          "keyName": "film_device_film_format_id_index",
+          "unique": false,
+          "constraint": false,
+          "primary": false
+        },
+        {
+          "columnNames": [
+            "device_type_id"
+          ],
+          "keyName": "film_device_device_type_id_index",
+          "unique": false,
+          "constraint": false,
+          "primary": false
+        },
+        {
+          "columnNames": [
+            "user_id"
+          ],
+          "keyName": "film_device_user_id_index",
+          "unique": false,
+          "constraint": false,
+          "primary": false
+        }
+      ],
+      "checks": [],
+      "foreignKeys": {
+        "film_device_film_format_id_foreign": {
+          "constraintName": "film_device_film_format_id_foreign",
+          "columnName": "film_format_id",
+          "columnNames": [
+            "film_format_id"
+          ],
+          "localTableName": "film_device",
+          "referencedTableName": "film_format",
+          "referencedColumnName": "id",
+          "referencedColumnNames": [
+            "id"
+          ],
+          "updateRule": "cascade",
+          "deleteRule": "no action"
+        },
+        "film_device_device_type_id_foreign": {
+          "constraintName": "film_device_device_type_id_foreign",
+          "columnName": "device_type_id",
+          "columnNames": [
+            "device_type_id"
+          ],
+          "localTableName": "film_device",
+          "referencedTableName": "device_type",
+          "referencedColumnName": "id",
+          "referencedColumnNames": [
+            "id"
+          ],
+          "updateRule": "cascade",
+          "deleteRule": "no action"
+        },
+        "film_device_user_id_foreign": {
+          "constraintName": "film_device_user_id_foreign",
+          "columnName": "user_id",
+          "columnNames": [
+            "user_id"
+          ],
+          "localTableName": "film_device",
+          "referencedTableName": "user",
+          "referencedColumnName": "id",
+          "referencedColumnNames": [
+            "id"
+          ],
+          "updateRule": "cascade",
+          "deleteRule": "no action"
+        }
+      },
+      "nativeEnums": {}
+    },
+    {
+      "name": "film_format",
       "columns": {
         "id": {
           "name": "id",
@@ -776,7 +1025,6 @@
           "mappedType": "text"
         }
       },
-      "name": "film_format",
       "indexes": [
         {
           "columnNames": [
@@ -802,9 +1050,10 @@
       "nativeEnums": {}
     },
     {
+      "name": "film_holder",
       "columns": {
-        "film_receiver_id": {
-          "name": "film_receiver_id",
+        "film_device_id": {
+          "name": "film_device_id",
           "type": "INTEGER",
           "unsigned": false,
           "autoincrement": false,
@@ -868,11 +1117,10 @@
           "mappedType": "integer"
         }
       },
-      "name": "film_holder",
       "indexes": [
         {
           "columnNames": [
-            "film_receiver_id"
+            "film_device_id"
           ],
           "keyName": "primary",
           "constraint": true,
@@ -891,7 +1139,7 @@
       ],
       "checks": [],
       "foreignKeys": {
-        "holder_type_id": {
+        "film_holder_holder_type_id_foreign": {
           "constraintName": "film_holder_holder_type_id_foreign",
           "columnName": "holder_type_id",
           "columnNames": [
@@ -906,14 +1154,14 @@
           "updateRule": "cascade",
           "deleteRule": "no action"
         },
-        "film_receiver_id": {
-          "constraintName": "film_holder_film_receiver_id_foreign",
-          "columnName": "film_receiver_id",
+        "film_holder_film_device_id_foreign": {
+          "constraintName": "film_holder_film_device_id_foreign",
+          "columnName": "film_device_id",
           "columnNames": [
-            "film_receiver_id"
+            "film_device_id"
           ],
           "localTableName": "film_holder",
-          "referencedTableName": "film_receiver",
+          "referencedTableName": "film_device",
           "referencedColumnName": "id",
           "referencedColumnNames": [
             "id"
@@ -925,6 +1173,7 @@
       "nativeEnums": {}
     },
     {
+      "name": "film_holder_slot",
       "columns": {
         "id": {
           "name": "id",
@@ -958,8 +1207,8 @@
           "enumItems": [],
           "mappedType": "integer"
         },
-        "film_receiver_id": {
-          "name": "film_receiver_id",
+        "film_device_id": {
+          "name": "film_device_id",
           "type": "INTEGER",
           "unsigned": false,
           "autoincrement": false,
@@ -1055,7 +1304,6 @@
           "mappedType": "text"
         }
       },
-      "name": "film_holder_slot",
       "indexes": [
         {
           "columnNames": [
@@ -1065,6 +1313,15 @@
           "constraint": true,
           "unique": true,
           "primary": true
+        },
+        {
+          "columnNames": [
+            "film_device_id"
+          ],
+          "keyName": "film_holder_slot_film_device_id_index",
+          "unique": false,
+          "constraint": false,
+          "primary": false
         },
         {
           "columnNames": [
@@ -1086,15 +1343,6 @@
         },
         {
           "columnNames": [
-            "film_receiver_id"
-          ],
-          "keyName": "film_holder_slot_film_receiver_id_index",
-          "unique": false,
-          "constraint": false,
-          "primary": false
-        },
-        {
-          "columnNames": [
             "user_id"
           ],
           "keyName": "film_holder_slot_user_id_index",
@@ -1105,7 +1353,7 @@
       ],
       "checks": [],
       "foreignKeys": {
-        "loaded_film_id": {
+        "film_holder_slot_loaded_film_id_foreign": {
           "constraintName": "film_holder_slot_loaded_film_id_foreign",
           "columnName": "loaded_film_id",
           "columnNames": [
@@ -1120,7 +1368,7 @@
           "updateRule": "cascade",
           "deleteRule": "set null"
         },
-        "slot_state_id": {
+        "film_holder_slot_slot_state_id_foreign": {
           "constraintName": "film_holder_slot_slot_state_id_foreign",
           "columnName": "slot_state_id",
           "columnNames": [
@@ -1135,22 +1383,22 @@
           "updateRule": "cascade",
           "deleteRule": "no action"
         },
-        "film_receiver_id": {
-          "constraintName": "film_holder_slot_film_receiver_id_foreign",
-          "columnName": "film_receiver_id",
+        "film_holder_slot_film_device_id_foreign": {
+          "constraintName": "film_holder_slot_film_device_id_foreign",
+          "columnName": "film_device_id",
           "columnNames": [
-            "film_receiver_id"
+            "film_device_id"
           ],
           "localTableName": "film_holder_slot",
           "referencedTableName": "film_holder",
-          "referencedColumnName": "film_receiver_id",
+          "referencedColumnName": "film_device_id",
           "referencedColumnNames": [
-            "film_receiver_id"
+            "film_device_id"
           ],
           "updateRule": "cascade",
           "deleteRule": "no action"
         },
-        "user_id": {
+        "film_holder_slot_user_id_foreign": {
           "constraintName": "film_holder_slot_user_id_foreign",
           "columnName": "user_id",
           "columnNames": [
@@ -1169,6 +1417,7 @@
       "nativeEnums": {}
     },
     {
+      "name": "film_journey_event",
       "columns": {
         "id": {
           "name": "id",
@@ -1299,7 +1548,6 @@
           "mappedType": "json"
         }
       },
-      "name": "film_journey_event",
       "indexes": [
         {
           "columnNames": [
@@ -1340,7 +1588,7 @@
       ],
       "checks": [],
       "foreignKeys": {
-        "film_state_id": {
+        "film_journey_event_film_state_id_foreign": {
           "constraintName": "film_journey_event_film_state_id_foreign",
           "columnName": "film_state_id",
           "columnNames": [
@@ -1355,7 +1603,7 @@
           "updateRule": "cascade",
           "deleteRule": "no action"
         },
-        "user_id": {
+        "film_journey_event_user_id_foreign": {
           "constraintName": "film_journey_event_user_id_foreign",
           "columnName": "user_id",
           "columnNames": [
@@ -1370,7 +1618,7 @@
           "updateRule": "cascade",
           "deleteRule": "no action"
         },
-        "film_id": {
+        "film_journey_event_film_id_foreign": {
           "constraintName": "film_journey_event_film_id_foreign",
           "columnName": "film_id",
           "columnNames": [
@@ -1389,178 +1637,7 @@
       "nativeEnums": {}
     },
     {
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "INTEGER",
-          "unsigned": false,
-          "autoincrement": true,
-          "primary": true,
-          "nullable": false,
-          "unique": false,
-          "length": null,
-          "precision": null,
-          "scale": null,
-          "default": null,
-          "comment": null,
-          "enumItems": [],
-          "mappedType": "integer"
-        },
-        "user_id": {
-          "name": "user_id",
-          "type": "INTEGER",
-          "unsigned": false,
-          "autoincrement": false,
-          "primary": false,
-          "nullable": false,
-          "unique": false,
-          "length": null,
-          "precision": null,
-          "scale": null,
-          "default": null,
-          "comment": null,
-          "enumItems": [],
-          "mappedType": "integer"
-        },
-        "receiver_type_id": {
-          "name": "receiver_type_id",
-          "type": "INTEGER",
-          "unsigned": false,
-          "autoincrement": false,
-          "primary": false,
-          "nullable": false,
-          "unique": false,
-          "length": null,
-          "precision": null,
-          "scale": null,
-          "default": null,
-          "comment": null,
-          "enumItems": [],
-          "mappedType": "integer"
-        },
-        "film_format_id": {
-          "name": "film_format_id",
-          "type": "INTEGER",
-          "unsigned": false,
-          "autoincrement": false,
-          "primary": false,
-          "nullable": false,
-          "unique": false,
-          "length": null,
-          "precision": null,
-          "scale": null,
-          "default": null,
-          "comment": null,
-          "enumItems": [],
-          "mappedType": "integer"
-        },
-        "frame_size": {
-          "name": "frame_size",
-          "type": "TEXT",
-          "unsigned": false,
-          "autoincrement": false,
-          "primary": false,
-          "nullable": false,
-          "unique": false,
-          "length": null,
-          "precision": null,
-          "scale": null,
-          "default": null,
-          "comment": null,
-          "enumItems": [],
-          "mappedType": "text"
-        }
-      },
-      "name": "film_receiver",
-      "indexes": [
-        {
-          "columnNames": [
-            "id"
-          ],
-          "keyName": "primary",
-          "constraint": true,
-          "unique": true,
-          "primary": true
-        },
-        {
-          "columnNames": [
-            "film_format_id"
-          ],
-          "keyName": "film_receiver_film_format_id_index",
-          "unique": false,
-          "constraint": false,
-          "primary": false
-        },
-        {
-          "columnNames": [
-            "receiver_type_id"
-          ],
-          "keyName": "film_receiver_receiver_type_id_index",
-          "unique": false,
-          "constraint": false,
-          "primary": false
-        },
-        {
-          "columnNames": [
-            "user_id"
-          ],
-          "keyName": "film_receiver_user_id_index",
-          "unique": false,
-          "constraint": false,
-          "primary": false
-        }
-      ],
-      "checks": [],
-      "foreignKeys": {
-        "film_format_id": {
-          "constraintName": "film_receiver_film_format_id_foreign",
-          "columnName": "film_format_id",
-          "columnNames": [
-            "film_format_id"
-          ],
-          "localTableName": "film_receiver",
-          "referencedTableName": "film_format",
-          "referencedColumnName": "id",
-          "referencedColumnNames": [
-            "id"
-          ],
-          "updateRule": "cascade",
-          "deleteRule": "no action"
-        },
-        "receiver_type_id": {
-          "constraintName": "film_receiver_receiver_type_id_foreign",
-          "columnName": "receiver_type_id",
-          "columnNames": [
-            "receiver_type_id"
-          ],
-          "localTableName": "film_receiver",
-          "referencedTableName": "receiver_type",
-          "referencedColumnName": "id",
-          "referencedColumnNames": [
-            "id"
-          ],
-          "updateRule": "cascade",
-          "deleteRule": "no action"
-        },
-        "user_id": {
-          "constraintName": "film_receiver_user_id_foreign",
-          "columnName": "user_id",
-          "columnNames": [
-            "user_id"
-          ],
-          "localTableName": "film_receiver",
-          "referencedTableName": "user",
-          "referencedColumnName": "id",
-          "referencedColumnNames": [
-            "id"
-          ],
-          "updateRule": "cascade",
-          "deleteRule": "no action"
-        }
-      },
-      "nativeEnums": {}
-    },
-    {
+      "name": "film_state",
       "columns": {
         "id": {
           "name": "id",
@@ -1611,7 +1688,6 @@
           "mappedType": "text"
         }
       },
-      "name": "film_state",
       "indexes": [
         {
           "columnNames": [
@@ -1637,6 +1713,7 @@
       "nativeEnums": {}
     },
     {
+      "name": "holder_type",
       "columns": {
         "id": {
           "name": "id",
@@ -1687,7 +1764,6 @@
           "mappedType": "text"
         }
       },
-      "name": "holder_type",
       "indexes": [
         {
           "columnNames": [
@@ -1713,6 +1789,7 @@
       "nativeEnums": {}
     },
     {
+      "name": "idempotency_key",
       "columns": {
         "id": {
           "name": "id",
@@ -1827,7 +1904,6 @@
           "mappedType": "text"
         }
       },
-      "name": "idempotency_key",
       "indexes": [
         {
           "columnNames": [
@@ -1862,7 +1938,7 @@
       ],
       "checks": [],
       "foreignKeys": {
-        "user_id": {
+        "idempotency_key_user_id_foreign": {
           "constraintName": "idempotency_key_user_id_foreign",
           "columnName": "user_id",
           "columnNames": [
@@ -1881,9 +1957,10 @@
       "nativeEnums": {}
     },
     {
+      "name": "interchangeable_back",
       "columns": {
-        "film_receiver_id": {
-          "name": "film_receiver_id",
+        "film_device_id": {
+          "name": "film_device_id",
           "type": "INTEGER",
           "unsigned": false,
           "autoincrement": false,
@@ -1931,11 +2008,10 @@
           "mappedType": "text"
         }
       },
-      "name": "interchangeable_back",
       "indexes": [
         {
           "columnNames": [
-            "film_receiver_id"
+            "film_device_id"
           ],
           "keyName": "primary",
           "constraint": true,
@@ -1945,14 +2021,14 @@
       ],
       "checks": [],
       "foreignKeys": {
-        "film_receiver_id": {
-          "constraintName": "interchangeable_back_film_receiver_id_foreign",
-          "columnName": "film_receiver_id",
+        "interchangeable_back_film_device_id_foreign": {
+          "constraintName": "interchangeable_back_film_device_id_foreign",
+          "columnName": "film_device_id",
           "columnNames": [
-            "film_receiver_id"
+            "film_device_id"
           ],
           "localTableName": "interchangeable_back",
-          "referencedTableName": "film_receiver",
+          "referencedTableName": "film_device",
           "referencedColumnName": "id",
           "referencedColumnNames": [
             "id"
@@ -1964,6 +2040,7 @@
       "nativeEnums": {}
     },
     {
+      "name": "package_type",
       "columns": {
         "id": {
           "name": "id",
@@ -2030,7 +2107,6 @@
           "mappedType": "integer"
         }
       },
-      "name": "package_type",
       "indexes": [
         {
           "columnNames": [
@@ -2064,7 +2140,7 @@
       ],
       "checks": [],
       "foreignKeys": {
-        "film_format_id": {
+        "package_type_film_format_id_foreign": {
           "constraintName": "package_type_film_format_id_foreign",
           "columnName": "film_format_id",
           "columnNames": [
@@ -2083,82 +2159,7 @@
       "nativeEnums": {}
     },
     {
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "INTEGER",
-          "unsigned": false,
-          "autoincrement": true,
-          "primary": true,
-          "nullable": false,
-          "unique": false,
-          "length": null,
-          "precision": null,
-          "scale": null,
-          "default": null,
-          "comment": null,
-          "enumItems": [],
-          "mappedType": "integer"
-        },
-        "code": {
-          "name": "code",
-          "type": "TEXT",
-          "unsigned": false,
-          "autoincrement": false,
-          "primary": false,
-          "nullable": false,
-          "unique": true,
-          "length": null,
-          "precision": null,
-          "scale": null,
-          "default": null,
-          "comment": null,
-          "enumItems": [],
-          "mappedType": "text"
-        },
-        "label": {
-          "name": "label",
-          "type": "TEXT",
-          "unsigned": false,
-          "autoincrement": false,
-          "primary": false,
-          "nullable": false,
-          "unique": false,
-          "length": null,
-          "precision": null,
-          "scale": null,
-          "default": null,
-          "comment": null,
-          "enumItems": [],
-          "mappedType": "text"
-        }
-      },
-      "name": "receiver_type",
-      "indexes": [
-        {
-          "columnNames": [
-            "id"
-          ],
-          "keyName": "primary",
-          "constraint": true,
-          "unique": true,
-          "primary": true
-        },
-        {
-          "columnNames": [
-            "code"
-          ],
-          "keyName": "receiver_type_code_unique",
-          "unique": true,
-          "constraint": true,
-          "primary": false
-        }
-      ],
-      "checks": [],
-      "foreignKeys": {},
-      "nativeEnums": {}
-    },
-    {
+      "name": "refresh_tokens",
       "columns": {
         "id": {
           "name": "id",
@@ -2241,7 +2242,6 @@
           "mappedType": "text"
         }
       },
-      "name": "refresh_tokens",
       "indexes": [
         {
           "columnNames": [
@@ -2273,7 +2273,7 @@
       ],
       "checks": [],
       "foreignKeys": {
-        "user_id": {
+        "refresh_tokens_user_id_foreign": {
           "constraintName": "refresh_tokens_user_id_foreign",
           "columnName": "user_id",
           "columnNames": [
@@ -2292,6 +2292,7 @@
       "nativeEnums": {}
     },
     {
+      "name": "slot_state",
       "columns": {
         "id": {
           "name": "id",
@@ -2342,7 +2343,6 @@
           "mappedType": "text"
         }
       },
-      "name": "slot_state",
       "indexes": [
         {
           "columnNames": [
@@ -2368,6 +2368,7 @@
       "nativeEnums": {}
     },
     {
+      "name": "storage_location",
       "columns": {
         "id": {
           "name": "id",
@@ -2418,7 +2419,6 @@
           "mappedType": "text"
         }
       },
-      "name": "storage_location",
       "indexes": [
         {
           "columnNames": [
@@ -2444,6 +2444,7 @@
       "nativeEnums": {}
     },
     {
+      "name": "user",
       "columns": {
         "id": {
           "name": "id",
@@ -2526,7 +2527,6 @@
           "mappedType": "text"
         }
       },
-      "name": "user",
       "indexes": [
         {
           "columnNames": [
@@ -2552,5 +2552,6 @@
       "nativeEnums": {}
     }
   ],
+  "views": [],
   "nativeEnums": {}
 }

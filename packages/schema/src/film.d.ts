@@ -268,7 +268,7 @@ export declare const filmJourneyEventDataStoredSchema: z.ZodObject<{
     }>;
 }, z.core.$strip>;
 export declare const filmJourneyEventDataLoadedSchema: z.ZodObject<{
-    receiverId: z.ZodNumber;
+    deviceId: z.ZodNumber;
     slotSideNumber: z.ZodNullable<z.ZodNumber>;
     intendedPushPull: z.ZodNullable<z.ZodNumber>;
 }, z.core.$strip>;
@@ -305,7 +305,7 @@ export declare const filmJourneyEventPayloadSchema: z.ZodDiscriminatedUnion<[z.Z
 }, z.core.$strip>, z.ZodObject<{
     filmStateCode: z.ZodLiteral<"loaded">;
     eventData: z.ZodObject<{
-        receiverId: z.ZodNumber;
+        deviceId: z.ZodNumber;
         slotSideNumber: z.ZodNullable<z.ZodNumber>;
         intendedPushPull: z.ZodNullable<z.ZodNumber>;
     }, z.core.$strip>;
@@ -378,7 +378,7 @@ export declare const createFilmJourneyEventRequestSchema: z.ZodObject<{
 export declare const filmHolderSlotSchema: z.ZodObject<{
     id: z.ZodNumber;
     userId: z.ZodNumber;
-    filmReceiverId: z.ZodNumber;
+    filmDeviceId: z.ZodNumber;
     sideNumber: z.ZodNumber;
     slotStateId: z.ZodNumber;
     slotStateCode: z.ZodEnum<{
@@ -390,11 +390,11 @@ export declare const filmHolderSlotSchema: z.ZodObject<{
     loadedFilmId: z.ZodNullable<z.ZodNumber>;
     createdAt: z.ZodISODateTime;
 }, z.core.$strip>;
-export declare const filmReceiverSummarySchema: z.ZodObject<{
+export declare const filmDeviceSummarySchema: z.ZodObject<{
     id: z.ZodNumber;
     userId: z.ZodNumber;
-    receiverTypeId: z.ZodNumber;
-    receiverTypeCode: z.ZodEnum<{
+    deviceTypeId: z.ZodNumber;
+    deviceTypeCode: z.ZodEnum<{
         camera: "camera";
         interchangeable_back: "interchangeable_back";
         film_holder: "film_holder";
@@ -405,10 +405,10 @@ export declare const filmReceiverSummarySchema: z.ZodObject<{
 export declare const cameraSchema: z.ZodObject<{
     id: z.ZodNumber;
     userId: z.ZodNumber;
-    receiverTypeId: z.ZodNumber;
+    deviceTypeId: z.ZodNumber;
     filmFormatId: z.ZodNumber;
     frameSize: z.ZodString;
-    receiverTypeCode: z.ZodLiteral<"camera">;
+    deviceTypeCode: z.ZodLiteral<"camera">;
     make: z.ZodString;
     model: z.ZodString;
     serialNumber: z.ZodNullable<z.ZodString>;
@@ -417,20 +417,20 @@ export declare const cameraSchema: z.ZodObject<{
 export declare const interchangeableBackSchema: z.ZodObject<{
     id: z.ZodNumber;
     userId: z.ZodNumber;
-    receiverTypeId: z.ZodNumber;
+    deviceTypeId: z.ZodNumber;
     filmFormatId: z.ZodNumber;
     frameSize: z.ZodString;
-    receiverTypeCode: z.ZodLiteral<"interchangeable_back">;
+    deviceTypeCode: z.ZodLiteral<"interchangeable_back">;
     name: z.ZodString;
     system: z.ZodString;
 }, z.core.$strip>;
 export declare const filmHolderSchema: z.ZodObject<{
     id: z.ZodNumber;
     userId: z.ZodNumber;
-    receiverTypeId: z.ZodNumber;
+    deviceTypeId: z.ZodNumber;
     filmFormatId: z.ZodNumber;
     frameSize: z.ZodString;
-    receiverTypeCode: z.ZodLiteral<"film_holder">;
+    deviceTypeCode: z.ZodLiteral<"film_holder">;
     name: z.ZodString;
     brand: z.ZodString;
     holderTypeId: z.ZodNumber;
@@ -443,7 +443,7 @@ export declare const filmHolderSchema: z.ZodObject<{
     slots: z.ZodArray<z.ZodObject<{
         id: z.ZodNumber;
         userId: z.ZodNumber;
-        filmReceiverId: z.ZodNumber;
+        filmDeviceId: z.ZodNumber;
         sideNumber: z.ZodNumber;
         slotStateId: z.ZodNumber;
         slotStateCode: z.ZodEnum<{
@@ -456,13 +456,13 @@ export declare const filmHolderSchema: z.ZodObject<{
         createdAt: z.ZodISODateTime;
     }, z.core.$strip>>;
 }, z.core.$strip>;
-export declare const filmReceiverSchema: z.ZodDiscriminatedUnion<[z.ZodObject<{
+export declare const filmDeviceSchema: z.ZodDiscriminatedUnion<[z.ZodObject<{
     id: z.ZodNumber;
     userId: z.ZodNumber;
-    receiverTypeId: z.ZodNumber;
+    deviceTypeId: z.ZodNumber;
     filmFormatId: z.ZodNumber;
     frameSize: z.ZodString;
-    receiverTypeCode: z.ZodLiteral<"camera">;
+    deviceTypeCode: z.ZodLiteral<"camera">;
     make: z.ZodString;
     model: z.ZodString;
     serialNumber: z.ZodNullable<z.ZodString>;
@@ -470,19 +470,19 @@ export declare const filmReceiverSchema: z.ZodDiscriminatedUnion<[z.ZodObject<{
 }, z.core.$strip>, z.ZodObject<{
     id: z.ZodNumber;
     userId: z.ZodNumber;
-    receiverTypeId: z.ZodNumber;
+    deviceTypeId: z.ZodNumber;
     filmFormatId: z.ZodNumber;
     frameSize: z.ZodString;
-    receiverTypeCode: z.ZodLiteral<"interchangeable_back">;
+    deviceTypeCode: z.ZodLiteral<"interchangeable_back">;
     name: z.ZodString;
     system: z.ZodString;
 }, z.core.$strip>, z.ZodObject<{
     id: z.ZodNumber;
     userId: z.ZodNumber;
-    receiverTypeId: z.ZodNumber;
+    deviceTypeId: z.ZodNumber;
     filmFormatId: z.ZodNumber;
     frameSize: z.ZodString;
-    receiverTypeCode: z.ZodLiteral<"film_holder">;
+    deviceTypeCode: z.ZodLiteral<"film_holder">;
     name: z.ZodString;
     brand: z.ZodString;
     holderTypeId: z.ZodNumber;
@@ -495,7 +495,7 @@ export declare const filmReceiverSchema: z.ZodDiscriminatedUnion<[z.ZodObject<{
     slots: z.ZodArray<z.ZodObject<{
         id: z.ZodNumber;
         userId: z.ZodNumber;
-        filmReceiverId: z.ZodNumber;
+        filmDeviceId: z.ZodNumber;
         sideNumber: z.ZodNumber;
         slotStateId: z.ZodNumber;
         slotStateCode: z.ZodEnum<{
@@ -507,10 +507,10 @@ export declare const filmReceiverSchema: z.ZodDiscriminatedUnion<[z.ZodObject<{
         loadedFilmId: z.ZodNullable<z.ZodNumber>;
         createdAt: z.ZodISODateTime;
     }, z.core.$strip>>;
-}, z.core.$strip>], "receiverTypeCode">;
-export declare const createFilmReceiverRequestSchema: z.ZodDiscriminatedUnion<[z.ZodObject<{
-    receiverTypeCode: z.ZodLiteral<"camera">;
-    receiverTypeId: z.ZodNumber;
+}, z.core.$strip>], "deviceTypeCode">;
+export declare const createFilmDeviceRequestSchema: z.ZodDiscriminatedUnion<[z.ZodObject<{
+    deviceTypeCode: z.ZodLiteral<"camera">;
+    deviceTypeId: z.ZodNumber;
     filmFormatId: z.ZodNumber;
     frameSize: z.ZodString;
     make: z.ZodString;
@@ -518,22 +518,22 @@ export declare const createFilmReceiverRequestSchema: z.ZodDiscriminatedUnion<[z
     serialNumber: z.ZodOptional<z.ZodNullable<z.ZodString>>;
     dateAcquired: z.ZodOptional<z.ZodNullable<z.ZodISODateTime>>;
 }, z.core.$strip>, z.ZodObject<{
-    receiverTypeCode: z.ZodLiteral<"interchangeable_back">;
-    receiverTypeId: z.ZodNumber;
+    deviceTypeCode: z.ZodLiteral<"interchangeable_back">;
+    deviceTypeId: z.ZodNumber;
     filmFormatId: z.ZodNumber;
     frameSize: z.ZodString;
     name: z.ZodString;
     system: z.ZodString;
 }, z.core.$strip>, z.ZodObject<{
-    receiverTypeCode: z.ZodLiteral<"film_holder">;
-    receiverTypeId: z.ZodNumber;
+    deviceTypeCode: z.ZodLiteral<"film_holder">;
+    deviceTypeId: z.ZodNumber;
     filmFormatId: z.ZodNumber;
     frameSize: z.ZodString;
     name: z.ZodString;
     brand: z.ZodString;
     holderTypeId: z.ZodNumber;
-}, z.core.$strip>], "receiverTypeCode">;
-export declare const updateFilmReceiverRequestSchema: z.ZodObject<{
+}, z.core.$strip>], "deviceTypeCode">;
+export declare const updateFilmDeviceRequestSchema: z.ZodObject<{
     filmFormatId: z.ZodOptional<z.ZodNumber>;
     frameSize: z.ZodOptional<z.ZodString>;
     make: z.ZodOptional<z.ZodString>;
@@ -554,7 +554,7 @@ export type FilmJourneyEvent = z.infer<typeof filmJourneyEventSchema>;
 export type FilmJourneyEventPayload = z.infer<typeof filmJourneyEventPayloadSchema>;
 export type CreateFilmJourneyEventRequest = z.infer<typeof createFilmJourneyEventRequestSchema>;
 export type FilmHolderSlot = z.infer<typeof filmHolderSlotSchema>;
-export type FilmReceiver = z.infer<typeof filmReceiverSchema>;
-export type CreateFilmReceiverRequest = z.infer<typeof createFilmReceiverRequestSchema>;
-export type UpdateFilmReceiverRequest = z.infer<typeof updateFilmReceiverRequestSchema>;
+export type FilmDevice = z.infer<typeof filmDeviceSchema>;
+export type CreateFilmDeviceRequest = z.infer<typeof createFilmDeviceRequestSchema>;
+export type UpdateFilmDeviceRequest = z.infer<typeof updateFilmDeviceRequestSchema>;
 //# sourceMappingURL=film.d.ts.map

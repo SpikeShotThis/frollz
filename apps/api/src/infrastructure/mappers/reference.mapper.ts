@@ -5,7 +5,7 @@ import type {
   FilmState,
   HolderType,
   PackageType,
-  ReceiverType,
+  DeviceType,
   ReferenceTables,
   SlotState,
   StorageLocation
@@ -15,7 +15,7 @@ import {
   filmFormatSchema,
   filmStateSchema,
   holderTypeSchema,
-  receiverTypeSchema,
+  deviceTypeSchema,
   slotStateSchema,
   storageLocationSchema
 } from '@frollz2/schema';
@@ -26,7 +26,7 @@ import type {
   FilmStateEntity,
   HolderTypeEntity,
   PackageTypeEntity,
-  ReceiverTypeEntity,
+  DeviceTypeEntity,
   SlotStateEntity,
   StorageLocationEntity
 } from '../entities/index.js';
@@ -81,10 +81,10 @@ export function mapSlotStateEntity(entity: SlotStateEntity): SlotState {
   };
 }
 
-export function mapReceiverTypeEntity(entity: ReceiverTypeEntity): ReceiverType {
+export function mapDeviceTypeEntity(entity: DeviceTypeEntity): DeviceType {
   return {
     id: entity.id,
-    code: receiverTypeSchema.shape.code.parse(entity.code),
+    code: deviceTypeSchema.shape.code.parse(entity.code),
     label: entity.label
   };
 }
@@ -117,7 +117,7 @@ export function mapReferenceTables(entities: {
   filmStates: FilmStateEntity[];
   storageLocations: StorageLocationEntity[];
   slotStates: SlotStateEntity[];
-  receiverTypes: ReceiverTypeEntity[];
+  deviceTypes: DeviceTypeEntity[];
   holderTypes: HolderTypeEntity[];
   emulsions: EmulsionEntity[];
 }): ReferenceTables {
@@ -128,7 +128,7 @@ export function mapReferenceTables(entities: {
     filmStates: entities.filmStates.map(mapFilmStateEntity),
     storageLocations: entities.storageLocations.map(mapStorageLocationEntity),
     slotStates: entities.slotStates.map(mapSlotStateEntity),
-    receiverTypes: entities.receiverTypes.map(mapReceiverTypeEntity),
+    deviceTypes: entities.deviceTypes.map(mapDeviceTypeEntity),
     holderTypes: entities.holderTypes.map(mapHolderTypeEntity),
     emulsions: entities.emulsions.map(mapEmulsionEntity)
   };

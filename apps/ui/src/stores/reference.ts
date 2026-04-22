@@ -7,7 +7,7 @@ import {
   type FilmState,
   type HolderType,
   type PackageType,
-  type ReceiverType,
+  type DeviceType,
   type ReferenceTables,
   type SlotState,
   type StorageLocation
@@ -23,7 +23,7 @@ export const useReferenceStore = defineStore('reference', () => {
   const filmStates = ref<FilmState[]>([]);
   const storageLocations = ref<StorageLocation[]>([]);
   const slotStates = ref<SlotState[]>([]);
-  const receiverTypes = ref<ReceiverType[]>([]);
+  const deviceTypes = ref<DeviceType[]>([]);
   const holderTypes = ref<HolderType[]>([]);
   const emulsions = ref<Emulsion[]>([]);
 
@@ -44,7 +44,7 @@ export const useReferenceStore = defineStore('reference', () => {
       filmStates.value = referenceTables.filmStates;
       storageLocations.value = referenceTables.storageLocations;
       slotStates.value = referenceTables.slotStates;
-      receiverTypes.value = referenceTables.receiverTypes;
+      deviceTypes.value = referenceTables.deviceTypes;
       holderTypes.value = referenceTables.holderTypes;
       emulsions.value = referenceTables.emulsions;
     } catch (error) {
@@ -66,7 +66,7 @@ export const useReferenceStore = defineStore('reference', () => {
     filmStates,
     storageLocations,
     slotStates,
-    receiverTypes,
+    deviceTypes,
     holderTypes,
     emulsions,
     loaded,

@@ -5,5 +5,5 @@ export * from './idempotency-key.entity.js';
 export * from './refresh-token.entity.js';
 export * from './film.entity.js';
 export * from './film-journey-event.entity.js';
-export * from './receiver.entities.js';
+export * from './device.entities.js';
 export * from './film-holder-slot.entity.js';

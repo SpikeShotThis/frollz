@@ -33,8 +33,8 @@ export class ReferenceService {
     return this.referenceRepository.listSlotStates();
   }
 
-  listReceiverTypes() {
-    return this.referenceRepository.listReceiverTypes();
+  listDeviceTypes() {
+    return this.referenceRepository.listDeviceTypes();
   }
 
   listHolderTypes() {

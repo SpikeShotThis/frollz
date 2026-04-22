@@ -65,9 +65,9 @@ export class SlotStateEntity extends AutoIncrementEntity {
   label!: string;
 }
 
-@Entity({ tableName: 'receiver_type' })
+@Entity({ tableName: 'device_type' })
 @Unique({ properties: ['code'] })
-export class ReceiverTypeEntity extends AutoIncrementEntity {
+export class DeviceTypeEntity extends AutoIncrementEntity {
   @Property({ type: 'text' })
   code!: string;
 

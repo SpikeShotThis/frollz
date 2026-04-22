@@ -6,7 +6,7 @@ export const developmentProcessCodeSchema = codeSchema;
 export const filmStateCodeSchema = codeSchema;
 export const storageLocationCodeSchema = codeSchema;
 export const slotStateCodeSchema = codeSchema;
-export const receiverTypeCodeSchema = codeSchema;
+export const deviceTypeCodeSchema = codeSchema;
 export const holderTypeCodeSchema = codeSchema;
 
 export const filmFormatSchema = z.object({
@@ -47,9 +47,9 @@ export const slotStateSchema = z.object({
   label: labelSchema
 });
 
-export const receiverTypeSchema = z.object({
+export const deviceTypeSchema = z.object({
   id: idSchema,
-  code: receiverTypeCodeSchema,
+  code: deviceTypeCodeSchema,
   label: labelSchema
 });
 
@@ -77,7 +77,7 @@ export const referenceTablesSchema = z.object({
   filmStates: z.array(filmStateSchema),
   storageLocations: z.array(storageLocationSchema),
   slotStates: z.array(slotStateSchema),
-  receiverTypes: z.array(receiverTypeSchema),
+  deviceTypes: z.array(deviceTypeSchema),
   holderTypes: z.array(holderTypeSchema),
   emulsions: z.array(emulsionSchema)
 });
@@ -88,7 +88,7 @@ export type PackageType = z.infer<typeof packageTypeSchema>;
 export type FilmState = z.infer<typeof filmStateSchema>;
 export type StorageLocation = z.infer<typeof storageLocationSchema>;
 export type SlotState = z.infer<typeof slotStateSchema>;
-export type ReceiverType = z.infer<typeof receiverTypeSchema>;
+export type DeviceType = z.infer<typeof deviceTypeSchema>;
 export type HolderType = z.infer<typeof holderTypeSchema>;
 export type Emulsion = z.infer<typeof emulsionSchema>;
 export type ReferenceTables = z.infer<typeof referenceTablesSchema>;

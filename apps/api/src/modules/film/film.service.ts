@@ -19,7 +19,7 @@ import {
   FilmFormatEntity,
   FilmHolderSlotEntity,
   FilmJourneyEventEntity,
-  FilmReceiverEntity,
+  FilmDeviceEntity,
   FilmStateEntity,
   PackageTypeEntity,
   SlotStateEntity,
@@ -223,19 +223,19 @@ export class FilmService {
     eventData: Record<string, unknown>,
     user: UserEntity
   ): Promise<void> {
-    const receiverId = eventData['receiverId'];
+    const deviceId = eventData['deviceId'];
 
-    if (typeof receiverId !== 'number') {
-      throw new DomainError('DOMAIN_ERROR', 'A loaded event requires a receiverId');
+    if (typeof deviceId !== 'number') {
+      throw new DomainError('DOMAIN_ERROR', 'A loaded event requires a deviceId');
     }
 
-    const receiver = await entityManager.findOne(
-      FilmReceiverEntity,
-      { id: receiverId, user: userId },
+    const device = await entityManager.findOne(
+      FilmDeviceEntity,
+      { id: deviceId, user: userId },
       {
         populate: [
           'user',
-          'receiverType',
+          'deviceType',
           'filmFormat',
           'camera',
           'interchangeableBack',
@@ -248,25 +248,25 @@ export class FilmService {
       }
     );
 
-    if (!receiver) {
-      throw new DomainError('NOT_FOUND', 'Receiver not found');
+    if (!device) {
+      throw new DomainError('NOT_FOUND', 'Device not found');
     }
 
-    if (receiver.filmFormat.id !== film.filmFormat.id) {
-      throw new DomainError('DOMAIN_ERROR', 'Receiver format does not match the film format');
+    if (device.filmFormat.id !== film.filmFormat.id) {
+      throw new DomainError('DOMAIN_ERROR', 'Device format does not match the film format');
     }
 
-    if (receiver.camera || receiver.interchangeableBack) {
-      const occupiedFilmId = await this.filmRepository.findOccupiedFilmForReceiverId(userId, receiver.id);
+    if (device.camera || device.interchangeableBack) {
+      const occupiedFilmId = await this.filmRepository.findOccupiedFilmForDeviceId(userId, device.id);
       if (occupiedFilmId !== null) {
-        throw new DomainError('CONFLICT', 'Receiver already has an active loaded film');
+        throw new DomainError('CONFLICT', 'Device already has an active loaded film');
       }
 
       return;
     }
 
-    if (!receiver.filmHolder) {
-      throw new DomainError('DOMAIN_ERROR', 'Loaded events require a compatible receiver');
+    if (!device.filmHolder) {
+      throw new DomainError('DOMAIN_ERROR', 'Loaded events require a compatible device');
     }
 
     const slotSideNumber = eventData['slotSideNumber'];
@@ -274,7 +274,7 @@ export class FilmService {
       throw new DomainError('DOMAIN_ERROR', 'A holder loaded event requires a slotSideNumber');
     }
 
-    const latestSlot = await this.findLatestSlot(entityManager, userId, receiver.id, slotSideNumber);
+    const latestSlot = await this.findLatestSlot(entityManager, userId, device.id, slotSideNumber);
     if (latestSlot && latestSlot.slotStateCode !== 'removed') {
       throw new DomainError('CONFLICT', 'That holder slot is already occupied');
     }
@@ -282,7 +282,7 @@ export class FilmService {
     const loadedSlotState = await entityManager.findOneOrFail(SlotStateEntity, { code: 'loaded' });
     const slot = entityManager.create(FilmHolderSlotEntity, {
       user,
-      filmHolder: receiver.filmHolder,
+      filmHolder: device.filmHolder,
       sideNumber: slotSideNumber,
       slotState: loadedSlotState,
       slotStateCode: loadedSlotState.code,
@@ -298,21 +298,21 @@ export class FilmService {
     userId: number,
     latestEvent: FilmJourneyEventEntity | null
   ): Promise<void> {
-    const receiverContext = this.extractLoadedReceiverContext(latestEvent);
+    const deviceContext = this.extractLoadedDeviceContext(latestEvent);
 
-    if (!receiverContext) {
-      throw new DomainError('DOMAIN_ERROR', 'An exposed event requires a previously loaded receiver context');
+    if (!deviceContext) {
+      throw new DomainError('DOMAIN_ERROR', 'An exposed event requires a previously loaded device context');
     }
 
-    if (receiverContext.receiverTypeCode === 'camera' || receiverContext.receiverTypeCode === 'interchangeable_back') {
+    if (deviceContext.deviceTypeCode === 'camera' || deviceContext.deviceTypeCode === 'interchangeable_back') {
       return;
     }
 
-    if (receiverContext.slotSideNumber === null) {
+    if (deviceContext.slotSideNumber === null) {
       throw new DomainError('DOMAIN_ERROR', 'A holder exposed event requires a slotSideNumber');
     }
 
-    const slot = await this.findLatestSlot(entityManager, userId, receiverContext.receiverId, receiverContext.slotSideNumber);
+    const slot = await this.findLatestSlot(entityManager, userId, deviceContext.deviceId, deviceContext.slotSideNumber);
     if (!slot || slot.slotStateCode !== 'loaded') {
       throw new DomainError('DOMAIN_ERROR', 'That holder slot is not loaded');
     }
@@ -330,21 +330,21 @@ export class FilmService {
     film: FilmEntity
   ): Promise<void> {
     const loadedEvent = await this.findLatestEventByState(entityManager, userId, film.id, 'loaded');
-    const receiverContext = this.extractLoadedReceiverContext(loadedEvent);
+    const deviceContext = this.extractLoadedDeviceContext(loadedEvent);
 
-    if (!receiverContext) {
-      throw new DomainError('DOMAIN_ERROR', 'A removed event requires a previously loaded receiver context');
+    if (!deviceContext) {
+      throw new DomainError('DOMAIN_ERROR', 'A removed event requires a previously loaded device context');
     }
 
-    if (receiverContext.receiverTypeCode === 'camera' || receiverContext.receiverTypeCode === 'interchangeable_back') {
+    if (deviceContext.deviceTypeCode === 'camera' || deviceContext.deviceTypeCode === 'interchangeable_back') {
       return;
     }
 
-    if (receiverContext.slotSideNumber === null) {
+    if (deviceContext.slotSideNumber === null) {
       throw new DomainError('DOMAIN_ERROR', 'A holder removed event requires a slotSideNumber');
     }
 
-    const slot = await this.findLatestSlot(entityManager, userId, receiverContext.receiverId, receiverContext.slotSideNumber);
+    const slot = await this.findLatestSlot(entityManager, userId, deviceContext.deviceId, deviceContext.slotSideNumber);
     if (!slot || slot.slotStateCode !== 'exposed') {
       throw new DomainError('DOMAIN_ERROR', 'That holder slot is not exposed');
     }
@@ -370,8 +370,8 @@ export class FilmService {
     );
   }
 
-  private extractLoadedReceiverContext(latestEvent: FilmJourneyEventEntity | null):
-    | { receiverId: number; slotSideNumber: number | null; receiverTypeCode: 'camera' | 'interchangeable_back' | 'film_holder' }
+  private extractLoadedDeviceContext(latestEvent: FilmJourneyEventEntity | null):
+    | { deviceId: number; slotSideNumber: number | null; deviceTypeCode: 'camera' | 'interchangeable_back' | 'film_holder' }
     | null {
     if (!latestEvent) {
       return null;
@@ -390,25 +390,25 @@ export class FilmService {
       return null;
     }
 
-    const receiverId = parsed.data.eventData.receiverId;
+    const deviceId = parsed.data.eventData.deviceId;
     const slotSideNumber = parsed.data.eventData.slotSideNumber;
 
-    if (typeof receiverId !== 'number') {
+    if (typeof deviceId !== 'number') {
       return null;
     }
 
     return {
-      receiverId,
+      deviceId,
       slotSideNumber,
-      receiverTypeCode: typeof slotSideNumber === 'number' ? 'film_holder' : 'camera'
+      deviceTypeCode: typeof slotSideNumber === 'number' ? 'film_holder' : 'camera'
     };
   }
 
 
-  private async findLatestSlot(entityManager: EntityManager, userId: number, receiverId: number, sideNumber: number): Promise<FilmHolderSlotEntity | null> {
+  private async findLatestSlot(entityManager: EntityManager, userId: number, deviceId: number, sideNumber: number): Promise<FilmHolderSlotEntity | null> {
     return entityManager.findOne(
       FilmHolderSlotEntity,
-      { user: userId, filmHolder: { filmReceiver: receiverId }, sideNumber },
+      { user: userId, filmHolder: { filmDevice: deviceId }, sideNumber },
       { orderBy: { createdAt: 'desc', id: 'desc' }, populate: ['user', 'filmHolder', 'slotState', 'loadedFilm'] }
     );
   }

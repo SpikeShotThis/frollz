@@ -17,5 +17,5 @@ export abstract class FilmRepository {
 
   abstract listEvents(userId: number, filmId: number): Promise<FilmJourneyEvent[]>;
 
-  abstract findOccupiedFilmForReceiverId(userId: number, receiverId: number): Promise<number | null>;
+  abstract findOccupiedFilmForDeviceId(userId: number, deviceId: number): Promise<number | null>;
 }

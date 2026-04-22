@@ -1,12 +1,12 @@
-import type { FilmHolderSlot, FilmReceiver } from '@frollz2/schema';
+import type { FilmHolderSlot, FilmDevice } from '@frollz2/schema';
 import { holderTypeSchema, slotStateSchema } from '@frollz2/schema';
-import type { FilmHolderSlotEntity, FilmReceiverEntity } from '../entities/index.js';
+import type { FilmHolderSlotEntity, FilmDeviceEntity } from '../entities/index.js';
 
 export function mapFilmHolderSlotEntity(entity: FilmHolderSlotEntity): FilmHolderSlot {
   return {
     id: entity.id,
     userId: entity.user.id,
-    filmReceiverId: entity.filmHolder.filmReceiver.id,
+    filmDeviceId: entity.filmHolder.filmDevice.id,
     sideNumber: entity.sideNumber,
     slotStateId: entity.slotState.id,
     slotStateCode: slotStateSchema.shape.code.parse(entity.slotState.code),
@@ -15,15 +15,15 @@ export function mapFilmHolderSlotEntity(entity: FilmHolderSlotEntity): FilmHolde
   };
 }
 
-export function mapFilmReceiverEntity(entity: FilmReceiverEntity): FilmReceiver {
+export function mapFilmDeviceEntity(entity: FilmDeviceEntity): FilmDevice {
   if (entity.camera) {
     return {
       id: entity.id,
       userId: entity.user.id,
-      receiverTypeId: entity.receiverType.id,
+      deviceTypeId: entity.deviceType.id,
       filmFormatId: entity.filmFormat.id,
       frameSize: entity.frameSize,
-      receiverTypeCode: 'camera' as const,
+      deviceTypeCode: 'camera' as const,
       make: entity.camera.make,
       model: entity.camera.model,
       serialNumber: entity.camera.serialNumber,
@@ -35,8 +35,8 @@ export function mapFilmReceiverEntity(entity: FilmReceiverEntity): FilmReceiver 
     return {
       id: entity.id,
       userId: entity.user.id,
-      receiverTypeId: entity.receiverType.id,
-      receiverTypeCode: 'interchangeable_back' as const,
+      deviceTypeId: entity.deviceType.id,
+      deviceTypeCode: 'interchangeable_back' as const,
       filmFormatId: entity.filmFormat.id,
       frameSize: entity.frameSize,
       name: entity.interchangeableBack.name,
@@ -48,8 +48,8 @@ export function mapFilmReceiverEntity(entity: FilmReceiverEntity): FilmReceiver 
     return {
       id: entity.id,
       userId: entity.user.id,
-      receiverTypeId: entity.receiverType.id,
-      receiverTypeCode: 'film_holder' as const,
+      deviceTypeId: entity.deviceType.id,
+      deviceTypeCode: 'film_holder' as const,
       filmFormatId: entity.filmFormat.id,
       frameSize: entity.frameSize,
       name: entity.filmHolder.name,
@@ -60,5 +60,5 @@ export function mapFilmReceiverEntity(entity: FilmReceiverEntity): FilmReceiver 
     };
   }
 
-  throw new Error(`Unsupported receiver type ${entity.receiverType.code}`);
+  throw new Error(`Unsupported device type ${entity.deviceType.code}`);
 }
