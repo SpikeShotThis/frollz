@@ -17,6 +17,9 @@ function makeCamera(id: number, make: string, model: string): FilmDevice {
     frameSize: '36x24',
     make,
     model,
+    loadMode: 'direct',
+    canUnload: true,
+    cameraSystem: null,
     serialNumber: null,
     dateAcquired: null
   };
@@ -32,6 +35,7 @@ function makeHolder(id: number, name: string, brand: string): FilmDevice {
     frameSize: '4x5',
     name,
     brand,
+    slotCount: 2,
     holderTypeId: 1,
     holderTypeCode: 'standard',
     slots: []

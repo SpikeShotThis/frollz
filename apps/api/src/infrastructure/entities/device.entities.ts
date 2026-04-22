@@ -45,6 +45,15 @@ export class CameraEntity {
   @Property({ type: 'text' })
   model!: string;
 
+  @Property({ type: 'text', fieldName: 'load_mode' })
+  loadMode!: 'direct' | 'interchangeable_back' | 'film_holder';
+
+  @Property({ type: 'boolean', fieldName: 'can_unload' })
+  canUnload!: boolean;
+
+  @Property({ type: 'text', nullable: true, fieldName: 'camera_system' })
+  cameraSystem!: string | null;
+
   @Property({ type: 'text', nullable: true, fieldName: 'serial_number' })
   serialNumber!: string | null;
 
@@ -74,6 +83,9 @@ export class FilmHolderEntity {
 
   @Property({ type: 'text' })
   brand!: string;
+
+  @Property({ type: 'integer', fieldName: 'slot_count' })
+  slotCount!: 1 | 2;
 
   @ManyToOne(() => HolderTypeEntity, { fieldName: 'holder_type_id' })
   holderType!: HolderTypeEntity;

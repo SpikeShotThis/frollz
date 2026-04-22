@@ -159,7 +159,16 @@ export class FilmService {
 
       const transitionResult = applyFilmTransition(film.currentState.code, input.filmStateCode);
       if (transitionResult instanceof DomainError) {
-        throw transitionResult;
+        const allowExposedToSentForDev = await this.shouldAllowExposedToSentForDevTransition(
+          transactionalEntityManager,
+          userId,
+          film.id,
+          film.currentState.code,
+          input.filmStateCode
+        );
+        if (!allowExposedToSentForDev) {
+          throw transitionResult;
+        }
       }
 
       const parsedPayload = filmJourneyEventPayloadSchema.parse({
@@ -224,6 +233,7 @@ export class FilmService {
     user: UserEntity
   ): Promise<void> {
     const deviceId = eventData['deviceId'];
+    const slotSideNumber = eventData['slotSideNumber'];
 
     if (typeof deviceId !== 'number') {
       throw new DomainError('DOMAIN_ERROR', 'A loaded event requires a deviceId');
@@ -256,7 +266,25 @@ export class FilmService {
       throw new DomainError('DOMAIN_ERROR', 'Device format does not match the film format');
     }
 
-    if (device.camera || device.interchangeableBack) {
+    if (device.camera) {
+      if (typeof slotSideNumber === 'number') {
+        throw new DomainError('DOMAIN_ERROR', 'Direct camera loads cannot include a holder slot');
+      }
+      if (device.camera.loadMode !== 'direct') {
+        throw new DomainError('DOMAIN_ERROR', 'This camera cannot be loaded directly');
+      }
+      const occupiedFilmId = await this.filmRepository.findOccupiedFilmForDeviceId(userId, device.id);
+      if (occupiedFilmId !== null) {
+        throw new DomainError('CONFLICT', 'Device already has an active loaded film');
+      }
+
+      return;
+    }
+
+    if (device.interchangeableBack) {
+      if (typeof slotSideNumber === 'number') {
+        throw new DomainError('DOMAIN_ERROR', 'Interchangeable back loads cannot include a holder slot');
+      }
       const occupiedFilmId = await this.filmRepository.findOccupiedFilmForDeviceId(userId, device.id);
       if (occupiedFilmId !== null) {
         throw new DomainError('CONFLICT', 'Device already has an active loaded film');
@@ -269,9 +297,11 @@ export class FilmService {
       throw new DomainError('DOMAIN_ERROR', 'Loaded events require a compatible device');
     }
 
-    const slotSideNumber = eventData['slotSideNumber'];
     if (typeof slotSideNumber !== 'number') {
       throw new DomainError('DOMAIN_ERROR', 'A holder loaded event requires a slotSideNumber');
+    }
+    if (slotSideNumber < 1 || slotSideNumber > device.filmHolder.slotCount) {
+      throw new DomainError('DOMAIN_ERROR', 'That holder slot does not exist for this holder');
     }
 
     const latestSlot = await this.findLatestSlot(entityManager, userId, device.id, slotSideNumber);
@@ -298,7 +328,7 @@ export class FilmService {
     userId: number,
     latestEvent: FilmJourneyEventEntity | null
   ): Promise<void> {
-    const deviceContext = this.extractLoadedDeviceContext(latestEvent);
+    const deviceContext = await this.resolveLoadedDeviceContext(entityManager, userId, latestEvent);
 
     if (!deviceContext) {
       throw new DomainError('DOMAIN_ERROR', 'An exposed event requires a previously loaded device context');
@@ -330,10 +360,14 @@ export class FilmService {
     film: FilmEntity
   ): Promise<void> {
     const loadedEvent = await this.findLatestEventByState(entityManager, userId, film.id, 'loaded');
-    const deviceContext = this.extractLoadedDeviceContext(loadedEvent);
+    const deviceContext = await this.resolveLoadedDeviceContext(entityManager, userId, loadedEvent);
 
     if (!deviceContext) {
       throw new DomainError('DOMAIN_ERROR', 'A removed event requires a previously loaded device context');
+    }
+
+    if (deviceContext.deviceTypeCode === 'camera' && deviceContext.cameraCanUnload === false) {
+      throw new DomainError('DOMAIN_ERROR', 'This camera does not support unloading; continue directly to sent_for_dev');
     }
 
     if (deviceContext.deviceTypeCode === 'camera' || deviceContext.deviceTypeCode === 'interchangeable_back') {
@@ -370,9 +404,17 @@ export class FilmService {
     );
   }
 
-  private extractLoadedDeviceContext(latestEvent: FilmJourneyEventEntity | null):
-    | { deviceId: number; slotSideNumber: number | null; deviceTypeCode: 'camera' | 'interchangeable_back' | 'film_holder' }
-    | null {
+  private async resolveLoadedDeviceContext(
+    entityManager: EntityManager,
+    userId: number,
+    latestEvent: FilmJourneyEventEntity | null
+  ):
+    Promise<{
+      deviceId: number;
+      slotSideNumber: number | null;
+      deviceTypeCode: 'camera' | 'interchangeable_back' | 'film_holder';
+      cameraCanUnload: boolean | null;
+    } | null> {
     if (!latestEvent) {
       return null;
     }
@@ -381,29 +423,82 @@ export class FilmService {
       return null;
     }
 
+    const loadedData = this.parseLoadedEventData(latestEvent.eventData);
+    if (!loadedData) {
+      return null;
+    }
+
+    const device = await entityManager.findOne(
+      FilmDeviceEntity,
+      { id: loadedData.deviceId, user: userId },
+      { populate: ['camera', 'interchangeableBack', 'filmHolder'] }
+    );
+
+    if (!device) {
+      return null;
+    }
+
+    if (device.camera) {
+      return {
+        deviceId: loadedData.deviceId,
+        slotSideNumber: loadedData.slotSideNumber,
+        deviceTypeCode: 'camera',
+        cameraCanUnload: device.camera.canUnload
+      };
+    }
+
+    if (device.interchangeableBack) {
+      return {
+        deviceId: loadedData.deviceId,
+        slotSideNumber: loadedData.slotSideNumber,
+        deviceTypeCode: 'interchangeable_back',
+        cameraCanUnload: null
+      };
+    }
+
+    if (!device.filmHolder) {
+      return null;
+    }
+
+    return {
+      deviceId: loadedData.deviceId,
+      slotSideNumber: loadedData.slotSideNumber,
+      deviceTypeCode: 'film_holder',
+      cameraCanUnload: null
+    };
+  }
+
+  private parseLoadedEventData(eventData: unknown): { deviceId: number; slotSideNumber: number | null } | null {
     const parsed = filmJourneyEventPayloadSchema.safeParse({
-      filmStateCode: latestEvent.filmState.code,
-      eventData: latestEvent.eventData
+      filmStateCode: 'loaded',
+      eventData
     });
 
     if (!parsed.success || parsed.data.filmStateCode !== 'loaded') {
       return null;
     }
 
-    const deviceId = parsed.data.eventData.deviceId;
-    const slotSideNumber = parsed.data.eventData.slotSideNumber;
-
-    if (typeof deviceId !== 'number') {
-      return null;
-    }
-
     return {
-      deviceId,
-      slotSideNumber,
-      deviceTypeCode: typeof slotSideNumber === 'number' ? 'film_holder' : 'camera'
+      deviceId: parsed.data.eventData.deviceId,
+      slotSideNumber: parsed.data.eventData.slotSideNumber
     };
   }
 
+  private async shouldAllowExposedToSentForDevTransition(
+    entityManager: EntityManager,
+    userId: number,
+    filmId: number,
+    currentStateCode: FilmEntity['currentState']['code'],
+    targetStateCode: FilmStateEntity['code']
+  ): Promise<boolean> {
+    if (currentStateCode !== 'exposed' || targetStateCode !== 'sent_for_dev') {
+      return false;
+    }
+
+    const loadedEvent = await this.findLatestEventByState(entityManager, userId, filmId, 'loaded');
+    const deviceContext = await this.resolveLoadedDeviceContext(entityManager, userId, loadedEvent);
+    return deviceContext?.deviceTypeCode === 'camera' && deviceContext.cameraCanUnload === false;
+  }
 
   private async findLatestSlot(entityManager: EntityManager, userId: number, deviceId: number, sideNumber: number): Promise<FilmHolderSlotEntity | null> {
     return entityManager.findOne(

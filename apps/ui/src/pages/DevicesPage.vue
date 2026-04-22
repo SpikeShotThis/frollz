@@ -13,6 +13,7 @@ import {
   NForm,
   NFormItem,
   NInput,
+  NSwitch,
   NSelect,
   NTag,
   NText
@@ -43,9 +44,13 @@ const createForm = reactive({
   make: '',
   model: '',
   serialNumber: '',
+  loadMode: 'direct' as 'direct' | 'interchangeable_back' | 'film_holder',
+  canUnload: true,
+  cameraSystem: '',
   name: '',
   system: '',
   brand: '',
+  slotCount: 1 as 1 | 2,
   holderTypeId: null as number | null
 });
 
@@ -64,6 +69,15 @@ const filmFormatOptions = computed(() =>
 const holderTypeOptions = computed(() =>
   referenceStore.holderTypes.map((entry) => ({ label: entry.label, value: entry.id }))
 );
+const cameraLoadModeOptions = computed(() => [
+  { label: 'Direct', value: 'direct' },
+  { label: 'Interchangeable back', value: 'interchangeable_back' },
+  { label: 'Film holder', value: 'film_holder' }
+]);
+const holderSlotCountOptions = computed(() => [
+  { label: '1 slot', value: 1 },
+  { label: '2 slots', value: 2 }
+]);
 const lockedDeviceType = computed(() =>
   typeof route.meta.deviceTypeFilter === 'string' ? route.meta.deviceTypeFilter : null
 );
@@ -123,6 +137,9 @@ function validateCreateForm(): Record<string, string> {
     if (!createForm.model.trim()) {
       errors.model = 'Camera model is required.';
     }
+    if (createForm.loadMode === 'interchangeable_back' && !createForm.cameraSystem.trim()) {
+      errors.cameraSystem = 'Camera system is required for interchangeable back cameras.';
+    }
   }
 
   if (createForm.deviceTypeCode === 'interchangeable_back') {
@@ -173,9 +190,13 @@ function resetCreateForm(): void {
   createForm.make = '';
   createForm.model = '';
   createForm.serialNumber = '';
+  createForm.loadMode = 'direct';
+  createForm.canUnload = true;
+  createForm.cameraSystem = '';
   createForm.name = '';
   createForm.system = '';
   createForm.brand = '';
+  createForm.slotCount = 1;
   createForm.holderTypeId = null;
   cameraDateAcquiredTimestamp.value = null;
   createState.value.fieldErrors = {};
@@ -228,6 +249,9 @@ async function submitCreateDevice(): Promise<void> {
       frameSize: createForm.frameSize.trim(),
       make: createForm.make.trim(),
       model: createForm.model.trim(),
+      loadMode: createForm.loadMode,
+      canUnload: createForm.canUnload,
+      cameraSystem: createForm.cameraSystem.trim() || null,
       serialNumber: createForm.serialNumber || null,
       dateAcquired: cameraDateAcquiredTimestamp.value ? new Date(cameraDateAcquiredTimestamp.value).toISOString() : null
     };
@@ -248,6 +272,7 @@ async function submitCreateDevice(): Promise<void> {
       frameSize: createForm.frameSize.trim(),
       name: createForm.name.trim(),
       brand: createForm.brand.trim(),
+      slotCount: createForm.slotCount,
       holderTypeId: createForm.holderTypeId as number
     };
   }
@@ -387,6 +412,31 @@ async function submitCreateDevice(): Promise<void> {
               @update:value="(value) => { createForm.serialNumber = value; }"
             />
           </NFormItem>
+          <NFormItem label="Load mode" :label-props="{ for: 'device-create-load-mode-input' }">
+            <NSelect
+              :value="createForm.loadMode"
+              :options="cameraLoadModeOptions"
+              :input-props="{ id: 'device-create-load-mode-input', name: 'loadMode' }"
+              @update:value="(value) => { createForm.loadMode = value; }"
+            />
+          </NFormItem>
+          <NFormItem label="Can unload film">
+            <NSwitch
+              :value="createForm.canUnload"
+              @update:value="(value) => { createForm.canUnload = value; }"
+            />
+          </NFormItem>
+          <NFormItem
+            v-if="createForm.loadMode === 'interchangeable_back'"
+            label="Camera system"
+            :label-props="{ for: 'device-create-camera-system-input' }"
+          >
+            <NInput
+              :value="createForm.cameraSystem"
+              :input-props="{ id: 'device-create-camera-system-input', name: 'cameraSystem' }"
+              @update:value="(value) => { createForm.cameraSystem = value; }"
+            />
+          </NFormItem>
           <NFormItem label="Date acquired" :label-props="{ for: 'device-create-date-acquired-input' }">
             <NDatePicker
               :value="cameraDateAcquiredTimestamp"
@@ -441,6 +491,14 @@ async function submitCreateDevice(): Promise<void> {
               :options="holderTypeOptions"
               :input-props="{ id: 'device-create-holder-type-input', name: 'holderTypeId' }"
               @update:value="(value) => { createForm.holderTypeId = value; }"
+            />
+          </NFormItem>
+          <NFormItem label="Slot count" :label-props="{ for: 'device-create-holder-slot-count-input' }">
+            <NSelect
+              :value="createForm.slotCount"
+              :options="holderSlotCountOptions"
+              :input-props="{ id: 'device-create-holder-slot-count-input', name: 'slotCount' }"
+              @update:value="(value) => { createForm.slotCount = value; }"
             />
           </NFormItem>
         </template>

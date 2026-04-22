@@ -31,6 +31,9 @@ export function mapFilmDeviceEntity(entity: FilmDeviceEntity): FilmDevice {
       deviceTypeCode: 'camera' as const,
       make: entity.camera.make,
       model: entity.camera.model,
+      loadMode: entity.camera.loadMode,
+      canUnload: entity.camera.canUnload,
+      cameraSystem: entity.camera.cameraSystem,
       serialNumber: entity.camera.serialNumber,
       dateAcquired: entity.camera.dateAcquired
     };
@@ -59,6 +62,7 @@ export function mapFilmDeviceEntity(entity: FilmDeviceEntity): FilmDevice {
       frameSize: entity.frameSize,
       name: entity.filmHolder.name,
       brand: entity.filmHolder.brand,
+      slotCount: entity.filmHolder.slotCount,
       holderTypeId: entity.filmHolder.holderType.id,
       holderTypeCode: holderTypeSchema.shape.code.parse(entity.filmHolder.holderType.code),
       slots: entity.filmHolder.slots.getItems().map(mapFilmHolderSlotEntity)

@@ -88,6 +88,9 @@ export class MikroOrmDeviceRepository extends DeviceRepository {
           filmDevice: base,
           make: String(input.make),
           model: String(input.model),
+          loadMode: (input.loadMode as 'direct' | 'interchangeable_back' | 'film_holder') ?? 'direct',
+          canUnload: typeof input.canUnload === 'boolean' ? input.canUnload : true,
+          cameraSystem: input.cameraSystem ? String(input.cameraSystem) : null,
           serialNumber: input.serialNumber ? String(input.serialNumber) : null,
           dateAcquired: input.dateAcquired ? String(input.dateAcquired) : null
         });
@@ -111,6 +114,7 @@ export class MikroOrmDeviceRepository extends DeviceRepository {
           filmDevice: base,
           name: String(input.name),
           brand: String(input.brand),
+          slotCount: (Number(input.slotCount) === 1 ? 1 : 2) as 1 | 2,
           holderType
         });
         transactionalEntityManager.persist(filmHolder);
@@ -140,7 +144,26 @@ export class MikroOrmDeviceRepository extends DeviceRepository {
     });
   }
 
-  async update(userId: number, deviceId: number, input: { filmFormatId?: number; frameSize?: string; make?: string; model?: string; serialNumber?: string | null; dateAcquired?: string | null; name?: string; system?: string; brand?: string; holderTypeId?: number }) {
+  async update(
+    userId: number,
+    deviceId: number,
+    input: {
+      filmFormatId?: number;
+      frameSize?: string;
+      make?: string;
+      model?: string;
+      loadMode?: 'direct' | 'interchangeable_back' | 'film_holder';
+      canUnload?: boolean;
+      cameraSystem?: string | null;
+      serialNumber?: string | null;
+      dateAcquired?: string | null;
+      name?: string;
+      system?: string;
+      brand?: string;
+      slotCount?: 1 | 2;
+      holderTypeId?: number;
+    }
+  ) {
     const device = await this.entityManager.findOne(
       FilmDeviceEntity,
       { id: deviceId, user: userId },
@@ -166,6 +189,15 @@ export class MikroOrmDeviceRepository extends DeviceRepository {
       if (input.model !== undefined) {
         device.camera.model = input.model;
       }
+      if (input.loadMode !== undefined) {
+        device.camera.loadMode = input.loadMode;
+      }
+      if (input.canUnload !== undefined) {
+        device.camera.canUnload = input.canUnload;
+      }
+      if (input.cameraSystem !== undefined) {
+        device.camera.cameraSystem = input.cameraSystem;
+      }
       if (input.serialNumber !== undefined) {
         device.camera.serialNumber = input.serialNumber;
       }
@@ -189,6 +221,9 @@ export class MikroOrmDeviceRepository extends DeviceRepository {
       }
       if (input.brand !== undefined) {
         device.filmHolder.brand = input.brand;
+      }
+      if (input.slotCount !== undefined) {
+        device.filmHolder.slotCount = input.slotCount;
       }
       if (input.holderTypeId !== undefined) {
         device.filmHolder.holderType = this.entityManager.getReference(HolderTypeEntity, input.holderTypeId);
