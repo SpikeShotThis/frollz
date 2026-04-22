@@ -1,11 +1,10 @@
 <script setup lang="ts">
-import { computed, h, onMounted, reactive, ref } from 'vue';
+import { computed, onBeforeUnmount, onMounted, reactive, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import {
   NAlert,
   NButton,
   NCard,
-  NDataTable,
   NDatePicker,
   NDrawer,
   NDrawerContent,
@@ -16,10 +15,11 @@ import {
   NInput,
   NInputNumber,
   NSelect,
-  NTag,
+  NSpin,
+  NTimeline,
+  NTimelineItem,
   NText
 } from 'naive-ui';
-import type { DataTableColumns } from 'naive-ui';
 import type { CreateFilmJourneyEventRequest, FilmJourneyEvent } from '@frollz2/schema';
 import { filmTransitionMap } from '@frollz2/schema';
 import { createIdempotencyKey } from '../composables/idempotency.js';
@@ -28,6 +28,7 @@ import { useReferenceStore } from '../stores/reference.js';
 import { useDeviceStore } from '../stores/devices.js';
 import PageShell from '../components/PageShell.vue';
 import EntityDetailHeaderCard from '../components/inventory/EntityDetailHeaderCard.vue';
+import InventorySplitLayout from '../components/inventory/InventorySplitLayout.vue';
 import { useUiFeedback } from '../composables/useUiFeedback.js';
 import type { FormState } from '../composables/ui-state.js';
 
@@ -89,7 +90,46 @@ const stateTypeByCode: Record<string, 'default' | 'info' | 'primary' | 'warning'
   archived: 'default'
 };
 
+const tagColorByType: Record<
+  'default' | 'info' | 'primary' | 'warning' | 'success',
+  { color: string; borderColor: string; textColor: string; dotColor: string }
+> = {
+  default: {
+    color: '#f4f4f5',
+    borderColor: '#e0e0e6',
+    textColor: '#606266',
+    dotColor: '#8c8c8c'
+  },
+  info: {
+    color: '#e6f4ff',
+    borderColor: '#8fc9ff',
+    textColor: '#005980',
+    dotColor: '#2080f0'
+  },
+  primary: {
+    color: '#eef3ff',
+    borderColor: '#9fb5ff',
+    textColor: '#1b3f96',
+    dotColor: '#4d6bfe'
+  },
+  warning: {
+    color: '#fff8e6',
+    borderColor: '#ffd06b',
+    textColor: '#8a4d00',
+    dotColor: '#f0a020'
+  },
+  success: {
+    color: '#eaf8ef',
+    borderColor: '#8bd9a8',
+    textColor: '#165f31',
+    dotColor: '#18a058'
+  }
+};
+
 const selectedFilm = computed(() => filmStore.currentFilm);
+const isCompactTimeline = ref(false);
+let timelineMediaQuery: MediaQueryList | null = null;
+
 const detailItems = computed(() => {
   if (!selectedFilm.value) {
     return [];
@@ -126,37 +166,63 @@ const deviceOptions = computed(() =>
   deviceStore.devices
     .filter((device) => selectedFilm.value && device.filmFormatId === selectedFilm.value.filmFormatId)
     .map((device) => ({
-      label:
-        device.deviceTypeCode === 'camera'
-          ? `${device.make} ${device.model}`
-          : device.deviceTypeCode === 'interchangeable_back'
-            ? `${device.name} ${device.system}`
-            : `${device.name} ${device.brand}`,
+      label: humanizeDevice(device),
       value: device.id
     }))
 );
 
-const eventsColumns = computed<DataTableColumns<FilmJourneyEvent>>(() => [
-  {
-    title: 'State',
-    key: 'filmStateCode',
-    render: (row) => h(NTag, { type: stateTypeByCode[row.filmStateCode] ?? 'default' }, { default: () => humanizeCode(row.filmStateCode) })
-  },
-  {
-    title: 'Occurred',
-    key: 'occurredAt',
-    render: (row) => formatDateTime(row.occurredAt)
-  },
-  {
-    title: 'Details',
-    key: 'eventData',
-    render: (row) => eventDataSummary(row)
-  },
-  { title: 'Notes', key: 'notes', render: (row) => row.notes ?? '-' }
-]);
+const timelinePlacement = computed<'left' | 'right'>(() => (isCompactTimeline.value ? 'left' : 'right'));
+
+const timelineEvents = computed(() =>
+  [...filmStore.currentEvents]
+    .sort((left, right) => {
+      const leftOccurredAt = parseOccurredAt(left.occurredAt);
+      const rightOccurredAt = parseOccurredAt(right.occurredAt);
+      if (leftOccurredAt !== rightOccurredAt) {
+        return rightOccurredAt - leftOccurredAt;
+      }
+
+      return right.id - left.id;
+    })
+    .map((event) => ({
+      id: event.id,
+      stateLabel: humanizeCode(event.filmStateCode),
+      occurredLabel: formatDateTime(event.occurredAt),
+      detailFields: eventDataEntries(event),
+      notes: normalizeOptionalText(event.notes),
+      dotColor: tagColorByType[stateTypeByCode[event.filmStateCode] ?? 'default'].dotColor
+    }))
+);
+
+function parseOccurredAt(value: string): number {
+  const parsed = Date.parse(value);
+  return Number.isNaN(parsed) ? Number.MIN_SAFE_INTEGER : parsed;
+}
 
 function humanizeCode(value: string): string {
   return value.replace(/_/g, ' ').replace(/\b\w/g, (match) => match.toUpperCase());
+}
+
+function humanizeDevice(device: Record<string, unknown> & { deviceTypeCode: string }): string {
+  if (device.deviceTypeCode === 'camera') {
+    return `${String(device.make ?? '')} ${String(device.model ?? '')}`.trim();
+  }
+  if (device.deviceTypeCode === 'interchangeable_back') {
+    return `${String(device.name ?? '')} ${String(device.system ?? '')}`.trim();
+  }
+  return `${String(device.name ?? '')} ${String(device.brand ?? '')}`.trim();
+}
+
+function normalizeOptionalText(value: string | null | undefined): string | null {
+  if (!value) {
+    return null;
+  }
+  const trimmed = value.trim();
+  return trimmed.length > 0 ? trimmed : null;
+}
+
+function syncTimelinePlacement(eventOrQuery: MediaQueryList | MediaQueryListEvent): void {
+  isCompactTimeline.value = eventOrQuery.matches;
 }
 
 function formatDateTime(value: string): string {
@@ -172,11 +238,46 @@ function formatDateTime(value: string): string {
 }
 
 function eventDataSummary(event: FilmJourneyEvent): string {
-  const entries = Object.entries(event.eventData)
-    .filter(([, value]) => value !== null && value !== '')
-    .map(([key, value]) => `${humanizeCode(key)}: ${String(value)}`);
+  const entries = eventDataEntries(event).map((entry) => `${entry.label}: ${entry.value}`);
 
   return entries.length > 0 ? entries.join(' | ') : '-';
+}
+
+function eventDataEntries(event: FilmJourneyEvent): Array<{ label: string; value: string }> {
+  return Object.entries(event.eventData)
+    .map(([key, value]) => toReadableEventField(key, value))
+    .filter((entry): entry is { label: string; value: string } => entry !== null);
+}
+
+function toReadableEventField(key: string, value: unknown): { label: string; value: string } | null {
+  if (value === null || value === '') {
+    return null;
+  }
+
+  if (isDeviceReferenceKey(key) && typeof value === 'number') {
+    const device = deviceStore.devices.find((entry) => entry.id === value);
+    return {
+      label: 'Device',
+      value: device ? humanizeDevice(device) : String(value)
+    };
+  }
+
+  if (key === 'storageLocationId' && typeof value === 'number') {
+    const location = referenceStore.storageLocations.find((entry) => entry.id === value);
+    return {
+      label: 'Storage Location',
+      value: location?.label ?? String(value)
+    };
+  }
+
+  return {
+    label: humanizeCode(key),
+    value: String(value)
+  };
+}
+
+function isDeviceReferenceKey(key: string): boolean {
+  return /(?:device|receiver)Id$/i.test(key);
 }
 
 function goBack(): void {
@@ -296,6 +397,10 @@ async function submitEvent(): Promise<void> {
 }
 
 onMounted(async () => {
+  timelineMediaQuery = window.matchMedia('(max-width: 768px)');
+  syncTimelinePlacement(timelineMediaQuery);
+  timelineMediaQuery.addEventListener('change', syncTimelinePlacement);
+
   try {
     if (!referenceStore.loaded) {
       await referenceStore.loadAll();
@@ -309,6 +414,11 @@ onMounted(async () => {
   } catch (error) {
     feedback.error(feedback.toErrorMessage(error, 'Could not load film detail.'));
   }
+});
+
+onBeforeUnmount(() => {
+  timelineMediaQuery?.removeEventListener('change', syncTimelinePlacement);
+  timelineMediaQuery = null;
 });
 </script>
 
@@ -326,21 +436,39 @@ onMounted(async () => {
       No forward transitions are available from the current state.
     </NAlert>
 
-    <EntityDetailHeaderCard
-      v-if="selectedFilm"
-      :title="selectedFilm.name"
-      :subtitle="`${selectedFilm.filmFormat.code} · ${selectedFilm.packageType.label}`"
-      :tag-label="selectedFilm.currentState.label"
-      :tag-type="stateTypeByCode[selectedFilm.currentStateCode] ?? 'default'"
-      :details="detailItems"
-    />
-    <NEmpty v-else description="Film not found" />
+    <NSpin :show="filmStore.isDetailLoading">
+      <InventorySplitLayout left-panel-title="Film details" right-panel-title="Journey timeline">
+        <template #left>
+          <EntityDetailHeaderCard
+            v-if="selectedFilm"
+            :title="selectedFilm.name"
+            :subtitle="`${selectedFilm.filmFormat.code} · ${selectedFilm.packageType.label}`"
+            :details="detailItems"
+          />
+          <NEmpty v-else description="Film not found" />
+        </template>
 
-    <h2 class="film-detail__section-title">Journey timeline</h2>
-    <NCard>
-      <NDataTable :columns="eventsColumns" :data="filmStore.currentEvents" :loading="filmStore.isDetailLoading" :row-key="(row) => row.id" />
-      <NEmpty v-if="!filmStore.isDetailLoading && filmStore.currentEvents.length === 0" description="No events yet for this film." />
-    </NCard>
+        <template #right>
+          <NCard>
+            <NTimeline v-if="timelineEvents.length > 0" :item-placement="timelinePlacement" class="film-detail__timeline">
+              <NTimelineItem v-for="event in timelineEvents" :key="event.id" :title="event.stateLabel" class="film-detail__timeline-item">
+                <template #icon>
+                  <span class="film-detail__timeline-dot" :style="{ backgroundColor: event.dotColor }" />
+                </template>
+                <div class="film-detail__timeline-item-content">
+                  <NText depth="3" class="film-detail__timeline-item-date">{{ event.occurredLabel }}</NText>
+                  <NText v-if="event.notes" class="film-detail__timeline-item-notes">Notes: {{ event.notes }}</NText>
+                  <NText v-for="field in event.detailFields" :key="`${event.id}-${field.label}`" depth="3">
+                    {{ field.label }}: {{ field.value }}
+                  </NText>
+                </div>
+              </NTimelineItem>
+            </NTimeline>
+            <NEmpty v-else-if="!filmStore.isDetailLoading" description="No events yet for this film." />
+          </NCard>
+        </template>
+      </InventorySplitLayout>
+    </NSpin>
   </PageShell>
 
   <NDrawer :show="isEventDrawerOpen" placement="right" width="min(100vw, 460px)" @update:show="(value) => { isEventDrawerOpen = value; }">
@@ -512,9 +640,38 @@ onMounted(async () => {
 </template>
 
 <style scoped>
-.film-detail__section-title {
-  font-size: 1rem;
-  line-height: 1.3;
-  margin: 0;
+.film-detail__timeline {
+  margin-top: 0;
+}
+
+.film-detail__timeline-item {
+  padding-bottom: 8px;
+}
+
+.film-detail__timeline-item-content {
+  width: 100%;
+}
+
+.film-detail__timeline-item-notes {
+  display: block;
+  margin: 4px 0;
+}
+
+.film-detail__timeline-item-date {
+  display: block;
+  margin-bottom: 4px;
+}
+
+.film-detail__timeline-dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+}
+
+@media (max-width: 768px) {
+  .film-detail__timeline-item-content {
+    width: 100%;
+  }
 }
 </style>

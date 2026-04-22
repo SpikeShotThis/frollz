@@ -36,6 +36,7 @@ defineProps<{
 
 .inventory-split__left,
 .inventory-split__right {
+  align-content: start;
   display: grid;
   gap: 10px;
   min-width: 0;
