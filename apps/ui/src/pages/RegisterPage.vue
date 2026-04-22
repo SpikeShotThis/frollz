@@ -54,7 +54,7 @@ async function submit(): Promise<void> {
   try {
     await authStore.register(parsed);
     feedback.success('Account created successfully.');
-    await router.push('/film');
+    await router.push('/dashboard');
   } catch (error) {
     state.value.formError = feedback.toErrorMessage(error, 'Unable to register right now.');
   } finally {

@@ -158,13 +158,11 @@ export const themeOverrides: GlobalThemeOverrides = {
         borderHover: `1px solid ${cyan[400]}`,
         borderRadius: '6px',
         color: ocean[800],
-        colorFocus: ocean[700],
         boxShadowFocus: `0 0 0 3px ${cyan[500]}33`,
       },
       InternalSelectMenu: {
         borderRadius: '6px',
         color: ocean[800],
-        boxShadow: '0 4px 6px -1px rgba(0,0,0,0.5), 0 2px 4px -2px rgba(0,0,0,0.4)',
         optionColorActive: `${cyan[500]}20`,
         optionColorActivePending: `${cyan[500]}30`,
         optionTextColorActive: cyan[400],

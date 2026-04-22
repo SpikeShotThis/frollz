@@ -1,22 +1,85 @@
-import { createRouter, createWebHistory } from 'vue-router';
+import { createRouter, createWebHistory, type RouteRecordRaw } from 'vue-router';
 import { useAuthStore } from '../stores/auth.js';
 
-const routes = [
-  { path: '/', redirect: '/film' },
+const routes: RouteRecordRaw[] = [
   {
-    path: '/login',
-    component: () => import('../pages/LoginPage.vue'),
-    meta: { public: true }
+    path: '/',
+    component: () => import('../layouts/AppShellLayout.vue'),
+    meta: { layout: 'app' },
+    children: [
+      { path: '', redirect: '/dashboard' },
+      {
+        path: 'dashboard',
+        component: () => import('../pages/DashboardPage.vue'),
+        meta: {
+          layout: 'app',
+          title: 'Dashboard',
+          icon: 'dashboard',
+          order: 1,
+          showInNav: true
+        }
+      },
+      {
+        path: 'film',
+        component: () => import('../pages/FilmPage.vue'),
+        meta: {
+          layout: 'app',
+          title: 'Film',
+          icon: 'film',
+          order: 2,
+          showInNav: true
+        }
+      },
+      {
+        path: 'film/:id',
+        component: () => import('../pages/FilmDetailPage.vue'),
+        meta: {
+          layout: 'app',
+          title: 'Film Detail',
+          navKey: '/film'
+        }
+      },
+      {
+        path: 'receivers',
+        component: () => import('../pages/ReceiversPage.vue'),
+        meta: {
+          layout: 'app',
+          title: 'Receivers',
+          icon: 'receivers',
+          order: 3,
+          showInNav: true
+        }
+      },
+      {
+        path: 'emulsions',
+        component: () => import('../pages/EmulsionsPage.vue'),
+        meta: {
+          layout: 'app',
+          title: 'Emulsions',
+          icon: 'emulsions',
+          order: 4,
+          showInNav: true
+        }
+      }
+    ]
   },
   {
-    path: '/register',
-    component: () => import('../pages/RegisterPage.vue'),
-    meta: { public: true }
-  },
-  { path: '/film', component: () => import('../pages/FilmPage.vue') },
-  { path: '/film/:id', component: () => import('../pages/FilmDetailPage.vue') },
-  { path: '/receivers', component: () => import('../pages/ReceiversPage.vue') },
-  { path: '/emulsions', component: () => import('../pages/EmulsionsPage.vue') }
+    path: '/',
+    component: () => import('../layouts/AuthLayout.vue'),
+    meta: { layout: 'auth' },
+    children: [
+      {
+        path: 'login',
+        component: () => import('../pages/LoginPage.vue'),
+        meta: { public: true, layout: 'auth', title: 'Sign in' }
+      },
+      {
+        path: 'register',
+        component: () => import('../pages/RegisterPage.vue'),
+        meta: { public: true, layout: 'auth', title: 'Create account' }
+      }
+    ]
+  }
 ];
 
 export const router = createRouter({
@@ -36,7 +99,7 @@ router.beforeEach(async (to) => {
   }
 
   if ((to.path === '/login' || to.path === '/register') && authStore.isAuthenticated) {
-    return '/film';
+    return '/dashboard';
   }
 
   return true;

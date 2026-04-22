@@ -57,7 +57,7 @@ async function loginThroughUi(page: Page): Promise<void> {
   await page.locator('[data-testid="login-email"] input').fill('ux@example.com');
   await page.locator('[data-testid="login-password"] input').fill('good-password');
   await page.getByTestId('login-submit').click();
-  await expect(page).toHaveURL(/\/film/);
+  await expect(page).toHaveURL(/\/dashboard/);
 }
 
 test('auth flow shows error and succeeds with visible feedback', async ({ page }) => {
@@ -99,8 +99,8 @@ test('auth flow shows error and succeeds with visible feedback', async ({ page }
   await page.locator('[data-testid="login-password"] input').fill('good-password');
   await page.getByTestId('login-submit').click();
 
-  await expect(page).toHaveURL(/\/film/);
-  await expect(page.getByRole('heading', { name: 'Film Inventory' })).toBeVisible();
+  await expect(page).toHaveURL(/\/dashboard/);
+  await expect(page.getByRole('heading', { name: 'Dashboard' })).toBeVisible();
 });
 
 test('film create flow validates required fields and refreshes table', async ({ page }) => {
@@ -145,6 +145,7 @@ test('film create flow validates required fields and refreshes table', async ({ 
   });
 
   await loginThroughUi(page);
+  await page.goto('/film');
 
   await page.getByRole('button', { name: 'Add film' }).click();
   await page.getByRole('button', { name: 'Create film' }).click();

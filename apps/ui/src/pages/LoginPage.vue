@@ -53,7 +53,7 @@ async function submit(): Promise<void> {
   try {
     await authStore.login(parsed);
     feedback.success('Welcome back.');
-    await router.push('/film');
+    await router.push('/dashboard');
   } catch (error) {
     state.value.formError = feedback.toErrorMessage(error, 'Unable to log in right now.');
   } finally {

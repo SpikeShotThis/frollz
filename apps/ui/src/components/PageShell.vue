@@ -26,8 +26,9 @@ defineProps<{
 <style scoped>
 .page-shell {
   margin: 0 auto;
-  max-width: 1100px;
-  padding: 20px 16px 40px;
+  max-width: 1240px;
+  padding: 24px 20px 40px;
+  width: 100%;
 }
 
 .page-shell--compact {
@@ -39,18 +40,20 @@ defineProps<{
   display: flex;
   gap: 12px;
   justify-content: space-between;
-  margin-bottom: 16px;
+  margin-bottom: 18px;
 }
 
 .page-shell__title {
-  font-size: 1.375rem;
+  font-size: 1.25rem;
+  letter-spacing: 0.01em;
   line-height: 1.25;
   margin: 0;
 }
 
 .page-shell__subtitle {
-  color: #526070;
+  color: #93a4b8;
   margin: 6px 0 0;
+  max-width: 74ch;
 }
 
 .page-shell__actions {
@@ -65,7 +68,7 @@ defineProps<{
   gap: 16px;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 900px) {
   .page-shell {
     padding: 16px 12px 28px;
   }
@@ -76,9 +79,6 @@ defineProps<{
   }
 
   .page-shell__actions {
-    position: sticky;
-    top: 0;
-    z-index: 3;
     width: 100%;
   }
 }

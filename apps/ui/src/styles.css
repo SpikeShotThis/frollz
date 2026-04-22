@@ -2,9 +2,18 @@
   color-scheme: light;
 }
 
+html,
+body,
+#app {
+  min-height: 100%;
+}
+
 body {
-  background: #f4f6fa;
-  color: #18222d;
+  background:
+    radial-gradient(circle at 12% -5%, rgba(6, 182, 212, 0.14), transparent 36%),
+    radial-gradient(circle at 92% 0%, rgba(34, 211, 238, 0.1), transparent 30%),
+    #0c1824;
+  color: #e2e8f0;
   margin: 0;
 }
 
