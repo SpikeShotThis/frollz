@@ -104,7 +104,7 @@ const routes: RouteRecordRaw[] = [
       },
       {
         path: 'devices/cameras',
-        component: () => import('../pages/DevicesPage.vue'),
+        component: () => import('../pages/DevicesSubPage.vue'),
         meta: {
           layout: 'app',
           title: 'Cameras',
@@ -117,7 +117,7 @@ const routes: RouteRecordRaw[] = [
       },
       {
         path: 'devices/film-holders',
-        component: () => import('../pages/DevicesPage.vue'),
+        component: () => import('../pages/DevicesSubPage.vue'),
         meta: {
           layout: 'app',
           title: 'Film Holders',
@@ -130,7 +130,7 @@ const routes: RouteRecordRaw[] = [
       },
       {
         path: 'devices/interchangeable-backs',
-        component: () => import('../pages/DevicesPage.vue'),
+        component: () => import('../pages/DevicesSubPage.vue'),
         meta: {
           layout: 'app',
           title: 'Interchangeable Backs',
@@ -139,6 +139,15 @@ const routes: RouteRecordRaw[] = [
           navParent: '/devices',
           navKey: '/devices/interchangeable-backs',
           deviceTypeFilter: 'interchangeable_back'
+        }
+      },
+      {
+        path: 'devices/:id',
+        component: () => import('../pages/DeviceDetailPage.vue'),
+        meta: {
+          layout: 'app',
+          title: 'Device Detail',
+          navKey: '/devices'
         }
       },
       {
@@ -154,7 +163,7 @@ const routes: RouteRecordRaw[] = [
       },
       {
         path: 'emulsions/black-and-white',
-        component: () => import('../pages/EmulsionsPage.vue'),
+        component: () => import('../pages/EmulsionsSubPage.vue'),
         meta: {
           layout: 'app',
           title: 'Black and White',
@@ -167,7 +176,7 @@ const routes: RouteRecordRaw[] = [
       },
       {
         path: 'emulsions/black-and-white-reversal',
-        component: () => import('../pages/EmulsionsPage.vue'),
+        component: () => import('../pages/EmulsionsSubPage.vue'),
         meta: {
           layout: 'app',
           title: 'Black and White Reversal',
@@ -180,7 +189,7 @@ const routes: RouteRecordRaw[] = [
       },
       {
         path: 'emulsions/cine-ecn2',
-        component: () => import('../pages/EmulsionsPage.vue'),
+        component: () => import('../pages/EmulsionsSubPage.vue'),
         meta: {
           layout: 'app',
           title: 'Cine (ECN-2)',
@@ -193,7 +202,7 @@ const routes: RouteRecordRaw[] = [
       },
       {
         path: 'emulsions/color-negative-c41',
-        component: () => import('../pages/EmulsionsPage.vue'),
+        component: () => import('../pages/EmulsionsSubPage.vue'),
         meta: {
           layout: 'app',
           title: 'Color Negative (C-41)',
@@ -206,7 +215,7 @@ const routes: RouteRecordRaw[] = [
       },
       {
         path: 'emulsions/color-positive-e6',
-        component: () => import('../pages/EmulsionsPage.vue'),
+        component: () => import('../pages/EmulsionsSubPage.vue'),
         meta: {
           layout: 'app',
           title: 'Color Positive (E-6)',
@@ -215,6 +224,15 @@ const routes: RouteRecordRaw[] = [
           navParent: '/emulsions',
           navKey: '/emulsions/color-positive-e6',
           developmentProcessFilter: 'E6'
+        }
+      },
+      {
+        path: 'emulsions/:id',
+        component: () => import('../pages/EmulsionDetailPage.vue'),
+        meta: {
+          layout: 'app',
+          title: 'Emulsion Detail',
+          navKey: '/emulsions'
         }
       }
     ]

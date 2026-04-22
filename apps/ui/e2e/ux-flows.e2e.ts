@@ -377,6 +377,179 @@ test('mini dashboards render recent tail-window lists and stats cards', async ({
   await expect(page.getByText('Total visible emulsions')).toBeVisible();
 });
 
+test('device sub-route uses page-centric table and links to device detail', async ({ page }) => {
+  await mockLogin(page);
+
+  await page.route('**/api/v1/reference', async (route) => {
+    await route.fulfill({
+      json: {
+        data: {
+          ...referencePayload.data,
+          filmFormats: [
+            { id: 1, code: '35mm', label: '35mm' },
+            { id: 2, code: '120', label: '120' },
+            { id: 3, code: '4x5', label: '4x5' }
+          ],
+          deviceTypes: [
+            { id: 1, code: 'camera', label: 'Camera' },
+            { id: 2, code: 'interchangeable_back', label: 'Interchangeable back' },
+            { id: 3, code: 'film_holder', label: 'Film holder' }
+          ],
+          holderTypes: [{ id: 1, code: 'standard', label: 'Standard' }]
+        }
+      }
+    });
+  });
+
+  await page.route('**/api/v1/devices**', async (route) => {
+    const url = new URL(route.request().url());
+
+    if (/^\/api\/v1\/devices\/\d+$/.test(url.pathname)) {
+      await route.fulfill({
+        json: {
+          data: {
+            id: 1,
+            userId: 1,
+            deviceTypeId: 1,
+            deviceTypeCode: 'camera',
+            filmFormatId: 1,
+            frameSize: '36x24',
+            make: 'Nikon',
+            model: 'F3',
+            serialNumber: null,
+            dateAcquired: null
+          }
+        }
+      });
+      return;
+    }
+
+    await route.fulfill({
+      json: {
+        data: [
+          {
+            id: 1,
+            userId: 1,
+            deviceTypeId: 1,
+            deviceTypeCode: 'camera',
+            filmFormatId: 1,
+            frameSize: '36x24',
+            make: 'Nikon',
+            model: 'F3',
+            serialNumber: null,
+            dateAcquired: null
+          },
+          {
+            id: 2,
+            userId: 1,
+            deviceTypeId: 2,
+            deviceTypeCode: 'interchangeable_back',
+            filmFormatId: 2,
+            frameSize: '6x7',
+            name: 'Mamiya RB67 Back',
+            system: 'RB67'
+          }
+        ]
+      }
+    });
+  });
+
+  await page.route('**/api/v1/film*', async (route) => {
+    await route.fulfill({ json: { data: [] } });
+  });
+
+  await loginThroughUi(page);
+  await page.goto('/devices/cameras');
+
+  await expect(page.getByRole('heading', { name: 'Devices in this category' })).toBeVisible();
+  await expect(page.getByTestId('devices-child-search')).toBeVisible();
+  await expect(page.getByTestId('devices-child-table')).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Nikon F3' })).toBeVisible();
+  await expect(page.getByText('Mamiya RB67 Back RB67')).toHaveCount(0);
+
+  await page.getByRole('link', { name: 'Nikon F3' }).click();
+  await expect(page).toHaveURL(/\/devices\/1$/);
+  await expect(page.getByRole('heading', { name: 'Device Detail' })).toBeVisible();
+  await expect(page.getByText('Nikon F3')).toBeVisible();
+
+  await page.getByRole('button', { name: 'Back' }).click();
+  await expect(page).toHaveURL(/\/devices\/cameras$/);
+});
+
+test('emulsion sub-route uses page-centric table and links to emulsion detail', async ({ page }) => {
+  await mockLogin(page);
+
+  const emulsions = [
+    {
+      id: 1,
+      manufacturer: 'Kodak',
+      brand: 'Gold',
+      isoSpeed: 200,
+      developmentProcessId: 1,
+      developmentProcess: { id: 1, code: 'C41', label: 'C-41' },
+      balance: 'Daylight',
+      filmFormats: [{ id: 1, code: '35mm', label: '35mm' }]
+    },
+    {
+      id: 2,
+      manufacturer: 'Ilford',
+      brand: 'HP5',
+      isoSpeed: 400,
+      developmentProcessId: 2,
+      developmentProcess: { id: 2, code: 'BW', label: 'Black and White' },
+      balance: 'Daylight',
+      filmFormats: [{ id: 1, code: '35mm', label: '35mm' }]
+    }
+  ];
+
+  await page.route('**/api/v1/reference**', async (route) => {
+    const url = new URL(route.request().url());
+
+    if (/^\/api\/v1\/reference\/emulsions\/\d+$/.test(url.pathname)) {
+      await route.fulfill({ json: { data: emulsions[0] } });
+      return;
+    }
+
+    await route.fulfill({
+      json: {
+        data: {
+          ...referencePayload.data,
+          developmentProcesses: [
+            { id: 1, code: 'C41', label: 'C-41' },
+            { id: 2, code: 'BW', label: 'Black and White' }
+          ],
+          emulsions
+        }
+      }
+    });
+  });
+
+  await page.route('**/api/v1/film*', async (route) => {
+    await route.fulfill({ json: { data: [] } });
+  });
+
+  await page.route('**/api/v1/devices*', async (route) => {
+    await route.fulfill({ json: { data: [] } });
+  });
+
+  await loginThroughUi(page);
+  await page.goto('/emulsions/color-negative-c41');
+
+  await expect(page.getByRole('heading', { name: 'Emulsions in this process' })).toBeVisible();
+  await expect(page.getByTestId('emulsions-child-search')).toBeVisible();
+  await expect(page.getByTestId('emulsions-child-table')).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Kodak Gold' })).toBeVisible();
+  await expect(page.getByText('Ilford HP5')).toHaveCount(0);
+
+  await page.getByRole('link', { name: 'Kodak Gold' }).click();
+  await expect(page).toHaveURL(/\/emulsions\/1$/);
+  await expect(page.getByRole('heading', { name: 'Emulsion Detail' })).toBeVisible();
+  await expect(page.getByText('Compatible formats')).toBeVisible();
+
+  await page.getByRole('button', { name: 'Back' }).click();
+  await expect(page).toHaveURL(/\/emulsions\/color-negative-c41$/);
+});
+
 test('mobile navigation uses drawer menu', async ({ page }) => {
   await mockLogin(page);
 

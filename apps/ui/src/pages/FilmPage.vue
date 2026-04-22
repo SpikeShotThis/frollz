@@ -1,11 +1,10 @@
 <script setup lang="ts">
-import { computed, h, onMounted, reactive, ref, watch } from 'vue';
+import { computed, h, onMounted, reactive, ref } from 'vue';
 import { RouterLink, useRoute, useRouter } from 'vue-router';
 import {
   NAlert,
   NButton,
   NCard,
-  NDataTable,
   NDatePicker,
   NDrawer,
   NDrawerContent,
@@ -14,7 +13,6 @@ import {
   NForm,
   NFormItem,
   NInput,
-  NPagination,
   NSelect,
   NTag,
   NText
@@ -25,18 +23,18 @@ import { createIdempotencyKey } from '../composables/idempotency.js';
 import { useReferenceStore } from '../stores/reference.js';
 import { useFilmStore } from '../stores/film.js';
 import PageShell from '../components/PageShell.vue';
-import MiniDashboardLayout from '../components/MiniDashboardLayout.vue';
+import InventorySplitLayout from '../components/inventory/InventorySplitLayout.vue';
+import EntityTablePanel from '../components/inventory/EntityTablePanel.vue';
+import KpiCardGrid from '../components/inventory/KpiCardGrid.vue';
 import { useUiFeedback } from '../composables/useUiFeedback.js';
 import type { FormState } from '../composables/ui-state.js';
+import { usePagedEntityTable } from '../composables/usePagedEntityTable.js';
 import {
   buildChildKpis,
   FILM_EXPIRING_SOON_DAYS,
   filterAndSortFilmsForChildTable,
-  filterFilmsByFormatCodes,
-  paginateFilms
+  filterFilmsByFormatCodes
 } from './film-dashboard.js';
-
-const PAGE_SIZE_OPTIONS = [10, 25, 50] as const;
 
 type FilmStatsCard = {
   label: string;
@@ -55,8 +53,6 @@ const isCreatingFilm = ref(false);
 const expirationTimestamp = ref<number | null>(null);
 const childStateFilter = ref<string | null>(null);
 const childSearchTerm = ref('');
-const childPage = ref(1);
-const childPageSize = ref<number>(10);
 
 const createForm = reactive<{
   name: string;
@@ -133,10 +129,10 @@ const childFilteredFilms = computed(() => {
   return filterAndSortFilmsForChildTable(displayedFilms.value, childStateFilter.value, childSearchTerm.value);
 });
 
-const totalChildRows = computed(() => childFilteredFilms.value.length);
-
-const childPagedFilms = computed(() => {
-  return paginateFilms(childFilteredFilms.value, childPage.value, childPageSize.value);
+const childTableState = usePagedEntityTable({
+  rows: childFilteredFilms,
+  resetPageOn: [childStateFilter, childSearchTerm, () => route.path],
+  initialPageSize: 10
 });
 
 const childKpis = computed<FilmStatsCard[]>(() => {
@@ -223,20 +219,6 @@ const createFieldErrors = computed<Record<string, string>>(() => {
   return nextErrors;
 });
 
-watch(
-  [childStateFilter, childSearchTerm, childPageSize, () => route.path],
-  () => {
-    childPage.value = 1;
-  }
-);
-
-watch(totalChildRows, (total) => {
-  const maxPage = Math.max(1, Math.ceil(total / childPageSize.value));
-  if (childPage.value > maxPage) {
-    childPage.value = maxPage;
-  }
-});
-
 async function refresh(): Promise<void> {
   try {
     await filmStore.loadFilms();
@@ -314,7 +296,7 @@ async function submitCreateFilm(): Promise<void> {
       <NButton tertiary @click="refresh">Refresh</NButton>
     </template>
 
-    <MiniDashboardLayout
+    <InventorySplitLayout
       :left-panel-title="isLockedBreakout ? 'Films in this format' : 'Recently added films'"
       :right-panel-title="isLockedBreakout ? 'Format KPIs' : 'Film statistics'"
     >
@@ -324,50 +306,38 @@ async function submitCreateFilm(): Promise<void> {
             {{ filmStore.filmsError }}
           </NAlert>
 
-          <template v-if="isLockedBreakout">
-            <NFlex vertical size="small" style="margin-bottom: 12px;">
-              <NFlex :wrap="false" size="small" class="film-table__filters" align="center">
-                <NSelect
-                  :value="childStateFilter ?? '__all__'"
-                  :options="childStateFilterOptions"
-                  style="min-width: 200px;"
-                  data-testid="film-child-state-filter"
-                  @update:value="onChildStateFilterChange"
-                />
-                <NInput
-                  v-model:value="childSearchTerm"
-                  clearable
-                  placeholder="Search by film or emulsion"
-                  data-testid="film-child-search"
-                />
-              </NFlex>
-
-              <NEmpty
-                v-if="!filmStore.isLoading && !filmStore.filmsError && totalChildRows === 0"
-                description="No films match the current filters."
+          <EntityTablePanel
+            v-if="isLockedBreakout"
+            :columns="childTableColumns"
+            :data="childTableState.pagedRows.value"
+            :loading="filmStore.isLoading"
+            :row-key="(row) => row.id"
+            :page="childTableState.page.value"
+            :page-size="childTableState.pageSize.value"
+            :item-count="childTableState.totalRows.value"
+            :page-sizes="childTableState.pageSizes"
+            empty-description="No films match the current filters."
+            table-test-id="film-child-table"
+            pagination-test-id="film-child-pagination"
+            @update:page="(value) => { childTableState.page.value = value; }"
+            @update:page-size="(value) => { childTableState.pageSize.value = value; }"
+          >
+            <template #filters>
+              <NSelect
+                :value="childStateFilter ?? '__all__'"
+                :options="childStateFilterOptions"
+                style="min-width: 200px;"
+                data-testid="film-child-state-filter"
+                @update:value="onChildStateFilterChange"
               />
-              <template v-else>
-                <NDataTable
-                  :columns="childTableColumns"
-                  :data="childPagedFilms"
-                  :bordered="false"
-                  :single-line="false"
-                  :row-key="(row) => row.id"
-                  data-testid="film-child-table"
-                />
-                <NFlex justify="end">
-                  <NPagination
-                    v-model:page="childPage"
-                    v-model:page-size="childPageSize"
-                    :item-count="totalChildRows"
-                    :page-sizes="Array.from(PAGE_SIZE_OPTIONS)"
-                    show-size-picker
-                    data-testid="film-child-pagination"
-                  />
-                </NFlex>
-              </template>
-            </NFlex>
-          </template>
+              <NInput
+                v-model:value="childSearchTerm"
+                clearable
+                placeholder="Search by film or emulsion"
+                data-testid="film-child-search"
+              />
+            </template>
+          </EntityTablePanel>
 
           <template v-else>
             <NEmpty
@@ -394,15 +364,9 @@ async function submitCreateFilm(): Promise<void> {
       </template>
 
       <template #right>
-        <NCard v-for="card in isLockedBreakout ? childKpis : parentStats" :key="card.label" size="small">
-          <NFlex vertical size="small">
-            <NText depth="3">{{ card.label }}</NText>
-            <NText style="font-size: 1.45rem; font-weight: 700;">{{ card.value }}</NText>
-            <NText depth="3">{{ card.helper }}</NText>
-          </NFlex>
-        </NCard>
+        <KpiCardGrid :cards="isLockedBreakout ? childKpis : parentStats" />
       </template>
-    </MiniDashboardLayout>
+    </InventorySplitLayout>
   </PageShell>
 
   <NDrawer v-model:show="isCreateDrawerOpen" placement="right" width="min(100vw, 420px)">
@@ -491,10 +455,6 @@ async function submitCreateFilm(): Promise<void> {
 </template>
 
 <style scoped>
-.film-table__filters {
-  width: 100%;
-}
-
 .film-table__name-link {
   color: var(--n-primary-color);
   text-decoration: none;
@@ -512,11 +472,5 @@ async function submitCreateFilm(): Promise<void> {
   border-radius: 4px;
   outline: 2px solid var(--n-primary-color);
   outline-offset: 2px;
-}
-
-@media (max-width: 680px) {
-  .film-table__filters {
-    flex-wrap: wrap;
-  }
 }
 </style>

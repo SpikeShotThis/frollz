@@ -1,6 +1,7 @@
 import { computed, ref } from 'vue';
 import { defineStore } from 'pinia';
 import {
+  emulsionSchema,
   referenceTablesSchema,
   type Emulsion,
   type FilmFormat,
@@ -26,11 +27,16 @@ export const useReferenceStore = defineStore('reference', () => {
   const deviceTypes = ref<DeviceType[]>([]);
   const holderTypes = ref<HolderType[]>([]);
   const emulsions = ref<Emulsion[]>([]);
+  const currentEmulsion = ref<Emulsion | null>(null);
 
   const loaded = computed(() => filmFormats.value.length > 0);
   const isLoading = ref(false);
+  const isLoadingEmulsionDetail = ref(false);
   const loadError = ref<string | null>(null);
+  const emulsionDetailError = ref<string | null>(null);
   let loadAllInFlight: Promise<void> | null = null;
+  let loadEmulsionInFlight: Promise<void> | null = null;
+  let loadEmulsionInFlightId: number | null = null;
 
   async function loadAll(): Promise<void> {
     if (loaded.value) {
@@ -73,6 +79,33 @@ export const useReferenceStore = defineStore('reference', () => {
     return packageTypes.value.filter((packageType) => packageType.filmFormatId === filmFormatId);
   }
 
+  async function loadEmulsion(id: number): Promise<void> {
+    if (loadEmulsionInFlight && loadEmulsionInFlightId === id) {
+      return loadEmulsionInFlight;
+    }
+
+    isLoadingEmulsionDetail.value = true;
+    emulsionDetailError.value = null;
+    currentEmulsion.value = null;
+    loadEmulsionInFlightId = id;
+    loadEmulsionInFlight = (async () => {
+      try {
+        const response = await request(`/api/v1/reference/emulsions/${id}`);
+        currentEmulsion.value = emulsionSchema.parse(await readApiData(response));
+      } catch (error) {
+        emulsionDetailError.value = error instanceof Error ? error.message : 'Failed to load emulsion detail';
+        currentEmulsion.value = null;
+        throw error;
+      } finally {
+        isLoadingEmulsionDetail.value = false;
+        loadEmulsionInFlight = null;
+        loadEmulsionInFlightId = null;
+      }
+    })();
+
+    return loadEmulsionInFlight;
+  }
+
   return {
     filmFormats,
     developmentProcesses,
@@ -83,10 +116,14 @@ export const useReferenceStore = defineStore('reference', () => {
     deviceTypes,
     holderTypes,
     emulsions,
+    currentEmulsion,
     loaded,
     isLoading,
+    isLoadingEmulsionDetail,
     loadError,
+    emulsionDetailError,
     loadAll,
+    loadEmulsion,
     packageTypesByFormat
   };
 });

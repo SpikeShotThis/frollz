@@ -7,20 +7,15 @@ import {
   NCard,
   NDataTable,
   NDatePicker,
-  NDescriptions,
-  NDescriptionsItem,
   NDrawer,
   NDrawerContent,
   NEmpty,
   NFlex,
   NForm,
   NFormItem,
-  NGrid,
-  NGridItem,
   NInput,
   NInputNumber,
   NSelect,
-  NSpace,
   NTag,
   NText
 } from 'naive-ui';
@@ -32,6 +27,7 @@ import { useFilmStore } from '../stores/film.js';
 import { useReferenceStore } from '../stores/reference.js';
 import { useDeviceStore } from '../stores/devices.js';
 import PageShell from '../components/PageShell.vue';
+import EntityDetailHeaderCard from '../components/inventory/EntityDetailHeaderCard.vue';
 import { useUiFeedback } from '../composables/useUiFeedback.js';
 import type { FormState } from '../composables/ui-state.js';
 
@@ -94,6 +90,22 @@ const stateTypeByCode: Record<string, 'default' | 'info' | 'primary' | 'warning'
 };
 
 const selectedFilm = computed(() => filmStore.currentFilm);
+const detailItems = computed(() => {
+  if (!selectedFilm.value) {
+    return [];
+  }
+
+  return [
+    {
+      label: 'Emulsion',
+      value: `${selectedFilm.value.emulsion.manufacturer} ${selectedFilm.value.emulsion.brand} ${selectedFilm.value.emulsion.isoSpeed}`
+    },
+    { label: 'Format', value: selectedFilm.value.filmFormat.code },
+    { label: 'Package', value: selectedFilm.value.packageType.code },
+    { label: 'Expiration', value: selectedFilm.value.expirationDate ? formatDateTime(selectedFilm.value.expirationDate) : '-' },
+    { label: 'Film ID', value: String(selectedFilm.value.id) }
+  ];
+});
 const transitions = computed<Array<{ label: string; value: FilmStateCode }>>(() => {
   const current = selectedFilm.value?.currentStateCode;
   if (!current) {
@@ -165,6 +177,15 @@ function eventDataSummary(event: FilmJourneyEvent): string {
     .map(([key, value]) => `${humanizeCode(key)}: ${String(value)}`);
 
   return entries.length > 0 ? entries.join(' | ') : '-';
+}
+
+function goBack(): void {
+  if (window.history.length > 1) {
+    router.back();
+    return;
+  }
+
+  router.push('/film');
 }
 
 function onChangeFilmState(code: string | null): void {
@@ -294,35 +315,26 @@ onMounted(async () => {
 <template>
   <PageShell title="Film Detail" subtitle="Review state history and add the next transition.">
     <template #actions>
-      <NButton tertiary @click="router.push('/film')">Back to inventory</NButton>
+      <NButton tertiary @click="goBack">Back</NButton>
       <NButton type="primary" @click="isEventDrawerOpen = true">Add transition event</NButton>
     </template>
 
-    <NCard>
-      <NAlert v-if="filmStore.detailError" type="error" :show-icon="true" style="margin-bottom: 12px;">
-        {{ filmStore.detailError }}
-      </NAlert>
-      <NAlert v-else-if="selectedFilm && transitions.length === 0" type="warning" :show-icon="true" style="margin-bottom: 12px;">
-        No forward transitions are available from the current state.
-      </NAlert>
-      <template v-if="selectedFilm">
-        <NFlex vertical size="small">
-          <NText strong>{{ selectedFilm.name }}</NText>
-          <NTag :type="stateTypeByCode[selectedFilm.currentStateCode] ?? 'default'">{{ selectedFilm.currentState.label }}</NTag>
-          <NDescriptions label-placement="top" :column="3" bordered size="small">
-            <NDescriptionsItem label="Emulsion">
-              {{ selectedFilm.emulsion.manufacturer }} {{ selectedFilm.emulsion.brand }} {{ selectedFilm.emulsion.isoSpeed }}
-            </NDescriptionsItem>
-            <NDescriptionsItem label="Format">{{ selectedFilm.filmFormat.code }}</NDescriptionsItem>
-            <NDescriptionsItem label="Package">{{ selectedFilm.packageType.code }}</NDescriptionsItem>
-            <NDescriptionsItem v-if="selectedFilm.expirationDate" label="Expiration">
-              {{ formatDateTime(selectedFilm.expirationDate) }}
-            </NDescriptionsItem>
-          </NDescriptions>
-        </NFlex>
-      </template>
-      <NEmpty v-else description="Film not found" />
-    </NCard>
+    <NAlert v-if="filmStore.detailError" type="error" :show-icon="true" style="margin-bottom: 12px;">
+      {{ filmStore.detailError }}
+    </NAlert>
+    <NAlert v-else-if="selectedFilm && transitions.length === 0" type="warning" :show-icon="true" style="margin-bottom: 12px;">
+      No forward transitions are available from the current state.
+    </NAlert>
+
+    <EntityDetailHeaderCard
+      v-if="selectedFilm"
+      :title="selectedFilm.name"
+      :subtitle="`${selectedFilm.filmFormat.code} · ${selectedFilm.packageType.label}`"
+      :tag-label="selectedFilm.currentState.label"
+      :tag-type="stateTypeByCode[selectedFilm.currentStateCode] ?? 'default'"
+      :details="detailItems"
+    />
+    <NEmpty v-else description="Film not found" />
 
     <h2 class="film-detail__section-title">Journey timeline</h2>
     <NCard>
