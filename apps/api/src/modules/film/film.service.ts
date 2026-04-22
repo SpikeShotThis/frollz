@@ -31,6 +31,12 @@ function nowIso(): string {
   return new Date().toISOString();
 }
 
+type NormalizedLoadedEventData = {
+  deviceId: number;
+  slotSideNumber: number | null;
+  loadTargetType: 'camera_direct' | 'interchangeable_back' | 'film_holder_slot';
+};
+
 @Injectable()
 export class FilmService {
   constructor(
@@ -232,16 +238,14 @@ export class FilmService {
     eventData: Record<string, unknown>,
     user: UserEntity
   ): Promise<void> {
-    const deviceId = eventData['deviceId'];
-    const slotSideNumber = eventData['slotSideNumber'];
-
-    if (typeof deviceId !== 'number') {
-      throw new DomainError('DOMAIN_ERROR', 'A loaded event requires a deviceId');
+    const loadTarget = this.parseLoadedEventData(eventData);
+    if (!loadTarget) {
+      throw new DomainError('DOMAIN_ERROR', 'A loaded event requires a valid load target');
     }
 
     const device = await entityManager.findOne(
       FilmDeviceEntity,
-      { id: deviceId, user: userId },
+      { id: loadTarget.deviceId, user: userId },
       {
         populate: [
           'user',
@@ -267,8 +271,8 @@ export class FilmService {
     }
 
     if (device.camera) {
-      if (typeof slotSideNumber === 'number') {
-        throw new DomainError('DOMAIN_ERROR', 'Direct camera loads cannot include a holder slot');
+      if (loadTarget.loadTargetType === 'film_holder_slot') {
+        throw new DomainError('DOMAIN_ERROR', 'Use camera_direct load target for direct camera loads');
       }
       if (device.camera.loadMode !== 'direct') {
         throw new DomainError('DOMAIN_ERROR', 'This camera cannot be loaded directly');
@@ -282,8 +286,8 @@ export class FilmService {
     }
 
     if (device.interchangeableBack) {
-      if (typeof slotSideNumber === 'number') {
-        throw new DomainError('DOMAIN_ERROR', 'Interchangeable back loads cannot include a holder slot');
+      if (loadTarget.loadTargetType === 'film_holder_slot') {
+        throw new DomainError('DOMAIN_ERROR', 'Use interchangeable_back load target for back loads');
       }
       const occupiedFilmId = await this.filmRepository.findOccupiedFilmForDeviceId(userId, device.id);
       if (occupiedFilmId !== null) {
@@ -297,9 +301,10 @@ export class FilmService {
       throw new DomainError('DOMAIN_ERROR', 'Loaded events require a compatible device');
     }
 
-    if (typeof slotSideNumber !== 'number') {
-      throw new DomainError('DOMAIN_ERROR', 'A holder loaded event requires a slotSideNumber');
+    if (loadTarget.loadTargetType !== 'film_holder_slot' || loadTarget.slotSideNumber === null) {
+      throw new DomainError('DOMAIN_ERROR', 'A holder load requires film_holder_slot target with slotNumber');
     }
+    const slotSideNumber = loadTarget.slotSideNumber;
     if (slotSideNumber < 1 || slotSideNumber > device.filmHolder.slotCount) {
       throw new DomainError('DOMAIN_ERROR', 'That holder slot does not exist for this holder');
     }
@@ -468,7 +473,7 @@ export class FilmService {
     };
   }
 
-  private parseLoadedEventData(eventData: unknown): { deviceId: number; slotSideNumber: number | null } | null {
+  private parseLoadedEventData(eventData: unknown): NormalizedLoadedEventData | null {
     const parsed = filmJourneyEventPayloadSchema.safeParse({
       filmStateCode: 'loaded',
       eventData
@@ -478,9 +483,34 @@ export class FilmService {
       return null;
     }
 
+    if ('deviceId' in parsed.data.eventData) {
+      return {
+        deviceId: parsed.data.eventData.deviceId,
+        slotSideNumber: parsed.data.eventData.slotSideNumber,
+        loadTargetType: typeof parsed.data.eventData.slotSideNumber === 'number' ? 'film_holder_slot' : 'camera_direct'
+      };
+    }
+
+    if (parsed.data.eventData.loadTargetType === 'camera_direct') {
+      return {
+        deviceId: parsed.data.eventData.cameraId,
+        slotSideNumber: null,
+        loadTargetType: 'camera_direct'
+      };
+    }
+
+    if (parsed.data.eventData.loadTargetType === 'interchangeable_back') {
+      return {
+        deviceId: parsed.data.eventData.interchangeableBackId,
+        slotSideNumber: null,
+        loadTargetType: 'interchangeable_back'
+      };
+    }
+
     return {
-      deviceId: parsed.data.eventData.deviceId,
-      slotSideNumber: parsed.data.eventData.slotSideNumber
+      deviceId: parsed.data.eventData.filmHolderId,
+      slotSideNumber: parsed.data.eventData.slotNumber,
+      loadTargetType: 'film_holder_slot'
     };
   }
 

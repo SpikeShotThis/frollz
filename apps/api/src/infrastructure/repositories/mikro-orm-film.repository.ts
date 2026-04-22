@@ -8,10 +8,22 @@ import { mapFilmDetailEntity, mapFilmJourneyEventEntity, mapFilmSummaryEntity } 
 function parseLoadedEventData(raw: unknown): { deviceId: number; slotSideNumber: number | null } | null {
   const parsed = filmJourneyEventDataLoadedSchema.safeParse(raw);
   if (parsed.success) {
-    return {
-      deviceId: parsed.data.deviceId,
-      slotSideNumber: parsed.data.slotSideNumber
-    };
+    if ('deviceId' in parsed.data) {
+      return {
+        deviceId: parsed.data.deviceId,
+        slotSideNumber: parsed.data.slotSideNumber
+      };
+    }
+
+    if (parsed.data.loadTargetType === 'camera_direct') {
+      return { deviceId: parsed.data.cameraId, slotSideNumber: null };
+    }
+
+    if (parsed.data.loadTargetType === 'interchangeable_back') {
+      return { deviceId: parsed.data.interchangeableBackId, slotSideNumber: null };
+    }
+
+    return { deviceId: parsed.data.filmHolderId, slotSideNumber: parsed.data.slotNumber };
   }
 
   // Backward compatibility for older payloads that stored receiverId instead of deviceId.

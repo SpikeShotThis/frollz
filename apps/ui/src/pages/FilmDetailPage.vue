@@ -322,6 +322,16 @@ function validateEventForm(): Record<string, string> {
   if (eventForm.filmStateCode === 'loaded' && !eventForm.deviceId) {
     errors.deviceId = 'Select a device.';
   }
+  if (eventForm.filmStateCode === 'loaded' && eventForm.deviceId) {
+    const selectedDevice = deviceStore.devices.find((entry) => entry.id === eventForm.deviceId);
+    if (selectedDevice?.deviceTypeCode === 'film_holder') {
+      if (typeof eventForm.slotSideNumber !== 'number' || !Number.isInteger(eventForm.slotSideNumber)) {
+        errors.slotSideNumber = 'Select a holder slot.';
+      } else if (eventForm.slotSideNumber < 1 || eventForm.slotSideNumber > selectedDevice.slotCount) {
+        errors.slotSideNumber = `Slot must be between 1 and ${selectedDevice.slotCount}.`;
+      }
+    }
+  }
 
   return errors;
 }
@@ -336,11 +346,40 @@ function buildEventData(): Record<string, unknown> {
       };
     }
     case 'loaded':
-      return {
-        deviceId: eventForm.deviceId,
-        slotSideNumber: eventForm.slotSideNumber,
-        intendedPushPull: eventForm.intendedPushPull
-      };
+      {
+        const selectedDevice = deviceStore.devices.find((entry) => entry.id === eventForm.deviceId);
+
+        if (!selectedDevice) {
+          return {
+            deviceId: eventForm.deviceId,
+            slotSideNumber: eventForm.slotSideNumber,
+            intendedPushPull: eventForm.intendedPushPull
+          };
+        }
+
+        if (selectedDevice.deviceTypeCode === 'camera') {
+          return {
+            loadTargetType: 'camera_direct',
+            cameraId: selectedDevice.id,
+            intendedPushPull: eventForm.intendedPushPull
+          };
+        }
+
+        if (selectedDevice.deviceTypeCode === 'interchangeable_back') {
+          return {
+            loadTargetType: 'interchangeable_back',
+            interchangeableBackId: selectedDevice.id,
+            intendedPushPull: eventForm.intendedPushPull
+          };
+        }
+
+        return {
+          loadTargetType: 'film_holder_slot',
+          filmHolderId: selectedDevice.id,
+          slotNumber: Number(eventForm.slotSideNumber ?? 1),
+          intendedPushPull: eventForm.intendedPushPull
+        };
+      }
     case 'sent_for_dev':
       return {
         labName: eventForm.labName || null,
@@ -554,7 +593,11 @@ onBeforeUnmount(() => {
               @update:value="(value) => { eventForm.deviceId = value; }"
             />
           </NFormItem>
-          <NFormItem label="Holder slot side (holders only)" :label-props="{ for: 'event-slot-side-input' }">
+          <NFormItem
+            label="Holder slot side (holders only)"
+            :label-props="{ for: 'event-slot-side-input' }"
+            :feedback="eventState.fieldErrors.slotSideNumber || ''"
+          >
             <NInputNumber
               :value="eventForm.slotSideNumber"
               :input-props="{ id: 'event-slot-side-input', name: 'slotSideNumber' }"

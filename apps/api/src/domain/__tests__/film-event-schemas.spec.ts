@@ -17,6 +17,21 @@ describe('filmJourneyEventPayloadSchema', () => {
     ).toMatchObject({ filmStateCode: 'loaded' });
   });
 
+  it('parses valid explicit load-target payloads', () => {
+    expect(
+      filmJourneyEventPayloadSchema.parse({
+        filmStateCode: 'loaded',
+        eventData: {
+          loadTargetType: 'film_holder_slot',
+          filmUnitId: 7,
+          filmHolderId: 3,
+          slotNumber: 2,
+          intendedPushPull: null
+        }
+      })
+    ).toMatchObject({ filmStateCode: 'loaded' });
+  });
+
   it('parses valid stored payloads', () => {
     expect(
       filmJourneyEventPayloadSchema.parse({
