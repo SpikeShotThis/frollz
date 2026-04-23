@@ -34,6 +34,7 @@ const route = useRoute();
 
 const isCreateDrawerOpen = ref(false);
 const isCreatingDevice = ref(false);
+const pendingCreateKey = ref<string>(createIdempotencyKey());
 const cameraDateAcquiredTimestamp = ref<number | null>(null);
 const createState = ref<FormState>({ loading: false, fieldErrors: {}, formError: null });
 
@@ -255,6 +256,11 @@ onMounted(async () => {
   }
 });
 
+function openCreateDrawer(): void {
+  pendingCreateKey.value = createIdempotencyKey();
+  isCreateDrawerOpen.value = true;
+}
+
 async function submitCreateDevice(): Promise<void> {
   if (isCreatingDevice.value) {
     return;
@@ -315,8 +321,9 @@ async function submitCreateDevice(): Promise<void> {
   createState.value.formError = null;
 
   try {
-    await deviceStore.createDevice(payload, createIdempotencyKey());
+    await deviceStore.createDevice(payload, pendingCreateKey.value);
     isCreateDrawerOpen.value = false;
+    pendingCreateKey.value = createIdempotencyKey();
     resetCreateForm();
     feedback.success('Device added successfully.');
   } catch (error) {
@@ -331,7 +338,7 @@ async function submitCreateDevice(): Promise<void> {
 <template>
   <PageShell title="Devices" :subtitle="pageSubtitle">
     <template #actions>
-      <NButton type="primary" @click="isCreateDrawerOpen = true">Add device</NButton>
+      <NButton type="primary" @click="openCreateDrawer">Add device</NButton>
       <NButton tertiary @click="refresh">Refresh</NButton>
     </template>
 

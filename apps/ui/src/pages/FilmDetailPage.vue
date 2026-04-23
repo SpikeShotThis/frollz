@@ -44,6 +44,7 @@ const feedback = useUiFeedback();
 const filmId = computed(() => Number(route.params.id));
 const isEventDrawerOpen = ref(false);
 const isSavingEvent = ref(false);
+const pendingEventKey = ref<string>(createIdempotencyKey());
 const occurredAtTimestamp = ref<number | null>(Date.now());
 
 const eventForm = reactive<{
@@ -516,6 +517,11 @@ function buildEventData(): Record<string, unknown> {
   }
 }
 
+function openEventDrawer(): void {
+  pendingEventKey.value = createIdempotencyKey();
+  isEventDrawerOpen.value = true;
+}
+
 async function submitEvent(): Promise<void> {
   if (isSavingEvent.value || !selectedFilm.value) {
     return;
@@ -547,15 +553,16 @@ async function submitEvent(): Promise<void> {
         frameStateCode: eventForm.filmStateCode as CreateFrameJourneyEventRequest['frameStateCode'],
         ...payloadBase
       };
-      await filmStore.addFrameEvent(selectedFilm.value.id, frameId, payload, createIdempotencyKey());
+      await filmStore.addFrameEvent(selectedFilm.value.id, frameId, payload, pendingEventKey.value);
     } else {
       const payload: CreateFilmJourneyEventRequest = {
         filmStateCode: eventForm.filmStateCode as FilmStateCode,
         ...payloadBase
       };
-      await filmStore.addEvent(selectedFilm.value.id, payload, createIdempotencyKey());
+      await filmStore.addEvent(selectedFilm.value.id, payload, pendingEventKey.value);
     }
     isEventDrawerOpen.value = false;
+    pendingEventKey.value = createIdempotencyKey();
     feedback.success('Event saved. Timeline updated.');
   } catch (error) {
     eventState.value.formError = feedback.toErrorMessage(error, 'Could not save this event.');
@@ -578,6 +585,7 @@ onMounted(async () => {
     await filmStore.loadFilm(filmId.value);
 
     if (route.query.openEvent === '1' && transitions.value.length > 0) {
+      pendingEventKey.value = createIdempotencyKey();
       isEventDrawerOpen.value = true;
     }
   } catch (error) {
@@ -595,7 +603,7 @@ onBeforeUnmount(() => {
   <PageShell title="Film Detail" subtitle="Review state history and add the next transition.">
     <template #actions>
       <NButton tertiary @click="goBack">Back</NButton>
-      <NButton type="primary" @click="isEventDrawerOpen = true">Add transition event</NButton>
+      <NButton type="primary" @click="openEventDrawer">Add transition event</NButton>
     </template>
 
     <NAlert v-if="filmStore.detailError" type="error" :show-icon="true" style="margin-bottom: 12px;">

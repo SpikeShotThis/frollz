@@ -50,6 +50,7 @@ const feedback = useUiFeedback();
 
 const isCreateDrawerOpen = ref(false);
 const isCreatingFilm = ref(false);
+const pendingCreateKey = ref<string>(createIdempotencyKey());
 const expirationTimestamp = ref<number | null>(null);
 const childStateFilter = ref<string | null>(null);
 const childSearchTerm = ref('');
@@ -252,6 +253,11 @@ function resetCreateForm(): void {
   createState.value.formError = null;
 }
 
+function openCreateDrawer(): void {
+  pendingCreateKey.value = createIdempotencyKey();
+  isCreateDrawerOpen.value = true;
+}
+
 async function submitCreateFilm(): Promise<void> {
   if (isCreatingFilm.value) {
     return;
@@ -276,8 +282,9 @@ async function submitCreateFilm(): Promise<void> {
   createState.value.formError = null;
 
   try {
-    await filmStore.createFilm(payload, createIdempotencyKey());
+    await filmStore.createFilm(payload, pendingCreateKey.value);
     isCreateDrawerOpen.value = false;
+    pendingCreateKey.value = createIdempotencyKey();
     resetCreateForm();
     feedback.success('Film created successfully.');
   } catch (error) {
@@ -292,7 +299,7 @@ async function submitCreateFilm(): Promise<void> {
 <template>
   <PageShell title="Film Inventory" :subtitle="pageSubtitle">
     <template #actions>
-      <NButton type="primary" @click="isCreateDrawerOpen = true">Add film</NButton>
+      <NButton type="primary" @click="openCreateDrawer">Add film</NButton>
       <NButton tertiary @click="refresh">Refresh</NButton>
     </template>
 

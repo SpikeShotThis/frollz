@@ -19,6 +19,19 @@ export function useApi() {
     let response = await fetch(input, { ...init, headers });
 
     if (response.status === 401 && authStore.refreshToken) {
+      const method = (init.method ?? 'GET').toUpperCase();
+      const isMutation = method === 'POST' || method === 'PATCH' || method === 'PUT' || method === 'DELETE';
+      const hasIdempotencyKey = new Headers(init.headers).has('idempotency-key');
+
+      // Never retry a mutation without an idempotency key — the server would execute it twice.
+      if (isMutation && !hasIdempotencyKey) {
+        authStore.clearTokens();
+        if (router.currentRoute.value.path !== '/login') {
+          await router.replace('/login');
+        }
+        return response;
+      }
+
       const tokenPair = await authStore.refreshAccessToken();
 
       if (tokenPair) {
