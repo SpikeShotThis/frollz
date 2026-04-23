@@ -15,6 +15,22 @@ import { idSchema, isoDateTimeSchema, nullableTextSchema } from './common.js';
 
 export const cameraLoadModeSchema = z.enum(['direct', 'interchangeable_back', 'film_holder']);
 
+export const frameSizeCodeSchema = z.enum([
+  'full_frame',
+  'half_frame',
+  '645',
+  '6x6',
+  '6x7',
+  '6x8',
+  '6x9',
+  '6x12',
+  '6x17',
+  '4x5',
+  '8x10',
+  '2x3',
+  'instax'
+]);
+
 export const filmTransitionMap = new Map<string, string[]>([
   ['purchased', ['stored', 'loaded']],
   ['stored', ['stored', 'loaded']],
@@ -71,31 +87,55 @@ export const filmJourneyEventDataStoredSchema = z.object({
   storageLocationId: idSchema,
   storageLocationCode: storageLocationSchema.shape.code
 });
-export const filmUnitLoadTargetCameraDirectSchema = z.object({
+
+export const nonLargeFilmLoadTargetCameraDirectSchema = z.object({
   loadTargetType: z.literal('camera_direct'),
-  filmUnitId: idSchema,
   cameraId: idSchema,
   intendedPushPull: z.number().int().nullable()
 });
-export const filmUnitLoadTargetInterchangeableBackSchema = z.object({
+export const nonLargeFilmLoadTargetInterchangeableBackSchema = z.object({
   loadTargetType: z.literal('interchangeable_back'),
-  filmUnitId: idSchema,
   interchangeableBackId: idSchema,
   intendedPushPull: z.number().int().nullable()
 });
-export const filmUnitLoadTargetFilmHolderSlotSchema = z.object({
+export const nonLargeFilmLoadTargetFilmHolderSlotSchema = z.object({
   loadTargetType: z.literal('film_holder_slot'),
-  filmUnitId: idSchema,
   filmHolderId: idSchema,
   slotNumber: z.union([z.literal(1), z.literal(2)]),
   intendedPushPull: z.number().int().nullable()
 });
-export const filmUnitLoadTargetSchema = z.discriminatedUnion('loadTargetType', [
-  filmUnitLoadTargetCameraDirectSchema,
-  filmUnitLoadTargetInterchangeableBackSchema,
-  filmUnitLoadTargetFilmHolderSlotSchema
+export const nonLargeFilmLoadTargetSchema = z.discriminatedUnion('loadTargetType', [
+  nonLargeFilmLoadTargetCameraDirectSchema,
+  nonLargeFilmLoadTargetInterchangeableBackSchema,
+  nonLargeFilmLoadTargetFilmHolderSlotSchema
 ]);
-export const filmJourneyEventDataLoadedSchema = filmUnitLoadTargetSchema;
+
+export const frameLoadTargetCameraDirectSchema = z.object({
+  loadTargetType: z.literal('camera_direct'),
+  filmFrameId: idSchema,
+  cameraId: idSchema,
+  intendedPushPull: z.number().int().nullable()
+});
+export const frameLoadTargetInterchangeableBackSchema = z.object({
+  loadTargetType: z.literal('interchangeable_back'),
+  filmFrameId: idSchema,
+  interchangeableBackId: idSchema,
+  intendedPushPull: z.number().int().nullable()
+});
+export const frameLoadTargetFilmHolderSlotSchema = z.object({
+  loadTargetType: z.literal('film_holder_slot'),
+  filmFrameId: idSchema,
+  filmHolderId: idSchema,
+  slotNumber: z.union([z.literal(1), z.literal(2)]),
+  intendedPushPull: z.number().int().nullable()
+});
+export const frameLoadTargetSchema = z.discriminatedUnion('loadTargetType', [
+  frameLoadTargetCameraDirectSchema,
+  frameLoadTargetInterchangeableBackSchema,
+  frameLoadTargetFilmHolderSlotSchema
+]);
+
+export const filmJourneyEventDataLoadedSchema = nonLargeFilmLoadTargetSchema;
 export const filmJourneyEventDataExposedSchema = z.object({}).strict();
 export const filmJourneyEventDataRemovedSchema = z.object({}).strict();
 export const filmJourneyEventDataSentForDevSchema = z.object({
@@ -112,6 +152,30 @@ export const filmJourneyEventDataScannedSchema = z.object({
   scanLink: nullableTextSchema
 });
 export const filmJourneyEventDataArchivedSchema = z.object({}).strict();
+
+export const frameStateCodeSchema = z.enum([
+  'purchased',
+  'stored',
+  'loaded',
+  'exposed',
+  'removed',
+  'sent_for_dev',
+  'developed',
+  'scanned',
+  'archived'
+]);
+
+export const frameJourneyEventPayloadSchema = z.discriminatedUnion('frameStateCode', [
+  z.object({ frameStateCode: z.literal('purchased'), eventData: z.object({}).strict() }),
+  z.object({ frameStateCode: z.literal('stored'), eventData: filmJourneyEventDataStoredSchema }),
+  z.object({ frameStateCode: z.literal('loaded'), eventData: frameLoadTargetSchema }),
+  z.object({ frameStateCode: z.literal('exposed'), eventData: filmJourneyEventDataExposedSchema }),
+  z.object({ frameStateCode: z.literal('removed'), eventData: filmJourneyEventDataRemovedSchema }),
+  z.object({ frameStateCode: z.literal('sent_for_dev'), eventData: filmJourneyEventDataSentForDevSchema }),
+  z.object({ frameStateCode: z.literal('developed'), eventData: filmJourneyEventDataDevelopedSchema }),
+  z.object({ frameStateCode: z.literal('scanned'), eventData: filmJourneyEventDataScannedSchema }),
+  z.object({ frameStateCode: z.literal('archived'), eventData: filmJourneyEventDataArchivedSchema })
+]);
 
 export const filmJourneyEventPayloadSchema = z.discriminatedUnion('filmStateCode', [
   z.object({ filmStateCode: z.literal('purchased'), eventData: filmJourneyEventDataPurchasedSchema }),
@@ -137,11 +201,24 @@ export const filmJourneyEventSchema = z.object({
   eventData: z.record(z.string(), z.unknown())
 });
 
-export const filmUnitSchema = z.object({
+export const frameJourneyEventSchema = z.object({
+  id: idSchema,
+  filmId: idSchema,
+  filmFrameId: idSchema,
+  userId: idSchema,
+  filmStateId: idSchema,
+  frameStateCode: frameStateCodeSchema,
+  occurredAt: isoDateTimeSchema,
+  recordedAt: isoDateTimeSchema,
+  notes: z.string().nullable(),
+  eventData: z.record(z.string(), z.unknown())
+});
+
+export const filmFrameSchema = z.object({
   id: idSchema,
   userId: idSchema,
   filmStockId: idSchema,
-  ordinal: z.number().int().positive(),
+  frameNumber: z.number().int().positive(),
   currentStateId: idSchema,
   currentStateCode: filmStateCodeSchema,
   boundHolderDeviceId: idSchema.nullable(),
@@ -157,13 +234,13 @@ export const filmStockSchema = z.object({
   emulsionId: idSchema,
   packageTypeId: idSchema,
   filmFormatId: idSchema,
-  unitsTotal: z.number().int().positive(),
-  unitsAvailable: z.number().int().nonnegative(),
+  framesTotal: z.number().int().positive(),
+  framesAvailable: z.number().int().nonnegative(),
   expirationDate: isoDateTimeSchema.nullable(),
   emulsion: emulsionSchema,
   packageType: packageTypeSchema,
   filmFormat: filmFormatSchema,
-  units: z.array(filmUnitSchema)
+  frames: z.array(filmFrameSchema)
 });
 
 export const deviceLoadTimelineEventSchema = z.object({
@@ -204,6 +281,13 @@ export const createFilmJourneyEventRequestSchema = z.object({
   eventData: z.record(z.string(), z.unknown())
 });
 
+export const createFrameJourneyEventRequestSchema = z.object({
+  frameStateCode: frameStateCodeSchema,
+  occurredAt: isoDateTimeSchema,
+  notes: z.string().optional(),
+  eventData: z.record(z.string(), z.unknown())
+});
+
 export const filmHolderSlotSchema = z.object({
   id: idSchema,
   userId: idSchema,
@@ -221,7 +305,7 @@ export const filmDeviceSummarySchema = z.object({
   deviceTypeId: idSchema,
   deviceTypeCode: deviceTypeSchema.shape.code,
   filmFormatId: idSchema,
-  frameSize: z.string().min(1)
+  frameSize: frameSizeCodeSchema
 });
 
 export const cameraSchema = filmDeviceSummarySchema.extend({
@@ -262,7 +346,7 @@ export const createFilmDeviceRequestSchema = z.discriminatedUnion('deviceTypeCod
     deviceTypeCode: z.literal('camera'),
     deviceTypeId: idSchema,
     filmFormatId: idSchema,
-    frameSize: z.string().min(1),
+    frameSize: frameSizeCodeSchema,
     make: z.string().min(1),
     model: z.string().min(1),
     loadMode: cameraLoadModeSchema.optional().default('direct'),
@@ -275,7 +359,7 @@ export const createFilmDeviceRequestSchema = z.discriminatedUnion('deviceTypeCod
     deviceTypeCode: z.literal('interchangeable_back'),
     deviceTypeId: idSchema,
     filmFormatId: idSchema,
-    frameSize: z.string().min(1),
+    frameSize: frameSizeCodeSchema,
     name: z.string().min(1),
     system: z.string().min(1)
   }),
@@ -283,7 +367,7 @@ export const createFilmDeviceRequestSchema = z.discriminatedUnion('deviceTypeCod
     deviceTypeCode: z.literal('film_holder'),
     deviceTypeId: idSchema,
     filmFormatId: idSchema,
-    frameSize: z.string().min(1),
+    frameSize: frameSizeCodeSchema,
     name: z.string().min(1),
     brand: z.string().min(1),
     slotCount: z.union([z.literal(1), z.literal(2)]).optional().default(2),
@@ -293,7 +377,7 @@ export const createFilmDeviceRequestSchema = z.discriminatedUnion('deviceTypeCod
 
 export const updateFilmDeviceRequestSchema = z.object({
   filmFormatId: idSchema.optional(),
-  frameSize: z.string().min(1).optional(),
+  frameSize: frameSizeCodeSchema.optional(),
   make: z.string().min(1).optional(),
   model: z.string().min(1).optional(),
   loadMode: cameraLoadModeSchema.optional(),
@@ -311,19 +395,24 @@ export const updateFilmDeviceRequestSchema = z.object({
 export type FilmSummary = z.infer<typeof filmSummarySchema>;
 export type FilmDetail = z.infer<typeof filmDetailSchema>;
 export type FilmStock = z.infer<typeof filmStockSchema>;
-export type FilmUnit = z.infer<typeof filmUnitSchema>;
+export type FilmFrame = z.infer<typeof filmFrameSchema>;
 export type FilmCreateRequest = z.infer<typeof filmCreateRequestSchema>;
 export type FilmUpdateRequest = z.infer<typeof filmUpdateRequestSchema>;
 export type FilmListQuery = z.infer<typeof filmListQuerySchema>;
 export type FilmJourneyEvent = z.infer<typeof filmJourneyEventSchema>;
+export type FrameJourneyEvent = z.infer<typeof frameJourneyEventSchema>;
 export type DeviceLoadTimelineEvent = z.infer<typeof deviceLoadTimelineEventSchema>;
 export type DeviceMount = z.infer<typeof deviceMountSchema>;
 export type FilmJourneyEventPayload = z.infer<typeof filmJourneyEventPayloadSchema>;
-export type FilmUnitLoadTarget = z.infer<typeof filmUnitLoadTargetSchema>;
+export type FrameJourneyEventPayload = z.infer<typeof frameJourneyEventPayloadSchema>;
+export type FrameLoadTarget = z.infer<typeof frameLoadTargetSchema>;
+export type NonLargeFilmLoadTarget = z.infer<typeof nonLargeFilmLoadTargetSchema>;
 export type CreateFilmJourneyEventRequest = z.infer<typeof createFilmJourneyEventRequestSchema>;
+export type CreateFrameJourneyEventRequest = z.infer<typeof createFrameJourneyEventRequestSchema>;
 export type CreateDeviceMountRequest = z.infer<typeof createDeviceMountRequestSchema>;
 export type UnmountDeviceRequest = z.infer<typeof unmountDeviceRequestSchema>;
 export type FilmHolderSlot = z.infer<typeof filmHolderSlotSchema>;
 export type FilmDevice = z.infer<typeof filmDeviceSchema>;
 export type CreateFilmDeviceRequest = z.infer<typeof createFilmDeviceRequestSchema>;
 export type UpdateFilmDeviceRequest = z.infer<typeof updateFilmDeviceRequestSchema>;
+export type FrameSizeCode = z.infer<typeof frameSizeCodeSchema>;

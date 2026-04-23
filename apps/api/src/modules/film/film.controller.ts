@@ -1,6 +1,7 @@
 import { Body, Controller, Get, Headers, Inject, Param, ParseIntPipe, Patch, Post, Query } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import {
+  createFrameJourneyEventRequestSchema,
   createFilmJourneyEventRequestSchema,
   filmCreateRequestSchema,
   filmListQuerySchema,
@@ -90,11 +91,30 @@ export class FilmController {
     return this.filmService.listEvents(user.userId, id);
   }
 
-  @Get(':id/units')
-  @ApiOperation({ summary: 'List all units for a film package' })
-  @ApiResponse({ status: 200, description: 'Film unit list' })
-  listUnits(@CurrentUser() user: AuthenticatedUser, @Param('id', ParseIntPipe) id: number) {
-    return this.filmService.listUnits(user.userId, id);
+  @Get(':id/frames')
+  @ApiOperation({ summary: 'List all frames for a film package' })
+  @ApiResponse({ status: 200, description: 'Film frame list' })
+  listFrames(@CurrentUser() user: AuthenticatedUser, @Param('id', ParseIntPipe) id: number) {
+    return this.filmService.listFrames(user.userId, id);
+  }
+
+  @Post(':id/frames/:frameId/events')
+  @ApiOperation({ summary: 'Create a frame journey event (large format)' })
+  @ApiResponse({ status: 201, description: 'Frame journey event created' })
+  addFrameEvent(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('id', ParseIntPipe) id: number,
+    @Param('frameId', ParseIntPipe) frameId: number,
+    @Headers('idempotency-key') idempotencyKey: string | undefined,
+    @Body(new ZodSchemaPipe(createFrameJourneyEventRequestSchema)) body: typeof createFrameJourneyEventRequestSchema['_output']
+  ) {
+    return this.idempotencyService.execute({
+      userId: user.userId,
+      key: idempotencyKey,
+      scope: 'film.create-frame-event',
+      requestPayload: { filmId: id, frameId, ...body },
+      handler: () => this.filmService.createFrameEvent(user.userId, id, frameId, body)
+    });
   }
 
 }

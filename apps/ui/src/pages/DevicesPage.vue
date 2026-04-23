@@ -66,6 +66,39 @@ const deviceTypeOptions = computed(() =>
 const filmFormatOptions = computed(() =>
   referenceStore.filmFormats.map((entry) => ({ label: entry.label, value: entry.id }))
 );
+const selectedFormatCode = computed(() => {
+  if (!createForm.filmFormatId) {
+    return null;
+  }
+  return referenceStore.filmFormats.find((entry) => entry.id === createForm.filmFormatId)?.code ?? null;
+});
+const frameSizeOptions = computed(() => {
+  const code = selectedFormatCode.value;
+  if (!code) {
+    return [];
+  }
+
+  if (code === '35mm') {
+    return [
+      { label: 'Full Frame', value: 'full_frame' },
+      { label: 'Half Frame', value: 'half_frame' }
+    ];
+  }
+
+  if (code === '120' || code === '220') {
+    return ['645', '6x6', '6x7', '6x8', '6x9', '6x12', '6x17'].map((value) => ({ label: value, value }));
+  }
+
+  if (code === '4x5' || code === '8x10' || code === '2x3') {
+    return [{ label: code, value: code }];
+  }
+
+  if (code === 'InstaxMini' || code === 'InstaxWide' || code === 'InstaxSquare') {
+    return [{ label: 'Instax', value: 'instax' }];
+  }
+
+  return [];
+});
 const holderTypeOptions = computed(() =>
   referenceStore.holderTypes.map((entry) => ({ label: entry.label, value: entry.id }))
 );
@@ -126,7 +159,7 @@ function validateCreateForm(): Record<string, string> {
   if (!createForm.filmFormatId) {
     errors.filmFormatId = 'Film format is required.';
   }
-  if (!createForm.frameSize.trim()) {
+  if (!createForm.frameSize) {
     errors.frameSize = 'Frame size is required.';
   }
 
@@ -246,7 +279,7 @@ async function submitCreateDevice(): Promise<void> {
       deviceTypeCode: 'camera',
       deviceTypeId: deviceType.id,
       filmFormatId: createForm.filmFormatId as number,
-      frameSize: createForm.frameSize.trim(),
+      frameSize: createForm.frameSize as CreateFilmDeviceRequest['frameSize'],
       make: createForm.make.trim(),
       model: createForm.model.trim(),
       loadMode: createForm.loadMode,
@@ -260,7 +293,7 @@ async function submitCreateDevice(): Promise<void> {
       deviceTypeCode: 'interchangeable_back',
       deviceTypeId: deviceType.id,
       filmFormatId: createForm.filmFormatId as number,
-      frameSize: createForm.frameSize.trim(),
+      frameSize: createForm.frameSize as CreateFilmDeviceRequest['frameSize'],
       name: createForm.name.trim(),
       system: createForm.system.trim()
     };
@@ -269,7 +302,7 @@ async function submitCreateDevice(): Promise<void> {
       deviceTypeCode: 'film_holder',
       deviceTypeId: deviceType.id,
       filmFormatId: createForm.filmFormatId as number,
-      frameSize: createForm.frameSize.trim(),
+      frameSize: createForm.frameSize as CreateFilmDeviceRequest['frameSize'],
       name: createForm.name.trim(),
       brand: createForm.brand.trim(),
       slotCount: createForm.slotCount,
@@ -382,9 +415,10 @@ async function submitCreateDevice(): Promise<void> {
           :label-props="{ for: 'device-create-frame-size-input' }"
           :feedback="createState.fieldErrors.frameSize || ''"
         >
-          <NInput
+          <NSelect
             :value="createForm.frameSize"
-            placeholder="36x24, 6x7, 4x5"
+            :options="frameSizeOptions"
+            placeholder="Select frame size"
             :input-props="{ id: 'device-create-frame-size-input', name: 'frameSize' }"
             @update:value="(value) => { createForm.frameSize = value; }"
           />

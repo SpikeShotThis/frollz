@@ -1,17 +1,21 @@
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
 import {
+  createFrameJourneyEventRequestSchema,
   createFilmJourneyEventRequestSchema,
   filmDetailSchema,
+  frameJourneyEventSchema,
+  filmFrameSchema,
   filmJourneyEventSchema,
   filmSummarySchema,
-  filmUnitSchema,
+  type CreateFrameJourneyEventRequest,
   type CreateFilmJourneyEventRequest,
   type FilmDetail,
+  type FilmFrame,
   type FilmJourneyEvent,
   type FilmListQuery,
   type FilmSummary,
-  type FilmUnit,
+  type FrameJourneyEvent,
   type FilmUpdateRequest,
   type FilmCreateRequest
 } from '@frollz2/schema';
@@ -23,7 +27,8 @@ export const useFilmStore = defineStore('film', () => {
   const films = ref<FilmSummary[]>([]);
   const currentFilm = ref<FilmDetail | null>(null);
   const currentEvents = ref<FilmJourneyEvent[]>([]);
-  const currentUnits = ref<FilmUnit[]>([]);
+  const currentFrames = ref<FilmFrame[]>([]);
+  const currentFrameEvents = ref<FrameJourneyEvent[]>([]);
   const isLoading = ref(false);
   const isDetailLoading = ref(false);
   const filmsError = ref<string | null>(null);
@@ -82,13 +87,14 @@ export const useFilmStore = defineStore('film', () => {
         currentFilm.value = filmDetailSchema.parse(await readApiData(response));
         const eventsResponse = await request(`/api/v1/film/${id}/events`);
         currentEvents.value = filmJourneyEventSchema.array().parse(await readApiData(eventsResponse));
-        const unitsResponse = await request(`/api/v1/film/${id}/units`);
-        currentUnits.value = filmUnitSchema.array().parse(await readApiData(unitsResponse));
+        const framesResponse = await request(`/api/v1/film/${id}/frames`);
+        currentFrames.value = filmFrameSchema.array().parse(await readApiData(framesResponse));
       } catch (error) {
         detailError.value = error instanceof Error ? error.message : 'Failed to load film detail';
         currentFilm.value = null;
         currentEvents.value = [];
-        currentUnits.value = [];
+        currentFrames.value = [];
+        currentFrameEvents.value = [];
         throw error;
       } finally {
         isDetailLoading.value = false;
@@ -137,11 +143,31 @@ export const useFilmStore = defineStore('film', () => {
     await loadFilm(id);
   }
 
+  async function addFrameEvent(
+    id: number,
+    frameId: number,
+    input: CreateFrameJourneyEventRequest,
+    idempotencyKey?: string
+  ): Promise<void> {
+    const init: RequestInit = {
+      method: 'POST',
+      body: JSON.stringify(createFrameJourneyEventRequestSchema.parse(input))
+    };
+    if (idempotencyKey) {
+      init.headers = { 'idempotency-key': idempotencyKey };
+    }
+
+    const response = await request(`/api/v1/film/${id}/frames/${frameId}/events`, init);
+    frameJourneyEventSchema.parse(await readApiData(response));
+    await loadFilm(id);
+  }
+
   return {
     films,
     currentFilm,
     currentEvents,
-    currentUnits,
+    currentFrames,
+    currentFrameEvents,
     isLoading,
     isDetailLoading,
     filmsError,
@@ -150,6 +176,7 @@ export const useFilmStore = defineStore('film', () => {
     loadFilm,
     createFilm,
     updateFilm,
-    addEvent
+    addEvent,
+    addFrameEvent
   };
 });

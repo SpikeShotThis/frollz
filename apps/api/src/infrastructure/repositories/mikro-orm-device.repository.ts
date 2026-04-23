@@ -1,5 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { EntityManager } from '@mikro-orm/core';
+import type { CreateFilmDeviceRequest, UpdateFilmDeviceRequest } from '@frollz2/schema';
 import { DeviceRepository } from './device.repository.js';
 import {
   CameraEntity,
@@ -68,7 +69,7 @@ export class MikroOrmDeviceRepository extends DeviceRepository {
     return device ? mapFilmDeviceEntity(device) : null;
   }
 
-  async create(userId: number, input: { deviceTypeCode: 'camera' | 'interchangeable_back' | 'film_holder'; deviceTypeId: number; filmFormatId: number; frameSize: string;[key: string]: unknown }) {
+  async create(userId: number, input: CreateFilmDeviceRequest) {
     return this.entityManager.transactional(async (transactionalEntityManager) => {
       const user = transactionalEntityManager.getReference(UserEntity, userId);
       const deviceType = transactionalEntityManager.getReference(DeviceTypeEntity, input.deviceTypeId);
@@ -148,22 +149,7 @@ export class MikroOrmDeviceRepository extends DeviceRepository {
   async update(
     userId: number,
     deviceId: number,
-    input: {
-      filmFormatId?: number;
-      frameSize?: string;
-      make?: string;
-      model?: string;
-      loadMode?: 'direct' | 'interchangeable_back' | 'film_holder';
-      canUnload?: boolean;
-      cameraSystem?: string | null;
-      serialNumber?: string | null;
-      dateAcquired?: string | null;
-      name?: string;
-      system?: string;
-      brand?: string;
-      slotCount?: 1 | 2;
-      holderTypeId?: number;
-    }
+    input: UpdateFilmDeviceRequest
   ) {
     const device = await this.entityManager.findOne(
       FilmDeviceEntity,

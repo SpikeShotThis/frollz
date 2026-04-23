@@ -20,7 +20,7 @@ import {
   NTimelineItem,
   NText
 } from 'naive-ui';
-import type { CreateFilmJourneyEventRequest, FilmJourneyEvent } from '@frollz2/schema';
+import type { CreateFilmJourneyEventRequest, CreateFrameJourneyEventRequest, FilmJourneyEvent } from '@frollz2/schema';
 import { filmTransitionMap } from '@frollz2/schema';
 import { createIdempotencyKey } from '../composables/idempotency.js';
 import { useFilmStore } from '../stores/film.js';
@@ -50,7 +50,7 @@ const eventForm = reactive<{
   filmStateCode: FilmStateCode | null;
   notes: string;
   storageLocationId: number | null;
-  filmUnitId: number | null;
+  filmFrameId: number | null;
   deviceId: number | null;
   slotSideNumber: number | null;
   intendedPushPull: number | null;
@@ -63,7 +63,7 @@ const eventForm = reactive<{
   filmStateCode: null,
   notes: '',
   storageLocationId: null,
-  filmUnitId: null,
+  filmFrameId: null,
   deviceId: null,
   slotSideNumber: null,
   intendedPushPull: null,
@@ -129,6 +129,10 @@ const tagColorByType: Record<
 };
 
 const selectedFilm = computed(() => filmStore.currentFilm);
+const isLargeFormatFilm = computed(() => {
+  const code = selectedFilm.value?.filmFormat.code;
+  return code === '4x5' || code === '8x10' || code === '2x3';
+});
 const isCompactTimeline = ref(false);
 let timelineMediaQuery: MediaQueryList | null = null;
 
@@ -149,6 +153,15 @@ const detailItems = computed(() => {
   ];
 });
 const transitions = computed<Array<{ label: string; value: FilmStateCode }>>(() => {
+  if (isLargeFormatFilm.value) {
+    const selectedFrame = filmStore.currentFrames.find((frame) => frame.id === eventForm.filmFrameId) ?? null;
+    const current = selectedFrame?.currentStateCode ?? 'purchased';
+    const allowed = filmTransitionMap.get(current) ?? [];
+    return referenceStore.filmStates
+      .filter((state) => allowed.includes(state.code))
+      .map((state) => ({ label: state.label, value: state.code as FilmStateCode }));
+  }
+
   const current = selectedFilm.value?.currentStateCode;
   if (!current) {
     return [];
@@ -157,7 +170,7 @@ const transitions = computed<Array<{ label: string; value: FilmStateCode }>>(() 
   const allowed = filmTransitionMap.get(current) ?? [];
   return referenceStore.filmStates
     .filter((state) => allowed.includes(state.code))
-    .map((state) => ({ label: state.label, value: state.code }));
+    .map((state) => ({ label: state.label, value: state.code as FilmStateCode }));
 });
 
 const storageLocationOptions = computed(() =>
@@ -200,12 +213,12 @@ const holderSlotOptions = computed(() => {
   });
 });
 
-const availableUnitOptions = computed(() =>
-  filmStore.currentUnits
-    .filter((unit) => unit.firstLoadedAt === null)
-    .map((unit) => ({
-      label: `Unit #${unit.ordinal}`,
-      value: unit.id
+const availableFrameOptions = computed(() =>
+  filmStore.currentFrames
+    .filter((frame) => isLargeFormatFilm.value || frame.firstLoadedAt === null)
+    .map((frame) => ({
+      label: `Frame #${frame.frameNumber}${isLargeFormatFilm.value ? ` (${humanizeCode(frame.currentStateCode)})` : ''}`,
+      value: frame.id
     }))
 );
 
@@ -238,7 +251,10 @@ function parseOccurredAt(value: string): number {
 }
 
 function humanizeCode(value: string): string {
-  return value.replace(/_/g, ' ').replace(/\b\w/g, (match) => match.toUpperCase());
+  return value
+    .replace(/([a-z0-9])([A-Z])/g, '$1 $2')
+    .replace(/_/g, ' ')
+    .replace(/\b\w/g, (match) => match.toUpperCase());
 }
 
 function humanizeDevice(device: Record<string, unknown> & { deviceTypeCode: string }): string {
@@ -282,6 +298,39 @@ function eventDataSummary(event: FilmJourneyEvent): string {
 }
 
 function eventDataEntries(event: FilmJourneyEvent): Array<{ label: string; value: string }> {
+  const loadTargetType = typeof event.eventData['loadTargetType'] === 'string' ? event.eventData['loadTargetType'] : null;
+  if (loadTargetType) {
+    const deviceId = (
+      typeof event.eventData['cameraId'] === 'number'
+        ? event.eventData['cameraId']
+        : typeof event.eventData['interchangeableBackId'] === 'number'
+          ? event.eventData['interchangeableBackId']
+          : typeof event.eventData['filmHolderId'] === 'number'
+            ? event.eventData['filmHolderId']
+            : null
+    );
+    const slotNumber = typeof event.eventData['slotNumber'] === 'number' ? event.eventData['slotNumber'] : null;
+    const device = deviceId ? deviceStore.devices.find((entry) => entry.id === deviceId) : null;
+
+    const entries: Array<{ label: string; value: string }> = [];
+    if (deviceId) {
+      entries.push({
+        label: 'Loaded Target',
+        value: device ? humanizeDevice(device) : String(deviceId)
+      });
+    }
+    if (slotNumber) {
+      entries.push({ label: 'Holder Slot', value: String(slotNumber) });
+    }
+
+    const passthrough = Object.entries(event.eventData)
+      .filter(([key]) => !['loadTargetType', 'cameraId', 'interchangeableBackId', 'filmHolderId', 'slotNumber'].includes(key))
+      .map(([key, value]) => toReadableEventField(key, value))
+      .filter((entry): entry is { label: string; value: string } => entry !== null);
+
+    return [...entries, ...passthrough];
+  }
+
   return Object.entries(event.eventData)
     .map(([key, value]) => toReadableEventField(key, value))
     .filter((entry): entry is { label: string; value: string } => entry !== null);
@@ -330,7 +379,7 @@ function goBack(): void {
 function onChangeFilmState(code: string | null): void {
   eventForm.filmStateCode = code as FilmStateCode | null;
   eventForm.storageLocationId = null;
-  eventForm.filmUnitId = null;
+  eventForm.filmFrameId = null;
   eventForm.deviceId = null;
   eventForm.slotSideNumber = null;
   eventForm.intendedPushPull = null;
@@ -383,8 +432,8 @@ function validateEventForm(): Record<string, string> {
   if (eventForm.filmStateCode === 'loaded' && !eventForm.deviceId) {
     errors.deviceId = 'Select a device.';
   }
-  if (eventForm.filmStateCode === 'loaded' && !eventForm.filmUnitId) {
-    errors.filmUnitId = 'Select a film unit.';
+  if (isLargeFormatFilm.value && !eventForm.filmFrameId) {
+    errors.filmFrameId = 'Select a frame.';
   }
   if (eventForm.filmStateCode === 'loaded' && eventForm.deviceId) {
     const selectedDevice = deviceStore.devices.find((entry) => entry.id === eventForm.deviceId);
@@ -423,7 +472,7 @@ function buildEventData(): Record<string, unknown> {
         if (selectedDevice.deviceTypeCode === 'camera') {
           return {
             loadTargetType: 'camera_direct',
-            filmUnitId: eventForm.filmUnitId,
+            ...(isLargeFormatFilm.value ? { filmFrameId: eventForm.filmFrameId } : {}),
             cameraId: selectedDevice.id,
             intendedPushPull: eventForm.intendedPushPull
           };
@@ -432,7 +481,7 @@ function buildEventData(): Record<string, unknown> {
         if (selectedDevice.deviceTypeCode === 'interchangeable_back') {
           return {
             loadTargetType: 'interchangeable_back',
-            filmUnitId: eventForm.filmUnitId,
+            ...(isLargeFormatFilm.value ? { filmFrameId: eventForm.filmFrameId } : {}),
             interchangeableBackId: selectedDevice.id,
             intendedPushPull: eventForm.intendedPushPull
           };
@@ -440,7 +489,7 @@ function buildEventData(): Record<string, unknown> {
 
         return {
           loadTargetType: 'film_holder_slot',
-          filmUnitId: eventForm.filmUnitId,
+          ...(isLargeFormatFilm.value ? { filmFrameId: eventForm.filmFrameId } : {}),
           filmHolderId: selectedDevice.id,
           slotNumber: Number(eventForm.slotSideNumber ?? 1),
           intendedPushPull: eventForm.intendedPushPull
@@ -478,8 +527,7 @@ async function submitEvent(): Promise<void> {
     return;
   }
 
-  const payload: CreateFilmJourneyEventRequest = {
-    filmStateCode: eventForm.filmStateCode as FilmStateCode,
+  const payloadBase = {
     occurredAt: new Date(occurredAtTimestamp.value as number).toISOString(),
     notes: eventForm.notes || undefined,
     eventData: buildEventData()
@@ -490,7 +538,23 @@ async function submitEvent(): Promise<void> {
   eventState.value.formError = null;
 
   try {
-    await filmStore.addEvent(selectedFilm.value.id, payload, createIdempotencyKey());
+    if (isLargeFormatFilm.value) {
+      const frameId = eventForm.filmFrameId;
+      if (!frameId) {
+        throw new Error('Select a frame');
+      }
+      const payload: CreateFrameJourneyEventRequest = {
+        frameStateCode: eventForm.filmStateCode as CreateFrameJourneyEventRequest['frameStateCode'],
+        ...payloadBase
+      };
+      await filmStore.addFrameEvent(selectedFilm.value.id, frameId, payload, createIdempotencyKey());
+    } else {
+      const payload: CreateFilmJourneyEventRequest = {
+        filmStateCode: eventForm.filmStateCode as FilmStateCode,
+        ...payloadBase
+      };
+      await filmStore.addEvent(selectedFilm.value.id, payload, createIdempotencyKey());
+    }
     isEventDrawerOpen.value = false;
     feedback.success('Event saved. Timeline updated.');
   } catch (error) {
@@ -644,21 +708,23 @@ onBeforeUnmount(() => {
           />
         </NFormItem>
 
+        <NFormItem
+          v-if="isLargeFormatFilm && eventForm.filmStateCode"
+          label="Frame"
+          required
+          :label-props="{ for: 'event-film-unit-input' }"
+          :feedback="eventState.fieldErrors.filmFrameId || ''"
+        >
+          <NSelect
+            :value="eventForm.filmFrameId"
+            :options="availableFrameOptions"
+            placeholder="Select frame"
+            :input-props="{ id: 'event-film-unit-input', name: 'filmFrameId' }"
+            @update:value="(value) => { eventForm.filmFrameId = value; }"
+          />
+        </NFormItem>
+
         <template v-if="eventForm.filmStateCode === 'loaded'">
-          <NFormItem
-            label="Film unit"
-            required
-            :label-props="{ for: 'event-film-unit-input' }"
-            :feedback="eventState.fieldErrors.filmUnitId || ''"
-          >
-            <NSelect
-              :value="eventForm.filmUnitId"
-              :options="availableUnitOptions"
-              placeholder="Select unit"
-              :input-props="{ id: 'event-film-unit-input', name: 'filmUnitId' }"
-              @update:value="(value) => { eventForm.filmUnitId = value; }"
-            />
-          </NFormItem>
           <NFormItem
             label="Device"
             required

@@ -3,14 +3,16 @@ import { EntityManager } from '@mikro-orm/core';
 import type {
   CreateFilmJourneyEventRequest,
   FilmCreateRequest,
+  CreateFrameJourneyEventRequest,
   FilmDetail,
+  FilmFrame,
   FilmJourneyEvent,
   FilmListQuery,
   FilmSummary,
-  FilmUnit,
-  FilmUpdateRequest
+  FilmUpdateRequest,
+  FrameJourneyEvent
 } from '@frollz2/schema';
-import { filmJourneyEventPayloadSchema } from '@frollz2/schema';
+import { filmJourneyEventPayloadSchema, frameJourneyEventPayloadSchema } from '@frollz2/schema';
 import { DomainError } from '../../domain/errors.js';
 import { applyFilmTransition } from '../../domain/film/film-state-machine.js';
 import { FilmRepository } from '../../infrastructure/repositories/film.repository.js';
@@ -19,9 +21,10 @@ import {
   FilmEntity,
   FilmFormatEntity,
   FilmStockEntity,
-  FilmUnitEntity,
+  FilmFrameEntity,
   FilmHolderSlotEntity,
   FilmJourneyEventEntity,
+  FrameJourneyEventEntity,
   FilmDeviceEntity,
   FilmStateEntity,
   PackageTypeEntity,
@@ -37,8 +40,19 @@ function nowIso(): string {
 type NormalizedLoadedEventData = {
   deviceId: number;
   slotSideNumber: number | null;
-  filmUnitId: number;
   loadTargetType: 'camera_direct' | 'interchangeable_back' | 'film_holder_slot';
+};
+
+type NormalizedLoadedFrameEventData = NormalizedLoadedEventData & { filmFrameId: number };
+
+const MEDIUM_FRAME_COUNTS_120: Record<string, number> = {
+  '645': 15,
+  '6x6': 12,
+  '6x7': 10,
+  '6x8': 9,
+  '6x9': 8,
+  '6x12': 6,
+  '6x17': 4
 };
 
 @Injectable()
@@ -115,33 +129,22 @@ export class FilmService {
       transactionalEntityManager.persist(purchasedEvent);
       await transactionalEntityManager.flush();
 
-      const unitsTotal = this.getUnitsTotalForPackageType(packageType.code);
+      const framesTotal = this.getSheetCountForPackageType(packageType.code);
       const stock = transactionalEntityManager.create(FilmStockEntity, {
         user,
         name: film.name,
         emulsion,
         packageType,
         filmFormat,
-        unitsTotal,
+        unitsTotal: framesTotal,
         expirationDate: film.expirationDate
       });
       transactionalEntityManager.persist(stock);
       await transactionalEntityManager.flush();
 
-      for (let ordinal = 1; ordinal <= unitsTotal; ordinal += 1) {
-        const unit = transactionalEntityManager.create(FilmUnitEntity, {
-          user,
-          filmStock: stock,
-          legacyFilm: film,
-          ordinal,
-          currentState: purchasedState,
-          boundHolderDevice: null,
-          boundHolderSlotNumber: null,
-          firstLoadedAt: null
-        });
-        transactionalEntityManager.persist(unit);
+      if (this.isLargeFormatCode(film.filmFormat.code)) {
+        await this.createFrames(transactionalEntityManager, user, film, stock, framesTotal, purchasedState);
       }
-      await transactionalEntityManager.flush();
 
       const persistedFilm = await transactionalEntityManager.findOneOrFail(
         FilmEntity,
@@ -178,14 +181,14 @@ export class FilmService {
     return this.filmRepository.listEvents(userId, filmId);
   }
 
-  async listUnits(userId: number, filmId: number): Promise<FilmUnit[]> {
+  async listFrames(userId: number, filmId: number): Promise<FilmFrame[]> {
     const film = await this.filmRepository.findByIdSummary(userId, filmId);
 
     if (!film) {
       throw new DomainError('NOT_FOUND', 'Film not found');
     }
 
-    return this.filmRepository.listUnits(userId, filmId);
+    return this.filmRepository.listFrames(userId, filmId);
   }
 
   async createEvent(userId: number, filmId: number, input: CreateFilmJourneyEventRequest): Promise<FilmJourneyEvent> {
@@ -198,6 +201,10 @@ export class FilmService {
 
       if (!film) {
         throw new DomainError('NOT_FOUND', 'Film not found');
+      }
+
+      if (this.isLargeFormatCode(film.filmFormat.code)) {
+        throw new DomainError('DOMAIN_ERROR', 'Large format film uses frame-level events only');
       }
 
       const targetState = await transactionalEntityManager.findOne(FilmStateEntity, { code: input.filmStateCode });
@@ -241,19 +248,8 @@ export class FilmService {
         await this.applyRemovedEventSideEffects(transactionalEntityManager, userId, film);
       }
 
-      const transitionUnit = await this.resolveFilmUnitForTransition(
-        transactionalEntityManager,
-        userId,
-        film.id,
-        input.filmStateCode,
-        persistedEventData
-      );
-      if (transitionUnit) {
-        transitionUnit.currentState = targetState;
-        transactionalEntityManager.persist(transitionUnit);
-      }
-
       film.currentState = targetState;
+      await this.updateAllFramesForFilm(transactionalEntityManager, userId, film.id, targetState);
 
       const event = transactionalEntityManager.create(FilmJourneyEventEntity, {
         film,
@@ -278,6 +274,84 @@ export class FilmService {
     });
   }
 
+  async createFrameEvent(userId: number, filmId: number, frameId: number, input: CreateFrameJourneyEventRequest): Promise<FrameJourneyEvent> {
+    return this.entityManager.transactional(async (transactionalEntityManager) => {
+      const film = await transactionalEntityManager.findOne(FilmEntity, { id: filmId, user: userId }, { populate: ['filmFormat'] });
+      if (!film) {
+        throw new DomainError('NOT_FOUND', 'Film not found');
+      }
+      if (!this.isLargeFormatCode(film.filmFormat.code)) {
+        throw new DomainError('DOMAIN_ERROR', 'Frame events are only supported for large format film');
+      }
+
+      const frame = await transactionalEntityManager.findOne(
+        FilmFrameEntity,
+        { id: frameId, user: userId, legacyFilm: filmId },
+        { populate: ['currentState', 'boundHolderDevice'] }
+      );
+      if (!frame) {
+        throw new DomainError('NOT_FOUND', 'Frame not found');
+      }
+
+      const parsedPayload = frameJourneyEventPayloadSchema.parse({
+        frameStateCode: input.frameStateCode,
+        eventData: input.eventData
+      });
+
+      const targetState = await transactionalEntityManager.findOne(FilmStateEntity, { code: input.frameStateCode });
+      if (!targetState) {
+        throw new DomainError('NOT_FOUND', 'Film state not found');
+      }
+
+      const transitionResult = applyFilmTransition(frame.currentState.code, input.frameStateCode);
+      if (transitionResult instanceof DomainError) {
+        throw transitionResult;
+      }
+
+      let persistedEventData: Record<string, unknown> = parsedPayload.eventData;
+      const user = transactionalEntityManager.getReference(UserEntity, userId);
+
+      if (input.frameStateCode === 'loaded') {
+        persistedEventData = await this.applyLoadedFrameEventSideEffects(transactionalEntityManager, userId, film, frame, parsedPayload.eventData, user);
+      }
+      if (input.frameStateCode === 'exposed') {
+        await this.applyExposedFrameEventSideEffects(transactionalEntityManager, userId, frameId);
+      }
+      if (input.frameStateCode === 'removed') {
+        await this.applyRemovedFrameEventSideEffects(transactionalEntityManager, userId, frameId);
+      }
+
+      frame.currentState = targetState;
+      transactionalEntityManager.persist(frame);
+
+      const event = transactionalEntityManager.create(FrameJourneyEventEntity, {
+        film,
+        filmFrame: frame,
+        user,
+        filmState: targetState,
+        occurredAt: input.occurredAt,
+        recordedAt: nowIso(),
+        notes: input.notes ?? null,
+        eventData: persistedEventData
+      });
+      transactionalEntityManager.persist(event);
+      await transactionalEntityManager.flush();
+
+      return {
+        id: event.id,
+        filmId: film.id,
+        filmFrameId: frame.id,
+        userId: userId,
+        filmStateId: targetState.id,
+        frameStateCode: targetState.code as FrameJourneyEvent['frameStateCode'],
+        occurredAt: event.occurredAt,
+        recordedAt: event.recordedAt,
+        notes: event.notes,
+        eventData: event.eventData
+      };
+    });
+  }
+
   private async findLatestEvent(entityManager: EntityManager, userId: number, filmId: number): Promise<FilmJourneyEventEntity | null> {
     return entityManager.findOne(
       FilmJourneyEventEntity,
@@ -298,13 +372,147 @@ export class FilmService {
       throw new DomainError('DOMAIN_ERROR', 'A loaded event requires a valid load target');
     }
 
-    const filmUnit = await this.resolveFilmUnitForLoad(entityManager, userId, film.id, loadTarget.filmUnitId);
-    if (!filmUnit) {
-      throw new DomainError('CONFLICT', 'No available film units remain for this film');
+    if (film.filmFormat.code === '35mm' && film.packageType.code === '100ft_bulk') {
+      throw new DomainError('DOMAIN_ERROR', '35mm 100ft bulk must be converted to a supported roll before loading');
     }
 
-    if (filmUnit.firstLoadedAt) {
-      throw new DomainError('CONFLICT', 'That film unit has already been loaded and cannot be reused');
+    const device = await entityManager.findOne(
+      FilmDeviceEntity,
+      { id: loadTarget.deviceId, user: userId },
+      {
+        populate: [
+          'user',
+          'deviceType',
+          'filmFormat',
+          'camera',
+          'interchangeableBack',
+          'filmHolder',
+          'filmHolder.holderType',
+          'filmHolder.slots',
+          'filmHolder.slots.slotState',
+          'filmHolder.slots.loadedFilm'
+        ]
+      }
+    );
+
+    if (!device) {
+      throw new DomainError('NOT_FOUND', 'Device not found');
+    }
+
+    if (device.filmFormat.id !== film.filmFormat.id) {
+      throw new DomainError('DOMAIN_ERROR', 'Device format does not match the film format');
+    }
+
+    let frames = await entityManager.find(
+      FilmFrameEntity,
+      { user: userId, legacyFilm: film.id },
+      { orderBy: { frameNumber: 'asc', id: 'asc' }, populate: ['currentState'] }
+    );
+
+    if (frames.some((frame) => frame.firstLoadedAt !== null)) {
+      throw new DomainError('CONFLICT', 'This film has already been loaded and cannot be reloaded');
+    }
+
+    if (frames.length === 0) {
+      const purchasedState = await entityManager.findOneOrFail(FilmStateEntity, { code: 'purchased' });
+      const stock = await entityManager.findOneOrFail(FilmStockEntity, { user: userId, name: film.name, filmFormat: film.filmFormat.id, packageType: film.packageType.id });
+      const frameCount = this.resolveFrameCountForFilm(film.filmFormat.code, film.packageType.code, device.frameSize);
+      await this.createFrames(entityManager, user, film, stock, frameCount, purchasedState);
+      frames = await entityManager.find(
+        FilmFrameEntity,
+        { user: userId, legacyFilm: film.id },
+        { orderBy: { frameNumber: 'asc', id: 'asc' }, populate: ['currentState'] }
+      );
+    }
+
+    if (device.camera) {
+      if (loadTarget.loadTargetType === 'film_holder_slot') {
+        throw new DomainError('DOMAIN_ERROR', 'Use camera_direct load target for direct camera loads');
+      }
+      if (device.camera.loadMode !== 'direct') {
+        throw new DomainError('DOMAIN_ERROR', 'This camera cannot be loaded directly');
+      }
+      const occupiedFilmId = await this.filmRepository.findOccupiedFilmForDeviceId(userId, device.id);
+      if (occupiedFilmId !== null) {
+        throw new DomainError('CONFLICT', 'Device already has an active loaded film');
+      }
+
+      for (const frame of frames) {
+        frame.firstLoadedAt = nowIso();
+        entityManager.persist(frame);
+      }
+      return eventData;
+    }
+
+    if (device.interchangeableBack) {
+      if (loadTarget.loadTargetType === 'film_holder_slot') {
+        throw new DomainError('DOMAIN_ERROR', 'Use interchangeable_back load target for back loads');
+      }
+      const occupiedFilmId = await this.filmRepository.findOccupiedFilmForDeviceId(userId, device.id);
+      if (occupiedFilmId !== null) {
+        throw new DomainError('CONFLICT', 'Device already has an active loaded film');
+      }
+
+      for (const frame of frames) {
+        frame.firstLoadedAt = nowIso();
+        entityManager.persist(frame);
+      }
+      return eventData;
+    }
+
+    if (!device.filmHolder) {
+      throw new DomainError('DOMAIN_ERROR', 'Loaded events require a compatible device');
+    }
+
+    if (loadTarget.loadTargetType !== 'film_holder_slot' || loadTarget.slotSideNumber === null) {
+      throw new DomainError('DOMAIN_ERROR', 'A holder load requires film_holder_slot target with slotNumber');
+    }
+    const slotSideNumber = loadTarget.slotSideNumber;
+    if (slotSideNumber < 1 || slotSideNumber > device.filmHolder.slotCount) {
+      throw new DomainError('DOMAIN_ERROR', 'That holder slot does not exist for this holder');
+    }
+
+    const latestSlot = await this.findLatestSlot(entityManager, userId, device.id, slotSideNumber);
+    if (latestSlot && latestSlot.slotStateCode !== 'removed') {
+      throw new DomainError('CONFLICT', 'That holder slot is already occupied');
+    }
+
+    const loadedSlotState = await entityManager.findOneOrFail(SlotStateEntity, { code: 'loaded' });
+    const slot = entityManager.create(FilmHolderSlotEntity, {
+      user,
+      filmHolder: device.filmHolder,
+      sideNumber: slotSideNumber,
+      slotState: loadedSlotState,
+      slotStateCode: loadedSlotState.code,
+      loadedFilm: film,
+      createdAt: nowIso()
+    });
+
+    entityManager.persist(slot);
+    for (const frame of frames) {
+      frame.firstLoadedAt = nowIso();
+      entityManager.persist(frame);
+    }
+    return eventData;
+  }
+
+  private async applyLoadedFrameEventSideEffects(
+    entityManager: EntityManager,
+    userId: number,
+    film: FilmEntity,
+    frame: FilmFrameEntity,
+    eventData: Record<string, unknown>,
+    user: UserEntity
+  ): Promise<Record<string, unknown>> {
+    const loadTarget = this.parseLoadedFrameEventData(eventData);
+    if (!loadTarget) {
+      throw new DomainError('DOMAIN_ERROR', 'A loaded frame event requires a valid load target');
+    }
+    if (loadTarget.filmFrameId !== frame.id) {
+      throw new DomainError('DOMAIN_ERROR', 'Loaded frame target does not match selected frame');
+    }
+    if (frame.firstLoadedAt) {
+      throw new DomainError('CONFLICT', 'That frame has already been loaded and cannot be reused');
     }
 
     const device = await entityManager.findOne(
@@ -346,9 +554,9 @@ export class FilmService {
         throw new DomainError('CONFLICT', 'Device already has an active loaded film');
       }
 
-      filmUnit.firstLoadedAt = nowIso();
-      entityManager.persist(filmUnit);
-      return this.withFilmUnitId(eventData, filmUnit.id);
+      frame.firstLoadedAt = nowIso();
+      entityManager.persist(frame);
+      return eventData;
     }
 
     if (device.interchangeableBack) {
@@ -360,9 +568,9 @@ export class FilmService {
         throw new DomainError('CONFLICT', 'Device already has an active loaded film');
       }
 
-      filmUnit.firstLoadedAt = nowIso();
-      entityManager.persist(filmUnit);
-      return this.withFilmUnitId(eventData, filmUnit.id);
+      frame.firstLoadedAt = nowIso();
+      entityManager.persist(frame);
+      return eventData;
     }
 
     if (!device.filmHolder) {
@@ -382,13 +590,13 @@ export class FilmService {
       throw new DomainError('CONFLICT', 'That holder slot is already occupied');
     }
 
-    if (filmUnit.boundHolderDevice && filmUnit.boundHolderSlotNumber) {
-      if (filmUnit.boundHolderDevice.id !== device.id || filmUnit.boundHolderSlotNumber !== slotSideNumber) {
-        throw new DomainError('CONFLICT', 'This film unit is permanently bound to a different holder slot');
+    if (frame.boundHolderDevice && frame.boundHolderSlotNumber) {
+      if (frame.boundHolderDevice.id !== device.id || frame.boundHolderSlotNumber !== slotSideNumber) {
+        throw new DomainError('CONFLICT', 'This frame is permanently bound to a different holder slot');
       }
     } else {
-      filmUnit.boundHolderDevice = device;
-      filmUnit.boundHolderSlotNumber = slotSideNumber;
+      frame.boundHolderDevice = device;
+      frame.boundHolderSlotNumber = slotSideNumber;
     }
 
     const loadedSlotState = await entityManager.findOneOrFail(SlotStateEntity, { code: 'loaded' });
@@ -403,9 +611,9 @@ export class FilmService {
     });
 
     entityManager.persist(slot);
-    filmUnit.firstLoadedAt = nowIso();
-    entityManager.persist(filmUnit);
-    return this.withFilmUnitId(eventData, filmUnit.id);
+    frame.firstLoadedAt = nowIso();
+    entityManager.persist(frame);
+    return eventData;
   }
 
   private async applyExposedEventSideEffects(
@@ -428,6 +636,33 @@ export class FilmService {
     }
 
     const slot = await this.findLatestSlot(entityManager, userId, deviceContext.deviceId, deviceContext.slotSideNumber);
+    if (!slot || slot.slotStateCode !== 'loaded') {
+      throw new DomainError('DOMAIN_ERROR', 'That holder slot is not loaded');
+    }
+
+    const exposedSlotState = await entityManager.findOneOrFail(SlotStateEntity, { code: 'exposed' });
+
+    slot.slotState = exposedSlotState;
+    slot.slotStateCode = exposedSlotState.code;
+    entityManager.persist(slot);
+  }
+
+  private async applyExposedFrameEventSideEffects(entityManager: EntityManager, userId: number, frameId: number): Promise<void> {
+    const latestLoadedEvent = await entityManager.findOne(
+      FrameJourneyEventEntity,
+      { user: userId, filmFrame: frameId, filmState: { code: 'loaded' } },
+      { orderBy: { occurredAt: 'desc', id: 'desc' }, populate: ['film', 'filmFrame', 'filmState'] }
+    );
+    if (!latestLoadedEvent) {
+      throw new DomainError('DOMAIN_ERROR', 'An exposed frame event requires a previous loaded frame event');
+    }
+
+    const loadedData = this.parseLoadedFrameEventData(latestLoadedEvent.eventData);
+    if (!loadedData || loadedData.loadTargetType !== 'film_holder_slot' || loadedData.slotSideNumber === null) {
+      return;
+    }
+
+    const slot = await this.findLatestSlot(entityManager, userId, loadedData.deviceId, loadedData.slotSideNumber);
     if (!slot || slot.slotStateCode !== 'loaded') {
       throw new DomainError('DOMAIN_ERROR', 'That holder slot is not loaded');
     }
@@ -464,6 +699,34 @@ export class FilmService {
     }
 
     const slot = await this.findLatestSlot(entityManager, userId, deviceContext.deviceId, deviceContext.slotSideNumber);
+    if (!slot || slot.slotStateCode !== 'exposed') {
+      throw new DomainError('DOMAIN_ERROR', 'That holder slot is not exposed');
+    }
+
+    const removedSlotState = await entityManager.findOneOrFail(SlotStateEntity, { code: 'removed' });
+
+    slot.slotState = removedSlotState;
+    slot.slotStateCode = removedSlotState.code;
+    slot.loadedFilm = null;
+    entityManager.persist(slot);
+  }
+
+  private async applyRemovedFrameEventSideEffects(entityManager: EntityManager, userId: number, frameId: number): Promise<void> {
+    const latestLoadedEvent = await entityManager.findOne(
+      FrameJourneyEventEntity,
+      { user: userId, filmFrame: frameId, filmState: { code: 'loaded' } },
+      { orderBy: { occurredAt: 'desc', id: 'desc' }, populate: ['film', 'filmFrame', 'filmState'] }
+    );
+    if (!latestLoadedEvent) {
+      throw new DomainError('DOMAIN_ERROR', 'A removed frame event requires a previous loaded frame event');
+    }
+
+    const loadedData = this.parseLoadedFrameEventData(latestLoadedEvent.eventData);
+    if (!loadedData || loadedData.loadTargetType !== 'film_holder_slot' || loadedData.slotSideNumber === null) {
+      return;
+    }
+
+    const slot = await this.findLatestSlot(entityManager, userId, loadedData.deviceId, loadedData.slotSideNumber);
     if (!slot || slot.slotStateCode !== 'exposed') {
       throw new DomainError('DOMAIN_ERROR', 'That holder slot is not exposed');
     }
@@ -567,7 +830,6 @@ export class FilmService {
       return {
         deviceId: parsed.data.eventData.cameraId,
         slotSideNumber: null,
-        filmUnitId: parsed.data.eventData.filmUnitId,
         loadTargetType: 'camera_direct'
       };
     }
@@ -576,7 +838,6 @@ export class FilmService {
       return {
         deviceId: parsed.data.eventData.interchangeableBackId,
         slotSideNumber: null,
-        filmUnitId: parsed.data.eventData.filmUnitId,
         loadTargetType: 'interchangeable_back'
       };
     }
@@ -584,71 +845,125 @@ export class FilmService {
     return {
       deviceId: parsed.data.eventData.filmHolderId,
       slotSideNumber: parsed.data.eventData.slotNumber,
-      filmUnitId: parsed.data.eventData.filmUnitId,
       loadTargetType: 'film_holder_slot'
     };
   }
 
-  private withFilmUnitId(eventData: Record<string, unknown>, filmUnitId: number): Record<string, unknown> {
-    return { ...eventData, filmUnitId };
-  }
+  private parseLoadedFrameEventData(eventData: unknown): NormalizedLoadedFrameEventData | null {
+    const parsed = frameJourneyEventPayloadSchema.safeParse({
+      frameStateCode: 'loaded',
+      eventData
+    });
 
-  private async resolveFilmUnitForTransition(
-    entityManager: EntityManager,
-    userId: number,
-    filmId: number,
-    filmStateCode: CreateFilmJourneyEventRequest['filmStateCode'],
-    eventData: Record<string, unknown>
-  ): Promise<FilmUnitEntity | null> {
-    if (filmStateCode === 'loaded') {
-      const loadedData = this.parseLoadedEventData(eventData);
-      if (!loadedData) {
-        return null;
-      }
-      return entityManager.findOne(
-        FilmUnitEntity,
-        { id: loadedData.filmUnitId, user: userId, legacyFilm: filmId },
-        { populate: ['currentState'] }
-      );
-    }
-
-    const loadedEvent = await this.findLatestEventByState(entityManager, userId, filmId, 'loaded');
-    if (!loadedEvent) {
+    if (!parsed.success || parsed.data.frameStateCode !== 'loaded') {
       return null;
     }
 
-    const loadedData = this.parseLoadedEventData(loadedEvent.eventData);
-    if (!loadedData) {
-      return null;
+    if (parsed.data.eventData.loadTargetType === 'camera_direct') {
+      return {
+        deviceId: parsed.data.eventData.cameraId,
+        slotSideNumber: null,
+        filmFrameId: parsed.data.eventData.filmFrameId,
+        loadTargetType: 'camera_direct'
+      };
     }
 
-    return entityManager.findOne(
-      FilmUnitEntity,
-      { id: loadedData.filmUnitId, user: userId, legacyFilm: filmId },
-      { populate: ['currentState'] }
-    );
+    if (parsed.data.eventData.loadTargetType === 'interchangeable_back') {
+      return {
+        deviceId: parsed.data.eventData.interchangeableBackId,
+        slotSideNumber: null,
+        filmFrameId: parsed.data.eventData.filmFrameId,
+        loadTargetType: 'interchangeable_back'
+      };
+    }
+
+    return {
+      deviceId: parsed.data.eventData.filmHolderId,
+      slotSideNumber: parsed.data.eventData.slotNumber,
+      filmFrameId: parsed.data.eventData.filmFrameId,
+      loadTargetType: 'film_holder_slot'
+    };
   }
 
-  private async resolveFilmUnitForLoad(
+  private async updateAllFramesForFilm(entityManager: EntityManager, userId: number, filmId: number, targetState: FilmStateEntity): Promise<void> {
+    const frames = await entityManager.find(FilmFrameEntity, { user: userId, legacyFilm: filmId });
+    for (const frame of frames) {
+      frame.currentState = targetState;
+      entityManager.persist(frame);
+    }
+  }
+
+  private async createFrames(
     entityManager: EntityManager,
-    userId: number,
-    filmId: number,
-    filmUnitId: number
-  ): Promise<FilmUnitEntity | null> {
-    return entityManager.findOne(
-      FilmUnitEntity,
-      { id: filmUnitId, user: userId, legacyFilm: filmId },
-      { populate: ['user', 'filmStock', 'legacyFilm', 'currentState', 'boundHolderDevice'] }
-    );
+    user: UserEntity,
+    film: FilmEntity,
+    stock: FilmStockEntity,
+    frameCount: number,
+    initialState: FilmStateEntity
+  ): Promise<void> {
+    for (let frameNumber = 1; frameNumber <= frameCount; frameNumber += 1) {
+      const frame = entityManager.create(FilmFrameEntity, {
+        user,
+        filmStock: stock,
+        legacyFilm: film,
+        frameNumber,
+        currentState: initialState,
+        boundHolderDevice: null,
+        boundHolderSlotNumber: null,
+        firstLoadedAt: null
+      });
+      entityManager.persist(frame);
+    }
+    await entityManager.flush();
   }
 
-  private getUnitsTotalForPackageType(packageTypeCode: string): number {
+  private isLargeFormatCode(formatCode: string): boolean {
+    return formatCode === '4x5' || formatCode === '8x10' || formatCode === '2x3';
+  }
+
+  private getSheetCountForPackageType(packageTypeCode: string): number {
     const sheetsMatch = /^(\d+)sheets$/i.exec(packageTypeCode);
     if (sheetsMatch) {
-      const units = Number(sheetsMatch[1]);
-      return Number.isInteger(units) && units > 0 ? units : 1;
+      const frames = Number(sheetsMatch[1]);
+      return Number.isInteger(frames) && frames > 0 ? frames : 1;
     }
     return 1;
+  }
+
+  private resolveFrameCountForFilm(formatCode: string, packageTypeCode: string, frameSize: string): number {
+    if (formatCode === '35mm') {
+      if (packageTypeCode === '100ft_bulk') {
+        throw new DomainError('DOMAIN_ERROR', '35mm 100ft bulk must be converted to a supported roll before loading');
+      }
+      const exposures = packageTypeCode === '24exp' ? 24 : packageTypeCode === '36exp' ? 36 : null;
+      if (!exposures) {
+        throw new DomainError('DOMAIN_ERROR', 'Unsupported 35mm package type for frame generation');
+      }
+      if (frameSize === 'full_frame') {
+        return exposures;
+      }
+      if (frameSize === 'half_frame') {
+        return exposures * 2;
+      }
+      throw new DomainError('DOMAIN_ERROR', 'Unsupported 35mm frame size for frame generation');
+    }
+
+    if (formatCode === '120' || formatCode === '220') {
+      const frames120 = MEDIUM_FRAME_COUNTS_120[frameSize];
+      if (!frames120) {
+        throw new DomainError('DOMAIN_ERROR', 'Unsupported medium format frame size for frame generation');
+      }
+      return formatCode === '220' ? frames120 * 2 : frames120;
+    }
+
+    if (formatCode === 'InstaxMini' || formatCode === 'InstaxWide' || formatCode === 'InstaxSquare') {
+      if (packageTypeCode !== 'pack') {
+        throw new DomainError('DOMAIN_ERROR', 'Unsupported Instax package type for frame generation');
+      }
+      return 10;
+    }
+
+    throw new DomainError('DOMAIN_ERROR', 'Unsupported film format for non-large frame generation');
   }
 
   private async shouldAllowExposedToSentForDevTransition(

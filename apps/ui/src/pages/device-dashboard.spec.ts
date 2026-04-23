@@ -14,7 +14,7 @@ function makeCamera(id: number, make: string, model: string): FilmDevice {
     deviceTypeId: 1,
     deviceTypeCode: 'camera',
     filmFormatId: 1,
-    frameSize: '36x24',
+    frameSize: 'full_frame',
     make,
     model,
     loadMode: 'direct',

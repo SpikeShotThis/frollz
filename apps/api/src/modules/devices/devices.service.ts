@@ -1,4 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
+import { EntityManager } from '@mikro-orm/core';
 import type {
   CreateDeviceMountRequest,
   CreateFilmDeviceRequest,
@@ -10,6 +11,7 @@ import type {
   UpdateFilmDeviceRequest
 } from '@frollz2/schema';
 import { DomainError } from '../../domain/errors.js';
+import { FilmFormatEntity } from '../../infrastructure/entities/index.js';
 import { FilmRepository } from '../../infrastructure/repositories/film.repository.js';
 import { DeviceRepository } from '../../infrastructure/repositories/device.repository.js';
 
@@ -17,7 +19,8 @@ import { DeviceRepository } from '../../infrastructure/repositories/device.repos
 export class DevicesService {
   constructor(
     @Inject(DeviceRepository) private readonly deviceRepository: DeviceRepository,
-    @Inject(FilmRepository) private readonly filmRepository: FilmRepository
+    @Inject(FilmRepository) private readonly filmRepository: FilmRepository,
+    @Inject(EntityManager) private readonly entityManager: EntityManager
   ) { }
 
   list(userId: number): Promise<FilmDevice[]> {
@@ -34,11 +37,20 @@ export class DevicesService {
     return device;
   }
 
-  create(userId: number, input: CreateFilmDeviceRequest): Promise<FilmDevice> {
+  async create(userId: number, input: CreateFilmDeviceRequest): Promise<FilmDevice> {
+    await this.assertFrameSizeMatchesFormat(input.filmFormatId, input.frameSize);
     return this.deviceRepository.create(userId, input);
   }
 
   async update(userId: number, deviceId: number, input: UpdateFilmDeviceRequest): Promise<FilmDevice> {
+    if (input.frameSize !== undefined || input.filmFormatId !== undefined) {
+      const current = await this.deviceRepository.findById(userId, deviceId);
+      if (!current) {
+        throw new DomainError('NOT_FOUND', 'Device not found');
+      }
+      await this.assertFrameSizeMatchesFormat(input.filmFormatId ?? current.filmFormatId, input.frameSize ?? current.frameSize);
+    }
+
     const device = await this.deviceRepository.update(userId, deviceId, input);
 
     if (!device) {
@@ -145,5 +157,29 @@ export class DevicesService {
     }
 
     return unmounted;
+  }
+
+  private async assertFrameSizeMatchesFormat(filmFormatId: number, frameSize: string): Promise<void> {
+    const format = await this.entityManager.findOne(FilmFormatEntity, { id: filmFormatId });
+    if (!format) {
+      throw new DomainError('NOT_FOUND', 'Film format not found');
+    }
+
+    const allowedByFormat: Record<string, Set<string>> = {
+      '35mm': new Set(['full_frame', 'half_frame']),
+      '120': new Set(['645', '6x6', '6x7', '6x8', '6x9', '6x12', '6x17']),
+      '220': new Set(['645', '6x6', '6x7', '6x8', '6x9', '6x12', '6x17']),
+      '4x5': new Set(['4x5']),
+      '8x10': new Set(['8x10']),
+      '2x3': new Set(['2x3']),
+      InstaxMini: new Set(['instax']),
+      InstaxWide: new Set(['instax']),
+      InstaxSquare: new Set(['instax'])
+    };
+
+    const allowed = allowedByFormat[format.code];
+    if (!allowed || !allowed.has(frameSize)) {
+      throw new DomainError('DOMAIN_ERROR', `Frame size ${frameSize} is not valid for ${format.code}`);
+    }
   }
 }

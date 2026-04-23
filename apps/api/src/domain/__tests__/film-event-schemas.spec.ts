@@ -10,7 +10,6 @@ describe('filmJourneyEventPayloadSchema', () => {
         filmStateCode: 'loaded',
         eventData: {
           loadTargetType: 'camera_direct',
-          filmUnitId: 1,
           cameraId: 2,
           intendedPushPull: null
         }
@@ -24,7 +23,6 @@ describe('filmJourneyEventPayloadSchema', () => {
         filmStateCode: 'loaded',
         eventData: {
           loadTargetType: 'film_holder_slot',
-          filmUnitId: 7,
           filmHolderId: 3,
           slotNumber: 2,
           intendedPushPull: null
@@ -50,9 +48,7 @@ describe('filmJourneyEventPayloadSchema', () => {
       filmJourneyEventPayloadSchema.parse({
         filmStateCode: 'loaded',
         eventData: {
-          loadTargetType: 'film_holder_slot',
-          filmHolderId: 2,
-          slotNumber: 1,
+          loadTargetType: 'camera_direct',
           intendedPushPull: null
         }
       })

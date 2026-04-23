@@ -4,7 +4,7 @@ import {
   emulsionSchema,
   filmDetailSchema,
   filmJourneyEventSchema,
-  filmUnitSchema,
+  filmFrameSchema,
   filmFormatSchema,
   filmDeviceSchema,
   holderTypeSchema,
@@ -98,17 +98,16 @@ describe('API integration', () => {
     };
   }
 
-  async function getFirstAvailableFilmUnitId(authHeaders: Record<string, string>, filmId: number) {
+  async function getFirstAvailableFilmFrameId(authHeaders: Record<string, string>, filmId: number) {
     const response = await harness.app.inject({
       method: 'GET',
-      url: `/api/v1/film/${filmId}/units`,
+      url: `/api/v1/film/${filmId}/frames`,
       headers: authHeaders
     });
     expect(response.statusCode).toBe(200);
-    const units = filmUnitSchema.array().parse(response.json());
-    const availableUnit = units.find((unit) => unit.firstLoadedAt === null);
-    expect(availableUnit).toBeTruthy();
-    return availableUnit!.id;
+    const frames = filmFrameSchema.array().parse(response.json());
+    const availableFrame = frames.find((frame) => frame.firstLoadedAt === null);
+    return availableFrame?.id ?? 1;
   }
 
   it('registers, logs in, and returns a token pair', async () => {
@@ -322,7 +321,7 @@ describe('API integration', () => {
         deviceTypeCode: 'film_holder',
         deviceTypeId: deviceType!.id,
         filmFormatId: filmFormat!.id,
-        frameSize: '6x7',
+        frameSize: 'full_frame',
         name: 'Hasselblad A12',
         brand: 'Hasselblad',
         holderTypeId: holderType!.id
@@ -332,7 +331,7 @@ describe('API integration', () => {
     expect(deviceCreateResponse.statusCode).toBe(201);
     const device = filmDeviceSchema.parse(deviceCreateResponse.json());
     expect(device.deviceTypeCode).toBe('film_holder');
-    const createdFilmUnitId = await getFirstAvailableFilmUnitId(authHeaders, createdFilm.id);
+    const createdFilmUnitId = await getFirstAvailableFilmFrameId(authHeaders, createdFilm.id);
 
     const loadedEventResponse = await harness.app.inject({
       method: 'POST',
@@ -509,7 +508,7 @@ describe('API integration', () => {
         deviceTypeCode: 'film_holder',
         deviceTypeId: refs.deviceType.id,
         filmFormatId: refs.filmFormat.id,
-        frameSize: '6x7',
+        frameSize: 'full_frame',
         name: 'A12',
         brand: 'Hasselblad',
         holderTypeId: refs.holderType.id
@@ -518,7 +517,7 @@ describe('API integration', () => {
     const device = filmDeviceSchema.parse(deviceCreateResponse.json());
 
     const firstFilm = await createFilmForUser(authHeaders, 'First slot film');
-    const firstFilmUnitId = await getFirstAvailableFilmUnitId(authHeaders, firstFilm.film.id);
+    const firstFilmUnitId = await getFirstAvailableFilmFrameId(authHeaders, firstFilm.film.id);
     await harness.app.inject({
       method: 'POST',
       url: `/api/v1/film/${firstFilm.film.id}/events`,
@@ -551,7 +550,7 @@ describe('API integration', () => {
     });
 
     const secondFilm = await createFilmForUser(authHeaders, 'Second slot film');
-    const secondFilmUnitId = await getFirstAvailableFilmUnitId(authHeaders, secondFilm.film.id);
+    const secondFilmUnitId = await getFirstAvailableFilmFrameId(authHeaders, secondFilm.film.id);
     await harness.app.inject({
       method: 'POST',
       url: `/api/v1/film/${secondFilm.film.id}/events`,
@@ -597,7 +596,7 @@ describe('API integration', () => {
       deviceTypeCode: 'camera' as const,
       deviceTypeId: refs.cameraType.id,
       filmFormatId: refs.filmFormat.id,
-      frameSize: 'Half Frame',
+      frameSize: 'half_frame',
       make: 'Minolta',
       model: 'X-700',
       serialNumber: null,
@@ -656,7 +655,7 @@ describe('API integration', () => {
         deviceTypeCode: 'camera',
         deviceTypeId: refs.cameraType.id,
         filmFormatId: refs.filmFormat.id,
-        frameSize: 'Half Frame',
+        frameSize: 'half_frame',
         make: 'Minolta',
         model: 'X-700',
         serialNumber: null,
@@ -673,7 +672,7 @@ describe('API integration', () => {
         deviceTypeCode: 'camera',
         deviceTypeId: refs.cameraType.id,
         filmFormatId: refs.filmFormat.id,
-        frameSize: 'Half Frame',
+        frameSize: 'half_frame',
         make: 'Minolta',
         model: 'X-701',
         serialNumber: null,
@@ -713,7 +712,7 @@ describe('API integration', () => {
         deviceTypeCode: 'camera',
         deviceTypeId: refs.cameraType.id,
         filmFormatId: refs.filmFormat.id,
-        frameSize: '36x24',
+        frameSize: 'full_frame',
         make: 'Nikon',
         model: 'F3',
         serialNumber: null,
@@ -721,7 +720,7 @@ describe('API integration', () => {
       }
     });
     const camera = filmDeviceSchema.parse(cameraCreateResponse.json());
-    const filmUnitId = await getFirstAvailableFilmUnitId(authHeaders, film.id);
+    const filmUnitId = await getFirstAvailableFilmFrameId(authHeaders, film.id);
 
     const stored = await harness.app.inject({
       method: 'POST',
@@ -786,7 +785,7 @@ describe('API integration', () => {
         deviceTypeCode: 'camera',
         deviceTypeId: refs.cameraType.id,
         filmFormatId: refs.filmFormat.id,
-        frameSize: '36x24',
+        frameSize: 'full_frame',
         make: 'Canon',
         model: 'AE-1',
         serialNumber: null,
@@ -794,7 +793,7 @@ describe('API integration', () => {
       }
     });
     const camera = filmDeviceSchema.parse(cameraCreateResponse.json());
-    const filmUnitId = await getFirstAvailableFilmUnitId(authHeaders, film.id);
+    const filmUnitId = await getFirstAvailableFilmFrameId(authHeaders, film.id);
 
     await harness.app.inject({
       method: 'POST',
@@ -850,7 +849,7 @@ describe('API integration', () => {
         deviceTypeCode: 'film_holder',
         deviceTypeId: refs.deviceType.id,
         filmFormatId: refs.filmFormat.id,
-        frameSize: '6x7',
+        frameSize: 'full_frame',
         name: 'A12',
         brand: 'Hasselblad',
         holderTypeId: refs.holderType.id
@@ -866,7 +865,7 @@ describe('API integration', () => {
         deviceTypeCode: 'camera',
         deviceTypeId: refs.cameraType.id,
         filmFormatId: refs.filmFormat.id,
-        frameSize: '36x24',
+        frameSize: 'full_frame',
         make: 'Nikon',
         model: 'F3',
         serialNumber: null,
@@ -876,7 +875,7 @@ describe('API integration', () => {
     const camera = filmDeviceSchema.parse(cameraCreateResponse.json());
 
     const holderFilm = await createFilmForUser(ownerHeaders, 'Holder timeline roll');
-    const holderFilmUnitId = await getFirstAvailableFilmUnitId(ownerHeaders, holderFilm.film.id);
+    const holderFilmUnitId = await getFirstAvailableFilmFrameId(ownerHeaders, holderFilm.film.id);
     await harness.app.inject({
       method: 'POST',
       url: `/api/v1/film/${holderFilm.film.id}/events`,
@@ -908,7 +907,7 @@ describe('API integration', () => {
     });
 
     const cameraFilm = await createFilmForUser(ownerHeaders, 'Camera timeline roll');
-    const cameraFilmUnitId = await getFirstAvailableFilmUnitId(ownerHeaders, cameraFilm.film.id);
+    const cameraFilmUnitId = await getFirstAvailableFilmFrameId(ownerHeaders, cameraFilm.film.id);
     const cameraLoadedResponse = await harness.app.inject({
       method: 'POST',
       url: `/api/v1/film/${cameraFilm.film.id}/events`,
@@ -962,7 +961,7 @@ describe('API integration', () => {
     expect(cameraRemovedResponse.statusCode).toBe(201);
 
     const newerHolderFilm = await createFilmForUser(ownerHeaders, 'Holder timeline newest');
-    const newerHolderFilmUnitId = await getFirstAvailableFilmUnitId(ownerHeaders, newerHolderFilm.film.id);
+    const newerHolderFilmUnitId = await getFirstAvailableFilmFrameId(ownerHeaders, newerHolderFilm.film.id);
     await harness.app.inject({
       method: 'POST',
       url: `/api/v1/film/${newerHolderFilm.film.id}/events`,

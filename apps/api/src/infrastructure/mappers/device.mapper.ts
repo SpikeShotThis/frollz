@@ -1,5 +1,5 @@
 import type { DeviceMount, FilmHolderSlot, FilmDevice } from '@frollz2/schema';
-import { holderTypeSchema, slotStateSchema } from '@frollz2/schema';
+import { frameSizeCodeSchema, holderTypeSchema, slotStateSchema } from '@frollz2/schema';
 import type { DeviceMountEntity, FilmHolderSlotEntity, FilmDeviceEntity } from '../entities/index.js';
 
 function normalizeSideNumber(value: number): number {
@@ -27,7 +27,7 @@ export function mapFilmDeviceEntity(entity: FilmDeviceEntity): FilmDevice {
       userId: entity.user.id,
       deviceTypeId: entity.deviceType.id,
       filmFormatId: entity.filmFormat.id,
-      frameSize: entity.frameSize,
+      frameSize: frameSizeCodeSchema.parse(entity.frameSize),
       deviceTypeCode: 'camera' as const,
       make: entity.camera.make,
       model: entity.camera.model,
@@ -46,7 +46,7 @@ export function mapFilmDeviceEntity(entity: FilmDeviceEntity): FilmDevice {
       deviceTypeId: entity.deviceType.id,
       deviceTypeCode: 'interchangeable_back' as const,
       filmFormatId: entity.filmFormat.id,
-      frameSize: entity.frameSize,
+      frameSize: frameSizeCodeSchema.parse(entity.frameSize),
       name: entity.interchangeableBack.name,
       system: entity.interchangeableBack.system
     };
@@ -59,7 +59,7 @@ export function mapFilmDeviceEntity(entity: FilmDeviceEntity): FilmDevice {
       deviceTypeId: entity.deviceType.id,
       deviceTypeCode: 'film_holder' as const,
       filmFormatId: entity.filmFormat.id,
-      frameSize: entity.frameSize,
+      frameSize: frameSizeCodeSchema.parse(entity.frameSize),
       name: entity.filmHolder.name,
       brand: entity.filmHolder.brand,
       slotCount: entity.filmHolder.slotCount,
