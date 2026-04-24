@@ -1,6 +1,15 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { EntityManager } from '@mikro-orm/core';
-import { filmJourneyEventDataLoadedSchema, type DeviceLoadTimelineEvent } from '@frollz2/schema';
+import {
+  filmJourneyEventDataLoadedSchema,
+  type DeviceLoadTimelineEvent,
+  type FilmDetail,
+  type FilmFrame,
+  type FilmJourneyEvent,
+  type FilmListQuery,
+  type FilmSummary,
+  type FilmUpdateRequest
+} from '@frollz2/schema';
 import { FilmRepository } from './film.repository.js';
 import { FilmEntity, FilmFrameEntity, FilmJourneyEventEntity } from '../entities/index.js';
 import { mapFilmDetailEntity, mapFilmFrameEntity, mapFilmJourneyEventEntity, mapFilmSummaryEntity } from '../mappers/index.js';
@@ -62,7 +71,7 @@ export class MikroOrmFilmRepository extends FilmRepository {
     super();
   }
 
-  async list(userId: number, query: { stateCode?: 'purchased' | 'stored' | 'loaded' | 'exposed' | 'removed' | 'sent_for_dev' | 'developed' | 'scanned' | 'archived'; filmFormatId?: number; emulsionId?: number }) {
+  async list(userId: number, query: FilmListQuery): Promise<FilmSummary[]> {
     const films = await this.entityManager.find(
       FilmEntity,
       {
@@ -77,7 +86,7 @@ export class MikroOrmFilmRepository extends FilmRepository {
     return films.map(mapFilmSummaryEntity);
   }
 
-  async findById(userId: number, filmId: number) {
+  async findById(userId: number, filmId: number): Promise<FilmDetail | null> {
     const film = await this.entityManager.findOne(
       FilmEntity,
       { id: filmId, user: userId },
@@ -97,7 +106,7 @@ export class MikroOrmFilmRepository extends FilmRepository {
     return mapFilmDetailEntity(film, latestEvent ?? null);
   }
 
-  async findByIdSummary(userId: number, filmId: number) {
+  async findByIdSummary(userId: number, filmId: number): Promise<FilmSummary | null> {
     const film = await this.entityManager.findOne(
       FilmEntity,
       { id: filmId, user: userId },
@@ -107,7 +116,7 @@ export class MikroOrmFilmRepository extends FilmRepository {
     return film ? mapFilmSummaryEntity(film) : null;
   }
 
-  async update(userId: number, filmId: number, input: { name?: string; expirationDate?: string | null }) {
+  async update(userId: number, filmId: number, input: FilmUpdateRequest): Promise<FilmSummary | null> {
     const film = await this.entityManager.findOne(FilmEntity, { id: filmId, user: userId });
 
     if (!film) {
@@ -134,7 +143,7 @@ export class MikroOrmFilmRepository extends FilmRepository {
     return mapFilmSummaryEntity(persisted);
   }
 
-  async listEvents(userId: number, filmId: number) {
+  async listEvents(userId: number, filmId: number): Promise<FilmJourneyEvent[]> {
     const events = await this.entityManager.find(
       FilmJourneyEventEntity,
       { film: filmId, user: userId },
@@ -144,7 +153,7 @@ export class MikroOrmFilmRepository extends FilmRepository {
     return events.map(mapFilmJourneyEventEntity);
   }
 
-  async listFrames(userId: number, filmId: number) {
+  async listFrames(userId: number, filmId: number): Promise<FilmFrame[]> {
     const frames = await this.entityManager.find(
       FilmFrameEntity,
       { user: userId, legacyFilm: filmId },

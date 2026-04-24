@@ -25,9 +25,7 @@ export function filterAndSortDevicesForChildTable(devices: FilmDevice[], searchT
     const searchable = [
       device.deviceTypeCode,
       device.frameSize,
-      device.deviceTypeCode === 'camera' ? `${device.make} ${device.model} ${device.serialNumber ?? ''}` : '',
-      device.deviceTypeCode === 'interchangeable_back' ? `${device.name} ${device.system}` : '',
-      device.deviceTypeCode === 'film_holder' ? `${device.name} ${device.brand} ${device.holderTypeCode}` : ''
+      getDeviceSearchLabel(device)
     ]
       .join(' ')
       .toLowerCase();
@@ -69,4 +67,20 @@ export function devicePrimaryLabel(device: FilmDevice): string {
   }
 
   return `${device.name} ${device.brand}`;
+}
+
+function getDeviceSearchLabel(device: FilmDevice): string {
+  if (device.deviceTypeCode === 'camera') {
+    return `${device.make} ${device.model} ${device.serialNumber ?? ''}`;
+  }
+
+  if (device.deviceTypeCode === 'interchangeable_back') {
+    return `${device.name} ${device.system}`;
+  }
+
+  if (device.deviceTypeCode === 'film_holder') {
+    return `${device.name} ${device.brand} ${device.holderTypeCode}`;
+  }
+
+  return '';
 }

@@ -935,7 +935,12 @@ export class FilmService {
       if (packageTypeCode === '100ft_bulk') {
         throw new DomainError('DOMAIN_ERROR', '35mm 100ft bulk must be converted to a supported roll before loading');
       }
-      const exposures = packageTypeCode === '24exp' ? 24 : packageTypeCode === '36exp' ? 36 : null;
+      let exposures: number | null = null;
+      if (packageTypeCode === '24exp') {
+        exposures = 24;
+      } else if (packageTypeCode === '36exp') {
+        exposures = 36;
+      }
       if (!exposures) {
         throw new DomainError('DOMAIN_ERROR', 'Unsupported 35mm package type for frame generation');
       }

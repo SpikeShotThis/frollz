@@ -22,6 +22,26 @@ import {
 import { useApi } from '../composables/useApi.js';
 import { readApiData } from '../composables/api-envelope.js';
 
+function buildFilmListUrl(query: FilmListQuery): string {
+  const searchParams = new URLSearchParams();
+
+  if (query.stateCode) {
+    searchParams.set('stateCode', query.stateCode);
+  }
+  if (query.filmFormatId) {
+    searchParams.set('filmFormatId', String(query.filmFormatId));
+  }
+  if (query.emulsionId) {
+    searchParams.set('emulsionId', String(query.emulsionId));
+  }
+
+  if (searchParams.size === 0) {
+    return '/api/v1/film';
+  }
+
+  return `/api/v1/film?${searchParams.toString()}`;
+}
+
 export const useFilmStore = defineStore('film', () => {
   const { request } = useApi();
   const films = ref<FilmSummary[]>([]);
@@ -42,23 +62,11 @@ export const useFilmStore = defineStore('film', () => {
       return loadFilmsInFlight;
     }
 
-    const searchParams = new URLSearchParams();
-
-    if (query.stateCode) {
-      searchParams.set('stateCode', query.stateCode);
-    }
-    if (query.filmFormatId) {
-      searchParams.set('filmFormatId', String(query.filmFormatId));
-    }
-    if (query.emulsionId) {
-      searchParams.set('emulsionId', String(query.emulsionId));
-    }
-
     isLoading.value = true;
     filmsError.value = null;
     loadFilmsInFlight = (async () => {
       try {
-        const response = await request(`/api/v1/film${searchParams.size > 0 ? `?${searchParams.toString()}` : ''}`);
+        const response = await request(buildFilmListUrl(query));
         films.value = filmSummarySchema.array().parse(await readApiData(response));
       } catch (error) {
         filmsError.value = error instanceof Error ? error.message : 'Failed to load films';

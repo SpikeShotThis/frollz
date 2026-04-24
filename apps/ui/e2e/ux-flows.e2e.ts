@@ -39,23 +39,49 @@ const referencePayload = {
   }
 };
 
+const authTokenResponse = { data: { accessToken: 'access-token', refreshToken: 'refresh-token' } };
+const authUserResponse = { data: { id: 1, email: 'ux@example.com', name: 'UX User', createdAt: '2026-01-01T00:00:00.000Z' } };
+const defaultPassword = 'good-password';
+
+async function fillLoginForm(page: Page, password: string): Promise<void> {
+  await page.locator('[data-testid="login-email"] input').fill(authUserResponse.data.email);
+  await page.locator('[data-testid="login-password"] input').fill(password);
+}
+
+async function stubReference(page: Page, payload: unknown = referencePayload): Promise<void> {
+  await page.route('**/api/v1/reference', async (route) => {
+    await route.fulfill({ json: payload });
+  });
+}
+
+async function stubEmptyFilms(page: Page): Promise<void> {
+  await page.route('**/api/v1/film*', async (route) => {
+    await route.fulfill({ json: { data: [] } });
+  });
+}
+
+async function stubEmptyDevices(page: Page): Promise<void> {
+  await page.route('**/api/v1/devices*', async (route) => {
+    await route.fulfill({ json: { data: [] } });
+  });
+}
+
 async function mockLogin(page: Page): Promise<void> {
   await page.route('**/api/v1/auth/login', async (route) => {
-    await route.fulfill({ json: { data: { accessToken: 'access-token', refreshToken: 'refresh-token' } } });
+    await route.fulfill({ json: authTokenResponse });
   });
   await page.route('**/api/v1/auth/refresh', async (route) => {
-    await route.fulfill({ json: { data: { accessToken: 'access-token', refreshToken: 'refresh-token' } } });
+    await route.fulfill({ json: authTokenResponse });
   });
 
   await page.route('**/api/v1/auth/me', async (route) => {
-    await route.fulfill({ json: { data: { id: 1, email: 'ux@example.com', name: 'UX User', createdAt: '2026-01-01T00:00:00.000Z' } } });
+    await route.fulfill({ json: authUserResponse });
   });
 }
 
 async function loginThroughUi(page: Page): Promise<void> {
   await page.goto('/login');
-  await page.locator('[data-testid="login-email"] input').fill('ux@example.com');
-  await page.locator('[data-testid="login-password"] input').fill('good-password');
+  await fillLoginForm(page, defaultPassword);
   await page.getByTestId('login-submit').click();
   await expect(page).toHaveURL(/\/dashboard/);
 }
@@ -74,29 +100,23 @@ test('auth flow shows error and succeeds with visible feedback', async ({ page }
       return;
     }
 
-    await route.fulfill({ json: { data: { accessToken: 'access-token', refreshToken: 'refresh-token' } } });
+    await route.fulfill({ json: authTokenResponse });
   });
 
   await page.route('**/api/v1/auth/me', async (route) => {
-    await route.fulfill({ json: { data: { id: 1, email: 'ux@example.com', name: 'UX User', createdAt: '2026-01-01T00:00:00.000Z' } } });
+    await route.fulfill({ json: authUserResponse });
   });
 
-  await page.route('**/api/v1/reference', async (route) => {
-    await route.fulfill({ json: referencePayload });
-  });
-
-  await page.route('**/api/v1/film*', async (route) => {
-    await route.fulfill({ json: { data: [] } });
-  });
+  await stubReference(page);
+  await stubEmptyFilms(page);
 
   await page.goto('/login');
-  await page.locator('[data-testid="login-email"] input').fill('ux@example.com');
-  await page.locator('[data-testid="login-password"] input').fill('wrong-password');
+  await fillLoginForm(page, 'wrong-password');
   await page.getByTestId('login-submit').click();
 
   await expect(page.getByText(/Invalid credentials/i)).toBeVisible();
 
-  await page.locator('[data-testid="login-password"] input').fill('good-password');
+  await page.locator('[data-testid="login-password"] input').fill(defaultPassword);
   await page.getByTestId('login-submit').click();
 
   await expect(page).toHaveURL(/\/dashboard/);
@@ -108,9 +128,7 @@ test('film create flow validates required fields from dashboard create action', 
 
   const films: FilmSummary[] = [];
 
-  await page.route('**/api/v1/reference', async (route) => {
-    await route.fulfill({ json: referencePayload });
-  });
+  await stubReference(page);
 
   await page.route('**/api/v1/film*', async (route) => {
     if (route.request().method() === 'POST') {
@@ -159,9 +177,7 @@ test('film create flow validates required fields from dashboard create action', 
 test('event composer opens from inventory and supports conditional fields', async ({ page }) => {
   await mockLogin(page);
 
-  await page.route('**/api/v1/reference', async (route) => {
-    await route.fulfill({ json: referencePayload });
-  });
+  await stubReference(page);
 
   await page.route('**/api/v1/film*', async (route) => {
     const url = new URL(route.request().url());
@@ -302,9 +318,7 @@ test('mini dashboards render recent tail-window lists and stats cards', async ({
     }
   };
 
-  await page.route('**/api/v1/reference', async (route) => {
-    await route.fulfill({ json: expandedReferencePayload });
-  });
+  await stubReference(page, expandedReferencePayload);
 
   await page.route('**/api/v1/film*', async (route) => {
     await route.fulfill({
@@ -343,9 +357,12 @@ test('mini dashboards render recent tail-window lists and stats cards', async ({
           deviceTypeId: 1,
           deviceTypeCode: 'camera',
           filmFormatId: 1,
-          frameSize: '36x24',
+          frameSize: 'full_frame',
           make: 'Nikon',
           model: `F${index + 1}`,
+          loadMode: 'direct',
+          canUnload: true,
+          cameraSystem: '',
           serialNumber: null,
           dateAcquired: null
         }))
@@ -380,29 +397,34 @@ test('mini dashboards render recent tail-window lists and stats cards', async ({
 test('device sub-route uses page-centric table and links to device detail', async ({ page }) => {
   await mockLogin(page);
 
-  await page.route('**/api/v1/reference', async (route) => {
-    await route.fulfill({
-      json: {
-        data: {
-          ...referencePayload.data,
-          filmFormats: [
-            { id: 1, code: '35mm', label: '35mm' },
-            { id: 2, code: '120', label: '120' },
-            { id: 3, code: '4x5', label: '4x5' }
-          ],
-          deviceTypes: [
-            { id: 1, code: 'camera', label: 'Camera' },
-            { id: 2, code: 'interchangeable_back', label: 'Interchangeable back' },
-            { id: 3, code: 'film_holder', label: 'Film holder' }
-          ],
-          holderTypes: [{ id: 1, code: 'standard', label: 'Standard' }]
-        }
-      }
-    });
+  await stubReference(page, {
+    data: {
+      ...referencePayload.data,
+      filmFormats: [
+        { id: 1, code: '35mm', label: '35mm' },
+        { id: 2, code: '120', label: '120' },
+        { id: 3, code: '4x5', label: '4x5' }
+      ],
+      deviceTypes: [
+        { id: 1, code: 'camera', label: 'Camera' },
+        { id: 2, code: 'interchangeable_back', label: 'Interchangeable back' },
+        { id: 3, code: 'film_holder', label: 'Film holder' }
+      ],
+      holderTypes: [{ id: 1, code: 'standard', label: 'Standard' }]
+    }
   });
 
   await page.route('**/api/v1/devices**', async (route) => {
     const url = new URL(route.request().url());
+
+    if (/^\/api\/v1\/devices\/\d+\/load-events$/.test(url.pathname)) {
+      await route.fulfill({
+        json: {
+          data: []
+        }
+      });
+      return;
+    }
 
     if (/^\/api\/v1\/devices\/\d+$/.test(url.pathname)) {
       await route.fulfill({
@@ -413,9 +435,12 @@ test('device sub-route uses page-centric table and links to device detail', asyn
             deviceTypeId: 1,
             deviceTypeCode: 'camera',
             filmFormatId: 1,
-            frameSize: '36x24',
+            frameSize: 'full_frame',
             make: 'Nikon',
             model: 'F3',
+            loadMode: 'direct',
+            canUnload: true,
+            cameraSystem: '',
             serialNumber: null,
             dateAcquired: null
           }
@@ -433,9 +458,12 @@ test('device sub-route uses page-centric table and links to device detail', asyn
             deviceTypeId: 1,
             deviceTypeCode: 'camera',
             filmFormatId: 1,
-            frameSize: '36x24',
+            frameSize: 'full_frame',
             make: 'Nikon',
             model: 'F3',
+            loadMode: 'direct',
+            canUnload: true,
+            cameraSystem: '',
             serialNumber: null,
             dateAcquired: null
           },
@@ -454,9 +482,7 @@ test('device sub-route uses page-centric table and links to device detail', asyn
     });
   });
 
-  await page.route('**/api/v1/film*', async (route) => {
-    await route.fulfill({ json: { data: [] } });
-  });
+  await stubEmptyFilms(page);
 
   await loginThroughUi(page);
   await page.goto('/devices/cameras');
@@ -469,7 +495,7 @@ test('device sub-route uses page-centric table and links to device detail', asyn
 
   await page.getByRole('link', { name: 'Nikon F3' }).click();
   await expect(page).toHaveURL(/\/devices\/1$/);
-  await expect(page.getByRole('heading', { name: 'Device Detail' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Device Detail', exact: true })).toBeVisible();
   await expect(page.getByText('Nikon F3')).toBeVisible();
 
   await page.getByRole('button', { name: 'Back' }).click();
@@ -524,13 +550,8 @@ test('emulsion sub-route uses page-centric table and links to emulsion detail', 
     });
   });
 
-  await page.route('**/api/v1/film*', async (route) => {
-    await route.fulfill({ json: { data: [] } });
-  });
-
-  await page.route('**/api/v1/devices*', async (route) => {
-    await route.fulfill({ json: { data: [] } });
-  });
+  await stubEmptyFilms(page);
+  await stubEmptyDevices(page);
 
   await loginThroughUi(page);
   await page.goto('/emulsions/color-negative-c41');
@@ -553,13 +574,8 @@ test('emulsion sub-route uses page-centric table and links to emulsion detail', 
 test('mobile navigation uses drawer menu', async ({ page }) => {
   await mockLogin(page);
 
-  await page.route('**/api/v1/reference', async (route) => {
-    await route.fulfill({ json: referencePayload });
-  });
-
-  await page.route('**/api/v1/film*', async (route) => {
-    await route.fulfill({ json: { data: [] } });
-  });
+  await stubReference(page);
+  await stubEmptyFilms(page);
 
   await page.setViewportSize({ width: 390, height: 844 });
   await loginThroughUi(page);
@@ -586,12 +602,8 @@ test('mobile navigation uses drawer menu', async ({ page }) => {
 
 test('layouts expose one main landmark in auth and app routes', async ({ page }) => {
   await mockLogin(page);
-  await page.route('**/api/v1/reference', async (route) => {
-    await route.fulfill({ json: referencePayload });
-  });
-  await page.route('**/api/v1/film*', async (route) => {
-    await route.fulfill({ json: { data: [] } });
-  });
+  await stubReference(page);
+  await stubEmptyFilms(page);
 
   await page.goto('/login');
   await expect(page.locator('main')).toHaveCount(1);
@@ -630,11 +642,11 @@ test('route entry performs one bootstrap fetch per dataset', async ({ page }) =>
   await page.goto('/film');
   await expect(page.getByRole('heading', { name: 'Film Inventory' })).toBeVisible();
   expect(referenceRequests).toBe(1);
-  expect(filmRequests).toBe(1);
+  await expect.poll(() => filmRequests).toBe(1);
 
   await page.goto('/devices');
   await expect(page.getByRole('heading', { name: 'Devices', exact: true })).toBeVisible();
-  expect(deviceRequests).toBe(1);
+  await expect.poll(() => deviceRequests).toBe(1);
 });
 
 test('refresh failure gracefully routes to login without hard reload', async ({ page }) => {
@@ -654,9 +666,7 @@ test('refresh failure gracefully routes to login without hard reload', async ({ 
     });
   });
 
-  await page.route('**/api/v1/film*', async (route) => {
-    await route.fulfill({ json: { data: [] } });
-  });
+  await stubEmptyFilms(page);
 
   await loginThroughUi(page);
   await page.goto('/film');
