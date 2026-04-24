@@ -10,6 +10,7 @@ import type {
   UnmountDeviceRequest,
   UpdateFilmDeviceRequest
 } from '@frollz2/schema';
+import { isFrameSizeValidForFormatCode } from '@frollz2/schema';
 import { DomainError } from '../../domain/errors.js';
 import { FilmFormatEntity } from '../../infrastructure/entities/index.js';
 import { FilmRepository } from '../../infrastructure/repositories/film.repository.js';
@@ -165,20 +166,7 @@ export class DevicesService {
       throw new DomainError('NOT_FOUND', 'Film format not found');
     }
 
-    const allowedByFormat: Record<string, Set<string>> = {
-      '35mm': new Set(['full_frame', 'half_frame']),
-      '120': new Set(['645', '6x6', '6x7', '6x8', '6x9', '6x12', '6x17']),
-      '220': new Set(['645', '6x6', '6x7', '6x8', '6x9', '6x12', '6x17']),
-      '4x5': new Set(['4x5']),
-      '8x10': new Set(['8x10']),
-      '2x3': new Set(['2x3']),
-      InstaxMini: new Set(['instax']),
-      InstaxWide: new Set(['instax']),
-      InstaxSquare: new Set(['instax'])
-    };
-
-    const allowed = allowedByFormat[format.code];
-    if (!allowed || !allowed.has(frameSize)) {
+    if (!isFrameSizeValidForFormatCode(format.code, frameSize)) {
       throw new DomainError('DOMAIN_ERROR', `Frame size ${frameSize} is not valid for ${format.code}`);
     }
   }

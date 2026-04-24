@@ -15,7 +15,7 @@ import { idSchema, isoDateTimeSchema, nullableTextSchema } from './common.js';
 
 export const cameraLoadModeSchema = z.enum(['direct', 'interchangeable_back', 'film_holder']);
 
-export const frameSizeCodeSchema = z.enum([
+export const FRAME_SIZE_CODES = [
   'full_frame',
   'half_frame',
   '645',
@@ -26,10 +26,16 @@ export const frameSizeCodeSchema = z.enum([
   '6x12',
   '6x17',
   '4x5',
+  '5x7',
   '8x10',
+  '11x14',
   '2x3',
-  'instax'
-]);
+  'instax_mini',
+  'instax_wide',
+  'instax_square'
+] as const;
+
+export const frameSizeCodeSchema = z.enum(FRAME_SIZE_CODES);
 
 export const filmTransitionMap = new Map<string, string[]>([
   ['purchased', ['stored', 'loaded']],

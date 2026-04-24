@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { computed, onMounted, reactive, ref } from 'vue';
+import { computed, onMounted, reactive, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
-import type { CreateFilmDeviceRequest, FilmDevice } from '@frollz2/schema';
+import { FRAME_SIZE_CODES, type CreateFilmDeviceRequest, type FilmDevice } from '@frollz2/schema/dist/film.js';
+import { getFrameSizeCodesForFormatCode } from '@frollz2/schema/dist/film-format-definition.js';
 import { useDeviceStore } from '../stores/devices.js';
 import { useReferenceStore } from '../stores/reference.js';
 import { useUiFeedback } from '../composables/useUiFeedback.js';
@@ -19,7 +20,7 @@ const idempotencyKey = ref(createIdempotencyKey());
 const createForm = reactive({
   deviceTypeCode: 'camera',
   filmFormatId: null as number | null,
-  frameSize: 'full_frame',
+  frameSize: 'full_frame' as CreateFilmDeviceRequest['frameSize'],
   make: '',
   model: '',
   name: '',
@@ -29,21 +30,17 @@ const createForm = reactive({
   holderTypeId: null as number | null
 });
 
-const frameSizeOptions = [
-  'full_frame',
-  'half_frame',
-  '645',
-  '6x6',
-  '6x7',
-  '6x8',
-  '6x9',
-  '6x12',
-  '6x17',
-  '4x5',
-  '8x10',
-  '2x3',
-  'instax'
-] as const;
+const selectedFilmFormatCode = computed(() => {
+  const selectedFilmFormat = referenceStore.filmFormats.find((format) => format.id === createForm.filmFormatId);
+  return selectedFilmFormat?.code ?? null;
+});
+
+const frameSizeOptions = computed(() => {
+  if (!selectedFilmFormatCode.value) {
+    return [...FRAME_SIZE_CODES];
+  }
+  return [...getFrameSizeCodesForFormatCode(selectedFilmFormatCode.value)];
+});
 
 const routeTypeFilter = computed(() => {
   const value = route.meta.deviceTypeFilter;
@@ -131,7 +128,7 @@ function deviceLabel(device: FilmDevice): string {
 function resetCreateForm(): void {
   createForm.deviceTypeCode = 'camera';
   createForm.filmFormatId = null;
-  createForm.frameSize = 'full_frame';
+  createForm.frameSize = FRAME_SIZE_CODES[0];
   createForm.make = '';
   createForm.model = '';
   createForm.name = '';
@@ -141,6 +138,19 @@ function resetCreateForm(): void {
   createForm.holderTypeId = null;
   idempotencyKey.value = createIdempotencyKey();
 }
+
+watch(frameSizeOptions, (options) => {
+  if (options.length === 0) {
+    return;
+  }
+  if (!options.includes(createForm.frameSize)) {
+    const nextFrameSize = options[0];
+    if (!nextFrameSize) {
+      return;
+    }
+    createForm.frameSize = nextFrameSize;
+  }
+}, { immediate: true });
 
 function openCreateDialog(): void {
   resetCreateForm();

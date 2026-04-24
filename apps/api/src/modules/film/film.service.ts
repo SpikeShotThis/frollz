@@ -10,9 +10,10 @@ import type {
   FilmListQuery,
   FilmSummary,
   FilmUpdateRequest,
-  FrameJourneyEvent
+  FrameJourneyEvent,
+  FrameSizeCode
 } from '@frollz2/schema';
-import { filmJourneyEventPayloadSchema, frameJourneyEventPayloadSchema } from '@frollz2/schema';
+import { filmJourneyEventPayloadSchema, frameJourneyEventPayloadSchema, resolveNonLargeFrameCount } from '@frollz2/schema';
 import { DomainError } from '../../domain/errors.js';
 import { applyFilmTransition } from '../../domain/film/film-state-machine.js';
 import { FilmRepository } from '../../infrastructure/repositories/film.repository.js';
@@ -44,16 +45,6 @@ type NormalizedLoadedEventData = {
 };
 
 type NormalizedLoadedFrameEventData = NormalizedLoadedEventData & { filmFrameId: number };
-
-const MEDIUM_FRAME_COUNTS_120: Record<string, number> = {
-  '645': 15,
-  '6x6': 12,
-  '6x7': 10,
-  '6x8': 9,
-  '6x9': 8,
-  '6x12': 6,
-  '6x17': 4
-};
 
 @Injectable()
 export class FilmService {
@@ -918,7 +909,7 @@ export class FilmService {
   }
 
   private isLargeFormatCode(formatCode: string): boolean {
-    return formatCode === '4x5' || formatCode === '8x10' || formatCode === '2x3';
+    return formatCode === '4x5' || formatCode === '5x7' || formatCode === '8x10' || formatCode === '11x14';
   }
 
   private getSheetCountForPackageType(packageTypeCode: string): number {
@@ -931,39 +922,17 @@ export class FilmService {
   }
 
   private resolveFrameCountForFilm(formatCode: string, packageTypeCode: string, frameSize: string): number {
-    if (formatCode === '35mm') {
-      if (packageTypeCode === '100ft_bulk') {
-        throw new DomainError('DOMAIN_ERROR', '35mm 100ft bulk must be converted to a supported roll before loading');
-      }
-      const exposures = packageTypeCode === '24exp' ? 24 : packageTypeCode === '36exp' ? 36 : null;
-      if (!exposures) {
-        throw new DomainError('DOMAIN_ERROR', 'Unsupported 35mm package type for frame generation');
-      }
-      if (frameSize === 'full_frame') {
-        return exposures;
-      }
-      if (frameSize === 'half_frame') {
-        return exposures * 2;
-      }
-      throw new DomainError('DOMAIN_ERROR', 'Unsupported 35mm frame size for frame generation');
+    const resolved = resolveNonLargeFrameCount({
+      formatCode,
+      packageTypeCode,
+      frameSize: frameSize as FrameSizeCode
+    });
+
+    if (!resolved.ok) {
+      throw new DomainError('DOMAIN_ERROR', resolved.message);
     }
 
-    if (formatCode === '120' || formatCode === '220') {
-      const frames120 = MEDIUM_FRAME_COUNTS_120[frameSize];
-      if (!frames120) {
-        throw new DomainError('DOMAIN_ERROR', 'Unsupported medium format frame size for frame generation');
-      }
-      return formatCode === '220' ? frames120 * 2 : frames120;
-    }
-
-    if (formatCode === 'InstaxMini' || formatCode === 'InstaxWide' || formatCode === 'InstaxSquare') {
-      if (packageTypeCode !== 'pack') {
-        throw new DomainError('DOMAIN_ERROR', 'Unsupported Instax package type for frame generation');
-      }
-      return 10;
-    }
-
-    throw new DomainError('DOMAIN_ERROR', 'Unsupported film format for non-large frame generation');
+    return resolved.frameCount;
   }
 
   private async shouldAllowExposedToSentForDevTransition(

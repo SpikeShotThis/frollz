@@ -33,8 +33,8 @@ function toStockLabel(film: FilmEntity): string | null {
     return film.packageType.label;
   }
 
-  if (formatCode === '120' || formatCode === '220') {
-    return `${formatCode} roll`;
+  if (formatCode === '120') {
+    return film.packageType.label;
   }
 
   return null;

@@ -20,7 +20,7 @@ const routes: RouteRecordRaw[] = [
       {
         path: 'film/medium-format',
         component: () => import('../pages/FilmPage.vue'),
-        meta: { title: 'Medium Format', layout: 'app', filmFormatFilters: ['120', '220'] }
+        meta: { title: 'Medium Format', layout: 'app', filmFormatFilters: ['120'] }
       },
       {
         path: 'film/large-format-4x5',
