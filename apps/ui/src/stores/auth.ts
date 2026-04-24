@@ -6,10 +6,18 @@ import { readApiData } from '../composables/api-envelope.js';
 const REFRESH_TOKEN_STORAGE_KEY = 'frollz2.refreshToken';
 
 export const useAuthStore = defineStore('auth', () => {
+  function readStoredRefreshToken(): string | null {
+    try {
+      return localStorage.getItem(REFRESH_TOKEN_STORAGE_KEY);
+    } catch {
+      return null;
+    }
+  }
+
   const accessToken = ref<string | null>(null);
   // Refresh tokens are persisted in localStorage per the product requirement so sessions survive reloads.
   // That is a deliberate tradeoff: it improves UX, but it also means the token must be protected against XSS.
-  const refreshToken = ref<string | null>(localStorage.getItem(REFRESH_TOKEN_STORAGE_KEY));
+  const refreshToken = ref<string | null>(readStoredRefreshToken());
   const user = ref<CurrentUser | null>(null);
   const isSessionInitialized = ref(false);
   let restoreSessionInFlight: Promise<void> | null = null;
@@ -49,25 +57,27 @@ export const useAuthStore = defineStore('auth', () => {
     }
 
     restoreSessionInFlight = (async () => {
-      if (!refreshToken.value) {
-        isSessionInitialized.value = true;
-        return;
-      }
-
-      const tokenPair = await refreshAccessToken();
-
-      if (!tokenPair) {
-        isSessionInitialized.value = true;
-        return;
-      }
-
       try {
-        await loadCurrentUser(tokenPair.accessToken);
+        if (!refreshToken.value) {
+          return;
+        }
+
+        const tokenPair = await refreshAccessToken();
+
+        if (!tokenPair) {
+          return;
+        }
+
+        try {
+          await loadCurrentUser(tokenPair.accessToken);
+        } catch {
+          clearTokens();
+        }
       } catch {
         clearTokens();
+      } finally {
+        isSessionInitialized.value = true;
       }
-
-      isSessionInitialized.value = true;
     })();
 
     try {
@@ -93,22 +103,29 @@ export const useAuthStore = defineStore('auth', () => {
         return null;
       }
 
-      const response = await fetch('/api/v1/auth/refresh', {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ refreshToken: activeRefreshToken })
-      });
+      try {
+        const response = await fetch('/api/v1/auth/refresh', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ refreshToken: activeRefreshToken })
+        });
 
-      if (!response.ok) {
+        if (!response.ok) {
+          if (refreshToken.value === activeRefreshToken) {
+            clearTokens();
+          }
+          return null;
+        }
+
+        const tokenPair = tokenPairSchema.parse(await readApiData(response));
+        setTokens(tokenPair);
+        return tokenPair;
+      } catch {
         if (refreshToken.value === activeRefreshToken) {
           clearTokens();
         }
         return null;
       }
-
-      const tokenPair = tokenPairSchema.parse(await readApiData(response));
-      setTokens(tokenPair);
-      return tokenPair;
     })();
 
     try {
@@ -121,14 +138,22 @@ export const useAuthStore = defineStore('auth', () => {
   function setTokens(tokenPair: TokenPair): void {
     accessToken.value = tokenPair.accessToken;
     refreshToken.value = tokenPair.refreshToken;
-    localStorage.setItem(REFRESH_TOKEN_STORAGE_KEY, tokenPair.refreshToken);
+    try {
+      localStorage.setItem(REFRESH_TOKEN_STORAGE_KEY, tokenPair.refreshToken);
+    } catch {
+      // Ignore storage write failures (private mode / blocked storage).
+    }
   }
 
   function clearTokens(): void {
     accessToken.value = null;
     refreshToken.value = null;
     user.value = null;
-    localStorage.removeItem(REFRESH_TOKEN_STORAGE_KEY);
+    try {
+      localStorage.removeItem(REFRESH_TOKEN_STORAGE_KEY);
+    } catch {
+      // Ignore storage removal failures (private mode / blocked storage).
+    }
   }
 
   async function login(input: LoginRequest): Promise<void> {
