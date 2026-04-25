@@ -1,55 +1,124 @@
 <script setup lang="ts">
-const brandSwatches = [
-  { label: '--brand-primary', value: '#403d39' },
-  { label: '--brand-secondary', value: '#ccc5b9' },
-  { label: '--brand-accent', value: '#eb5e28' },
-  { label: '--brand-dark', value: '#8c867d' },
-  { label: '--brand-dark-page', value: '#252422' },
-  { label: '--brand-positive', value: '#4a7c59' },
-  { label: '--brand-negative', value: '#f25c54' },
-  { label: '--brand-info', value: '#b0a1ba' },
-  { label: '--brand-warning', value: '#f7b267' }
-] as const;
+import { computed } from 'vue';
+import { useTheme } from '../composables/useTheme.js';
 
-const surfaceSwatches = [
-  { label: '--surface-0', value: '#f3efe8' },
-  { label: '--surface-1', value: '#f8f4ee' },
-  { label: '--surface-2', value: '#fffdf9' },
-  { label: '--surface-3', value: '#ece3d7' },
-  { label: '--surface-overlay', value: '#fffcf7d9' },
-  { label: '--border-soft', value: '#d8cfc0' },
-  { label: '--border-strong', value: '#c7bbab' },
-  { label: '--text-strong', value: '#2f2b27' },
-  { label: '--text-default', value: '#403d39' },
-  { label: '--text-muted', value: '#7a736a' }
-] as const;
+type Swatch = {
+  label: string;
+  value: string;
+};
 
-const interactionSwatches = [
-  { label: '--interactive-primary', value: '#403d39' },
-  { label: '--interactive-primary-hover', value: '#35322f' },
-  { label: '--interactive-secondary', value: '#ccc5b9' },
-  { label: '--interactive-secondary-hover', value: '#c0b7a9' },
-  { label: '--interactive-accent', value: '#eb5e28' },
-  { label: '--interactive-accent-hover', value: '#cf4f1f' },
-  { label: '--interactive-focus-border', value: '#c86a45' },
-  { label: '--interactive-focus-ring', value: '#f1b8a0' }
-] as const;
+type ThemePalette = {
+  brandSwatches: Swatch[];
+  surfaceSwatches: Swatch[];
+  interactionSwatches: Swatch[];
+  statusSwatches: Swatch[];
+  shadowSoft: string;
+  shadowStrong: string;
+};
 
-const statusSwatches = [
-  { label: '--status-positive-bg', value: '#e7f3ea' },
-  { label: '--status-negative-bg', value: '#fde9e8' },
-  { label: '--status-warning-bg', value: '#fff1de' },
-  { label: '--status-info-bg', value: '#f3ecf7' }
-] as const;
+const lightPalette: ThemePalette = {
+  brandSwatches: [
+    { label: '--brand-primary', value: '#403d39' },
+    { label: '--brand-secondary', value: '#ccc5b9' },
+    { label: '--brand-accent', value: '#eb5e28' },
+    { label: '--brand-dark', value: '#8c867d' },
+    { label: '--brand-dark-page', value: '#252422' },
+    { label: '--brand-positive', value: '#4a7c59' },
+    { label: '--brand-negative', value: '#f25c54' },
+    { label: '--brand-info', value: '#b0a1ba' },
+    { label: '--brand-warning', value: '#f7b267' }
+  ],
+  surfaceSwatches: [
+    { label: '--surface-0', value: '#f3efe8' },
+    { label: '--surface-1', value: '#f8f4ee' },
+    { label: '--surface-2', value: '#fffdf9' },
+    { label: '--surface-3', value: '#ece3d7' },
+    { label: '--surface-overlay', value: '#fffcf7d9' },
+    { label: '--border-soft', value: '#d8cfc0' },
+    { label: '--border-strong', value: '#c7bbab' },
+    { label: '--text-strong', value: '#2f2b27' },
+    { label: '--text-default', value: '#403d39' },
+    { label: '--text-muted', value: '#7a736a' }
+  ],
+  interactionSwatches: [
+    { label: '--interactive-primary', value: '#403d39' },
+    { label: '--interactive-primary-hover', value: '#35322f' },
+    { label: '--interactive-secondary', value: '#ccc5b9' },
+    { label: '--interactive-secondary-hover', value: '#c0b7a9' },
+    { label: '--interactive-accent', value: '#eb5e28' },
+    { label: '--interactive-accent-hover', value: '#cf4f1f' },
+    { label: '--interactive-focus-border', value: '#c86a45' },
+    { label: '--interactive-focus-ring', value: '#f1b8a0' }
+  ],
+  statusSwatches: [
+    { label: '--status-positive-bg', value: '#e7f3ea' },
+    { label: '--status-negative-bg', value: '#fde9e8' },
+    { label: '--status-warning-bg', value: '#fff1de' },
+    { label: '--status-info-bg', value: '#f3ecf7' }
+  ],
+  shadowSoft: '0 12px 30px -18px rgba(37, 36, 34, 0.32)',
+  shadowStrong: '0 20px 48px -24px rgba(37, 36, 34, 0.42)'
+};
 
-const themeMeta = [
+const darkPalette: ThemePalette = {
+  brandSwatches: [
+    { label: '--brand-primary', value: '#d7c9b6' },
+    { label: '--brand-secondary', value: '#6f6558' },
+    { label: '--brand-accent', value: '#d87a4d' },
+    { label: '--brand-dark', value: '#b5ab9d' },
+    { label: '--brand-dark-page', value: '#f0e8db' },
+    { label: '--brand-positive', value: '#83b08e' },
+    { label: '--brand-negative', value: '#f38c82' },
+    { label: '--brand-info', value: '#bda8ca' },
+    { label: '--brand-warning', value: '#e8ba72' }
+  ],
+  surfaceSwatches: [
+    { label: '--surface-0', value: '#1f1d1a' },
+    { label: '--surface-1', value: '#25221f' },
+    { label: '--surface-2', value: '#2c2823' },
+    { label: '--surface-3', value: '#332f29' },
+    { label: '--surface-overlay', value: '#2c2823db' },
+    { label: '--border-soft', value: '#5a5145' },
+    { label: '--border-strong', value: '#706557' },
+    { label: '--text-strong', value: '#f1e8d8' },
+    { label: '--text-default', value: '#ddd4c6' },
+    { label: '--text-muted', value: '#bbb1a3' }
+  ],
+  interactionSwatches: [
+    { label: '--interactive-primary', value: '#e1d7c7' },
+    { label: '--interactive-primary-hover', value: '#cec1ac' },
+    { label: '--interactive-secondary', value: '#5c5348' },
+    { label: '--interactive-secondary-hover', value: '#6a6154' },
+    { label: '--interactive-accent', value: '#d87a4d' },
+    { label: '--interactive-accent-hover', value: '#e28f66' },
+    { label: '--interactive-focus-border', value: '#af6b4d' },
+    { label: '--interactive-focus-ring', value: '#8b5c46' }
+  ],
+  statusSwatches: [
+    { label: '--status-positive-bg', value: '#2d3f31' },
+    { label: '--status-negative-bg', value: '#4a2c2a' },
+    { label: '--status-warning-bg', value: '#4a3a26' },
+    { label: '--status-info-bg', value: '#3d3348' }
+  ],
+  shadowSoft: '0 12px 30px -18px rgba(0, 0, 0, 0.68)',
+  shadowStrong: '0 20px 48px -24px rgba(0, 0, 0, 0.78)'
+};
+
+const { isDarkMode } = useTheme();
+const activePalette = computed<ThemePalette>(() => (isDarkMode.value ? darkPalette : lightPalette));
+const brandSwatches = computed(() => activePalette.value.brandSwatches);
+const surfaceSwatches = computed(() => activePalette.value.surfaceSwatches);
+const interactionSwatches = computed(() => activePalette.value.interactionSwatches);
+const statusSwatches = computed(() => activePalette.value.statusSwatches);
+
+const themeMeta = computed(() => [
   { token: '--radius-xs', value: '8px', use: 'Menus, compact items' },
   { token: '--radius-sm', value: '10px', use: 'Banners, chips, nav pills' },
   { token: '--radius-md', value: '14px', use: 'Cards, tables, dialogs' },
   { token: '--radius-lg', value: '20px', use: 'Large hero blocks' },
-  { token: '--shadow-soft', value: '0 12px 30px -18px rgba(37, 36, 34, 0.32)', use: 'Default elevated surface' },
-  { token: '--shadow-strong', value: '0 20px 48px -24px rgba(37, 36, 34, 0.42)', use: 'Modal/dialog emphasis' }
-] as const;
+  { token: '--shadow-soft', value: activePalette.value.shadowSoft, use: 'Default elevated surface' },
+  { token: '--shadow-strong', value: activePalette.value.shadowStrong, use: 'Modal/dialog emphasis' }
+]);
 
 const typographyScale = [
   { style: 'text-h1', sample: 'Heading 1 / Display' },
@@ -255,7 +324,7 @@ const tableRows = [
         </div>
         <div class="row items-center q-gutter-sm">
           <q-chip>Default chip</q-chip>
-          <q-chip color="secondary" text-color="dark">Secondary chip</q-chip>
+          <q-chip color="secondary" text-color="white">Secondary chip</q-chip>
           <q-badge color="primary">Primary badge</q-badge>
           <q-badge color="negative">Negative badge</q-badge>
         </div>
@@ -318,11 +387,11 @@ const tableRows = [
 .style-chip {
   height: 42px;
   border-radius: 10px;
-  border: 1px solid rgba(0, 0, 0, 0.08);
+  border: 1px solid var(--border-soft);
 }
 
 .typography-row {
-  border: 1px solid rgba(64, 61, 57, 0.12);
-  background: rgba(255, 255, 255, 0.45);
+  border: 1px solid var(--border-soft);
+  background: color-mix(in srgb, var(--surface-2) 65%, transparent);
 }
 </style>

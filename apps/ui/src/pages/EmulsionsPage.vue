@@ -6,7 +6,7 @@ import { useReferenceStore } from '../stores/reference.js';
 
 const route = useRoute();
 const referenceStore = useReferenceStore();
-const search = ref('');
+const search = ref<string | null>('');
 
 const processFilterCode = computed(() => {
   const value = route.meta.developmentProcessFilter;
@@ -14,7 +14,7 @@ const processFilterCode = computed(() => {
 });
 
 const rows = computed(() => {
-  const query = search.value.trim().toLowerCase();
+  const query = (search.value ?? '').trim().toLowerCase();
 
   return referenceStore.emulsions.filter((emulsion) => {
     if (processFilterCode.value && emulsion.developmentProcess.code !== processFilterCode.value) {

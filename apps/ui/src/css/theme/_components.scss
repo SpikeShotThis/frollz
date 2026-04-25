@@ -8,9 +8,9 @@
 }
 
 .q-tooltip {
-  color: #fff7f2;
-  border-color: #614f45;
-  background: #4b4038;
+  color: var(--tooltip-text);
+  border-color: var(--tooltip-border);
+  background: var(--tooltip-bg);
 }
 
 .q-card.q-dialog-plugin,
@@ -19,7 +19,7 @@
 }
 
 .q-dialog__backdrop {
-  background: rgba(37, 36, 34, 0.42);
+  background: var(--dialog-backdrop);
 }
 
 .q-separator {
@@ -33,14 +33,14 @@
 }
 
 .q-item:hover {
-  background: #f1ebe2;
+  background: var(--item-hover-bg);
 }
 
 .q-item.q-router-link--active,
 .q-item.q-item--active {
   color: var(--interactive-primary);
-  background: #e7dfd2;
-  box-shadow: inset 3px 0 0 #6a655e;
+  background: var(--item-active-bg);
+  box-shadow: inset 3px 0 0 var(--item-active-accent);
 }
 
 .q-expansion-item--expanded > .q-item {
@@ -65,19 +65,19 @@
 }
 
 .q-btn.q-btn--flat {
-  color: #5f584f;
+  color: var(--btn-flat-text);
 }
 
 .q-btn.q-btn--flat:hover {
   color: var(--interactive-accent);
-  background: #f2e8dd;
+  background: var(--btn-flat-hover-bg);
 }
 
 .q-btn.bg-primary {
-  border: 1px solid #2f2b27;
-  color: #fffaf4;
+  border: 1px solid var(--btn-primary-border);
+  color: var(--btn-primary-text);
   background: var(--interactive-primary);
-  box-shadow: 0 10px 22px -14px rgba(64, 61, 57, 0.55);
+  box-shadow: var(--btn-primary-shadow);
 }
 
 .q-btn.bg-primary:hover {
@@ -85,8 +85,8 @@
 }
 
 .q-btn.bg-secondary {
-  border: 1px solid #b7ae9f;
-  color: #2f2b27;
+  border: 1px solid var(--btn-secondary-border);
+  color: var(--btn-secondary-text);
   background: var(--interactive-secondary);
 }
 
@@ -95,10 +95,10 @@
 }
 
 .q-btn.bg-accent {
-  border: 1px solid #d65221;
-  color: #fff8f4;
+  border: 1px solid var(--btn-accent-border);
+  color: var(--btn-accent-text);
   background: var(--interactive-accent);
-  box-shadow: 0 10px 22px -14px rgba(235, 94, 40, 0.55);
+  box-shadow: var(--btn-accent-shadow);
 }
 
 .q-btn.bg-accent:hover {
@@ -106,14 +106,14 @@
 }
 
 .q-btn.bg-negative {
-  border: 1px solid #da4c45;
+  border: 1px solid var(--btn-negative-border);
 }
 
 .q-chip {
-  border: 1px solid #e2b39f;
+  border: 1px solid var(--chip-border);
   border-radius: 999px;
   color: var(--interactive-accent);
-  background: #fff3ee;
+  background: var(--chip-bg);
 }
 
 .q-badge {
@@ -121,8 +121,19 @@
   font-weight: 700;
 }
 
+.q-badge.q-badge--outline {
+  border-color: var(--border-strong);
+  color: var(--text-default);
+}
+
+[data-theme='dark'] .q-badge.q-badge--outline.text-primary,
+[data-theme='dark'] .q-badge.q-badge--outline.bg-primary {
+  border-color: var(--interactive-primary);
+  color: var(--interactive-primary) !important;
+}
+
 .q-badge.bg-primary {
-  border: 1px solid #d65221;
+  border: 1px solid var(--badge-primary-border);
   background: var(--interactive-accent) !important;
 }
 
@@ -170,6 +181,11 @@
   box-shadow: 0 0 0 3px var(--interactive-focus-ring);
 }
 
+[data-theme='dark'] .q-field--focused .q-field__label,
+[data-theme='dark'] .q-field--float.q-field--focused .q-field__label {
+  color: var(--interactive-accent) !important;
+}
+
 .q-field--error .q-field__control {
   border-color: var(--brand-negative);
 }
@@ -183,7 +199,7 @@
 }
 
 .q-menu .q-item:hover {
-  background: #f2e8dd;
+  background: var(--btn-flat-hover-bg);
 }
 
 .q-table__container {
@@ -206,20 +222,21 @@
 }
 
 .q-table th {
-  color: #332f2a;
+  color: var(--table-heading-text);
   font-weight: 700;
 }
 
 .q-table tbody td {
-  border-color: #dfd5c6;
+  color: var(--text-default);
+  border-color: var(--table-row-border);
 }
 
 .q-table tbody tr:nth-child(even) {
-  background: #fbf7f1;
+  background: var(--table-row-even-bg);
 }
 
 .q-table tbody tr:hover {
-  background: #f0e4d4;
+  background: var(--table-row-hover-bg);
 }
 
 .q-table tbody tr:hover td:first-child {
@@ -242,8 +259,8 @@
 }
 
 .q-pagination .q-btn.q-btn--active {
-  color: #fff8f4;
-  border-color: #d65221;
+  color: var(--pagination-active-text);
+  border-color: var(--pagination-active-border);
   background: var(--interactive-accent);
 }
 
@@ -255,21 +272,21 @@
 }
 
 .q-notification--standard.bg-positive {
-  color: #21402c;
+  color: var(--notification-positive-text);
   background: var(--status-positive-bg) !important;
 }
 
 .q-notification--standard.bg-negative {
-  color: #5a2420;
+  color: var(--notification-negative-text);
   background: var(--status-negative-bg) !important;
 }
 
 .q-notification--standard.bg-warning {
-  color: #66421c;
+  color: var(--notification-warning-text);
   background: var(--status-warning-bg) !important;
 }
 
 .q-notification--standard.bg-info {
-  color: #4f4260;
+  color: var(--notification-info-text);
   background: var(--status-info-bg) !important;
 }

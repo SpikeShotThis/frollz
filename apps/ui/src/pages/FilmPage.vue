@@ -12,7 +12,7 @@ const filmStore = useFilmStore();
 const referenceStore = useReferenceStore();
 const feedback = useUiFeedback();
 
-const search = ref('');
+const search = ref<string | null>('');
 const stateFilter = ref<string | null>(null);
 const isCreateDialogOpen = ref(false);
 const isCreating = ref(false);
@@ -38,7 +38,7 @@ const subtitle = computed(() =>
 );
 
 const rows = computed(() => {
-  const query = search.value.trim().toLowerCase();
+  const query = (search.value ?? '').trim().toLowerCase();
 
   return filmStore.films.filter((film) => {
     if (lockedFormatFilters.value.length > 0 && !lockedFormatFilters.value.includes(film.filmFormat.code)) {
@@ -194,13 +194,9 @@ onMounted(async () => {
       {{ filmStore.filmsError }}
     </q-banner>
 
-    <div class="row q-col-gutter-md">
-      <div class="col-12 col-md-6">
-        <q-input v-model="search" filled clearable label="Search films" />
-      </div>
-      <div class="col-12 col-md-6">
-        <q-select v-model="stateFilter" filled clearable emit-value map-options :options="stateOptions" label="Filter by state" />
-      </div>
+    <div class="film-filters">
+      <q-input v-model="search" filled clearable label="Search films" />
+      <q-select v-model="stateFilter" filled clearable emit-value map-options :options="stateOptions" label="Filter by state" />
     </div>
 
     <q-table :rows="rows" :columns="columns" row-key="id" flat bordered :loading="filmStore.isLoading">
@@ -263,3 +259,17 @@ onMounted(async () => {
     </q-dialog>
   </q-page>
 </template>
+
+<style scoped>
+.film-filters {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 16px;
+}
+
+@media (min-width: 1024px) {
+  .film-filters {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+</style>

@@ -3,12 +3,16 @@
   background: transparent;
 }
 
+.app-shell-header {
+  box-shadow: none !important;
+  border-bottom: 1px solid var(--border-soft);
+}
+
 .app-shell-header .q-toolbar {
   min-height: 72px;
   padding: 0 18px;
-  border-bottom: 1px solid var(--border-soft);
-  backdrop-filter: blur(14px);
-  background: var(--surface-overlay);
+  backdrop-filter: blur(10px) saturate(108%);
+  background: color-mix(in srgb, var(--surface-overlay) 84%, transparent);
 }
 
 .app-shell-header .q-toolbar-title,
@@ -18,9 +22,16 @@
   letter-spacing: -0.01em;
 }
 
-.app-shell-drawer .q-drawer {
+.app-shell-drawer {
   border-right: 1px solid var(--border-soft);
-  background: linear-gradient(180deg, var(--surface-2) 0%, var(--surface-1) 100%);
+  background: linear-gradient(180deg, #fffdf9e6 0%, #f8f4eedf 100%);
+  backdrop-filter: blur(14px) saturate(118%);
+  box-shadow: 16px 0 36px -28px rgba(0, 0, 0, 0.35);
+}
+
+[data-theme='dark'] .app-shell-drawer {
+  background: linear-gradient(180deg, #2c2823e0 0%, #25221fd9 100%);
+  box-shadow: 16px 0 36px -28px rgba(0, 0, 0, 0.6);
 }
 
 .app-shell-header a,
@@ -62,4 +73,16 @@
   border-radius: 999px;
   background: var(--interactive-accent);
   opacity: 0.9;
+}
+
+.auth-subtitle {
+  color: var(--text-muted) !important;
+}
+
+.auth-secondary-action.q-btn--flat {
+  color: var(--interactive-primary) !important;
+}
+
+.auth-secondary-action.q-btn--flat:hover {
+  color: var(--interactive-accent) !important;
 }

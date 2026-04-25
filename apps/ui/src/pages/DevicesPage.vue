@@ -1,8 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
-import { FRAME_SIZE_CODES, type CreateFilmDeviceRequest, type FilmDevice } from '@frollz2/schema/dist/film.js';
-import { getFrameSizeCodesForFormatCode } from '@frollz2/schema/dist/film-format-definition.js';
+import { FRAME_SIZE_CODES, getFrameSizeCodesForFormatCode, type CreateFilmDeviceRequest, type FilmDevice } from '@frollz2/schema';
 import { useDeviceStore } from '../stores/devices.js';
 import { useReferenceStore } from '../stores/reference.js';
 import { useUiFeedback } from '../composables/useUiFeedback.js';
@@ -12,7 +11,7 @@ const route = useRoute();
 const deviceStore = useDeviceStore();
 const referenceStore = useReferenceStore();
 const feedback = useUiFeedback();
-const search = ref('');
+const search = ref<string | null>('');
 const isCreateDialogOpen = ref(false);
 const isCreating = ref(false);
 const idempotencyKey = ref(createIdempotencyKey());
@@ -48,7 +47,7 @@ const routeTypeFilter = computed(() => {
 });
 
 const rows = computed(() => {
-  const query = search.value.trim().toLowerCase();
+  const query = (search.value ?? '').trim().toLowerCase();
 
   return deviceStore.devices.filter((device) => {
     if (routeTypeFilter.value && device.deviceTypeCode !== routeTypeFilter.value) {

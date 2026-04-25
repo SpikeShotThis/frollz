@@ -44,7 +44,7 @@ async function submit(): Promise<void> {
     <q-card flat bordered class="full-width" style="max-width: 460px;">
       <q-card-section>
         <div class="text-h5">Create account</div>
-        <div class="text-subtitle2 text-grey-7">Start tracking rolls, devices, and transitions.</div>
+        <div class="text-subtitle2 auth-subtitle">Start tracking rolls, devices, and transitions.</div>
       </q-card-section>
 
       <q-card-section>
@@ -64,7 +64,7 @@ async function submit(): Promise<void> {
 
           <div class="row items-center justify-between q-gutter-sm">
             <q-btn type="submit" color="primary" label="Create account" :loading="isSubmitting" :disable="isSubmitting" />
-            <q-btn flat color="primary" label="Sign in" :disable="isSubmitting" to="/login" />
+            <q-btn flat color="primary" class="auth-secondary-action" label="Sign in" :disable="isSubmitting" to="/login" />
           </div>
         </q-form>
       </q-card-section>
