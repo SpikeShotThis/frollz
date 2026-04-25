@@ -67,7 +67,7 @@ const migrationsPath = resolve(
 );
 
 const ormConfig: Partial<Options> = {
-  metadataCache: { enabled: true, pretty: true },
+  metadataCache: { enabled: process.env.NODE_ENV !== 'production', pretty: true },
   discovery: { tsConfigPath: './tsconfig.json' },
   migrations: {
     path: migrationsPath,

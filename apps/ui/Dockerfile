@@ -20,7 +20,7 @@ RUN pnpm --filter @frollz2/ui build
 FROM nginxinc/nginx-unprivileged:1.29-alpine AS runner
 
 COPY apps/ui/nginx.conf /etc/nginx/conf.d/default.conf
-COPY --from=builder --chown=101:101 /app/apps/ui/dist /usr/share/nginx/html
+COPY --from=builder --chown=101:101 /app/apps/ui/dist/spa /usr/share/nginx/html
 
 USER 101
 
