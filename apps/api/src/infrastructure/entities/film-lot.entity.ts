@@ -3,13 +3,10 @@ import { AutoIncrementEntity } from './base.entity.js';
 import { EmulsionEntity, FilmFormatEntity, PackageTypeEntity } from './reference.entities.js';
 import { UserEntity } from './user.entity.js';
 
-@Entity({ tableName: 'film_stock' })
-export class FilmStockEntity extends AutoIncrementEntity {
+@Entity({ tableName: 'film_lot' })
+export class FilmLotEntity extends AutoIncrementEntity {
   @ManyToOne(() => UserEntity, { fieldName: 'user_id' })
   user!: UserEntity;
-
-  @Property({ type: 'text' })
-  name!: string;
 
   @ManyToOne(() => EmulsionEntity, { fieldName: 'emulsion_id' })
   emulsion!: EmulsionEntity;
@@ -20,9 +17,12 @@ export class FilmStockEntity extends AutoIncrementEntity {
   @ManyToOne(() => FilmFormatEntity, { fieldName: 'film_format_id' })
   filmFormat!: FilmFormatEntity;
 
-  @Property({ type: 'integer', fieldName: 'units_total' })
-  unitsTotal!: number;
+  @Property({ type: 'integer' })
+  quantity!: number;
 
   @Property({ type: 'text', nullable: true, fieldName: 'expiration_date' })
   expirationDate!: string | null;
+
+  @Property({ type: 'text', fieldName: 'created_at' })
+  createdAt!: string;
 }

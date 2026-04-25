@@ -25,7 +25,7 @@ export abstract class AuthRepository {
 
   abstract createUser(input: { email: string; name: string; passwordHash: string; createdAt: string }): Promise<CurrentUser>;
 
-  abstract upsertRefreshToken(input: {
+  abstract createRefreshToken(input: {
     userId: number;
     tokenHash: string;
     createdAt: string;

@@ -2,13 +2,13 @@ import { z } from 'zod';
 import { idSchema, isoDateTimeSchema } from './common.js';
 
 export const registerRequestSchema = z.object({
-  email: z.email(),
+  email: z.email().transform((e) => e.toLowerCase().trim()),
   password: z.string().min(8),
   name: z.string().min(1)
 });
 
 export const loginRequestSchema = z.object({
-  email: z.email(),
+  email: z.email().transform((e) => e.toLowerCase().trim()),
   password: z.string().min(1)
 });
 

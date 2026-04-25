@@ -1,26 +1,9 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { EntityManager } from '@mikro-orm/core';
-import { filmJourneyEventDataLoadedSchema, type DeviceLoadTimelineEvent } from '@frollz2/schema';
+import type { DeviceLoadTimelineEvent, FilmListQuery } from '@frollz2/schema';
 import { FilmRepository } from './film.repository.js';
 import { FilmEntity, FilmFrameEntity, FilmJourneyEventEntity } from '../entities/index.js';
-import { mapFilmDetailEntity, mapFilmFrameEntity, mapFilmJourneyEventEntity, mapFilmSummaryEntity } from '../mappers/index.js';
-
-function parseLoadedEventData(raw: unknown): { deviceId: number; slotSideNumber: number | null } | null {
-  const parsed = filmJourneyEventDataLoadedSchema.safeParse(raw);
-  if (!parsed.success) {
-    return null;
-  }
-
-  if (parsed.data.loadTargetType === 'camera_direct') {
-    return { deviceId: parsed.data.cameraId, slotSideNumber: null };
-  }
-
-  if (parsed.data.loadTargetType === 'interchangeable_back') {
-    return { deviceId: parsed.data.interchangeableBackId, slotSideNumber: null };
-  }
-
-  return { deviceId: parsed.data.filmHolderId, slotSideNumber: parsed.data.slotNumber };
-}
+import { mapFilmDetailEntity, mapFilmFrameEntity, mapFilmJourneyEventEntity, mapFilmSummaryEntity, parseLoadedEventData, formatEmulsionName } from '../mappers/index.js';
 
 function toStockLabel(film: FilmEntity): string | null {
   const formatCode = film.filmFormat.code;
@@ -62,26 +45,37 @@ export class MikroOrmFilmRepository extends FilmRepository {
     super();
   }
 
-  async list(userId: number, query: { stateCode?: 'purchased' | 'stored' | 'loaded' | 'exposed' | 'removed' | 'sent_for_dev' | 'developed' | 'scanned' | 'archived'; filmFormatId?: number; emulsionId?: number }) {
+  async list(userId: number, query: FilmListQuery) {
+    const limit = query.limit;
     const films = await this.entityManager.find(
       FilmEntity,
       {
         user: userId,
+        ...(query.afterId ? { id: { $gt: query.afterId } } : {}),
         ...(query.stateCode ? { currentState: { code: query.stateCode } } : {}),
         ...(query.filmFormatId ? { filmFormat: query.filmFormatId } : {}),
         ...(query.emulsionId ? { emulsion: query.emulsionId } : {})
       },
-      { populate: ['user', 'emulsion', 'emulsion.developmentProcess', 'emulsion.filmFormats', 'packageType', 'packageType.filmFormat', 'filmFormat', 'currentState'] }
+      {
+        orderBy: { id: 'asc' },
+        limit: limit + 1,
+        populate: ['user', 'filmLot', 'emulsion', 'emulsion.developmentProcess', 'emulsion.filmFormats', 'packageType', 'packageType.filmFormat', 'filmFormat', 'currentState']
+      }
     );
 
-    return films.map(mapFilmSummaryEntity);
+    const hasMore = films.length > limit;
+    const items = hasMore ? films.slice(0, limit) : films;
+    return {
+      items: items.map(mapFilmSummaryEntity),
+      nextCursor: hasMore ? (items[items.length - 1]?.id ?? null) : null
+    };
   }
 
   async findById(userId: number, filmId: number) {
     const film = await this.entityManager.findOne(
       FilmEntity,
       { id: filmId, user: userId },
-      { populate: ['user', 'emulsion', 'emulsion.developmentProcess', 'emulsion.filmFormats', 'packageType', 'packageType.filmFormat', 'filmFormat', 'currentState'] }
+      { populate: ['user', 'filmLot', 'emulsion', 'emulsion.developmentProcess', 'emulsion.filmFormats', 'packageType', 'packageType.filmFormat', 'filmFormat', 'currentState'] }
     );
 
     if (!film) {
@@ -101,7 +95,7 @@ export class MikroOrmFilmRepository extends FilmRepository {
     const film = await this.entityManager.findOne(
       FilmEntity,
       { id: filmId, user: userId },
-      { populate: ['user', 'emulsion', 'emulsion.developmentProcess', 'emulsion.filmFormats', 'packageType', 'packageType.filmFormat', 'filmFormat', 'currentState'] }
+      { populate: ['user', 'filmLot', 'emulsion', 'emulsion.developmentProcess', 'emulsion.filmFormats', 'packageType', 'packageType.filmFormat', 'filmFormat', 'currentState'] }
     );
 
     return film ? mapFilmSummaryEntity(film) : null;
@@ -128,7 +122,7 @@ export class MikroOrmFilmRepository extends FilmRepository {
     const persisted = await this.entityManager.findOneOrFail(
       FilmEntity,
       { id: filmId, user: userId },
-      { populate: ['user', 'emulsion', 'emulsion.developmentProcess', 'emulsion.filmFormats', 'packageType', 'packageType.filmFormat', 'filmFormat', 'currentState'] }
+      { populate: ['user', 'filmLot', 'emulsion', 'emulsion.developmentProcess', 'emulsion.filmFormats', 'packageType', 'packageType.filmFormat', 'filmFormat', 'currentState'] }
     );
 
     return mapFilmSummaryEntity(persisted);
@@ -147,10 +141,10 @@ export class MikroOrmFilmRepository extends FilmRepository {
   async listFrames(userId: number, filmId: number) {
     const frames = await this.entityManager.find(
       FilmFrameEntity,
-      { user: userId, legacyFilm: filmId },
+      { user: userId, film: filmId },
       {
         orderBy: { frameNumber: 'asc', id: 'asc' },
-        populate: ['user', 'filmStock', 'legacyFilm', 'currentState', 'boundHolderDevice']
+        populate: ['user', 'film', 'currentState']
       }
     );
 
@@ -244,7 +238,7 @@ export class MikroOrmFilmRepository extends FilmRepository {
         eventId: event.id,
         filmId: event.film.id,
         filmName: event.film.name,
-        emulsionName: `${emulsion.manufacturer} ${emulsion.brand} ${emulsion.isoSpeed}`,
+        emulsionName: formatEmulsionName(emulsion),
         stockLabel: toStockLabel(event.film),
         developmentProcessCode: emulsion.developmentProcess.code,
         occurredAt: event.occurredAt,
@@ -257,38 +251,12 @@ export class MikroOrmFilmRepository extends FilmRepository {
   }
 
   async findOccupiedFilmForDeviceId(userId: number, deviceId: number): Promise<number | null> {
-    const loadedEvents = await this.entityManager.find(
-      FilmJourneyEventEntity,
-      { user: userId, filmState: { code: 'loaded' } },
-      { populate: ['film', 'film.currentState', 'film.user', 'filmState'], orderBy: { film: { id: 'asc' }, occurredAt: 'desc', id: 'desc' } }
-    );
-
-    const seenFilmIds = new Set<number>();
-
-    for (const loadedEvent of loadedEvents) {
-      const filmId = loadedEvent.film.id;
-
-      if (seenFilmIds.has(filmId)) {
-        continue;
-      }
-
-      seenFilmIds.add(filmId);
-
-      if (loadedEvent.film.currentState.code !== 'loaded' && loadedEvent.film.currentState.code !== 'exposed') {
-        continue;
-      }
-
-      const loadedEventData = parseLoadedEventData(loadedEvent.eventData);
-      if (!loadedEventData) {
-        continue;
-      }
-
-      if (loadedEventData.deviceId === deviceId) {
-        return filmId;
-      }
-    }
-
-    return null;
+    const film = await this.entityManager.findOne(FilmEntity, {
+      user: userId,
+      currentDevice: deviceId,
+      currentState: { code: { $in: ['loaded', 'exposed'] } }
+    });
+    return film ? film.id : null;
   }
 
 }

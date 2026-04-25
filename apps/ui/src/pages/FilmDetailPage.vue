@@ -70,9 +70,9 @@ const frameColumns = [
     align: 'left'
   },
   {
-    name: 'slot',
-    label: 'Holder Slot',
-    field: (row: FilmFrame) => (row.boundHolderSlotNumber ? String(row.boundHolderSlotNumber) : 'Not bound'),
+    name: 'state',
+    label: 'State',
+    field: (row: FilmFrame) => row.currentStateCode,
     align: 'left'
   }
 ];

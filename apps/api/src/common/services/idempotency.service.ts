@@ -3,9 +3,10 @@ import { Inject, Injectable } from '@nestjs/common';
 import { EntityManager } from '@mikro-orm/core';
 import { DomainError } from '../../domain/errors.js';
 import { IdempotencyKeyEntity, UserEntity } from '../../infrastructure/entities/index.js';
+import { nowIso } from '../utils/time.js';
 
-function nowIso(): string {
-  return new Date().toISOString();
+function idempotencyExpiresAt(): string {
+  return new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
 }
 
 function requestHash(payload: unknown): string {
@@ -40,10 +41,12 @@ export class IdempotencyService {
     const hashedPayload = requestHash(params.requestPayload);
 
     return this.entityManager.transactional(async (transactionalEntityManager) => {
+      const now = nowIso();
       const existing = await transactionalEntityManager.findOne(IdempotencyKeyEntity, {
         user: params.userId,
         scope: params.scope,
-        key: normalizedKey
+        key: normalizedKey,
+        $or: [{ expiresAt: null }, { expiresAt: { $gt: now } }]
       });
 
       if (existing) {
@@ -63,10 +66,14 @@ export class IdempotencyService {
           key: normalizedKey,
           requestHash: hashedPayload,
           responseBody: response,
-          createdAt: nowIso()
+          createdAt: now,
+          expiresAt: idempotencyExpiresAt()
         });
         transactionalEntityManager.persist(entry);
         await transactionalEntityManager.flush();
+
+        // Fire-and-forget: prune expired keys outside the transaction to avoid deadlocks
+        this.entityManager.nativeDelete(IdempotencyKeyEntity, { expiresAt: { $lte: now } }).catch(() => {});
       } catch (error) {
         if (!isUniqueConstraintError(error)) {
           throw error;

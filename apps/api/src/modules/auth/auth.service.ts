@@ -11,10 +11,7 @@ import {
   AUTH_REFRESH_TOKEN_TTL_DAYS,
   requireAuthJwtSecret
 } from './auth.constants.js';
-
-function nowIso(): string {
-  return new Date().toISOString();
-}
+import { nowIso } from '../../common/utils/time.js';
 
 function refreshExpiresAt(): string {
   return new Date(Date.now() + AUTH_REFRESH_TOKEN_TTL_DAYS * 24 * 60 * 60 * 1000).toISOString();
@@ -193,7 +190,7 @@ export class AuthService {
   private async issueTokenPair(userId: number, email: string): Promise<TokenPair> {
     const refreshToken = this.generateRefreshToken();
 
-    await this.authRepository.upsertRefreshToken({
+    await this.authRepository.createRefreshToken({
       userId,
       tokenHash: hashRefreshToken(refreshToken),
       createdAt: nowIso(),

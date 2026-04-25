@@ -1,6 +1,7 @@
 import type { MiddlewareConsumer, NestModule } from '@nestjs/common';
 import { Module, RequestMethod } from '@nestjs/common';
 import { MikroOrmMiddleware } from '@mikro-orm/nestjs';
+import { ThrottlerModule } from '@nestjs/throttler';
 import { EnvModule } from './config/env.module.js';
 import { DatabaseModule } from './infrastructure/database.module.js';
 import { AuthModule } from './modules/auth/auth.module.js';
@@ -12,6 +13,7 @@ import { ReferenceModule } from './modules/reference/reference.module.js';
   imports: [
     EnvModule,
     DatabaseModule,
+    ThrottlerModule.forRoot([{ ttl: 60_000, limit: 100, skipIf: () => process.env['NODE_ENV'] === 'test' }]),
     AuthModule,
     ReferenceModule,
     FilmModule,

@@ -1,5 +1,6 @@
 import { Body, Controller, Inject, Post, UseGuards, Get, HttpCode } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { Throttle } from '@nestjs/throttler';
 import {
   loginRequestSchema,
   refreshRequestSchema,
@@ -12,6 +13,7 @@ import { AuthService } from './auth.service.js';
 import { ZodSchemaPipe } from '../../common/pipes/zod-schema.pipe.js';
 import type { AuthenticatedUser } from './auth.types.js';
 
+@Throttle({ default: { ttl: 60_000, limit: 5 } })
 @ApiTags('auth')
 @Controller('auth')
 @UseGuards(JwtAuthGuard)

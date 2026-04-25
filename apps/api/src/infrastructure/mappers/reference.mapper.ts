@@ -97,6 +97,10 @@ export function mapHolderTypeEntity(entity: HolderTypeEntity): HolderType {
   };
 }
 
+export function formatEmulsionName(entity: Pick<EmulsionEntity, 'manufacturer' | 'brand' | 'isoSpeed'>): string {
+  return `${entity.manufacturer} ${entity.brand} ${entity.isoSpeed}`;
+}
+
 export function mapEmulsionEntity(entity: EmulsionEntity): Emulsion {
   return {
     id: entity.id,

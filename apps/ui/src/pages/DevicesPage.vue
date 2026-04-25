@@ -269,7 +269,7 @@ onMounted(async () => {
     </q-table>
 
     <q-dialog v-model="isCreateDialogOpen">
-      <q-card style="min-width: min(92vw, 640px);">
+      <q-card class="full-width">
         <q-card-section>
           <div class="text-h6">Create device</div>
         </q-card-section>

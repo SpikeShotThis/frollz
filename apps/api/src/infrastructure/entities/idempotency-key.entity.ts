@@ -22,4 +22,7 @@ export class IdempotencyKeyEntity extends AutoIncrementEntity {
 
   @Property({ type: 'text', fieldName: 'created_at' })
   createdAt!: string;
+
+  @Property({ type: 'text', fieldName: 'expires_at', nullable: true })
+  expiresAt: string | null = null;
 }

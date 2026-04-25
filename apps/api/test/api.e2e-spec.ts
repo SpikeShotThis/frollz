@@ -3,6 +3,7 @@ import {
   deviceLoadTimelineEventSchema,
   emulsionSchema,
   filmDetailSchema,
+  filmLotDetailSchema,
   filmJourneyEventSchema,
   filmFrameSchema,
   filmFormatSchema,
@@ -80,21 +81,23 @@ describe('API integration', () => {
     const refs = await loadCoreReferenceData(authHeaders);
     const createResponse = await harness.app.inject({
       method: 'POST',
-      url: '/api/v1/film',
+      url: '/api/v1/film/lots',
       headers: { ...authHeaders, 'content-type': 'application/json' },
       payload: {
-        name,
         emulsionId: refs.emulsion.id,
         packageTypeId: refs.packageType.id,
         filmFormatId: refs.filmFormat.id,
+        quantity: 1,
+        films: [{ name }],
         expirationDate: null
       }
     });
 
     expect(createResponse.statusCode).toBe(201);
+    const lot = filmLotDetailSchema.parse(createResponse.json());
     return {
       refs,
-      film: filmDetailSchema.parse(createResponse.json())
+      film: lot.films[0]!
     };
   }
 
@@ -106,8 +109,7 @@ describe('API integration', () => {
     });
     expect(response.statusCode).toBe(200);
     const frames = filmFrameSchema.array().parse(response.json());
-    const availableFrame = frames.find((frame) => frame.firstLoadedAt === null);
-    return availableFrame?.id ?? 1;
+    return frames[0]?.id ?? 1;
   }
 
   it('registers, logs in, and returns a token pair', async () => {
@@ -198,13 +200,14 @@ describe('API integration', () => {
 
     const response = await harness.app.inject({
       method: 'POST',
-      url: '/api/v1/film',
+      url: '/api/v1/film/lots',
       headers: { ...authHeaders, 'content-type': 'application/json' },
       payload: {
-        name: 'Broken combo',
         emulsionId: refs.emulsion.id,
         packageTypeId: refs.packageType.id,
         filmFormatId: otherFormat.id,
+        quantity: 1,
+        films: [{ name: 'Broken combo' }],
         expirationDate: null
       }
     });
@@ -257,19 +260,21 @@ describe('API integration', () => {
 
     const filmCreateResponse = await harness.app.inject({
       method: 'POST',
-      url: '/api/v1/film',
+      url: '/api/v1/film/lots',
       headers: { ...authHeaders, 'content-type': 'application/json' },
       payload: {
-        name: 'Delta roll',
         emulsionId: emulsion!.id,
         packageTypeId: packageType!.id,
         filmFormatId: filmFormat!.id,
+        quantity: 1,
+        films: [{ name: 'Delta roll' }],
         expirationDate: null
       }
     });
 
     expect(filmCreateResponse.statusCode).toBe(201);
-    const createdFilm = filmDetailSchema.parse(filmCreateResponse.json());
+    const createdLot = filmLotDetailSchema.parse(filmCreateResponse.json());
+    const createdFilm = createdLot.films[0]!;
     expect(createdFilm.currentStateCode).toBe('purchased');
 
     const initialEventsResponse = await harness.app.inject({
@@ -1047,18 +1052,20 @@ describe('API integration', () => {
 
     const createResponse = await harness.app.inject({
       method: 'POST',
-      url: '/api/v1/film',
+      url: '/api/v1/film/lots',
       headers: { ...authHeaders, 'content-type': 'application/json' },
       payload: {
-        name: 'Private roll',
         emulsionId: emulsion!.id,
         packageTypeId: packageType!.id,
         filmFormatId: filmFormat!.id,
+        quantity: 1,
+        films: [{ name: 'Private roll' }],
         expirationDate: null
       }
     });
 
-    const createdFilm = filmDetailSchema.parse(createResponse.json());
+    const createdLot = filmLotDetailSchema.parse(createResponse.json());
+    const createdFilm = createdLot.films[0]!;
 
     const response = await harness.app.inject({
       method: 'GET',

@@ -1,6 +1,7 @@
 import type { PipeTransform } from '@nestjs/common';
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import type { ZodTypeAny } from 'zod';
+import { DomainError } from '../../domain/errors.js';
 
 @Injectable()
 export class ZodSchemaPipe<TSchema extends ZodTypeAny> implements PipeTransform<unknown, TSchema['_output']> {
@@ -10,11 +11,7 @@ export class ZodSchemaPipe<TSchema extends ZodTypeAny> implements PipeTransform<
     const result = this.schema.safeParse(value);
 
     if (!result.success) {
-      throw new BadRequestException({
-        code: 'VALIDATION_ERROR',
-        message: 'Validation failed',
-        details: result.error.flatten()
-      });
+      throw new DomainError('VALIDATION_ERROR', 'Validation failed', [result.error.flatten()]);
     }
 
     return result.data;

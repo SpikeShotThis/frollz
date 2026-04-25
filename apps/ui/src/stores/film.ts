@@ -4,10 +4,12 @@ import {
   createFrameJourneyEventRequestSchema,
   createFilmJourneyEventRequestSchema,
   filmDetailSchema,
+  filmListResponseSchema,
+  filmLotDetailSchema,
+  filmSummarySchema,
   frameJourneyEventSchema,
   filmFrameSchema,
   filmJourneyEventSchema,
-  filmSummarySchema,
   type CreateFrameJourneyEventRequest,
   type CreateFilmJourneyEventRequest,
   type FilmDetail,
@@ -37,7 +39,7 @@ export const useFilmStore = defineStore('film', () => {
   let loadFilmInFlight: Promise<void> | null = null;
   let loadFilmInFlightId: number | null = null;
 
-  async function loadFilms(query: FilmListQuery = {}): Promise<void> {
+  async function loadFilms(query: Partial<FilmListQuery> = {}): Promise<void> {
     if (loadFilmsInFlight) {
       return loadFilmsInFlight;
     }
@@ -59,7 +61,8 @@ export const useFilmStore = defineStore('film', () => {
     loadFilmsInFlight = (async () => {
       try {
         const response = await request(`/api/v1/film${searchParams.size > 0 ? `?${searchParams.toString()}` : ''}`);
-        films.value = filmSummarySchema.array().parse(await readApiData(response));
+        const result = filmListResponseSchema.parse(await readApiData(response));
+        films.value = result.items;
       } catch (error) {
         filmsError.value = error instanceof Error ? error.message : 'Failed to load films';
         films.value = [];
@@ -107,16 +110,24 @@ export const useFilmStore = defineStore('film', () => {
   }
 
   async function createFilm(input: FilmCreateRequest, idempotencyKey?: string): Promise<void> {
+    const lotPayload = {
+      emulsionId: input.emulsionId,
+      packageTypeId: input.packageTypeId,
+      filmFormatId: input.filmFormatId,
+      quantity: 1,
+      expirationDate: input.expirationDate,
+      films: [{ name: input.name }]
+    };
     const init: RequestInit = {
       method: 'POST',
-      body: JSON.stringify(input)
+      body: JSON.stringify(lotPayload)
     };
     if (idempotencyKey) {
       init.headers = { 'idempotency-key': idempotencyKey };
     }
 
-    const response = await request('/api/v1/film', init);
-    currentFilm.value = filmDetailSchema.parse(await readApiData(response));
+    const response = await request('/api/v1/film/lots', init);
+    filmLotDetailSchema.parse(await readApiData(response));
     await loadFilms();
   }
 

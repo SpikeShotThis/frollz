@@ -3,7 +3,7 @@ import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import {
   createFrameJourneyEventRequestSchema,
   createFilmJourneyEventRequestSchema,
-  filmCreateRequestSchema,
+  filmLotCreateRequestSchema,
   filmListQuerySchema,
   filmUpdateRequestSchema
 } from '@frollz2/schema';
@@ -38,20 +38,20 @@ export class FilmController {
     return this.filmService.findById(user.userId, id);
   }
 
-  @Post()
-  @ApiOperation({ summary: 'Create a new film' })
-  @ApiResponse({ status: 201, description: 'Film created' })
-  create(
+  @Post('lots')
+  @ApiOperation({ summary: 'Create a new film lot with individual film records' })
+  @ApiResponse({ status: 201, description: 'Film lot created' })
+  createLot(
     @CurrentUser() user: AuthenticatedUser,
     @Headers('idempotency-key') idempotencyKey: string | undefined,
-    @Body(new ZodSchemaPipe(filmCreateRequestSchema)) body: typeof filmCreateRequestSchema['_output']
+    @Body(new ZodSchemaPipe(filmLotCreateRequestSchema)) body: typeof filmLotCreateRequestSchema['_output']
   ) {
     return this.idempotencyService.execute({
       userId: user.userId,
       key: idempotencyKey,
-      scope: 'film.create',
+      scope: 'film.create-lot',
       requestPayload: body,
-      handler: () => this.filmService.create(user.userId, body)
+      handler: () => this.filmService.createLot(user.userId, body)
     });
   }
 

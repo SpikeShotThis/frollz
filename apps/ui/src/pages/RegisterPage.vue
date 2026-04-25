@@ -40,8 +40,8 @@ async function submit(): Promise<void> {
 </script>
 
 <template>
-  <q-page class="flex flex-center q-pa-md">
-    <q-card flat bordered class="full-width" style="max-width: 460px;">
+  <q-page class="row justify-center items-center q-pa-md">
+    <q-card flat bordered class="col-xs-12 col-sm-8 col-md-6 col-lg-4">
       <q-card-section>
         <div class="text-h5">Create account</div>
         <div class="text-subtitle2 auth-subtitle">Start tracking rolls, devices, and transitions.</div>

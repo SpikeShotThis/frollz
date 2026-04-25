@@ -112,23 +112,20 @@ const MEDIUM_FRAME_SIZES: readonly FrameSizeDefinition[] = [
   defineFrameSize('6x17', '6x17', 3)
 ] as const;
 
-// Supported sheet-box package sizes for large format films.
-function sheetBoxVariants(): readonly StockVariantDefinition[] {
-  return [
-    defineStockVariant('10sheets', '10 sheets', 'sheet_box', {
-      unitsPerVariant: 10,
-      supportsDirectLoad: true
-    }),
-    defineStockVariant('25sheets', '25 sheets', 'sheet_box', {
-      unitsPerVariant: 25,
-      supportsDirectLoad: true
-    }),
-    defineStockVariant('50sheets', '50 sheets', 'sheet_box', {
-      unitsPerVariant: 50,
-      supportsDirectLoad: true
-    })
-  ] as const;
-}
+const SHEET_BOX_VARIANTS: readonly StockVariantDefinition[] = [
+  defineStockVariant('10sheets', '10 sheets', 'sheet_box', {
+    unitsPerVariant: 10,
+    supportsDirectLoad: true
+  }),
+  defineStockVariant('25sheets', '25 sheets', 'sheet_box', {
+    unitsPerVariant: 25,
+    supportsDirectLoad: true
+  }),
+  defineStockVariant('50sheets', '50 sheets', 'sheet_box', {
+    unitsPerVariant: 50,
+    supportsDirectLoad: true
+  })
+];
 
 // Shared builder for formats where one selected frame equals one captured image.
 // Used for sheet and Instax families, which do not have multiple frame-size options per format code.
@@ -145,19 +142,16 @@ function defineSingleFrameFormat(params: {
   };
 }
 
-// Supported 120 roll variants.
 // 220 is modeled as 2x capacity relative to 120.
-function mediumRollVariants(): readonly StockVariantDefinition[] {
-  return [
-    defineStockVariant('120_roll', '120 roll', 'roll', {
-      supportsDirectLoad: true
-    }),
-    defineStockVariant('220_roll', '220 roll', 'roll', {
-      variantMultiplier: 2,
-      supportsDirectLoad: true
-    })
-  ] as const;
-}
+const MEDIUM_ROLL_VARIANTS: readonly StockVariantDefinition[] = [
+  defineStockVariant('120_roll', '120 roll', 'roll', {
+    supportsDirectLoad: true
+  }),
+  defineStockVariant('220_roll', '220 roll', 'roll', {
+    variantMultiplier: 2,
+    supportsDirectLoad: true
+  })
+];
 
 // Instax sells as fixed packs; each pack contributes 10 exposures in this domain model.
 function instaxPackVariant(label: string): readonly StockVariantDefinition[] {
@@ -180,7 +174,7 @@ const sheetFormatDefinitions = Object.fromEntries(
       filmType: 'sheet',
       frameSizeCode: formatCode,
       frameSizeLabel: formatCode,
-      stockVariants: sheetBoxVariants()
+      stockVariants: SHEET_BOX_VARIANTS
     })
   ])
 ) as Readonly<Record<(typeof SHEET_FORMAT_CODES)[number], FilmFormatDefinition>>;
@@ -234,7 +228,7 @@ export const filmFormatDefinitions: Readonly<Record<string, FilmFormatDefinition
   '120': {
     filmType: '120',
     frameSizes: MEDIUM_FRAME_SIZES,
-    stockVariants: mediumRollVariants()
+    stockVariants: MEDIUM_ROLL_VARIANTS
   },
   ...sheetFormatDefinitions,
   ...instaxFormatDefinitions
@@ -270,9 +264,8 @@ export function getFilmTypeForFormatCode(formatCode: string): FilmTypeCode | nul
   return getFilmFormatDefinition(formatCode)?.filmType ?? null;
 }
 
-// Guard used to validate user-selected frame size against format constraints.
 export function isFrameSizeValidForFormatCode(formatCode: string, frameSize: string): frameSize is FrameSizeCode {
-  return getFrameSizeCodesForFormatCode(formatCode).some((allowed) => allowed === frameSize);
+  return getFrameSizeDefinitionsForFormatCode(formatCode).some((def) => def.code === frameSize);
 }
 
 // Frame-count resolver result: either a computed count or a domain-specific validation error.
@@ -297,16 +290,13 @@ export function resolveNonLargeFrameCount(params: {
 
   const frameSizeDefinition = definition.frameSizes.find((candidate) => candidate.code === frameSize);
   if (!frameSizeDefinition) {
-    if (formatCode === '35mm') {
-      return { ok: false, message: 'Unsupported 35mm frame size for frame generation' };
-    }
-    if (definition.filmType === '120') {
-      return { ok: false, message: 'Unsupported medium format frame size for frame generation' };
-    }
-    if (definition.filmType === 'instax') {
-      return { ok: false, message: 'Unsupported Instax frame size for frame generation' };
-    }
-    return { ok: false, message: 'Unsupported film format for non-large frame generation' };
+    const formatKey = formatCode === '35mm' ? '35mm' : definition.filmType;
+    const frameSizeErrors: Record<string, string> = {
+      '35mm': 'Unsupported 35mm frame size for frame generation',
+      '120': 'Unsupported medium format frame size for frame generation',
+      instax: 'Unsupported Instax frame size for frame generation'
+    };
+    return { ok: false, message: frameSizeErrors[formatKey] ?? 'Unsupported film format for non-large frame generation' };
   }
 
   const stockVariant = definition.stockVariants.find((candidate) => candidate.code === packageTypeCode);
@@ -314,16 +304,13 @@ export function resolveNonLargeFrameCount(params: {
     if (formatCode === '35mm' && (packageTypeCode === '100ft_bulk' || packageTypeCode === '400ft_bulk')) {
       return { ok: false, message: '35mm spool must be converted to a supported roll before loading' };
     }
-    if (formatCode === '35mm') {
-      return { ok: false, message: 'Unsupported 35mm package type for frame generation' };
-    }
-    if (definition.filmType === '120') {
-      return { ok: false, message: 'Unsupported medium format package type for frame generation' };
-    }
-    if (definition.filmType === 'instax') {
-      return { ok: false, message: 'Unsupported Instax package type for frame generation' };
-    }
-    return { ok: false, message: 'Unsupported film format for non-large frame generation' };
+    const formatKey = formatCode === '35mm' ? '35mm' : definition.filmType;
+    const packageTypeErrors: Record<string, string> = {
+      '35mm': 'Unsupported 35mm package type for frame generation',
+      '120': 'Unsupported medium format package type for frame generation',
+      instax: 'Unsupported Instax package type for frame generation'
+    };
+    return { ok: false, message: packageTypeErrors[formatKey] ?? 'Unsupported film format for non-large frame generation' };
   }
 
   return {

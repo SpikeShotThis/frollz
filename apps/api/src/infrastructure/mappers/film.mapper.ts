@@ -1,12 +1,59 @@
-import type { FilmDetail, FilmFrame, FilmJourneyEvent, FilmSummary } from '@frollz2/schema';
-import { filmStateSchema } from '@frollz2/schema';
-import type { FilmEntity, FilmFrameEntity, FilmJourneyEventEntity } from '../entities/index.js';
+import type { FilmDetail, FilmFrame, FilmJourneyEvent, FilmLotDetail, FilmLotSummary, FilmSummary } from '@frollz2/schema';
+import { filmStateSchema, filmJourneyEventDataLoadedSchema } from '@frollz2/schema';
+import type { FilmEntity, FilmFrameEntity, FilmJourneyEventEntity, FilmLotEntity } from '../entities/index.js';
 import { mapEmulsionEntity, mapFilmFormatEntity, mapFilmStateEntity, mapPackageTypeEntity } from './reference.mapper.js';
+
+export type NormalizedLoadedEventData = {
+  deviceId: number;
+  slotSideNumber: number | null;
+  loadTargetType: 'camera_direct' | 'interchangeable_back' | 'film_holder_slot';
+};
+
+export function parseLoadedEventData(raw: unknown): NormalizedLoadedEventData | null {
+  const parsed = filmJourneyEventDataLoadedSchema.safeParse(raw);
+  if (!parsed.success) {
+    return null;
+  }
+
+  if (parsed.data.loadTargetType === 'camera_direct') {
+    return { deviceId: parsed.data.cameraId, slotSideNumber: null, loadTargetType: 'camera_direct' };
+  }
+
+  if (parsed.data.loadTargetType === 'interchangeable_back') {
+    return { deviceId: parsed.data.interchangeableBackId, slotSideNumber: null, loadTargetType: 'interchangeable_back' };
+  }
+
+  return { deviceId: parsed.data.filmHolderId, slotSideNumber: parsed.data.slotNumber, loadTargetType: 'film_holder_slot' };
+}
+
+export function mapFilmLotSummaryEntity(entity: FilmLotEntity, filmCount: number): FilmLotSummary {
+  return {
+    id: entity.id,
+    userId: entity.user.id,
+    emulsionId: entity.emulsion.id,
+    packageTypeId: entity.packageType.id,
+    filmFormatId: entity.filmFormat.id,
+    quantity: entity.quantity,
+    expirationDate: entity.expirationDate,
+    filmCount,
+    emulsion: mapEmulsionEntity(entity.emulsion),
+    packageType: mapPackageTypeEntity(entity.packageType),
+    filmFormat: mapFilmFormatEntity(entity.filmFormat)
+  };
+}
+
+export function mapFilmLotDetailEntity(entity: FilmLotEntity, films: FilmEntity[]): FilmLotDetail {
+  return {
+    ...mapFilmLotSummaryEntity(entity, films.length),
+    films: films.map(mapFilmSummaryEntity)
+  };
+}
 
 export function mapFilmSummaryEntity(entity: FilmEntity): FilmSummary {
   return {
     id: entity.id,
     userId: entity.user.id,
+    filmLotId: entity.filmLot.id,
     name: entity.name,
     emulsionId: entity.emulsion.id,
     packageTypeId: entity.packageType.id,
@@ -46,13 +93,10 @@ export function mapFilmFrameEntity(entity: FilmFrameEntity): FilmFrame {
   return {
     id: entity.id,
     userId: entity.user.id,
-    filmStockId: entity.filmStock.id,
+    filmId: entity.film.id,
     frameNumber: entity.frameNumber,
     currentStateId: entity.currentState.id,
     currentStateCode: filmStateSchema.shape.code.parse(entity.currentState.code),
-    boundHolderDeviceId: entity.boundHolderDevice ? entity.boundHolderDevice.id : null,
-    boundHolderSlotNumber: entity.boundHolderSlotNumber,
-    firstLoadedAt: entity.firstLoadedAt,
     currentState: mapFilmStateEntity(entity.currentState)
   };
 }

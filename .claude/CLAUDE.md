@@ -55,7 +55,7 @@ user. Reference data is shared across all users and is read-only in the MVP.
 |---|---|
 | Framework | Vue 3, Composition API only (`<script setup>`) |
 | Build tool | Vite |
-| UI component library | Naive UI — **zero custom CSS** (see Section 10) |
+| UI component library | Quasar UI — **zero custom CSS** (see Section 10) |
 | Store | Pinia |
 
 ### Shared packages
@@ -551,7 +551,7 @@ HTTP status codes: 200, 201, 400, 401, 403, 404, 409, 422, 500.
 
 ## 11. Frontend
 
-### Naive UI Styling — Hard Constraint
+###Quasar UI Styling — Hard Constraint
 
 **Zero custom CSS anywhere in the frontend.** This means:
 - No `.css` or `.scss` files
@@ -560,15 +560,8 @@ HTTP status codes: 200, 201, 400, 401, 403, 404, 409, 422, 500.
 - No `style` prop bindings for visual styling
 - No Tailwind, UnoCSS, or any utility classes
 
-The only permitted styling mechanisms are:
-- Naive UI component props (`type`, `size`, `bordered`, `round`, `status`, etc.)
-- Naive UI slots used as documented
-- `themeOverrides` passed to `<NConfigProvider>` for global token customisation
 
-Layout composition must use Naive UI layout components: `NLayout`, `NLayoutHeader`,
-`NLayoutSider`, `NLayoutContent`, `NSpace`, `NGrid`, `NGridItem`, `NFlex`.
-
-If something cannot be achieved with Naive UI's own API, choose a different Naive UI
+If something cannot be achieved with Quasars UI's own API, choose a different Quasars
 component — do not work around the constraint with custom CSS.
 
 ### Auth
@@ -634,7 +627,7 @@ store — no hardcoded strings:
 - `NForm`, `NFormItem`, `NInput`, `NButton` — no custom styling
 
 ### Film state badge colours
-Use Naive UI `NTag` `type` prop — do not set custom colours:
+Use Quasars UI `NTag` `type` prop — do not set custom colours:
 
 | State code | NTag type |
 |---|---|
@@ -774,7 +767,7 @@ Use real MikroORM with an in-memory SQLite database. No mocking.
 8. `FilmHolderSlot` independent state — the slot state enum, trigger mapping, new-record
    pattern for each load cycle
 9. Swagger setup — how `nestjs-zod` bridge eliminates manual `@ApiProperty()` decorators
-10. Naive UI constraint — what is forbidden, what is permitted, how to handle edge cases
+10. Quasar UI constraint — what is forbidden, what is permitted, how to handle edge cases
 11. How to add a new event type end-to-end: reference table seed → Zod schema →
     transition table entry → `eventData` sub-schema → service pre-conditions →
     API → reference store → UI dynamic form field
@@ -793,7 +786,7 @@ Use real MikroORM with an in-memory SQLite database. No mocking.
 5. **Event immutability.** `FilmJourneyEvent` records are never updated or deleted.
 6. **Transactional consistency.** Event insert + `Film.currentState` update + slot
    side-effects always in one DB transaction.
-7. **Zero custom CSS.** Naive UI API only.
+7. **Zero custom CSS.** Quasars UI API only.
 8. **Security.** bcrypt passwords, hashed refresh tokens, all user-data queries scoped
    to `userId`.
 9. **MVP scope.** No microservices, no queues, no caching. Admin write endpoints for

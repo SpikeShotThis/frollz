@@ -4,12 +4,13 @@ import type {
   FilmFrame,
   FilmJourneyEvent,
   FilmListQuery,
+  FilmListResponse,
   FilmSummary,
   FilmUpdateRequest
 } from '@frollz2/schema';
 
 export abstract class FilmRepository {
-  abstract list(userId: number, query: FilmListQuery): Promise<FilmSummary[]>;
+  abstract list(userId: number, query: FilmListQuery): Promise<FilmListResponse>;
 
   abstract findById(userId: number, filmId: number): Promise<FilmDetail | null>;
 

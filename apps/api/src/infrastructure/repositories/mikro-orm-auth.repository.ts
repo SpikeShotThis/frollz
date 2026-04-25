@@ -52,11 +52,10 @@ export class MikroOrmAuthRepository extends AuthRepository {
     return mapCurrentUserEntity(entity);
   }
 
-  async upsertRefreshToken(input: { userId: number; tokenHash: string; createdAt: string; expiresAt: string }) {
-    await this.entityManager.transactional(async (transactionalEntityManager) => {
-      await transactionalEntityManager.nativeDelete(RefreshTokenEntity, { user: input.userId });
-      const user = transactionalEntityManager.getReference(UserEntity, input.userId);
-      const entity = transactionalEntityManager.create(RefreshTokenEntity, {
+  async createRefreshToken(input: { userId: number; tokenHash: string; createdAt: string; expiresAt: string }) {
+    await this.entityManager.transactional(async (tx) => {
+      const user = tx.getReference(UserEntity, input.userId);
+      const entity = tx.create(RefreshTokenEntity, {
         user,
         tokenHash: input.tokenHash,
         previousTokenHash: null,
@@ -65,9 +64,19 @@ export class MikroOrmAuthRepository extends AuthRepository {
         expiresAt: input.expiresAt,
         revokedAt: null
       });
+      tx.persist(entity);
+      await tx.flush();
 
-      transactionalEntityManager.persist(entity);
-      await transactionalEntityManager.flush();
+      // Prune sessions beyond 10 most recent for this user to prevent unbounded growth
+      const sessions = await tx.find(
+        RefreshTokenEntity,
+        { user: input.userId },
+        { orderBy: { createdAt: 'desc' }, limit: 100 }
+      );
+      if (sessions.length > 10) {
+        const toDelete = sessions.slice(10);
+        await tx.nativeDelete(RefreshTokenEntity, { id: { $in: toDelete.map((s) => s.id) } });
+      }
     });
   }
 
@@ -145,9 +154,14 @@ export class MikroOrmAuthRepository extends AuthRepository {
   }
 
   async findRefreshTokenByHash(tokenHash: string) {
+    const now = new Date().toISOString();
     const entity = await this.entityManager.findOne(
       RefreshTokenEntity,
-      { $or: [{ tokenHash }, { previousTokenHash: tokenHash }] },
+      {
+        $or: [{ tokenHash }, { previousTokenHash: tokenHash }],
+        expiresAt: { $gt: now },
+        revokedAt: null
+      },
       { populate: ['user'] }
     );
 

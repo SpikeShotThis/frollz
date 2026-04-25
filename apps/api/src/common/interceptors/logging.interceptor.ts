@@ -41,14 +41,15 @@ export class LoggingInterceptor implements NestInterceptor {
     const req = context.switchToHttp().getRequest<FastifyRequest>();
     const { method, url, body } = req;
     const start = Date.now();
+    const isDev = process.env['NODE_ENV'] !== 'production';
 
-    this.logger.log(`→ ${method} ${url}${formatPayload(body)}`);
+    this.logger.log(`→ ${method} ${url}${isDev ? formatPayload(body) : ''}`);
 
     const obs = next.handle();
     obs.subscribe({
       next: (data: unknown) => {
         const reply = context.switchToHttp().getResponse<FastifyReply>();
-        this.logger.log(`← ${method} ${url} ${reply.statusCode} (${Date.now() - start}ms)${formatPayload(data)}`);
+        this.logger.log(`← ${method} ${url} ${reply.statusCode} (${Date.now() - start}ms)${isDev ? formatPayload(data) : ''}`);
       },
       error: (err: unknown) => {
         const status = (err as { status?: number })?.status ?? 500;

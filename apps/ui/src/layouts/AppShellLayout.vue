@@ -66,9 +66,6 @@ function closeDrawerOnNavigate(): void {
   }
 }
 
-function selectTheme(preference: ThemePreference): void {
-  setThemePreference(preference);
-}
 </script>
 
 <template>
@@ -81,8 +78,8 @@ function selectTheme(preference: ThemePreference): void {
           <q-btn flat round dense icon="contrast" aria-label="Select theme">
             <q-tooltip>Theme: {{ activeThemeLabel }}</q-tooltip>
             <q-menu auto-close>
-              <q-list dense style="min-width: 180px;">
-                <q-item v-for="option in themeOptions" :key="option.value" clickable @click="selectTheme(option.value)">
+              <q-list dense>
+                <q-item v-for="option in themeOptions" :key="option.value" clickable @click="setThemePreference(option.value as ThemePreference)">
                   <q-item-section avatar>
                     <q-icon :name="option.value === themePreference ? 'check' : option.icon" />
                   </q-item-section>

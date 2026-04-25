@@ -194,9 +194,13 @@ onMounted(async () => {
       {{ filmStore.filmsError }}
     </q-banner>
 
-    <div class="film-filters">
-      <q-input v-model="search" filled clearable label="Search films" />
-      <q-select v-model="stateFilter" filled clearable emit-value map-options :options="stateOptions" label="Filter by state" />
+    <div class="row q-col-gutter-md">
+      <div class="col-xs-12 col-lg-6">
+        <q-input v-model="search" filled clearable label="Search films" />
+      </div>
+      <div class="col-xs-12 col-lg-6">
+        <q-select v-model="stateFilter" filled clearable emit-value map-options :options="stateOptions" label="Filter by state" />
+      </div>
     </div>
 
     <q-table :rows="rows" :columns="columns" row-key="id" flat bordered :loading="filmStore.isLoading">
@@ -215,7 +219,7 @@ onMounted(async () => {
     </q-table>
 
     <q-dialog v-model="isCreateDialogOpen">
-      <q-card style="min-width: min(92vw, 640px);">
+      <q-card class="full-width">
         <q-card-section>
           <div class="text-h6">Create film</div>
         </q-card-section>
@@ -260,16 +264,3 @@ onMounted(async () => {
   </q-page>
 </template>
 
-<style scoped>
-.film-filters {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: 16px;
-}
-
-@media (min-width: 1024px) {
-  .film-filters {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-</style>

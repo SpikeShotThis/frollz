@@ -18,7 +18,7 @@ export const themeOptions: ThemeOption[] = [
 ];
 
 function isThemePreference(value: string | null): value is ThemePreference {
-  return value === 'system' || value === 'light' || value === 'dark';
+  return themeOptions.some((o) => o.value === value);
 }
 
 function readStoredPreference(): ThemePreference {
@@ -30,24 +30,24 @@ function readStoredPreference(): ThemePreference {
   }
 }
 
-function readSystemPrefersDark(): boolean {
-  if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') {
-    return false;
-  }
-
-  return window.matchMedia('(prefers-color-scheme: dark)').matches;
-}
+const systemDarkQuery =
+  typeof window !== 'undefined' && typeof window.matchMedia === 'function'
+    ? window.matchMedia('(prefers-color-scheme: dark)')
+    : null;
 
 const themePreference = ref<ThemePreference>(readStoredPreference());
-const systemPrefersDark = ref<boolean>(readSystemPrefersDark());
+const systemPrefersDark = ref<boolean>(systemDarkQuery?.matches ?? false);
 
 const isDarkMode = computed(() => {
   if (themePreference.value === 'system') {
     return systemPrefersDark.value;
   }
-
   return themePreference.value === 'dark';
 });
+
+const activeThemeLabel = computed(
+  () => themeOptions.find((option) => option.value === themePreference.value)!.label
+);
 
 let isBound = false;
 
@@ -55,18 +55,9 @@ export function useTheme() {
   if (!isBound) {
     isBound = true;
 
-    if (typeof window !== 'undefined' && typeof window.matchMedia === 'function') {
-      const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-      const onChange = (event: MediaQueryListEvent): void => {
-        systemPrefersDark.value = event.matches;
-      };
-
-      if (typeof mediaQuery.addEventListener === 'function') {
-        mediaQuery.addEventListener('change', onChange);
-      } else {
-        mediaQuery.addListener(onChange);
-      }
-    }
+    systemDarkQuery?.addEventListener('change', (event: MediaQueryListEvent) => {
+      systemPrefersDark.value = event.matches;
+    });
 
     watch(
       isDarkMode,
@@ -86,10 +77,6 @@ export function useTheme() {
       // Ignore storage write failures (private mode / blocked storage).
     }
   }
-
-  const activeThemeLabel = computed(() => {
-    return themeOptions.find((option) => option.value === themePreference.value)?.label ?? 'System';
-  });
 
   return {
     themePreference,
