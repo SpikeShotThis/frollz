@@ -58,6 +58,9 @@
         "chrome-devtools-mcp@latest",
         "--no-usage-statistics"
       ]
+    },
+    "codebase-memory-mcp": {
+      "command": "/Users/joshholl/.local/bin/codebase-memory-mcp"
     }
   }
 }

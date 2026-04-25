@@ -1,4 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { MikroORM } from '@mikro-orm/core';
 import {
   deviceLoadTimelineEventSchema,
   emulsionSchema,
@@ -14,6 +15,7 @@ import {
   storageLocationSchema,
   tokenPairSchema
 } from '@frollz2/schema';
+import { UserEntity } from '../src/infrastructure/entities/user.entity.js';
 import { createTestHarness, destroyTestHarness, type TestHarness } from './test-harness.js';
 
 describe('API integration', () => {
@@ -126,6 +128,30 @@ describe('API integration', () => {
 
     expect(loginResponse.statusCode).toBe(200);
     expect(tokenPairSchema.parse(loginResponse.json())).toMatchObject({ accessToken: expect.any(String), refreshToken: expect.any(String) });
+  });
+
+  it('treats duplicate register submissions as one successful registration', async () => {
+    const email = `register-race-${Date.now()}@example.com`;
+    const payload = { email, password: 'password123', name: 'Demo User' };
+
+    const [firstResponse, secondResponse] = await Promise.all([
+      harness.app.inject({ method: 'POST', url: '/api/v1/auth/register', payload }),
+      harness.app.inject({ method: 'POST', url: '/api/v1/auth/register', payload })
+    ]);
+
+    expect(firstResponse.statusCode).toBe(201);
+    expect(secondResponse.statusCode).toBe(201);
+    expect(tokenPairSchema.parse(firstResponse.json())).toMatchObject({
+      accessToken: expect.any(String),
+      refreshToken: expect.any(String)
+    });
+    expect(tokenPairSchema.parse(secondResponse.json())).toMatchObject({
+      accessToken: expect.any(String),
+      refreshToken: expect.any(String)
+    });
+
+    const userCount = await harness.app.get(MikroORM).em.fork().count(UserEntity, { email });
+    expect(userCount).toBe(1);
   });
 
   it('rotates refresh tokens and tolerates immediate duplicate refresh submissions', async () => {

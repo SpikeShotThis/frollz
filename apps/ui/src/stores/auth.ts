@@ -22,6 +22,7 @@ export const useAuthStore = defineStore('auth', () => {
   const isSessionInitialized = ref(false);
   let restoreSessionInFlight: Promise<void> | null = null;
   let refreshInFlight: Promise<TokenPair | null> | null = null;
+  let registerInFlight: Promise<void> | null = null;
 
   const isAuthenticated = computed(() => accessToken.value !== null);
 
@@ -179,24 +180,36 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   async function register(input: RegisterRequest): Promise<void> {
-    const response = await fetch('/api/v1/auth/register', {
-      method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify(input)
-    });
-
-    if (!response.ok) {
-      throw new Error(await readErrorMessage(response, 'Registration failed'));
+    if (registerInFlight) {
+      return registerInFlight;
     }
 
-    const tokenPair = tokenPairSchema.parse(await readApiData(response));
-    setTokens(tokenPair);
+    registerInFlight = (async () => {
+      const response = await fetch('/api/v1/auth/register', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify(input)
+      });
+
+      if (!response.ok) {
+        throw new Error(await readErrorMessage(response, 'Registration failed'));
+      }
+
+      const tokenPair = tokenPairSchema.parse(await readApiData(response));
+      setTokens(tokenPair);
+
+      try {
+        await loadCurrentUser(tokenPair.accessToken);
+      } catch (error) {
+        clearTokens();
+        throw error;
+      }
+    })();
 
     try {
-      await loadCurrentUser(tokenPair.accessToken);
-    } catch (error) {
-      clearTokens();
-      throw error;
+      await registerInFlight;
+    } finally {
+      registerInFlight = null;
     }
   }
 

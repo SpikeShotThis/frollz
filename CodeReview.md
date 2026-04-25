@@ -1,337 +1,182 @@
-# Code Review — Frollz API & UI
+ ---
+  Summary
 
-**Reviewed:** 2026-04-21  
-**Reviewer:** Principal Engineer (AI-assisted)  
-**Branch:** `develop`
+  The codebase is at a solid intermediate level. Architecture is well-structured (clean DDD layers, repository abstraction, transactional state machine), authentication is
+  thoughtfully built (refresh token rotation, replay protection), and the type contract between API and UI is properly centralized in @frollz2/schema. The app would mostly
+  work in production for a single user with low data volume.
 
----
+  However, there are several production-blocking bugs and design decisions that will cause real failures at scale or under adversarial conditions. The most urgent issues are a
+   broken validation error envelope, a full-table-scan query on the hot path, and the single-session-per-user architecture.
 
-## Summary
+  Also: CLAUDE.md still describes Naive UI, but the codebase runs Quasar. The constraint documentation is stale.
 
-The domain model is clean, the DDD layering is mostly respected, and the state machine implementation is correct. However, there are **three production-blocking issues** that must be resolved before any production deployment: a hardcoded JWT fallback secret, request body logging that captures passwords and tokens in plaintext, and a demo user seeded unconditionally into whatever database the seed script targets. Middleware hygiene (CORS, rate limiting, body size limits) is also missing entirely.
+  ---
+  🔴 Critical Issues
 
----
+  1. ZodSchemaPipe validation errors are swallowed on the frontend
 
-## Fix Plan
+  apps/api/src/common/pipes/zod-schema.pipe.ts:13 throws BadRequestException with body:
+  { "code": "VALIDATION_ERROR", "message": "Validation failed", "details": {...} }
 
-### 🔴 Critical — Fix Before Any Deploy
+  The onSend hook in main.ts:55 passes through bodies that have an error key or a data+meta pair. This body has neither — it has code. So the hook wraps it:
+  { "data": { "code": "VALIDATION_ERROR", "message": "..." }, "meta": {} }
 
----
+  The frontend's readApiError (api-envelope.ts:26) looks for payload.error.message. There is no error key. Every Zod validation failure on every form shows "Request failed" to
+   the user instead of the actual field errors. This affects every form submission in the app.
 
-#### CR-1: Hardcoded JWT fallback secret
+  Fix: Either wrap BadRequestException in a DomainError, or add a second ExceptionFilter that catches HttpException and formats it into the same envelope. The onSend hook
+  approach for envelope wrapping is inherently fragile — consider removing it and having every controller return the envelope explicitly, or use a response interceptor
+  instead.
 
-**File:** `apps/frollz-api/src/modules/auth/auth.constants.ts`
+  ---
+  2. findOccupiedFilmForDeviceId is a full table scan that breaks under load
 
-**Problem:** `process.env['JWT_ACCESS_SECRET'] ?? 'dev-access-secret'` — if the env var is not set at deploy time, every JWT is signed with a publicly-known string. Anyone who reads the source can forge tokens and authenticate as any user.
+  apps/api/src/infrastructure/repositories/mikro-orm-film.repository.ts:259 fetches every loaded journey event for the user, then filters in application memory. A user with 50
+   rolls and 500 events will execute a query returning potentially hundreds of rows on every film load operation.
 
-**Fix:**
-1. Remove the fallback entirely.
-2. Add a startup assertion in `main.ts` before `app.listen()`:
-
-```ts
-if (!process.env['JWT_ACCESS_SECRET']) {
-  throw new Error('JWT_ACCESS_SECRET must be set');
-}
-```
-
-3. Document the required env vars in a `.env.example` file at the repo root.
-
----
-
-#### CR-2: Passwords and refresh tokens logged in plaintext
-
-**File:** `apps/frollz-api/src/common/interceptors/logging.interceptor.ts`
-
-**Problem:** `JSON.stringify(body)` is called on every request. `POST /auth/login` logs `{ email, password }` in plaintext. `POST /auth/refresh` logs the raw refresh token. Anyone with log access owns every account.
-
-**Fix:** Redact sensitive fields before logging:
-
-```ts
-const REDACTED_FIELDS = new Set(['password', 'refreshToken', 'token', 'passwordHash']);
-
-function redactBody(body: unknown): unknown {
-  if (!body || typeof body !== 'object' || Array.isArray(body)) return body;
-  return Object.fromEntries(
-    Object.entries(body as Record<string, unknown>).map(([k, v]) =>
-      [k, REDACTED_FIELDS.has(k) ? '[REDACTED]' : v]
-    )
+  const loadedEvents = await this.entityManager.find(
+    FilmJourneyEventEntity,
+    { user: userId, filmState: { code: 'loaded' } }, // no device filter!
+    ...
   );
-}
-```
 
-Replace the `JSON.stringify(body)` call with `JSON.stringify(redactBody(body))`.
+  The event log is append-only and unbounded. This method is called inside the hot path of applyLoadedEventSideEffects — directly inside the state transition transaction.
 
----
+  Fix: Denormalize currentDeviceId onto FilmEntity (nullable, set on loaded event, cleared on removed), or add a device_id column to the current loaded events query.
 
-#### CR-3: Demo user seeded unconditionally into any database
+  ---
+  3. Single active session per user — any login kills all other sessions
 
-**File:** `apps/frollz-api/src/infrastructure/seed.ts`
+  apps/api/src/infrastructure/repositories/mikro-orm-auth.repository.ts:57:
+  await transactionalEntityManager.nativeDelete(RefreshTokenEntity, { user: input.userId });
 
-**Problem:** The demo user (`demo@example.com` / `password123`) is created whenever `pnpm db:seed` runs, regardless of environment. Running seed against a production database creates a known-credential account.
+  upsertRefreshToken is called on every login and register. It deletes all existing refresh tokens for the user first. A user logging in on their phone invalidates their
+  desktop session. Someone who discovers another user's email could repeatedly hit /auth/register (which creates a new user and doesn't affect existing ones) — actually that
+  doesn't apply here. But the self-DoS for multi-device use is real.
 
-**Fix:** Gate demo user creation behind an explicit opt-in env var:
+  Fix: Allow multiple refresh token rows per user (one per session). Add a device_name or session identifier column if needed. On logout, delete only the presented token.
 
-```ts
-if (process.env['SEED_DEMO_USER'] === 'true') {
-  // create demo user
-}
-```
+  ---
+  4. Email case-sensitivity allows duplicate accounts
 
-Reference data seeding (emulsions, formats, states, etc.) is appropriate for production. The demo user is not.
+  packages/schema/src/auth.ts:5 uses z.email() which validates format but does not normalize. user@example.com and USER@EXAMPLE.COM are treated as different emails. The
+  database UNIQUE constraint on email is case-sensitive in SQLite by default, so both can be registered. A user who registers with uppercase will never be able to log in with
+  lowercase.
 
----
+  Fix: Add .toLowerCase().trim() transform to the email field in both registerRequestSchema and loginRequestSchema:
+  email: z.email().transform((e) => e.toLowerCase().trim())
 
-### 🟠 Major — Fix Before Public Launch
+  ---
+  5. canActivate return type any — TypeScript strict mode violation
 
----
+  apps/api/src/modules/auth/jwt-auth.guard.ts:13:
+  override canActivate(context: ExecutionContext): any {
 
-#### CR-4: No CORS, no rate limiting, no body size limit, public Swagger UI
+  AuthGuard.canActivate returns boolean | Promise<boolean> | Observable<boolean>. Using any here silently disables type checking on this method — any accidental return
+  undefined or return null would compile. This is a strict-mode violation in a security-critical path.
 
-**File:** `apps/frollz-api/src/main.ts`
+  Fix: Change to boolean | Promise<boolean> | Observable<boolean>.
 
-**Problems:**
-- Fastify default allows all cross-origins
-- Auth endpoints (`/auth/login`, `/auth/register`) are brute-forceable with no throttling
-- No body size limit — `registerRequestSchema` has no max-length fields, so arbitrarily large payloads are accepted
-- Swagger UI at `/api/docs` is publicly accessible — full API surface is documented to anyone
+  ---
+  🟠 Major Issues
 
-**Fixes:**
+  6. updateAllFramesForFilm N+1 write pattern
 
-```ts
-// CORS — restrict to known origins
-app.enableCors({
-  origin: process.env['ALLOWED_ORIGINS']?.split(',') ?? false,
-});
+  apps/api/src/modules/film/film.service.ts:879 loads every frame for a film, then issues an individual persist for each one. A 36-exposure roll generates 36 separate UPDATE
+  statements inside every state transition transaction. For a 36-exposure roll this is tolerable; for a 4x5 bulk sheet film buyer with 50 sheets, it's 50 updates per
+  transition.
 
-// Rate limiting — add @nestjs/throttler to AppModule
-// ThrottlerModule.forRoot([{ ttl: 60_000, limit: 10 }])
-// Apply ThrottlerGuard as APP_GUARD (or scope to auth routes only)
+  Fix: Use entityManager.nativeUpdate(FilmFrameEntity, { user: userId, legacyFilm: filmId }, { currentState: targetState.id }).
 
-// Body size limit — set on FastifyAdapter init
-const adapter = new FastifyAdapter({ bodyLimit: 1_048_576 }); // 1 MB
+  ---
+  7. idempotency_key table grows unbounded
 
-// Swagger — gate behind IP allowlist or remove from production build
-// Option: only register SwaggerModule if NODE_ENV !== 'production'
-if (process.env['NODE_ENV'] !== 'production') {
-  SwaggerModule.setup('api/docs', app, document);
-}
-```
+  apps/api/src/infrastructure/entities/idempotency-key.entity.ts has no expiresAt column and no cleanup. Every idempotent request permanently stores the full serialized
+  response payload (film details, device objects) in SQLite. After a year of use this table will contain thousands of rows with large JSON blobs.
 
----
+  Fix: Add expiresAt TEXT NOT NULL (e.g. createdAt + 24h), add a DB index on it, and add a periodic cleanup (a simple nativeDelete on startup or via cron).
 
-#### CR-5: Refresh token rows accumulate without bound
+  ---
+  8. @Unique({ properties: ['user', 'name'] }) on FilmEntity is an undocumented constraint
 
-**File:** `apps/frollz-api/src/infrastructure/repositories/mikro-orm-auth.repository.ts` — `upsertRefreshToken`
+  apps/api/src/infrastructure/entities/film.entity.ts:7 applies a unique constraint on (user_id, name). The spec does not mention this. A user who buys two rolls of the same
+  stock and names them both "Portra 400" will get a database-level unique constraint violation with no meaningful error message (it's not caught and translated to a
+  DomainError).
 
-**Problem:** Despite the name, this is a pure insert. Each login creates a new row. A user who logs in repeatedly accumulates unlimited valid refresh tokens with no cleanup.
+  Fix: Either remove the constraint (duplicate names are valid for physical rolls) or handle the SQLite unique violation and throw a DomainError('CONFLICT', 'You already have
+  a film with that name').
 
-**Fix (single active token per user):**
+  ---
+  9. Response bodies logged on every request
 
-```ts
-async upsertRefreshToken(userId: number, tokenHash: string, expiresAt: string): Promise<void> {
-  await this.em.nativeDelete(RefreshTokenEntity, { user: userId });
-  const token = this.em.create(RefreshTokenEntity, { user: userId, tokenHash, expiresAt, createdAt: new Date().toISOString() });
-  await this.em.persistAndFlush(token);
-}
-```
+  apps/api/src/common/interceptors/logging.interceptor.ts:51 logs the full service response on every request:
+  this.logger.log(`← ${method} ${url} ${reply.statusCode} (...)${formatPayload(data)}`);
 
-If multi-device support is needed, limit to N most recent and delete oldest on insert.
+  The redaction covers password, refreshToken, accessToken, token, authorization, secret by exact key match. All domain data (film names, device names, emulsion data, user
+  email from GET /auth/me) is logged verbatim on every response. In a multi-user production deployment, this creates a privacy compliance concern and produces very large log
+  output.
 
----
+  Fix: Only log method, URL, status, and duration at INFO level. Log response bodies only at DEBUG level, gated by NODE_ENV !== 'production'.
 
-#### CR-6: Login and register don't check `response.ok` before parsing
+  ---
+  10. No rate limiting on auth endpoints
 
-**File:** `apps/frollz-ui/src/stores/auth.ts`
+  POST /auth/login, POST /auth/register, and POST /auth/refresh have no brute force protection. The password minimum is 8 characters — a determined attacker can enumerate
+  passwords against a known email. The refresh endpoint accepts tokens that are only 48 bytes of entropy — not weak, but still worth rate-limiting.
 
-**Problem:** On a 401 or 500 response, `tokenPairSchema.parse(await response.json())` throws a `ZodError` instead of surfacing a user-friendly message. `restoreSession()` correctly checks `response.ok` — `login()` and `register()` do not.
+  Fix: Add @nestjs/throttler with a short-window limit on auth routes (e.g., 5 attempts per minute per IP).
 
-**Fix:** Apply the same guard used in `restoreSession()`:
+  ---
+  🟡 Minor Issues
 
-```ts
-const response = await fetch(/* ... */);
-if (!response.ok) {
-  const err = await response.json().catch(() => ({}));
-  throw new Error((err as { error?: { message?: string } }).error?.message ?? 'Login failed');
-}
-const data = tokenPairSchema.parse(await response.json());
-```
+  11. <style scoped> block in FilmPage.vue violates the zero-CSS constraint
 
----
+  apps/ui/src/pages/FilmPage.vue:263 defines a custom .film-filters CSS grid. Several files also use inline style="min-width: ..." props. Quasar provides QGrid/QCol for
+  responsive layout — these custom styles aren't needed and break the project constraint.
 
-#### CR-7: Schema management via `updateSchema()` — no versioned migrations
+  12. nowIso() duplicated in three services
 
-**File:** `apps/frollz-api/src/infrastructure/migrate.ts`
+  film.service.ts:37, auth.service.ts:15, idempotency.service.ts:7 all define the same nowIso() function. Extract to a shared utility.
 
-**Problem:** `orm.schema.updateSchema()` is a schema diff tool, not a migration system. There is no migration history, no rollback capability, and no audit trail. The `migrations/` directory configured in `mikro-orm.config.ts` does not exist.
+  13. Device occupancy logic duplicated between service and repository
 
-**Fix:**
-1. Create the `migrations/` directory.
-2. Replace `updateSchema()` with the MikroORM migrator:
+  parseLoadedEventData is reimplemented twice: once in film.service.ts:810 and once in mikro-orm-film.repository.ts:8. Same parsing logic, same structure, separate maintenance
+   surface.
 
-```ts
-const migrator = orm.getMigrator();
-await migrator.up();
-```
+  14. legacyFilm naming in production entities
 
-3. Generate the initial migration from the current schema:
+  apps/api/src/infrastructure/entities/film-frame.entity.ts has a legacyFilm relation. The word "legacy" in a persistent entity name signals an in-progress schema migration.
+  Any future developer reading this is left confused about whether to use legacyFilm or something else. Name it what it is, or complete the migration.
 
-```bash
-pnpm mikro-orm migration:create --initial
-```
+  15. Emulsion display string formatting in repository layer
 
-4. Update `pnpm db:migrate` to run `migrator.up()`.
+  mikro-orm-film.repository.ts:244: emulsionName: \${emulsion.manufacturer} ${emulsion.brand} ${emulsion.isoSpeed}`` — presentation formatting logic belongs in a mapper, not a
+   repository method.
 
----
+  ---
+  🔵 Suggestions
 
-#### CR-8: State transition map duplicated between API and UI
+  - Pagination first. The GET /film and GET /film/:id/events endpoints will become expensive. Add cursor-based pagination before you have real data.
+  - Consider a dedicated current_device_id column on Film. The device-occupancy logic is spread across event log scanning, slot state, and frame state. A single nullable FK
+  would eliminate both the full-table-scan query and the resolveLoadedDeviceContext chain.
+  - The FilmStockEntity / FilmEntity split is unexplained. If FilmStock represents a physical box/roll and Film represents an instance being tracked, make that distinction
+  explicit in naming and docs. Right now they feel like the same thing with one named "legacy."
+  - Add expiresAt to the refresh token query. findRefreshTokenByHash does not filter by expiresAt IS NULL OR expiresAt > now() at the DB level — it retrieves and then checks
+  in application code. Filter at the query level to avoid loading expired records.
 
-**Files:**
-- `apps/frollz-api/src/domain/film/film-state-machine.ts` — `filmTransitionMap`
-- `apps/frollz-ui/src/pages/FilmDetailPage.vue` — `nextStateMap` (hardcoded inline)
+  ---
+  Positive Notes
 
-**Problem:** The UI duplicates the valid transition logic to decide which "next state" buttons to show. These two definitions can drift independently, causing the UI to offer transitions the API will reject or fail to offer transitions the API permits.
+  - Refresh token rotation with replay grace window is implemented correctly and non-trivially. The rotateRefreshToken → rotateRefreshTokenFromPrevious fallback handles the
+  concurrent-refresh race condition properly.
+  - The state machine using a Map<string, string[]> transition table (instead of nested if/else) is clean and testable.
+  - @frollz2/schema as the single source of truth for types between API and UI is the right call — no type drift.
+  - The IdempotencyService correctly handles the concurrent-insert race via unique constraint + retry. That's a subtle pattern done right.
+  - Mapper functions explicitly exclude passwordHash from all user representations — no accidental password hash leakage.
+  - ZodSchemaPipe is clean and compact. The approach is correct, just the error envelope inconsistency needs fixing.
 
-**Fix (preferred):** Move `filmTransitionMap` into `packages/schema` so both apps import from the same source:
+✻ Worked for 4m 49s
 
-```ts
-// packages/schema/src/film-transitions.ts
-export const filmTransitionMap: Record<string, string[]> = {
-  purchased: ['stored', 'loaded'],
-  stored: ['stored', 'loaded'],
-  // ...
-};
-```
+※ recap: Finished a full-stack roast review. Five critical issues flagged (validation error envelope bug, full table scan, single-session architecture, email normalization,
+  and auth guard type leak). No changes were made. (disable recaps in /config)
 
-**Fix (alternative):** Have `GET /film/:id` return a `validNextStates: string[]` field computed by the service, and have the UI derive button visibility from that instead.
-
----
-
-### 🟡 Minor — Clean Up When Convenient
-
----
-
-#### CR-9: Dead code in `FilmRepository`
-
-`FilmRepository.create()` and `FilmRepository.createEvent()` are never called. `FilmService` uses `entityManager.transactional()` directly for all write operations. The repository interface implies a contract that isn't honored.
-
-**Fix:** Route all writes through the repository (preferred — keeps the abstraction consistent), or remove the dead methods and document in a comment that write operations go via the EM directly.
-
----
-
-#### CR-10: N+1 query in `findOccupiedFilmForDevice` — duplicated in two services
-
-Both `FilmService` and `DevicesService` contain identical logic that loads all `loaded`/`exposed` films then calls `findLatestEvent` for each one individually.
-
-**Fix:** Extract a single repository method that joins films and their latest events in one query. Remove the duplicate in `DevicesService` and have both services call the shared method.
-
----
-
-#### CR-11: `ReferenceService.getAll()` has no route — UI makes 9 requests on load
-
-`ReferenceService.getAll()` aggregates all reference data but is not exposed via any controller endpoint. The UI makes 9 separate requests on app load as a result.
-
-**Fix:**
-1. Add `GET /api/v1/reference` → `ReferenceService.getAll()` to `ReferenceController`.
-2. Update `apps/frollz-ui/src/stores/reference.ts` `loadAll()` to call the single endpoint.
-
----
-
-#### CR-12: `allowGlobalContext: true` in MikroORM config
-
-**File:** `apps/frollz-api/src/infrastructure/database.module.ts`
-
-This bypasses MikroORM's per-request identity map safety. Under concurrent load, entity state can bleed between requests. The correct pattern with NestJS + Fastify is to use `MikroOrmMiddleware` (or a custom interceptor) to fork the `EntityManager` per request.
-
-**Fix:** Remove `allowGlobalContext: true` and add the request-scope middleware:
-
-```ts
-// In AppModule
-configure(consumer: MiddlewareConsumer) {
-  consumer.apply(MikroOrmMiddleware).forRoutes('*');
-}
-```
-
----
-
-#### CR-13: Unsafe type assertions in mappers
-
-```ts
-currentStateCode: film.currentState.code as FilmSummary['currentStateCode']
-```
-
-This silences TypeScript without runtime validation. A state code outside the known enum passes through silently.
-
-**Fix:** Parse through the schema at the mapper boundary:
-
-```ts
-import { filmStateCodes } from '@frollz/shared';
-// or use z.enum(filmStateCodes).parse(film.currentState.code) to get a runtime error on bad data
-```
-
----
-
-### 🔵 Suggestions — Good to Have
-
----
-
-#### CR-14: No Content Security Policy
-
-`apps/frollz-ui/index.html` has no CSP meta tag. The auth store comment acknowledges the localStorage refresh token XSS risk — a strict CSP is the primary mitigation.
-
-Add to `index.html`:
-```html
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline';">
-```
-
-Adjust `style-src` as needed for Naive UI's runtime styles.
-
----
-
-#### CR-15: Inconsistent form validation in UI
-
-`FilmPage.vue` create form uses ad-hoc `if (!form.field)` guards. Login, register, and the event creation drawer use `useZodForm`. Apply `useZodForm` consistently across all forms.
-
----
-
-#### CR-16: `useApi` re-instantiated per store action
-
-`const { request } = useApi()` is called inside each store action body. Create the composable once at the top level of each store definition.
-
----
-
-#### CR-17: `.env.example` missing
-
-There is no `.env.example` documenting required environment variables. Add one:
-
-```
-JWT_ACCESS_SECRET=
-JWT_REFRESH_SECRET=
-DATABASE_URL=frollz.sqlite
-NODE_ENV=development
-ALLOWED_ORIGINS=http://localhost:5173
-SEED_DEMO_USER=false
-```
-
----
-
-## Priority Order
-
-| # | Issue | Severity | Effort |
-|---|---|---|---|
-| CR-1 | JWT fallback secret | 🔴 Critical | XS |
-| CR-2 | Plaintext credential logging | 🔴 Critical | XS |
-| CR-3 | Demo user in prod seed | 🔴 Critical | XS |
-| CR-4 | CORS / rate limit / body limit / Swagger | 🟠 Major | S |
-| CR-5 | Unbounded refresh token accumulation | 🟠 Major | S |
-| CR-6 | Login/register missing `response.ok` check | 🟠 Major | XS |
-| CR-7 | Versioned migrations | 🟠 Major | M |
-| CR-8 | Duplicated state transition map | 🟠 Major | S |
-| CR-9 | Dead repository methods | 🟡 Minor | XS |
-| CR-10 | N+1 query / code duplication | 🟡 Minor | S |
-| CR-11 | Missing aggregate reference endpoint | 🟡 Minor | XS |
-| CR-12 | MikroORM global context | 🟡 Minor | S |
-| CR-13 | Unsafe mapper type assertions | 🟡 Minor | XS |
-| CR-14 | CSP header | 🔵 Suggestion | XS |
-| CR-15 | Inconsistent form validation | 🔵 Suggestion | S |
-| CR-16 | `useApi` re-instantiated per action | 🔵 Suggestion | XS |
-| CR-17 | `.env.example` missing | 🔵 Suggestion | XS |

@@ -36,39 +36,38 @@ Thanks for your interest in contributing. Whether you're fixing a bug, adding a 
 
 ## Development setup
 
-Frollz uses Docker Compose for development. You'll need Docker with the Compose plugin installed.
+Install dependencies and run the monorepo in watch mode:
 
 ```bash
-docker compose -f docker-compose.dev.yml up -d
+pnpm install
+pnpm dev
 ```
 
-This starts three services:
-- `frollz-api` — NestJS API on port 3000 (watch mode, auto-reloads on file save)
-- `frollz-ui` — Vite dev server on port 5173 (HMR)
-- `postgres` — PostgreSQL 18 on port 5432
+This starts:
+- `@frollz2/api` — NestJS API on port 3000
+- `@frollz2/ui` — Vite dev server on port 5173
 
-The UI dev server proxies `/api` requests to the API container automatically — no extra config needed.
+The UI dev server proxies `/api` requests to the API service automatically.
 
-After making code changes, the watch mode containers reload automatically. If you add or change dependencies, rebuild the affected container:
+If you want the production-like container stack locally, use:
 
 ```bash
-docker compose -f docker-compose.dev.yml build frollz-api   # or frollz-ui
-docker compose -f docker-compose.dev.yml up -d frollz-api
+docker compose up -d --build
 ```
 
 ### Running tests and lint locally
 
-**API** (from `frollz-api/`):
+**API**:
 ```bash
-npm test          # Jest unit tests
-npm run lint      # ESLint with auto-fix
+pnpm --filter @frollz2/api test
+pnpm --filter @frollz2/api lint
 ```
 
-**UI** (from `frollz-ui/`):
+**UI**:
 ```bash
-npm test          # Vitest unit tests
-npm run lint      # ESLint with auto-fix
-npm run type-check
+pnpm --filter @frollz2/ui test
+pnpm --filter @frollz2/ui lint
+pnpm --filter @frollz2/ui check-types
 ```
 
 The pre-commit hook runs all of the above plus a Semgrep SAST scan automatically before every commit. If the hook passes, CI will pass.
@@ -148,14 +147,16 @@ Keep pull requests focused. A PR that fixes a bug and adds a feature is harder t
 All new code should have unit tests. If you're fixing a bug, add a test that would have caught it. If you're adding a feature, cover the happy path and the key failure cases.
 
 Test files live alongside the code they test:
-- API: `frollz-api/src/<module>/<module>.service.spec.ts`
-- UI: `frollz-ui/src/views/__tests__/<ViewName>.spec.ts`
+- API: `apps/api/src/<module>/<module>.spec.ts`
+- UI: `apps/ui/src/<feature>/<feature>.spec.ts`
 
 ### Database changes
 
-Schema changes go in a new Knex migration file in `frollz-api/migrations/`. Migrations run automatically on startup — never modify an existing migration that has already been merged.
+Schema changes should include a migration in the driver-specific directory:
+- SQLite: `apps/api/src/infrastructure/migrations/`
+- PostgreSQL: `apps/api/src/infrastructure/migrations-postgres/`
 
-Migration filename format: `YYYYMMDDHHmmss_description.ts`
+Use the existing timestamped pattern: `MigrationYYYYMMDDHHmmss.ts`. Never modify a migration that has already been merged.
 
 ---
 

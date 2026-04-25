@@ -1,5 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import { UniqueConstraintViolationException } from '@mikro-orm/core';
 import { randomBytes, createHash } from 'node:crypto';
 import bcrypt from 'bcrypt';
 import type { CurrentUser, LoginRequest, RegisterRequest, TokenPair } from '@frollz2/schema';
@@ -21,8 +22,26 @@ function refreshGraceUntil(): string {
   return new Date(Date.now() + AUTH_REFRESH_REPLAY_GRACE_SECONDS * 1000).toISOString();
 }
 
+function isRecentTimestamp(value: string, windowMs: number): boolean {
+  const timestamp = new Date(value).getTime();
+  if (Number.isNaN(timestamp)) {
+    return false;
+  }
+
+  return Math.abs(Date.now() - timestamp) <= windowMs;
+}
+
 function hashRefreshToken(token: string): string {
   return createHash('sha256').update(token).digest('hex');
+}
+
+function isUniqueConstraintError(error: unknown): boolean {
+  if (error instanceof UniqueConstraintViolationException) {
+    return true;
+  }
+
+  const message = error instanceof Error ? error.message : String(error);
+  return message.includes('UNIQUE constraint failed') || message.includes('duplicate key value violates unique constraint');
 }
 
 @Injectable()
@@ -40,12 +59,33 @@ export class AuthService {
     }
 
     const passwordHash = await bcrypt.hash(input.password, 12);
-    const user = await this.authRepository.createUser({
-      email: input.email,
-      name: input.name,
-      passwordHash,
-      createdAt: nowIso()
-    });
+
+    let user: Awaited<ReturnType<AuthRepository['createUser']>>;
+    try {
+      user = await this.authRepository.createUser({
+        email: input.email,
+        name: input.name,
+        passwordHash,
+        createdAt: nowIso()
+      });
+    } catch (error) {
+      if (!isUniqueConstraintError(error)) {
+        throw error;
+      }
+
+      // Handle near-simultaneous duplicate registration submits for the same payload.
+      const concurrentUser = await this.authRepository.findUserByEmail(input.email);
+      if (
+        concurrentUser
+        && concurrentUser.name === input.name
+        && isRecentTimestamp(concurrentUser.createdAt, 10_000)
+        && await bcrypt.compare(input.password, concurrentUser.passwordHash)
+      ) {
+        return this.issueTokenPair(concurrentUser.id, concurrentUser.email);
+      }
+
+      throw new DomainError('CONFLICT', 'A user with that email already exists');
+    }
 
     return this.issueTokenPair(user.id, user.email);
   }

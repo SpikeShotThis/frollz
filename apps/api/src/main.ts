@@ -79,7 +79,8 @@ async function bootstrap(): Promise<void> {
     SwaggerModule.setup('api/docs', app, document);
   }
 
-  await app.listen(3000, '0.0.0.0');
+  const port = Number.parseInt(process.env['PORT'] ?? '3000', 10);
+  await app.listen(Number.isNaN(port) ? 3000 : port, '0.0.0.0');
 }
 
 void bootstrap();

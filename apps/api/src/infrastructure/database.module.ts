@@ -4,6 +4,7 @@ import { MikroOrmModule } from '@mikro-orm/nestjs';
 // eslint-disable-next-line @typescript-eslint/consistent-type-imports
 import { MikroORM } from '@mikro-orm/core';
 import ormConfig from './mikro-orm.config.js';
+import { applyDatabaseMigrations } from './database-runtime.js';
 import { seedDatabase } from './seed.js';
 
 @Global()
@@ -15,7 +16,7 @@ export class DatabaseModule implements OnModuleInit {
 
   async onModuleInit() {
     if (process.env['AUTO_MIGRATE_SEED'] === 'true') {
-      await this.orm.migrator.up();
+      await applyDatabaseMigrations(this.orm);
       await seedDatabase(this.orm, { skipMigrations: true });
 
       console.log('[DatabaseModule] Migrations and seeds applied');
