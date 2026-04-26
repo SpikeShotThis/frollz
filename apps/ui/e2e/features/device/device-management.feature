@@ -19,3 +19,23 @@ Feature: Device Management
     Given I am not authenticated
     When I navigate to "/devices"
     Then I am redirected to the login page
+
+  Scenario: Selecting a frame size is disabled until a format is chosen
+    Given I have opened the add device form
+    Then the frame size field should be disabled
+
+  Scenario: Selecting a frame size should be dependent on the film format
+    Given I have opened the add device form
+    When I select the format "35mm"
+    Then only frame sizes compatible with "35mm" should be available
+  
+  Scenario: Device form requires required fields
+    When I try to submit a device with missing required fields
+    Then I see a device form validation message containing "Make, model, and format are required"
+  
+  Scenario: Creating a non directly loadable camera should not allow the selection of frame size
+    Given I have opened the add device form
+    And I have chosen the device type of "Camera"
+    And I select that camera is not directly loadable
+    When I select the format "120"
+    Then the frame size field should be disabled
