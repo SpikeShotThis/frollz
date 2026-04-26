@@ -207,7 +207,7 @@ const routes: RouteRecordRaw[] = [
           navParent: 'emulsions',
           order: 5,
           developmentProcessFilter: 'E6'
-        },
+        }
       },
       {
         path: 'emulsions/instant',
@@ -220,7 +220,7 @@ const routes: RouteRecordRaw[] = [
           navParent: 'emulsions',
           order: 5,
           developmentProcessFilter: 'Instant'
-        },
+        }
       },
       {
         path: 'emulsions/:id',

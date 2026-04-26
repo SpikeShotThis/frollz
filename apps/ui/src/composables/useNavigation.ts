@@ -26,13 +26,14 @@ export function useNavigation() {
     const childrenByParent = new Map<string, NavItem[]>();
 
     for (const route of navRoutes) {
+      const icon = (route.meta.icon as string | undefined) || undefined;
       const navItem: NavItem = {
         label: String(route.meta.title ?? route.name ?? route.path),
         to: route.path,
-        ...(route.meta.icon && { icon: route.meta.icon }),
+        ...(icon && { icon })
       };
 
-      const parent = route.meta.navParent;
+      const parent = route.meta.navParent as string | undefined;
       if (parent) {
         if (!childrenByParent.has(parent)) {
           childrenByParent.set(parent, []);
