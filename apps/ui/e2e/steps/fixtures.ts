@@ -276,7 +276,7 @@ export async function recordFilmEvent(filmId: number, event: CreateFilmJourneyEv
 }
 
 export const test = base.extend<{ _reset: void }>({
-  _reset: [async ({}, use) => {
+  _reset: [async ({ }, use) => {
     resetState();
     const resetResponse = await fetch(`${API_URL}/api/v1/test/reset`, { method: 'DELETE' });
     if (!resetResponse.ok) {

@@ -16,14 +16,14 @@ function escapeRegex(value: string): string {
   return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
-Given('a camera exists for loading named {string}', async ({}, label: string) => {
+Given('a camera exists for loading named {string}', async ({ }, label: string) => {
   const [make, ...modelParts] = label.split(' ');
   const model = modelParts.join(' ') || 'FM2';
   const id = await createCameraFixture({ make, model, filmFormatCode: '35mm', frameSize: 'full_frame' });
   testState.deviceIdsByName.set(label, id);
 });
 
-Given('a purchased film exists named {string}', async ({}, filmName: string) => {
+Given('a purchased film exists named {string}', async ({ }, filmName: string) => {
   const id = await createFilmLotFixture({
     filmName,
     filmFormatCode: '35mm',
