@@ -34,7 +34,8 @@ const developmentProcesses = [
   { code: 'E6', label: 'E-6 (Slide/Reversal)' },
   { code: 'ECN2', label: 'ECN-2 (Motion Picture)' },
   { code: 'BW', label: 'Black & White' },
-  { code: 'BWReversal', label: 'Black & White Reversal' }
+  { code: 'BWReversal', label: 'Black & White Reversal' },
+  { code: 'Instant', label: 'Instant' }
 ];
 
 const filmStates = [
@@ -112,7 +113,8 @@ const emulsions = [
   { brand: 'Delta', manufacturer: 'Ilford', isoSpeed: 100, developmentProcessCode: 'BW', balance: 'daylight', filmFormatCodes: ['35mm', '120'] },
   { brand: 'Velvia', manufacturer: 'Fujifilm', isoSpeed: 50, developmentProcessCode: 'E6', balance: 'daylight', filmFormatCodes: ['35mm', '120', '4x5'] },
   { brand: 'Provia', manufacturer: 'Fujifilm', isoSpeed: 100, developmentProcessCode: 'E6', balance: 'daylight', filmFormatCodes: ['35mm', '120'] },
-  { brand: '800T', manufacturer: 'CineStill', isoSpeed: 800, developmentProcessCode: 'ECN2', balance: 'tungsten', filmFormatCodes: ['35mm', '120'] }
+  { brand: '800T', manufacturer: 'CineStill', isoSpeed: 800, developmentProcessCode: 'ECN2', balance: 'tungsten', filmFormatCodes: ['35mm', '120'] },
+  { brand: 'Monochrome', manufacturer: 'Fujifilm', isoSpeed: 800, developmentProcessCode: 'Instant', balance: 'daylight', filmFormatCodes: ['InstaxMini'] }
 ];
 
 async function ensureByCode<TEntity extends { code: string }>(

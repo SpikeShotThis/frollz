@@ -1,8 +1,9 @@
+<!-- eslint-disable vue/multi-word-component-names -->
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
 import { useRoute } from 'vue-router';
 import type { Emulsion } from '@frollz2/schema';
-import { useReferenceStore } from '../stores/reference.js';
+import { useReferenceStore } from '../../stores/reference.js';
 
 const route = useRoute();
 const referenceStore = useReferenceStore();

@@ -1,11 +1,13 @@
+<!-- eslint-disable vue/multi-word-component-names -->
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref } from 'vue';
 import { useRoute } from 'vue-router';
 import type { FilmCreateRequest, FilmSummary } from '@frollz2/schema';
-import { useFilmStore } from '../stores/film.js';
-import { useReferenceStore } from '../stores/reference.js';
-import { useUiFeedback } from '../composables/useUiFeedback.js';
-import { createIdempotencyKey } from '../composables/idempotency.js';
+import { useFilmStore } from '../../stores/film.js';
+import { useReferenceStore } from '../../stores/reference.js';
+import { useUiFeedback } from '../../composables/useUiFeedback.js';
+import { createIdempotencyKey } from '../../composables/idempotency.js';
+import FilmInventoryTable from '../../components/FilmInventoryTable.vue';
 
 const route = useRoute();
 const filmStore = useFilmStore();
@@ -58,43 +60,11 @@ const rows = computed(() => {
   });
 });
 
-const columns = [
-  {
-    name: 'name',
-    label: 'Film',
-    field: 'name',
-    sortable: true,
-    align: 'left'
-  },
-  {
-    name: 'state',
-    label: 'State',
-    field: (row: FilmSummary) => row.currentState.label,
-    sortable: true,
-    align: 'left'
-  },
-  {
-    name: 'emulsion',
-    label: 'Emulsion',
-    field: (row: FilmSummary) => `${row.emulsion.manufacturer} ${row.emulsion.brand}`,
-    sortable: true,
-    align: 'left'
-  },
-  {
-    name: 'format',
-    label: 'Format',
-    field: (row: FilmSummary) => row.filmFormat.label,
-    sortable: true,
-    align: 'left'
-  },
-  {
-    name: 'iso',
-    label: 'ISO',
-    field: (row: FilmSummary) => row.emulsion.isoSpeed,
-    sortable: true,
-    align: 'left'
-  }
-];
+const extractName = (row: FilmSummary) => row.name;
+const extractState = (row: FilmSummary) => row.currentState.label;
+const extractEmulsion = (row: FilmSummary) => `${row.emulsion.manufacturer} ${row.emulsion.brand}`;
+const extractFormat = (row: FilmSummary) => row.filmFormat.label;
+const extractIso = (row: FilmSummary) => row.emulsion.isoSpeed.toString();
 
 const stateOptions = computed(() =>
   referenceStore.filmStates.map((state) => ({
@@ -199,24 +169,15 @@ onMounted(async () => {
         <q-input v-model="search" filled clearable label="Search films" />
       </div>
       <div class="col-xs-12 col-lg-6">
-        <q-select v-model="stateFilter" filled clearable emit-value map-options :options="stateOptions" label="Filter by state" />
+        <q-select v-model="stateFilter" filled clearable emit-value map-options :options="stateOptions"
+          label="Filter by state" />
       </div>
     </div>
 
-    <q-table :rows="rows" :columns="columns" row-key="id" flat bordered :loading="filmStore.isLoading">
-      <template #body-cell-name="props">
-        <q-td :props="props">
-          <RouterLink :to="`/film/${props.row.id}`" class="text-primary text-weight-medium">
-            {{ props.row.name }}
-          </RouterLink>
-        </q-td>
-      </template>
-      <template #body-cell-state="props">
-        <q-td :props="props">
-          <q-badge color="primary" outline>{{ props.row.currentState.label }}</q-badge>
-        </q-td>
-      </template>
-    </q-table>
+    <FilmInventoryTable :rows="rows" :is-loading="filmStore.isLoading" :extract-name="extractName"
+      :extract-state="extractState" :extract-emulsion="extractEmulsion" :extract-format="extractFormat"
+      :extract-iso="extractIso" />
+
 
     <q-dialog v-model="isCreateDialogOpen">
       <q-card class="full-width">
@@ -227,30 +188,12 @@ onMounted(async () => {
         <q-card-section>
           <q-form class="column q-gutter-md" @submit="submitCreate">
             <q-input v-model="createForm.name" filled label="Film name" />
-            <q-select
-              v-model="createForm.emulsionId"
-              filled
-              emit-value
-              map-options
-              :options="emulsionOptions"
-              label="Emulsion"
-            />
-            <q-select
-              v-model="createForm.filmFormatId"
-              filled
-              emit-value
-              map-options
-              :options="formatOptions"
-              label="Film format"
-            />
-            <q-select
-              v-model="createForm.packageTypeId"
-              filled
-              emit-value
-              map-options
-              :options="packageTypeOptions"
-              label="Package type"
-            />
+            <q-select v-model="createForm.emulsionId" filled emit-value map-options :options="emulsionOptions"
+              label="Emulsion" />
+            <q-select v-model="createForm.filmFormatId" filled emit-value map-options :options="formatOptions"
+              label="Film format" />
+            <q-select v-model="createForm.packageTypeId" filled emit-value map-options :options="packageTypeOptions"
+              label="Package type" />
             <q-input v-model="createForm.expirationDate" filled type="date" label="Expiration date (optional)" />
           </q-form>
         </q-card-section>
@@ -263,4 +206,3 @@ onMounted(async () => {
     </q-dialog>
   </q-page>
 </template>
-

@@ -1,11 +1,12 @@
+<!-- eslint-disable vue/multi-word-component-names -->
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import { FRAME_SIZE_CODES, getFrameSizeCodesForFormatCode, type CreateFilmDeviceRequest, type FilmDevice } from '@frollz2/schema';
-import { useDeviceStore } from '../stores/devices.js';
-import { useReferenceStore } from '../stores/reference.js';
-import { useUiFeedback } from '../composables/useUiFeedback.js';
-import { createIdempotencyKey } from '../composables/idempotency.js';
+import { useDeviceStore } from '../../stores/devices.js';
+import { useReferenceStore } from '../../stores/reference.js';
+import { useUiFeedback } from '../../composables/useUiFeedback.js';
+import { createIdempotencyKey } from '../../composables/idempotency.js';
 
 const route = useRoute();
 const deviceStore = useDeviceStore();

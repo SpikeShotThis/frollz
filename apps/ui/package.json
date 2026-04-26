@@ -13,9 +13,9 @@
     "test:e2e:ui": "playwright test --ui"
   },
   "dependencies": {
-    "@frollz2/schema": "workspace:*",
     "@fontsource/plus-jakarta-sans": "^5.2.8",
     "@fontsource/space-grotesk": "^5.2.8",
+    "@frollz2/schema": "workspace:*",
     "@quasar/extras": "^1.18.0",
     "pinia": "^3.0.4",
     "quasar": "^2.18.6",

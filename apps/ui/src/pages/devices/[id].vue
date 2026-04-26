@@ -1,8 +1,9 @@
+<!-- eslint-disable vue/multi-word-component-names -->
 <script setup lang="ts">
 import { computed, onMounted, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import type { DeviceLoadTimelineEvent, FilmHolderSlot } from '@frollz2/schema';
-import { useDeviceStore } from '../stores/devices.js';
+import { useDeviceStore } from '../../stores/devices.js';
 
 const route = useRoute();
 const deviceStore = useDeviceStore();

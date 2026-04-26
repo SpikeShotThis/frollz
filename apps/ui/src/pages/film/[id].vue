@@ -1,12 +1,13 @@
+<!-- eslint-disable vue/multi-word-component-names -->
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import { filmTransitionMap, type FilmFrame, type FilmJourneyEvent } from '@frollz2/schema';
-import { useFilmStore } from '../stores/film.js';
-import { useReferenceStore } from '../stores/reference.js';
-import { useDeviceStore } from '../stores/devices.js';
-import { useUiFeedback } from '../composables/useUiFeedback.js';
-import { createIdempotencyKey } from '../composables/idempotency.js';
+import { useFilmStore } from '../../stores/film.js';
+import { useReferenceStore } from '../../stores/reference.js';
+import { useDeviceStore } from '../../stores/devices.js';
+import { useUiFeedback } from '../../composables/useUiFeedback.js';
+import { createIdempotencyKey } from '../../composables/idempotency.js';
 
 const route = useRoute();
 const filmStore = useFilmStore();

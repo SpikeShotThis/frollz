@@ -1,3 +1,4 @@
+<!-- eslint-disable vue/multi-word-component-names -->
 <script setup lang="ts">
 import { onMounted } from 'vue';
 import { useDeviceStore } from '../stores/devices.js';

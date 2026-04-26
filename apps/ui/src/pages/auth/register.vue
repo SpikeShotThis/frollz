@@ -1,10 +1,11 @@
+<!-- eslint-disable vue/multi-word-component-names -->
 <script setup lang="ts">
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { registerRequestSchema } from '@frollz2/schema';
-import { useAuthStore } from '../stores/auth.js';
-import { useZodForm } from '../composables/useZodForm.js';
-import { useUiFeedback } from '../composables/useUiFeedback.js';
+import { useAuthStore } from '../../stores/auth.js';
+import { useZodForm } from '../../composables/useZodForm.js';
+import { useUiFeedback } from '../../composables/useUiFeedback.js';
 
 const authStore = useAuthStore();
 const router = useRouter();

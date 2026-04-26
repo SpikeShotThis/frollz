@@ -1,6 +1,5 @@
-<script setup lang="ts">
 import { computed } from 'vue';
-import { useTheme } from '../composables/useTheme.js';
+import { useTheme } from ''../composables/useTheme.js';
 
 type Swatch = {
   label: string;

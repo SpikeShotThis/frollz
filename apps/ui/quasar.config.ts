@@ -1,7 +1,7 @@
 import { configure } from 'quasar/wrappers';
 import { fileURLToPath } from 'node:url';
 
-export default configure(() => {
+export default configure((ctx) => {
   return {
     css: ['app.scss'],
     extras: ['material-icons'],

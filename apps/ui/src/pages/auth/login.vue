@@ -1,10 +1,12 @@
+<!-- eslint-disable vue/multi-word-component-names -->
+
 <script setup lang="ts">
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { loginRequestSchema } from '@frollz2/schema';
-import { useAuthStore } from '../stores/auth.js';
-import { useZodForm } from '../composables/useZodForm.js';
-import { useUiFeedback } from '../composables/useUiFeedback.js';
+import { useAuthStore } from '../../stores/auth.js';
+import { useZodForm } from '../../composables/useZodForm.js';
+import { useUiFeedback } from '../../composables/useUiFeedback.js';
 
 const authStore = useAuthStore();
 const router = useRouter();
@@ -48,37 +50,19 @@ async function submit(): Promise<void> {
       </q-card-section>
 
       <q-card-section>
-        <q-banner v-if="formError" inline-actions rounded class="bg-red-1 text-negative q-mb-md">{{ formError }}</q-banner>
+        <q-banner v-if="formError" inline-actions rounded class="bg-red-1 text-negative q-mb-md">{{ formError
+        }}</q-banner>
 
         <q-form class="column q-gutter-md" @submit="submit">
-          <q-input
-            v-model="values.email"
-            label="Email"
-            type="email"
-            autocomplete="email"
-            data-testid="login-email"
-            :disable="isSubmitting"
-            filled
-          />
-          <q-input
-            v-model="values.password"
-            label="Password"
-            type="password"
-            autocomplete="current-password"
-            data-testid="login-password"
-            :disable="isSubmitting"
-            filled
-          />
+          <q-input v-model="values.email" label="Email" type="email" autocomplete="email" data-testid="login-email"
+            :disable="isSubmitting" filled />
+          <q-input v-model="values.password" label="Password" type="password" autocomplete="current-password"
+            data-testid="login-password" :disable="isSubmitting" filled />
           <div class="row items-center justify-between q-gutter-sm">
-            <q-btn
-              type="submit"
-              color="primary"
-              label="Sign in"
-              :loading="isSubmitting"
-              :disable="isSubmitting"
-              data-testid="login-submit"
-            />
-            <q-btn flat color="primary" class="auth-secondary-action" label="Create account" :disable="isSubmitting" to="/register" />
+            <q-btn type="submit" color="primary" label="Sign in" :loading="isSubmitting" :disable="isSubmitting"
+              data-testid="login-submit" />
+            <q-btn flat color="primary" class="auth-secondary-action" label="Create account" :disable="isSubmitting"
+              to="/register" />
           </div>
         </q-form>
       </q-card-section>

@@ -1,7 +1,8 @@
+<!-- eslint-disable vue/multi-word-component-names -->
 <script setup lang="ts">
 import { computed, onMounted, watch } from 'vue';
 import { useRoute } from 'vue-router';
-import { useReferenceStore } from '../stores/reference.js';
+import { useReferenceStore } from '../../stores/reference.js';
 
 const route = useRoute();
 const referenceStore = useReferenceStore();

@@ -4,6 +4,7 @@ import { Screen } from 'quasar';
 import { useRoute, useRouter } from 'vue-router';
 import { type ThemePreference, useTheme } from '../composables/useTheme.js';
 import { useAuthStore } from '../stores/auth.js';
+import { useNavigation } from '../composables/useNavigation.js';
 
 const authStore = useAuthStore();
 const route = useRoute();
@@ -11,46 +12,8 @@ const router = useRouter();
 const leftDrawerOpen = ref(false);
 const { themePreference, themeOptions, activeThemeLabel, setThemePreference } = useTheme();
 
-const primaryLinks = [
-  { label: 'Dashboard', to: '/dashboard', icon: 'dashboard' },
-  {
-    label: 'Film',
-    to: '/film',
-    icon: 'camera_roll',
-    children: [
-      { label: 'All Film', to: '/film' },
-      { label: '35mm', to: '/film/35mm' },
-      { label: 'Medium Format', to: '/film/medium-format' },
-      { label: 'Large Format 4x5', to: '/film/large-format-4x5' },
-      { label: 'Large Format 8x10', to: '/film/large-format-8x10' }
-    ]
-  },
-  {
-    label: 'Devices',
-    to: '/devices',
-    icon: 'photo_camera',
-    children: [
-      { label: 'All Devices', to: '/devices' },
-      { label: 'Cameras', to: '/devices/cameras' },
-      { label: 'Film Holders', to: '/devices/film-holders' },
-      { label: 'Interchangeable Backs', to: '/devices/interchangeable-backs' }
-    ]
-  },
-  {
-    label: 'Emulsions',
-    to: '/emulsions',
-    icon: 'water_drop',
-    children: [
-      { label: 'All Emulsions', to: '/emulsions' },
-      { label: 'Black & White', to: '/emulsions/black-and-white' },
-      { label: 'B&W Reversal', to: '/emulsions/black-and-white-reversal' },
-      { label: 'Cine (ECN-2)', to: '/emulsions/cine-ecn2' },
-      { label: 'Color Negative (C-41)', to: '/emulsions/color-negative-c41' },
-      { label: 'Color Positive (E-6)', to: '/emulsions/color-positive-e6' }
-    ]
-  },
-  { label: 'Style Guide', to: '/style-guide', icon: 'palette' }
-] as const;
+// Auto-generated navigation from route metadata
+const { navigationTree } = useNavigation();
 
 const pageTitle = computed(() => String(route.meta.title ?? 'frollz'));
 
@@ -105,8 +68,8 @@ function closeDrawerOnNavigate(): void {
           </q-item-section>
         </q-item>
 
-        <template v-for="link in primaryLinks" :key="link.to">
-          <q-expansion-item v-if="'children' in link && link.children" dense dense-toggle expand-separator
+        <template v-for="link in navigationTree" :key="link.to">
+          <q-expansion-item v-if="link.children && link.children.length > 0" dense dense-toggle expand-separator
             :icon="link.icon" :label="link.label">
             <q-list class="q-pl-lg q-pb-xs">
               <q-item v-for="child in link.children" :key="child.to" dense clickable :to="child.to"

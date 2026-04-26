@@ -66,3 +66,6 @@ trace-mobile-film.json
 **/*.js
 !packages/eslint-config/eslint.config.js
 apps/ui/.quasar
+
+# -- Vue Router auto-generated types ---
+apps/ui/src/typed-router.d.ts
