@@ -16,19 +16,19 @@
     "@fastify/swagger": "^9.7.0",
     "@fastify/swagger-ui": "^5.2.5",
     "@frollz2/schema": "workspace:*",
-    "@mikro-orm/core": "^7.0.11",
-    "@mikro-orm/decorators": "^7.0.11",
-    "@mikro-orm/migrations": "^7.0.11",
+    "@mikro-orm/core": "^7.0.12",
+    "@mikro-orm/decorators": "^7.0.12",
+    "@mikro-orm/migrations": "^7.0.12",
     "@mikro-orm/nestjs": "^7.0.1",
-    "@mikro-orm/postgresql": "^7.0.11",
-    "@mikro-orm/sqlite": "^7.0.11",
+    "@mikro-orm/postgresql": "^7.0.12",
+    "@mikro-orm/sqlite": "^7.0.12",
     "@nestjs/common": "^11.1.19",
     "@nestjs/config": "^4.0.4",
     "@nestjs/core": "^11.1.19",
     "@nestjs/jwt": "^11.0.2",
     "@nestjs/passport": "^11.0.5",
     "@nestjs/platform-fastify": "^11.1.19",
-    "@nestjs/swagger": "^11.3.2",
+    "@nestjs/swagger": "^11.4.1",
     "@nestjs/throttler": "^6.5.0",
     "bcrypt": "^6.0.0",
     "better-sqlite3": "^12.9.0",
@@ -43,7 +43,7 @@
   },
   "devDependencies": {
     "@nestjs/cli": "^11.0.21",
-    "@swc/cli": "^0.6.0",
+    "@swc/cli": "^0.8.1",
     "@swc/core": "^1.11.0",
     "@types/bcrypt": "^6.0.0",
     "@types/jsonwebtoken": "^9.0.10",
@@ -53,6 +53,7 @@
     "tsx": "^4.21.0",
     "typescript": "*",
     "unplugin-swc": "^1.5.6",
-    "vitest": "*"
+    "vitest": "*",
+    "chokidar": "^3.5.3"
   }
 }
