@@ -7,11 +7,14 @@ const configDir = dirname(fileURLToPath(import.meta.url));
 const repoRoot = resolve(configDir, '../..');
 
 const bddOutputDir = defineBddConfig({
-  features: 'e2e/features/**/*.feature',
+  featuresRoot: 'e2e/features',
+  features: '**/*.feature',
   steps: 'e2e/steps/**/*.ts',
+  outputDir: '.features-gen',
 });
 
-const API_URL = 'http://127.0.0.1:3001';
+const API_URL = process.env['PLAYWRIGHT_API_URL'] ?? 'http://127.0.0.1:3001';
+const BDD_BROWSER_CHANNEL = process.env['PLAYWRIGHT_BDD_CHANNEL'];
 
 export default defineConfig({
   testDir: './e2e',
@@ -33,7 +36,7 @@ export default defineConfig({
     },
     {
       // UI dev server proxied to the test API on port 3001
-      command: `cross-env API_TARGET=${API_URL} pnpm dev --host 127.0.0.1 --port 4173`,
+      command: `API_TARGET=${API_URL} pnpm dev --host 127.0.0.1 --port 4173`,
       cwd: configDir,
       url: 'http://127.0.0.1:4173',
       reuseExistingServer: false,
@@ -50,7 +53,10 @@ export default defineConfig({
       name: 'bdd',
       testDir: bddOutputDir,
       workers: 1,
-      use: { ...devices['Desktop Chrome'] }
+      use: {
+        ...devices['Desktop Chrome'],
+        ...(BDD_BROWSER_CHANNEL ? { channel: BDD_BROWSER_CHANNEL } : {}),
+      }
     }
   ]
 });

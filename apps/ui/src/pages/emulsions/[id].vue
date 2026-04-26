@@ -35,12 +35,18 @@ watch(emulsionId, load);
         <div class="text-subtitle2 text-grey-7">ISO {{ referenceStore.currentEmulsion.isoSpeed }}</div>
       </q-card-section>
       <q-separator />
-      <q-card-section class="column q-gutter-sm">
-        <div><span class="text-grey-7">Process:</span> {{ referenceStore.currentEmulsion.developmentProcess.label }}</div>
-        <div><span class="text-grey-7">Balance:</span> {{ referenceStore.currentEmulsion.balance }}</div>
-        <div>
+      <q-card-section class="column q-gutter-sm" data-testid="emulsion-detail-meta">
+        <div data-testid="emulsion-detail-process">
+          <span class="text-grey-7">Process:</span>
+          <span data-testid="emulsion-detail-process-value">{{ referenceStore.currentEmulsion.developmentProcess.label }}</span>
+        </div>
+        <div data-testid="emulsion-detail-balance">
+          <span class="text-grey-7">Balance:</span>
+          <span data-testid="emulsion-detail-balance-value">{{ referenceStore.currentEmulsion.balance }}</span>
+        </div>
+        <div data-testid="emulsion-detail-formats">
           <span class="text-grey-7">Formats:</span>
-          {{ referenceStore.currentEmulsion.filmFormats.map((format) => format.label).join(', ') }}
+          <span data-testid="emulsion-detail-formats-value">{{ referenceStore.currentEmulsion.filmFormats.map((format) => format.label).join(', ') }}</span>
         </div>
       </q-card-section>
     </q-card>

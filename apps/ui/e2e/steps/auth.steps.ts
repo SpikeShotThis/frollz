@@ -1,16 +1,27 @@
 import { expect } from '@playwright/test';
-import { Given, When, Then } from './fixtures.js';
+import { Given, Then, When, TEST_USER_EMAIL, TEST_USER_PASSWORD, ensureUser } from './fixtures.js';
 
 Given('I am on the login page', async ({ page }) => {
+  await ensureUser(TEST_USER_EMAIL, TEST_USER_PASSWORD);
   await page.goto('/login');
 });
 
-When('I enter valid credentials', async ({ page, mockAuth }) => {
-  await page.getByTestId('login-email').locator('input').fill('demo@example.com');
-  await page.getByTestId('login-password').locator('input').fill('password123');
+When('I sign in with test user credentials', async ({ page }) => {
+  await page.getByLabel('Email').fill(TEST_USER_EMAIL);
+  await page.getByLabel('Password').fill(TEST_USER_PASSWORD);
+  await page.getByRole('button', { name: /sign in/i }).click();
+});
+
+When('I sign in with invalid credentials', async ({ page }) => {
+  await page.getByLabel('Email').fill(TEST_USER_EMAIL);
+  await page.getByLabel('Password').fill('definitely-wrong-password');
   await page.getByRole('button', { name: /sign in/i }).click();
 });
 
 Then('I should be on the dashboard', async ({ page }) => {
   await expect(page).toHaveURL(/\/dashboard/);
+});
+
+Then('I should see an authentication error', async ({ page }) => {
+  await expect(page.getByText(/invalid email or password|unable to log in/i)).toBeVisible();
 });

@@ -183,40 +183,50 @@ onMounted(async () => {
       :extract-iso="extractIso"
     />
 
-    <q-dialog v-model="isCreateDialogOpen">
+    <q-dialog v-model="isCreateDialogOpen" data-testid="film-create-dialog">
       <q-card class="full-width">
         <q-card-section>
           <div class="text-h6">Create film</div>
         </q-card-section>
 
         <q-card-section>
-          <q-form class="column q-gutter-md" @submit="submitCreate">
-            <q-input v-model="createForm.name" filled label="Film name" />
-            <q-select
-              v-model="createForm.emulsionId"
-              filled
-              emit-value
-              map-options
-              :options="emulsionOptions"
-              label="Emulsion"
-            />
-            <q-select
-              v-model="createForm.filmFormatId"
-              filled
-              emit-value
-              map-options
-              :options="formatOptions"
-              label="Film format"
-            />
-            <q-select
-              v-model="createForm.packageTypeId"
-              filled
-              emit-value
-              map-options
-              :options="packageTypeOptions"
-              label="Package type"
-            />
-            <q-input v-model="createForm.expirationDate" filled type="date" label="Expiration date (optional)" />
+          <q-form class="column q-gutter-md" data-testid="film-create-form" @submit="submitCreate">
+            <div data-testid="film-create-name">
+              <q-input v-model="createForm.name" filled label="Film name" />
+            </div>
+            <div data-testid="film-create-emulsion">
+              <q-select
+                v-model="createForm.emulsionId"
+                filled
+                emit-value
+                map-options
+                :options="emulsionOptions"
+                label="Emulsion"
+              />
+            </div>
+            <div data-testid="film-create-format">
+              <q-select
+                v-model="createForm.filmFormatId"
+                filled
+                emit-value
+                map-options
+                :options="formatOptions"
+                label="Film format"
+              />
+            </div>
+            <div data-testid="film-create-package">
+              <q-select
+                v-model="createForm.packageTypeId"
+                filled
+                emit-value
+                map-options
+                :options="packageTypeOptions"
+                label="Package type"
+              />
+            </div>
+            <div data-testid="film-create-expiration">
+              <q-input v-model="createForm.expirationDate" filled type="date" label="Expiration date (optional)" />
+            </div>
           </q-form>
         </q-card-section>
 
@@ -228,4 +238,3 @@ onMounted(async () => {
     </q-dialog>
   </q-page>
 </template>
-

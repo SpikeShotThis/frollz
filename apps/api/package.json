@@ -7,7 +7,7 @@
     "build": "nest build",
     "check-types": "tsc -p tsconfig.json --noEmit",
     "dev": "pnpm --filter @frollz2/schema build && cross-env NODE_ENV=development nest start --watch",
-    "start:test": "pnpm --filter @frollz2/schema build && cross-env NODE_ENV=test DATABASE_URL=:memory: AUTO_MIGRATE_SEED=true SEED_DEMO_USER=true JWT_ACCESS_SECRET=test-secret PORT=3001 ALLOWED_ORIGINS=http://127.0.0.1:4173 nest start",
+    "start:test": "pnpm --filter @frollz2/schema build && cross-env NODE_ENV=test nest start",
     "lint": "eslint --max-warnings 0 \"src/**/*.ts\" \"test/**/*.ts\"",
     "test": "pnpm --filter @frollz2/schema build && vitest run",
     "db:migrate": "pnpm --filter @frollz2/schema build && tsx src/infrastructure/migrate.ts",

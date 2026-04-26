@@ -72,3 +72,5 @@ apps/ui/.quasar
 
 # -- Vue Router auto-generated types ---
 apps/ui/src/typed-router.d.ts
+apps/ui/test-results/
+

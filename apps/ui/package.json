@@ -7,11 +7,14 @@
     "build": "quasar build",
     "check-types": "vue-tsc --noEmit -p tsconfig.json",
     "dev": "quasar dev",
+    "clean": "rm -rf dist node_modules",
     "lint": "eslint --max-warnings 0 \"src/**/*.{ts,vue}\"",
     "test": "vitest run",
-    "test:bdd": "./node_modules/.bin/bddgen && playwright test --project bdd",
+    "test:bdd:guard": "sh -c 'if rg -n \"page\\\\.route\\\\(|route\\\\.fulfill\\\\(\" e2e/steps; then echo \"BDD steps must not mock network calls\"; exit 1; fi'",
+    "test:bdd": "pnpm run test:bdd:guard && playwright test --project bdd",
     "test:e2e": "playwright test --project e2e",
-    "test:e2e:ui": "playwright test --project e2e --ui"
+    "test:e2e:ui": "playwright test --project e2e --ui",
+    "bdd:gen": "./node_modules/.bin/bddgen"
   },
   "dependencies": {
     "@fontsource/plus-jakarta-sans": "^5.2.8",
@@ -31,6 +34,7 @@
     "playwright-bdd": "^8.5.0",
     "typescript": "*",
     "vitest": "*",
+    "cross-env": "*",
     "vue-tsc": "^3.1.1"
   }
 }

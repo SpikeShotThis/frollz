@@ -54,9 +54,9 @@ async function mockLogin(page: Page): Promise<void> {
 
 async function loginThroughUi(page: Page): Promise<void> {
   await page.goto('/login');
-  await page.locator('[data-testid="login-email"] input').fill('ux@example.com');
-  await page.locator('[data-testid="login-password"] input').fill('good-password');
-  await page.getByTestId('login-submit').click();
+  await page.getByLabel('Email').fill('ux@example.com');
+  await page.getByLabel('Password').fill('good-password');
+  await page.getByRole('button', { name: /sign in/i }).click();
   await expect(page).toHaveURL(/\/dashboard/);
 }
 
@@ -90,14 +90,14 @@ test('auth flow shows error and succeeds with visible feedback', async ({ page }
   });
 
   await page.goto('/login');
-  await page.locator('[data-testid="login-email"] input').fill('ux@example.com');
-  await page.locator('[data-testid="login-password"] input').fill('wrong-password');
-  await page.getByTestId('login-submit').click();
+  await page.getByLabel('Email').fill('ux@example.com');
+  await page.getByLabel('Password').fill('wrong-password');
+  await page.getByRole('button', { name: /sign in/i }).click();
 
   await expect(page.getByText(/Invalid credentials/i)).toBeVisible();
 
-  await page.locator('[data-testid="login-password"] input').fill('good-password');
-  await page.getByTestId('login-submit').click();
+  await page.getByLabel('Password').fill('good-password');
+  await page.getByRole('button', { name: /sign in/i }).click();
 
   await expect(page).toHaveURL(/\/dashboard/);
   await expect(page.getByRole('heading', { name: 'Dashboard' })).toBeVisible();
