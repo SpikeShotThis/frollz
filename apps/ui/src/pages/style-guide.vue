@@ -1,5 +1,6 @@
+<script lang="ts">
 import { computed } from 'vue';
-import { useTheme } from ''../composables/useTheme.js';
+import { useTheme } from '../composables/useTheme.js';
 
 type Swatch = {
   label: string;
@@ -166,7 +167,8 @@ const tableRows = [
   <q-page class="q-pa-md column q-gutter-md">
     <div>
       <div class="text-h5">Style Guide</div>
-      <div class="text-subtitle2 text-grey-7">Modular theme reference for tokens, layout language, and component skins.</div>
+      <div class="text-subtitle2 text-grey-7">Modular theme reference for tokens, layout language, and component skins.
+      </div>
     </div>
 
     <q-card flat bordered>
@@ -249,18 +251,11 @@ const tableRows = [
     <q-card flat bordered>
       <q-card-section>
         <div class="text-subtitle1 q-mb-sm">Radius + Shadow Tokens</div>
-        <q-table
-          :rows="themeMeta"
-          row-key="token"
-          flat
-          bordered
-          :columns="[
-            { name: 'token', label: 'Token', field: 'token', align: 'left' },
-            { name: 'value', label: 'Value', field: 'value', align: 'left' },
-            { name: 'use', label: 'Use', field: 'use', align: 'left' }
-          ]"
-          hide-pagination
-        />
+        <q-table :rows="themeMeta" row-key="token" flat bordered :columns="[
+          { name: 'token', label: 'Token', field: 'token', align: 'left' },
+          { name: 'value', label: 'Value', field: 'value', align: 'left' },
+          { name: 'use', label: 'Use', field: 'use', align: 'left' }
+        ]" hide-pagination />
       </q-card-section>
     </q-card>
 
@@ -279,36 +274,22 @@ const tableRows = [
     <q-card flat bordered>
       <q-card-section>
         <div class="text-subtitle1 q-mb-sm">Typography Families</div>
-        <q-table
-          :rows="typographyFamilies"
-          row-key="role"
-          flat
-          bordered
-          :columns="[
-            { name: 'role', label: 'Role', field: 'role', align: 'left' },
-            { name: 'stack', label: 'Font Stack', field: 'stack', align: 'left' },
-            { name: 'usage', label: 'Usage', field: 'usage', align: 'left' }
-          ]"
-          hide-pagination
-        />
+        <q-table :rows="typographyFamilies" row-key="role" flat bordered :columns="[
+          { name: 'role', label: 'Role', field: 'role', align: 'left' },
+          { name: 'stack', label: 'Font Stack', field: 'stack', align: 'left' },
+          { name: 'usage', label: 'Usage', field: 'usage', align: 'left' }
+        ]" hide-pagination />
       </q-card-section>
     </q-card>
 
     <q-card flat bordered>
       <q-card-section>
         <div class="text-subtitle1 q-mb-sm">Breakpoints (Quasar Defaults)</div>
-        <q-table
-          :rows="breakpoints"
-          row-key="tier"
-          flat
-          bordered
-          :columns="[
-            { name: 'tier', label: 'Tier', field: 'tier', align: 'left' },
-            { name: 'range', label: 'Viewport Range', field: 'range', align: 'left' },
-            { name: 'intent', label: 'Design Intent', field: 'intent', align: 'left' }
-          ]"
-          hide-pagination
-        />
+        <q-table :rows="breakpoints" row-key="tier" flat bordered :columns="[
+          { name: 'tier', label: 'Tier', field: 'tier', align: 'left' },
+          { name: 'range', label: 'Viewport Range', field: 'range', align: 'left' },
+          { name: 'intent', label: 'Design Intent', field: 'intent', align: 'left' }
+        ]" hide-pagination />
       </q-card-section>
     </q-card>
 
@@ -338,7 +319,8 @@ const tableRows = [
             <q-input filled label="Input sample" model-value="Earthy field" />
           </div>
           <div class="col-12 col-md-6">
-            <q-select filled label="Select sample" model-value="Primary" :options="['Primary', 'Secondary', 'Accent']" />
+            <q-select filled label="Select sample" model-value="Primary"
+              :options="['Primary', 'Secondary', 'Accent']" />
           </div>
         </div>
       </q-card-section>
@@ -359,18 +341,11 @@ const tableRows = [
     <q-card flat bordered>
       <q-card-section>
         <div class="text-subtitle1 q-mb-sm">Table & Link States</div>
-        <q-table
-          :rows="tableRows"
-          row-key="token"
-          flat
-          bordered
-          :columns="[
-            { name: 'token', label: 'Token', field: 'token', align: 'left' },
-            { name: 'use', label: 'Use', field: 'use', align: 'left' },
-            { name: 'sample', label: 'Sample', field: 'sample', align: 'left' }
-          ]"
-          hide-pagination
-        >
+        <q-table :rows="tableRows" row-key="token" flat bordered :columns="[
+          { name: 'token', label: 'Token', field: 'token', align: 'left' },
+          { name: 'use', label: 'Use', field: 'use', align: 'left' },
+          { name: 'sample', label: 'Sample', field: 'sample', align: 'left' }
+        ]" hide-pagination>
           <template #body-cell-sample="props">
             <q-td :props="props">
               <a href="#">{{ props.row.sample }}</a>
