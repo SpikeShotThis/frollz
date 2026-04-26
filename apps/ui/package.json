@@ -27,6 +27,7 @@
     "@playwright/test": "^1.56.1",
     "@quasar/app-vite": "^2.5.0",
     "@types/node": "*",
+    "playwright-bdd": "^8.5.0",
     "typescript": "*",
     "vitest": "*",
     "vue-tsc": "^3.1.1"
