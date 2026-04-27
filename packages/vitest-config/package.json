@@ -4,6 +4,6 @@
   "version": "0.0.0",
   "type": "module",
   "peerDependencies": {
-    "vitest": "*"
+    "vitest": "^4.1.5"
   }
 }

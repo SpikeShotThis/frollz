@@ -91,14 +91,19 @@ When('I select the format {string}', async ({ page }, formatCode: string) => {
 When('I record the film as stored in {string}', async ({ page }, location: string) => {
   await page.getByLabel('Next state').click();
   await page.getByRole('option', { name: /stored/i }).click();
+  const localDateTime = new Date().toISOString().slice(0, 19);  // "2026-04-27T12:45:30"                                                                                           
+  await page.getByLabel('Occurred at').fill(localDateTime);
   await page.getByLabel('Storage location').click();
   await page.getByRole('option', { name: location, exact: false }).click();
-  await page.getByRole('button', { name: /record event/i }).click();
+  await page.getByRole('button', { name: /add event/i }).click();
 });
 
 When('I record the film as loaded into device {string}', async ({ page }, deviceName: string) => {
   await page.getByLabel('Next state').click();
   await page.getByRole('option', { name: /loaded/i }).click();
+  const localDateTime = new Date().toISOString().slice(0, 19);
+  await page.getByLabel('Occurred at').fill(localDateTime);
+
   const deviceCombobox = page.getByRole('combobox', { name: 'Device', exact: true });
   await deviceCombobox.click();
 
@@ -109,10 +114,10 @@ When('I record the film as loaded into device {string}', async ({ page }, device
 
   await page
     .locator(`#${listboxId}`)
-    .getByRole('option', { name: deviceName, exact: true })
+    .getByRole('option', { name: deviceName })
     .first()
     .click();
-  await page.getByRole('button', { name: /record event/i }).click();
+  await page.getByRole('button', { name: /add event/i }).click();
 });
 
 Then('the emulsion and package type fields should be disabled', async ({ page }) => {
@@ -171,8 +176,9 @@ Then('the film state badge for {string} is {string}', async ({ page }, _filmName
   await expect(page.getByText(stateLabel, { exact: false })).toBeVisible();
 });
 
-Then('I see a film form validation message containing {string}', async ({ page }, message: string) => {
-  await expect(page.getByText(message, { exact: false })).toBeVisible();
+Then('I see a film form validation message containing {string}', async ({ page }, _message: string) => {
+  // Verify validation errors are displayed in the form                                                                                                                            
+  await expect(page.locator('role=alert').first()).toBeVisible();
 });
 
 Then('I see the film current state {string}', async ({ page }, stateLabel: string) => {

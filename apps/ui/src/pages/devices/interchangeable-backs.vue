@@ -1,53 +1,22 @@
 <!-- eslint-disable vue/multi-word-component-names -->
 <script setup lang="ts">
-import { computed, onMounted, reactive, ref, watch } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { useRoute } from 'vue-router';
-import { FRAME_SIZE_CODES, getFrameSizeCodesForFormatCode, type CreateFilmDeviceRequest, type FilmDevice } from '@frollz2/schema';
+import { type FilmDevice } from '@frollz2/schema';
 import { useDeviceStore } from '../../stores/devices.js';
 import { useReferenceStore } from '../../stores/reference.js';
-import { useUiFeedback } from '../../composables/useUiFeedback.js';
-import { createIdempotencyKey } from '../../composables/idempotency.js';
+import CreateDeviceDialog from '../../components/CreateDeviceDialog.vue';
 
 const route = useRoute();
 const deviceStore = useDeviceStore();
 const referenceStore = useReferenceStore();
-const feedback = useUiFeedback();
 const search = ref<string | null>('');
 const isCreateDialogOpen = ref(false);
-const isCreating = ref(false);
-const idempotencyKey = ref(createIdempotencyKey());
-
-const createForm = reactive({
-  deviceTypeCode: typeof route.meta.deviceTypeFilter === 'string' ? route.meta.deviceTypeFilter : 'camera',
-  filmFormatId: null as number | null,
-  frameSize: 'full_frame' as CreateFilmDeviceRequest['frameSize'],
-  make: '',
-  model: '',
-  name: '',
-  system: '',
-  brand: '',
-  slotCount: 2,
-  holderTypeId: null as number | null
-});
-
-const selectedFilmFormatCode = computed(() => {
-  const selectedFilmFormat = referenceStore.filmFormats.find((format) => format.id === createForm.filmFormatId);
-  return selectedFilmFormat?.code ?? null;
-});
-
-const frameSizeOptions = computed(() => {
-  if (!selectedFilmFormatCode.value) {
-    return [...FRAME_SIZE_CODES];
-  }
-  return [...getFrameSizeCodesForFormatCode(selectedFilmFormatCode.value)];
-});
 
 const routeTypeFilter = computed(() => {
   const value = route.meta.deviceTypeFilter;
   return typeof value === 'string' ? value : null;
 });
-
-const isFrameSizeDisabled = computed(() => !createForm.filmFormatId);
 
 const rows = computed(() => {
   const query = (search.value ?? '').trim().toLowerCase();
@@ -94,27 +63,6 @@ const columns = [
   }
 ];
 
-const deviceTypeOptions = computed(() =>
-  referenceStore.deviceTypes.map((type) => ({
-    label: type.label,
-    value: type.code
-  }))
-);
-
-const filmFormatOptions = computed(() =>
-  referenceStore.filmFormats.map((format) => ({
-    label: format.label,
-    value: format.id
-  }))
-);
-
-const holderTypeOptions = computed(() =>
-  referenceStore.holderTypes.map((type) => ({
-    label: type.label,
-    value: type.id
-  }))
-);
-
 function deviceLabel(device: FilmDevice): string {
   if (device.deviceTypeCode === 'camera') {
     return `${device.make} ${device.model}`;
@@ -125,111 +73,6 @@ function deviceLabel(device: FilmDevice): string {
   }
 
   return device.name;
-}
-
-function resetCreateForm(): void {
-  createForm.deviceTypeCode = routeTypeFilter.value ?? 'camera';
-  createForm.filmFormatId = null;
-  createForm.frameSize = FRAME_SIZE_CODES[0];
-  createForm.make = '';
-  createForm.model = '';
-  createForm.name = '';
-  createForm.system = '';
-  createForm.brand = '';
-  createForm.slotCount = 2;
-  createForm.holderTypeId = null;
-  idempotencyKey.value = createIdempotencyKey();
-}
-
-watch(frameSizeOptions, (options) => {
-  if (options.length === 0) {
-    return;
-  }
-  if (!options.includes(createForm.frameSize)) {
-    const nextFrameSize = options[0];
-    if (!nextFrameSize) {
-      return;
-    }
-    createForm.frameSize = nextFrameSize;
-  }
-}, { immediate: true });
-
-function openCreateDialog(): void {
-  resetCreateForm();
-  isCreateDialogOpen.value = true;
-}
-
-async function submitCreate(): Promise<void> {
-  if (isCreating.value) {
-    return;
-  }
-
-  const deviceType = referenceStore.deviceTypes.find((type) => type.code === createForm.deviceTypeCode);
-  if (!deviceType || !createForm.filmFormatId) {
-    feedback.error('Select device type and film format.');
-    return;
-  }
-
-  let payload: CreateFilmDeviceRequest;
-
-  if (createForm.deviceTypeCode === 'camera') {
-    if (!createForm.make.trim() || !createForm.model.trim()) {
-      feedback.error('Camera make and model are required.');
-      return;
-    }
-
-    payload = {
-      deviceTypeCode: 'camera',
-      deviceTypeId: deviceType.id,
-      filmFormatId: createForm.filmFormatId,
-      frameSize: createForm.frameSize as CreateFilmDeviceRequest['frameSize'],
-      make: createForm.make.trim(),
-      model: createForm.model.trim(),
-      canUnload: true,
-      loadMode: 'direct'
-    };
-  } else if (createForm.deviceTypeCode === 'interchangeable_back') {
-    if (!createForm.name.trim() || !createForm.system.trim()) {
-      feedback.error('Name and system are required.');
-      return;
-    }
-
-    payload = {
-      deviceTypeCode: 'interchangeable_back',
-      deviceTypeId: deviceType.id,
-      filmFormatId: createForm.filmFormatId,
-      frameSize: createForm.frameSize as CreateFilmDeviceRequest['frameSize'],
-      name: createForm.name.trim(),
-      system: createForm.system.trim()
-    };
-  } else {
-    if (!createForm.name.trim() || !createForm.brand.trim() || !createForm.holderTypeId) {
-      feedback.error('Film holder name, brand, and holder type are required.');
-      return;
-    }
-
-    payload = {
-      deviceTypeCode: 'film_holder',
-      deviceTypeId: deviceType.id,
-      filmFormatId: createForm.filmFormatId,
-      frameSize: createForm.frameSize as CreateFilmDeviceRequest['frameSize'],
-      name: createForm.name.trim(),
-      brand: createForm.brand.trim(),
-      slotCount: createForm.slotCount as 1 | 2,
-      holderTypeId: createForm.holderTypeId
-    };
-  }
-
-  isCreating.value = true;
-  try {
-    await deviceStore.createDevice(payload, idempotencyKey.value);
-    feedback.success('Device created.');
-    isCreateDialogOpen.value = false;
-  } catch (error) {
-    feedback.error(feedback.toErrorMessage(error, 'Failed to create device.'));
-  } finally {
-    isCreating.value = false;
-  }
 }
 
 onMounted(async () => {
@@ -245,7 +88,7 @@ onMounted(async () => {
         <div class="text-subtitle2 text-grey-7">Cameras, backs, and holders.</div>
       </div>
       <div class="row q-gutter-sm">
-        <q-btn color="primary" label="Add device" @click="openCreateDialog" />
+        <q-btn color="primary" label="Add device" @click="isCreateDialogOpen = true" />
         <q-btn flat color="primary" label="Refresh" @click="deviceStore.loadDevices" />
       </div>
     </div>
@@ -271,71 +114,9 @@ onMounted(async () => {
       </template>
     </q-table>
 
-    <q-dialog v-model="isCreateDialogOpen">
-      <q-card class="full-width">
-        <q-card-section>
-          <div class="text-h6">Create device</div>
-        </q-card-section>
-
-        <q-card-section>
-          <q-form class="column q-gutter-md" @submit="submitCreate">
-            <q-select
-              v-model="createForm.deviceTypeCode"
-              filled
-              emit-value
-              map-options
-              :options="deviceTypeOptions"
-              label="Device type"
-              :disable="!!routeTypeFilter"
-            />
-            <q-select
-              v-model="createForm.filmFormatId"
-              filled
-              emit-value
-              map-options
-              :options="filmFormatOptions"
-              label="Film format"
-            />
-            <q-select v-model="createForm.frameSize" filled :options="frameSizeOptions" label="Frame size" :disable="isFrameSizeDisabled" />
-
-            <template v-if="createForm.deviceTypeCode === 'camera'">
-              <q-input v-model="createForm.make" filled label="Make" :disable="!createForm.filmFormatId" />
-              <q-input v-model="createForm.model" filled label="Model" :disable="!createForm.filmFormatId" />
-            </template>
-
-            <template v-else-if="createForm.deviceTypeCode === 'interchangeable_back'">
-              <q-input v-model="createForm.name" filled label="Name" :disable="!createForm.filmFormatId" />
-              <q-input v-model="createForm.system" filled label="System" :disable="!createForm.filmFormatId" />
-            </template>
-
-            <template v-else>
-              <q-input v-model="createForm.name" filled label="Holder name" :disable="!createForm.filmFormatId" />
-              <q-input v-model="createForm.brand" filled label="Brand" :disable="!createForm.filmFormatId" />
-              <q-select
-                v-model="createForm.slotCount"
-                filled
-                :options="[1, 2]"
-                label="Slot count"
-                :disable="!createForm.filmFormatId"
-              />
-              <q-select
-                v-model="createForm.holderTypeId"
-                filled
-                emit-value
-                map-options
-                :options="holderTypeOptions"
-                label="Holder type"
-                :disable="!createForm.filmFormatId"
-              />
-            </template>
-          </q-form>
-        </q-card-section>
-
-        <q-card-actions align="right">
-          <q-btn v-close-popup flat label="Cancel" />
-          <q-btn color="primary" label="Create" :loading="isCreating" @click="submitCreate" />
-        </q-card-actions>
-      </q-card>
-    </q-dialog>
+    <CreateDeviceDialog
+      v-model="isCreateDialogOpen"
+      v-bind="routeTypeFilter ? { deviceTypeFilter: routeTypeFilter } : {}"
+    />
   </q-page>
 </template>

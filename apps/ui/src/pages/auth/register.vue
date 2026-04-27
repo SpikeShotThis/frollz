@@ -1,16 +1,18 @@
 <!-- eslint-disable vue/multi-word-component-names -->
 <script setup lang="ts">
-import { ref } from 'vue';
+import { reactive, ref } from 'vue';
 import { useRouter } from 'vue-router';
+import { useRegleSchema } from '@regle/schemas';
 import { registerRequestSchema } from '@frollz2/schema';
 import { useAuthStore } from '../../stores/auth.js';
-import { useZodForm } from '../../composables/useZodForm.js';
 import { useUiFeedback } from '../../composables/useUiFeedback.js';
 
 const authStore = useAuthStore();
 const router = useRouter();
 const feedback = useUiFeedback();
-const { values, errors, validate } = useZodForm(registerRequestSchema, { email: '', password: '', name: '' });
+
+const form = reactive({ name: '', email: '', password: '' });
+const { r$ } = useRegleSchema(form, registerRequestSchema);
 const isSubmitting = ref(false);
 const formError = ref<string | null>(null);
 
@@ -19,9 +21,9 @@ async function submit(): Promise<void> {
     return;
   }
 
-  const parsed = validate();
-  if (!parsed) {
-    formError.value = errors.value.join(' ');
+  const { valid, data } = await r$.$validate();
+  if (!valid) {
+    formError.value = 'Please fix the errors above.';
     return;
   }
 
@@ -29,7 +31,7 @@ async function submit(): Promise<void> {
   formError.value = null;
 
   try {
-    await authStore.register(parsed);
+    await authStore.register(data);
     feedback.success('Account created.');
     await router.push('/dashboard');
   } catch (error) {
@@ -52,14 +54,33 @@ async function submit(): Promise<void> {
         <q-banner v-if="formError" inline-actions rounded class="bg-red-1 text-negative q-mb-md">{{ formError }}</q-banner>
 
         <q-form class="column q-gutter-md" @submit="submit">
-          <q-input v-model="values.name" label="Name" autocomplete="name" :disable="isSubmitting" filled />
-          <q-input v-model="values.email" label="Email" type="email" autocomplete="email" :disable="isSubmitting" filled />
           <q-input
-            v-model="values.password"
+            v-model="r$.$value.name"
+            label="Name"
+            autocomplete="name"
+            :disable="isSubmitting"
+            :error="r$.name.$error"
+            :error-message="r$.name.$errors[0]"
+            filled
+          />
+          <q-input
+            v-model="r$.$value.email"
+            label="Email"
+            type="email"
+            autocomplete="email"
+            :disable="isSubmitting"
+            :error="r$.email.$error"
+            :error-message="r$.email.$errors[0]"
+            filled
+          />
+          <q-input
+            v-model="r$.$value.password"
             label="Password"
             type="password"
             autocomplete="new-password"
             :disable="isSubmitting"
+            :error="r$.password.$error"
+            :error-message="r$.password.$errors[0]"
             filled
           />
 
