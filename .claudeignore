@@ -1,0 +1,73 @@
+# =========================
+# Build Outputs
+# =========================
+dist/
+build/
+coverage/
+.features-gen/
+
+# =========================
+# Dependencies
+# =========================
+node_modules/
+.pnpm-store/
+
+# =========================
+# Logs / temp
+# =========================
+*.log
+*.tmp
+*.cache
+.DS_Store
+
+# =========================
+# Environment
+# =========================
+.env*
+!.env.example
+
+# =========================
+# Generated / compiled files
+# =========================
+*.js
+*.js.map
+*.d.ts
+*.tsbuildinfo
+
+# (Exception: allow schema dist if needed by UI alias)
+!packages/schema/dist/
+
+# =========================
+# Quasar / Vite build artifacts
+# =========================
+apps/ui/.quasar/
+apps/ui/dist/
+apps/ui/node_modules/
+
+# =========================
+# Playwright artifacts
+# =========================
+test-results/
+playwright-report/
+blob-report/
+
+# =========================
+# Turbo cache
+# =========================
+.turbo/
+
+# =========================
+# Database files
+# =========================
+*.sqlite
+*.db
+
+# =========================
+# Human-only docs (IMPORTANT)
+# =========================
+docs/
+
+# =========================
+# Large config noise (safe to ignore)
+# =========================
+pnpm-lock.yaml
