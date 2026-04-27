@@ -1,17 +1,19 @@
 <!-- eslint-disable vue/multi-word-component-names -->
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { reactive, ref } from 'vue';
 import { useRouter } from 'vue-router';
+import { useRegleSchema } from '@regle/schemas';
 import { loginRequestSchema } from '@frollz2/schema';
 import { useAuthStore } from '../../stores/auth.js';
-import { useZodForm } from '../../composables/useZodForm.js';
 import { useUiFeedback } from '../../composables/useUiFeedback.js';
 
 const authStore = useAuthStore();
 const router = useRouter();
 const feedback = useUiFeedback();
-const { values, errors, validate } = useZodForm(loginRequestSchema, { email: '', password: '' });
+
+const form = reactive({ email: '', password: '' });
+const { r$ } = useRegleSchema(form, loginRequestSchema);
 const isSubmitting = ref(false);
 const formError = ref<string | null>(null);
 
@@ -20,9 +22,9 @@ async function submit(): Promise<void> {
     return;
   }
 
-  const parsed = validate();
-  if (!parsed) {
-    formError.value = errors.value.join(' ');
+  const { valid, data } = await r$.$validate();
+  if (!valid) {
+    formError.value = 'Please fix the errors above.';
     return;
   }
 
@@ -30,7 +32,7 @@ async function submit(): Promise<void> {
   formError.value = null;
 
   try {
-    await authStore.login(parsed);
+    await authStore.login(data);
     feedback.success('Welcome back.');
     await router.push('/dashboard');
   } catch (error) {
@@ -54,10 +56,28 @@ async function submit(): Promise<void> {
         }}</q-banner>
 
         <q-form class="column q-gutter-md" @submit="submit">
-          <q-input v-model="values.email" label="Email" type="email" autocomplete="email" data-testid="login-email"
-            :disable="isSubmitting" filled />
-          <q-input v-model="values.password" label="Password" type="password" autocomplete="current-password"
-            data-testid="login-password" :disable="isSubmitting" filled />
+          <q-input
+            v-model="r$.$value.email"
+            label="Email"
+            type="email"
+            autocomplete="email"
+            data-testid="login-email"
+            :disable="isSubmitting"
+            :error="r$.email.$error"
+            :error-message="r$.email.$errors[0]"
+            filled
+          />
+          <q-input
+            v-model="r$.$value.password"
+            label="Password"
+            type="password"
+            autocomplete="current-password"
+            data-testid="login-password"
+            :disable="isSubmitting"
+            :error="r$.password.$error"
+            :error-message="r$.password.$errors[0]"
+            filled
+          />
           <div class="row items-center justify-between q-gutter-sm">
             <q-btn type="submit" color="primary" label="Sign in" :loading="isSubmitting" :disable="isSubmitting"
               data-testid="login-submit" />

@@ -58,6 +58,13 @@
         "chrome-devtools-mcp@latest",
         "--no-usage-statistics"
       ]
+    },
+    "regle": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@regle/mcp-server"
+      ]
     }
   }
 }

@@ -177,6 +177,9 @@ importers:
       '@quasar/extras':
         specifier: ^1.18.0
         version: 1.18.0
+      '@regle/schemas':
+        specifier: ^1.23.2
+        version: 1.23.2(pinia@3.0.4(typescript@6.0.3)(vue@3.5.33(typescript@6.0.3)))(vue@3.5.33(typescript@6.0.3))(zod@4.3.6)
       pinia:
         specifier: ^3.0.4
         version: 3.0.4(typescript@6.0.3)(vue@3.5.33(typescript@6.0.3))
@@ -1419,6 +1422,32 @@ packages:
       quasar: ^2.16.0
       vite: ^2.0.0 || ^3.0.0 || ^4.0.0 || ^5.0.0 || ^6.0.0 || ^7.0.0 || ^8.0.0
       vue: ^3.0.0
+
+  '@regle/core@1.23.2':
+    resolution: {integrity: sha512-ZUojN6TqqiwCcPaOpR+R6D67xWfMNrirx/6RKjAbYzkkQTVrybI+PXZORGOEG581FyRSxmS4HBClke/mlTiiIQ==}
+    peerDependencies:
+      pinia: '>=2.2.5'
+      vue: '>=3.3.0'
+    peerDependenciesMeta:
+      pinia:
+        optional: true
+
+  '@regle/rules@1.23.2':
+    resolution: {integrity: sha512-D7k8s11rTH4AjCOUkVBWFTWdmOdQIUAq8WEaj2VpE9ESwZgB7/mHJ9NO5dCWwuoif+dSVvOTKrJgOR79iq+xew==}
+
+  '@regle/schemas@1.23.2':
+    resolution: {integrity: sha512-4bLyxCCz2ZHn99Pcj5X9zDwDhd21IW18hue9kv11SQBqrv850MqzAZhB3biMzO149TjuE4s2ZAydl+Araalpnw==}
+    peerDependencies:
+      arktype: ^2.1.0
+      valibot: ^1.0.0
+      zod: ^3.24.0 || ^4.0.0
+    peerDependenciesMeta:
+      arktype:
+        optional: true
+      valibot:
+        optional: true
+      zod:
+        optional: true
 
   '@rolldown/binding-android-arm64@1.0.0-rc.16':
     resolution: {integrity: sha512-rhY3k7Bsae9qQfOtph2Pm2jZEA+s8Gmjoz4hhmx70K9iMQ/ddeae+xhRQcM5IuVx5ry1+bGfkvMn7D6MJggVSA==}
@@ -6230,6 +6259,35 @@ snapshots:
       quasar: 2.19.3
       vite: 8.0.9(@types/node@25.6.0)(esbuild@0.27.7)(sass-embedded@1.99.0)(sass@1.99.0)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3)
       vue: 3.5.33(typescript@6.0.3)
+
+  '@regle/core@1.23.2(pinia@3.0.4(typescript@6.0.3)(vue@3.5.33(typescript@6.0.3)))(vue@3.5.33(typescript@6.0.3))':
+    dependencies:
+      '@standard-schema/spec': 1.1.0
+      '@vue/devtools-api': 7.7.9
+      type-fest: 5.6.0
+      vue: 3.5.33(typescript@6.0.3)
+    optionalDependencies:
+      pinia: 3.0.4(typescript@6.0.3)(vue@3.5.33(typescript@6.0.3))
+
+  '@regle/rules@1.23.2(pinia@3.0.4(typescript@6.0.3)(vue@3.5.33(typescript@6.0.3)))(vue@3.5.33(typescript@6.0.3))':
+    dependencies:
+      '@regle/core': 1.23.2(pinia@3.0.4(typescript@6.0.3)(vue@3.5.33(typescript@6.0.3)))(vue@3.5.33(typescript@6.0.3))
+      type-fest: 5.6.0
+    transitivePeerDependencies:
+      - pinia
+      - vue
+
+  '@regle/schemas@1.23.2(pinia@3.0.4(typescript@6.0.3)(vue@3.5.33(typescript@6.0.3)))(vue@3.5.33(typescript@6.0.3))(zod@4.3.6)':
+    dependencies:
+      '@regle/core': 1.23.2(pinia@3.0.4(typescript@6.0.3)(vue@3.5.33(typescript@6.0.3)))(vue@3.5.33(typescript@6.0.3))
+      '@regle/rules': 1.23.2(pinia@3.0.4(typescript@6.0.3)(vue@3.5.33(typescript@6.0.3)))(vue@3.5.33(typescript@6.0.3))
+      '@standard-schema/spec': 1.1.0
+      type-fest: 5.6.0
+    optionalDependencies:
+      zod: 4.3.6
+    transitivePeerDependencies:
+      - pinia
+      - vue
 
   '@rolldown/binding-android-arm64@1.0.0-rc.16':
     optional: true

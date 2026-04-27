@@ -105,6 +105,10 @@ export const filmCreateRequestSchema = z.object({
   expirationDate: isoDateTimeSchema.nullable().optional()
 });
 
+export const filmCreateFormSchema = filmCreateRequestSchema.extend({
+  expirationDate: z.string().optional() // YYYY-MM-DD from date input; composable transforms to ISO
+});
+
 export const filmUpdateRequestSchema = z.object({
   name: z.string().min(1).optional(),
   expirationDate: isoDateTimeSchema.nullable().optional()
@@ -421,6 +425,7 @@ export type FilmSummary = z.infer<typeof filmSummarySchema>;
 export type FilmDetail = z.infer<typeof filmDetailSchema>;
 export type FilmFrame = z.infer<typeof filmFrameSchema>;
 export type FilmCreateRequest = z.infer<typeof filmCreateRequestSchema>;
+export type FilmCreateForm = z.infer<typeof filmCreateFormSchema>;
 export type FilmUpdateRequest = z.infer<typeof filmUpdateRequestSchema>;
 export type FilmListQuery = z.infer<typeof filmListQuerySchema>;
 export type FilmListResponse = z.infer<typeof filmListResponseSchema>;

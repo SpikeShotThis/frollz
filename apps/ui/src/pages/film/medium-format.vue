@@ -14,16 +14,10 @@ const referenceStore = useReferenceStore();
 const {
   isCreateDialogOpen,
   isCreating,
-  createForm,
   lockedFormatFilters,
   isFormatLocked,
-  formatOptions,
-  emulsionOptions,
-  packageTypeOptions,
-  isEmulsionDisabled,
-  isPackageDisabled,
   openCreateDialog,
-  submitCreate,
+  handleCreate,
 } = useFilmCreateForm();
 
 const search = ref<string | null>('');
@@ -113,19 +107,10 @@ onMounted(async () => {
 
     <FilmCreateDialog
       v-model="isCreateDialogOpen"
-      v-model:name="createForm.name"
-      v-model:emulsion-id="createForm.emulsionId"
-      v-model:film-format-id="createForm.filmFormatId"
-      v-model:package-type-id="createForm.packageTypeId"
-      v-model:expiration-date="createForm.expirationDate"
-      :format-options="formatOptions"
-      :emulsion-options="emulsionOptions"
-      :package-type-options="packageTypeOptions"
       :is-format-locked="isFormatLocked"
-      :is-emulsion-disabled="isEmulsionDisabled"
-      :is-package-disabled="isPackageDisabled"
+      :locked-format-filters="lockedFormatFilters"
       :is-creating="isCreating"
-      @submit="submitCreate"
+      @submit="handleCreate"
     />
   </q-page>
 </template>
