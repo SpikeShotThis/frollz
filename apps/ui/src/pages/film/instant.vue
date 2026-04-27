@@ -1,37 +1,32 @@
 <!-- eslint-disable vue/multi-word-component-names -->
 <script setup lang="ts">
-import { computed, onMounted, reactive, ref } from 'vue';
-import { useRoute } from 'vue-router';
-import type { FilmCreateRequest, FilmSummary } from '@frollz2/schema';
+import { computed, onMounted, ref } from 'vue';
+import type { FilmSummary } from '@frollz2/schema';
+import FilmInventoryTable from '../../components/FilmInventoryTable.vue';
 import { useFilmStore } from '../../stores/film.js';
 import { useReferenceStore } from '../../stores/reference.js';
-import { useUiFeedback } from '../../composables/useUiFeedback.js';
-import { createIdempotencyKey } from '../../composables/idempotency.js';
-import FilmInventoryTable from '../../components/FilmInventoryTable.vue';
+import { useFilmCreateForm } from '../../composables/useFilmCreateForm.js';
 
-const route = useRoute();
 const filmStore = useFilmStore();
 const referenceStore = useReferenceStore();
-const feedback = useUiFeedback();
+
+const {
+  isCreateDialogOpen,
+  isCreating,
+  createForm,
+  lockedFormatFilters,
+  isFormatLocked,
+  formatOptions,
+  emulsionOptions,
+  packageTypeOptions,
+  isEmulsionDisabled,
+  isPackageDisabled,
+  openCreateDialog,
+  submitCreate,
+} = useFilmCreateForm();
 
 const search = ref<string | null>('');
 const stateFilter = ref<string | null>(null);
-const isCreateDialogOpen = ref(false);
-const isCreating = ref(false);
-const idempotencyKey = ref(createIdempotencyKey());
-
-const createForm = reactive({
-  name: '',
-  emulsionId: null as number | null,
-  filmFormatId: null as number | null,
-  packageTypeId: null as number | null,
-  expirationDate: ''
-});
-
-const lockedFormatFilters = computed(() => {
-  const value = route.meta.filmFormatFilters;
-  return Array.isArray(value) ? value.filter((item): item is string => typeof item === 'string') : [];
-});
 
 const subtitle = computed(() =>
   lockedFormatFilters.value.length > 0
@@ -66,82 +61,12 @@ const extractEmulsion = (row: FilmSummary) => `${row.emulsion.manufacturer} ${ro
 const extractFormat = (row: FilmSummary) => row.filmFormat.label;
 const extractIso = (row: FilmSummary) => row.emulsion.isoSpeed.toString();
 
-
 const stateOptions = computed(() =>
   referenceStore.filmStates.map((state) => ({
     label: state.label,
     value: state.code
   }))
 );
-
-const emulsionOptions = computed(() =>
-  referenceStore.emulsions.map((emulsion) => ({
-    label: `${emulsion.manufacturer} ${emulsion.brand} ISO ${emulsion.isoSpeed}`,
-    value: emulsion.id
-  }))
-);
-
-const formatOptions = computed(() =>
-  referenceStore.filmFormats.map((format) => ({
-    label: format.label,
-    value: format.id
-  }))
-);
-
-const packageTypeOptions = computed(() => {
-  if (!createForm.filmFormatId) {
-    return [];
-  }
-
-  return referenceStore.packageTypesByFormat(createForm.filmFormatId).map((pkg) => ({
-    label: pkg.label,
-    value: pkg.id
-  }));
-});
-
-function resetCreateForm(): void {
-  createForm.name = '';
-  createForm.emulsionId = null;
-  createForm.filmFormatId = null;
-  createForm.packageTypeId = null;
-  createForm.expirationDate = '';
-  idempotencyKey.value = createIdempotencyKey();
-}
-
-function openCreateDialog(): void {
-  resetCreateForm();
-  isCreateDialogOpen.value = true;
-}
-
-async function submitCreate(): Promise<void> {
-  if (isCreating.value) {
-    return;
-  }
-
-  if (!createForm.name.trim() || !createForm.emulsionId || !createForm.filmFormatId || !createForm.packageTypeId) {
-    feedback.error('Name, emulsion, format, and package are required.');
-    return;
-  }
-
-  const payload: FilmCreateRequest = {
-    name: createForm.name.trim(),
-    emulsionId: createForm.emulsionId,
-    filmFormatId: createForm.filmFormatId,
-    packageTypeId: createForm.packageTypeId,
-    expirationDate: createForm.expirationDate ? new Date(`${createForm.expirationDate}T00:00:00.000Z`).toISOString() : null
-  };
-
-  isCreating.value = true;
-  try {
-    await filmStore.createFilm(payload, idempotencyKey.value);
-    feedback.success('Film created.');
-    isCreateDialogOpen.value = false;
-  } catch (error) {
-    feedback.error(feedback.toErrorMessage(error, 'Failed to create film.'));
-  } finally {
-    isCreating.value = false;
-  }
-}
 
 onMounted(async () => {
   await Promise.allSettled([referenceStore.loadAll(), filmStore.loadFilms()]);
@@ -175,26 +100,63 @@ onMounted(async () => {
       </div>
     </div>
 
-    <FilmInventoryTable :rows="rows" :is-loading="filmStore.isLoading" :extract-name="extractName"
-      :extract-state="extractState" :extract-emulsion="extractEmulsion" :extract-format="extractFormat"
-      :extract-iso="extractIso" />
+    <FilmInventoryTable
+      :rows="rows"
+      :is-loading="filmStore.isLoading"
+      :extract-name="extractName"
+      :extract-state="extractState"
+      :extract-emulsion="extractEmulsion"
+      :extract-format="extractFormat"
+      :extract-iso="extractIso"
+    />
 
-    <q-dialog v-model="isCreateDialogOpen">
+    <q-dialog v-model="isCreateDialogOpen" data-testid="film-create-dialog">
       <q-card class="full-width">
         <q-card-section>
           <div class="text-h6">Create film</div>
         </q-card-section>
 
         <q-card-section>
-          <q-form class="column q-gutter-md" @submit="submitCreate">
-            <q-input v-model="createForm.name" filled label="Film name" />
-            <q-select v-model="createForm.emulsionId" filled emit-value map-options :options="emulsionOptions"
-              label="Emulsion" />
-            <q-select v-model="createForm.filmFormatId" filled emit-value map-options :options="formatOptions"
-              label="Film format" />
-            <q-select v-model="createForm.packageTypeId" filled emit-value map-options :options="packageTypeOptions"
-              label="Package type" />
-            <q-input v-model="createForm.expirationDate" filled type="date" label="Expiration date (optional)" />
+          <q-form class="column q-gutter-md" data-testid="film-create-form" @submit="submitCreate">
+            <div data-testid="film-create-name">
+              <q-input v-model="createForm.name" filled label="Film name" />
+            </div>
+            <div data-testid="film-create-format">
+              <q-select
+                v-model="createForm.filmFormatId"
+                filled
+                emit-value
+                map-options
+                :options="formatOptions"
+                :disable="isFormatLocked"
+                label="Film format"
+              />
+            </div>
+            <div data-testid="film-create-emulsion">
+              <q-select
+                v-model="createForm.emulsionId"
+                filled
+                emit-value
+                map-options
+                :options="emulsionOptions"
+                :disable="isEmulsionDisabled"
+                label="Emulsion"
+              />
+            </div>
+            <div data-testid="film-create-package">
+              <q-select
+                v-model="createForm.packageTypeId"
+                filled
+                emit-value
+                map-options
+                :options="packageTypeOptions"
+                :disable="isPackageDisabled"
+                label="Package type"
+              />
+            </div>
+            <div data-testid="film-create-expiration">
+              <q-input v-model="createForm.expirationDate" filled type="date" label="Expiration date (optional)" />
+            </div>
           </q-form>
         </q-card-section>
 

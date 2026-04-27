@@ -18,7 +18,7 @@ const isCreating = ref(false);
 const idempotencyKey = ref(createIdempotencyKey());
 
 const createForm = reactive({
-  deviceTypeCode: 'camera',
+  deviceTypeCode: typeof route.meta.deviceTypeFilter === 'string' ? route.meta.deviceTypeFilter : 'camera',
   filmFormatId: null as number | null,
   frameSize: 'full_frame' as CreateFilmDeviceRequest['frameSize'],
   make: '',
@@ -46,6 +46,8 @@ const routeTypeFilter = computed(() => {
   const value = route.meta.deviceTypeFilter;
   return typeof value === 'string' ? value : null;
 });
+
+const isFrameSizeDisabled = computed(() => !createForm.filmFormatId);
 
 const rows = computed(() => {
   const query = (search.value ?? '').trim().toLowerCase();
@@ -126,7 +128,7 @@ function deviceLabel(device: FilmDevice): string {
 }
 
 function resetCreateForm(): void {
-  createForm.deviceTypeCode = 'camera';
+  createForm.deviceTypeCode = routeTypeFilter.value ?? 'camera';
   createForm.filmFormatId = null;
   createForm.frameSize = FRAME_SIZE_CODES[0];
   createForm.make = '';
@@ -284,6 +286,7 @@ onMounted(async () => {
               map-options
               :options="deviceTypeOptions"
               label="Device type"
+              :disable="!!routeTypeFilter"
             />
             <q-select
               v-model="createForm.filmFormatId"
@@ -293,26 +296,27 @@ onMounted(async () => {
               :options="filmFormatOptions"
               label="Film format"
             />
-            <q-select v-model="createForm.frameSize" filled :options="frameSizeOptions" label="Frame size" />
+            <q-select v-model="createForm.frameSize" filled :options="frameSizeOptions" label="Frame size" :disable="isFrameSizeDisabled" />
 
             <template v-if="createForm.deviceTypeCode === 'camera'">
-              <q-input v-model="createForm.make" filled label="Make" />
-              <q-input v-model="createForm.model" filled label="Model" />
+              <q-input v-model="createForm.make" filled label="Make" :disable="!createForm.filmFormatId" />
+              <q-input v-model="createForm.model" filled label="Model" :disable="!createForm.filmFormatId" />
             </template>
 
             <template v-else-if="createForm.deviceTypeCode === 'interchangeable_back'">
-              <q-input v-model="createForm.name" filled label="Name" />
-              <q-input v-model="createForm.system" filled label="System" />
+              <q-input v-model="createForm.name" filled label="Name" :disable="!createForm.filmFormatId" />
+              <q-input v-model="createForm.system" filled label="System" :disable="!createForm.filmFormatId" />
             </template>
 
             <template v-else>
-              <q-input v-model="createForm.name" filled label="Holder name" />
-              <q-input v-model="createForm.brand" filled label="Brand" />
+              <q-input v-model="createForm.name" filled label="Holder name" :disable="!createForm.filmFormatId" />
+              <q-input v-model="createForm.brand" filled label="Brand" :disable="!createForm.filmFormatId" />
               <q-select
                 v-model="createForm.slotCount"
                 filled
                 :options="[1, 2]"
                 label="Slot count"
+                :disable="!createForm.filmFormatId"
               />
               <q-select
                 v-model="createForm.holderTypeId"
@@ -321,6 +325,7 @@ onMounted(async () => {
                 map-options
                 :options="holderTypeOptions"
                 label="Holder type"
+                :disable="!createForm.filmFormatId"
               />
             </template>
           </q-form>

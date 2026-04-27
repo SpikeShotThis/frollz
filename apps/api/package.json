@@ -7,6 +7,7 @@
     "build": "nest build",
     "check-types": "tsc -p tsconfig.json --noEmit",
     "dev": "pnpm --filter @frollz2/schema build && cross-env NODE_ENV=development nest start --watch",
+    "start:test": "pnpm --filter @frollz2/schema build && cross-env NODE_ENV=test nest start",
     "lint": "eslint --max-warnings 0 \"src/**/*.ts\" \"test/**/*.ts\"",
     "test": "pnpm --filter @frollz2/schema build && vitest run",
     "db:migrate": "pnpm --filter @frollz2/schema build && tsx src/infrastructure/migrate.ts",
@@ -49,11 +50,11 @@
     "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "*",
     "@types/passport-jwt": "^4.0.1",
+    "chokidar": "^5.0.0",
     "cross-env": "^10.1.0",
     "tsx": "^4.21.0",
     "typescript": "*",
     "unplugin-swc": "^1.5.6",
-    "vitest": "*",
-    "chokidar": "^3.5.3"
+    "vitest": "*"
   }
 }

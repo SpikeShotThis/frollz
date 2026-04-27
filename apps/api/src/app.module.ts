@@ -8,6 +8,9 @@ import { AuthModule } from './modules/auth/auth.module.js';
 import { FilmModule } from './modules/film/film.module.js';
 import { DevicesModule } from './modules/devices/devices.module.js';
 import { ReferenceModule } from './modules/reference/reference.module.js';
+import { TestModule } from './modules/test/test.module.js';
+
+const conditionalModules = process.env['NODE_ENV'] === 'test' ? [TestModule] : [];
 
 @Module({
   imports: [
@@ -17,7 +20,8 @@ import { ReferenceModule } from './modules/reference/reference.module.js';
     AuthModule,
     ReferenceModule,
     FilmModule,
-    DevicesModule
+    DevicesModule,
+    ...conditionalModules,
   ]
 })
 export class AppModule implements NestModule {

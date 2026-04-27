@@ -21,6 +21,7 @@ const createForm = reactive({
   deviceTypeCode: 'camera',
   filmFormatId: null as number | null,
   frameSize: 'full_frame' as CreateFilmDeviceRequest['frameSize'],
+  loadMode: 'direct' as 'direct' | 'interchangeable_back',
   make: '',
   model: '',
   name: '',
@@ -41,6 +42,13 @@ const frameSizeOptions = computed(() => {
   }
   return [...getFrameSizeCodesForFormatCode(selectedFilmFormatCode.value)];
 });
+
+const isFormFieldDisabled = computed(() => !createForm.filmFormatId || !createForm.deviceTypeCode);
+
+const isFrameSizeDisabled = computed(() =>
+  isFormFieldDisabled.value ||
+  (createForm.deviceTypeCode === 'camera' && createForm.loadMode !== 'direct')
+);
 
 const routeTypeFilter = computed(() => {
   const value = route.meta.deviceTypeFilter;
@@ -129,6 +137,7 @@ function resetCreateForm(): void {
   createForm.deviceTypeCode = 'camera';
   createForm.filmFormatId = null;
   createForm.frameSize = FRAME_SIZE_CODES[0];
+  createForm.loadMode = 'direct';
   createForm.make = '';
   createForm.model = '';
   createForm.name = '';
@@ -163,16 +172,16 @@ async function submitCreate(): Promise<void> {
   }
 
   const deviceType = referenceStore.deviceTypes.find((type) => type.code === createForm.deviceTypeCode);
-  if (!deviceType || !createForm.filmFormatId) {
-    feedback.error('Select device type and film format.');
+  if (!deviceType) {
+    feedback.error('Select a device type.');
     return;
   }
 
   let payload: CreateFilmDeviceRequest;
 
   if (createForm.deviceTypeCode === 'camera') {
-    if (!createForm.make.trim() || !createForm.model.trim()) {
-      feedback.error('Camera make and model are required.');
+    if (!createForm.make.trim() || !createForm.model.trim() || !createForm.filmFormatId) {
+      feedback.error('Make, model, and format are required.');
       return;
     }
 
@@ -180,15 +189,15 @@ async function submitCreate(): Promise<void> {
       deviceTypeCode: 'camera',
       deviceTypeId: deviceType.id,
       filmFormatId: createForm.filmFormatId,
-      frameSize: createForm.frameSize as CreateFilmDeviceRequest['frameSize'],
+      frameSize: createForm.loadMode === 'direct' ? createForm.frameSize as CreateFilmDeviceRequest['frameSize'] : 'full_frame',
       make: createForm.make.trim(),
       model: createForm.model.trim(),
       canUnload: true,
-      loadMode: 'direct'
+      loadMode: createForm.loadMode
     };
   } else if (createForm.deviceTypeCode === 'interchangeable_back') {
-    if (!createForm.name.trim() || !createForm.system.trim()) {
-      feedback.error('Name and system are required.');
+    if (!createForm.name.trim() || !createForm.system.trim() || !createForm.filmFormatId) {
+      feedback.error('Name, system, and format are required.');
       return;
     }
 
@@ -201,8 +210,8 @@ async function submitCreate(): Promise<void> {
       system: createForm.system.trim()
     };
   } else {
-    if (!createForm.name.trim() || !createForm.brand.trim() || !createForm.holderTypeId) {
-      feedback.error('Film holder name, brand, and holder type are required.');
+    if (!createForm.name.trim() || !createForm.brand.trim() || !createForm.holderTypeId || !createForm.filmFormatId) {
+      feedback.error('Holder name, brand, holder type, and format are required.');
       return;
     }
 
@@ -293,26 +302,28 @@ onMounted(async () => {
               :options="filmFormatOptions"
               label="Film format"
             />
-            <q-select v-model="createForm.frameSize" filled :options="frameSizeOptions" label="Frame size" />
+            <q-select v-model="createForm.frameSize" filled :options="frameSizeOptions" label="Frame size" :disable="isFrameSizeDisabled" />
 
             <template v-if="createForm.deviceTypeCode === 'camera'">
-              <q-input v-model="createForm.make" filled label="Make" />
-              <q-input v-model="createForm.model" filled label="Model" />
+              <q-toggle v-model="createForm.loadMode" true-value="direct" false-value="interchangeable_back" label="Is this camera directly loadable?" :disable="isFormFieldDisabled" />
+              <q-input v-model="createForm.make" filled label="Make" :disable="isFormFieldDisabled" />
+              <q-input v-model="createForm.model" filled label="Model" :disable="isFormFieldDisabled" />
             </template>
 
             <template v-else-if="createForm.deviceTypeCode === 'interchangeable_back'">
-              <q-input v-model="createForm.name" filled label="Name" />
-              <q-input v-model="createForm.system" filled label="System" />
+              <q-input v-model="createForm.name" filled label="Name" :disable="isFormFieldDisabled" />
+              <q-input v-model="createForm.system" filled label="System" :disable="isFormFieldDisabled" />
             </template>
 
             <template v-else>
-              <q-input v-model="createForm.name" filled label="Holder name" />
-              <q-input v-model="createForm.brand" filled label="Brand" />
+              <q-input v-model="createForm.name" filled label="Holder name" :disable="isFormFieldDisabled" />
+              <q-input v-model="createForm.brand" filled label="Brand" :disable="isFormFieldDisabled" />
               <q-select
                 v-model="createForm.slotCount"
                 filled
                 :options="[1, 2]"
                 label="Slot count"
+                :disable="isFormFieldDisabled"
               />
               <q-select
                 v-model="createForm.holderTypeId"
@@ -321,6 +332,7 @@ onMounted(async () => {
                 map-options
                 :options="holderTypeOptions"
                 label="Holder type"
+                :disable="isFormFieldDisabled"
               />
             </template>
           </q-form>

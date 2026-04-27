@@ -50,6 +50,9 @@ frollz-ui/coverage
 **/*.sqlite
 **/*/.env
 
+# ── playwright-bdd generated test wrappers (generated at runtime) ──────
+**/.features-gen/
+
 
 report.html
 apps/api/src/infrastructure/migrations/.snapshot-frollz2.sqlite.json
@@ -69,3 +72,6 @@ apps/ui/.quasar
 
 # -- Vue Router auto-generated types ---
 apps/ui/src/typed-router.d.ts
+apps/ui/test-results/
+
+apps/api/src/infrastructure/migrations/.snapshot-memory.json

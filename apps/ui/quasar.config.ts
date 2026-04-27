@@ -19,7 +19,7 @@ export default configure((ctx: any) => {
     devServer: {
       proxy: {
         '/api': {
-          target: 'http://localhost:3000',
+          target: process.env['API_TARGET'] ?? 'http://localhost:3000',
           changeOrigin: true
         }
       }

@@ -226,17 +226,20 @@ export async function seedDatabase(orm: MikroORM, options: { skipMigrations?: bo
     }
   }
 
-  const shouldSeedDemoUser = process.env['SEED_DEMO_USER'] === 'true';
+  const shouldSeedDemoUser = process.env['SEED_DEMO_USER'] === 'true' || process.env['SEED_TEST_USER'] === 'true';
+  const testUserEmail = (process.env['TEST_USER_EMAIL'] ?? 'demo@example.com').toLowerCase().trim();
+  const testUserName = process.env['TEST_USER_NAME'] ?? 'Demo User';
+  const testUserPassword = process.env['TEST_USER_PASSWORD'] ?? 'password123';
 
   if (shouldSeedDemoUser) {
-    const existingUser = await em.findOne(UserEntity, { email: 'demo@example.com' });
+    const existingUser = await em.findOne(UserEntity, { email: testUserEmail });
 
     if (!existingUser) {
       em.persist(
         em.create(UserEntity, {
-          email: 'demo@example.com',
-          name: 'Demo User',
-          passwordHash: await bcrypt.hash('password123', 12),
+          email: testUserEmail,
+          name: testUserName,
+          passwordHash: await bcrypt.hash(testUserPassword, 12),
           createdAt: new Date().toISOString()
         })
       );
