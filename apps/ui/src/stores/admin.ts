@@ -8,6 +8,7 @@ export const useAdminStore = defineStore('admin', () => {
   const { request } = useApi();
   const isExporting = ref(false);
   const isImporting = ref(false);
+  const importDataFile = ref<File | null>(null);
   const exportError = ref<string | null>(null);
   const importError = ref<string | null>(null);
 
@@ -41,13 +42,18 @@ export const useAdminStore = defineStore('admin', () => {
     }
   }
 
-  async function importData(_file: File): Promise<void> {
+  async function importData(file: File): Promise<void> {
     isImporting.value = true;
     importError.value = null;
-
     try {
-      // For now, just throw an error - import is not yet implemented
-      throw new Error('Import functionality not yet implemented');
+      const response = await request('/api/v1/admin/import', {
+        method: 'POST',
+        body: file
+      });
+
+      if (!response.ok) {
+        throw new Error(await readApiData(response));
+      }
     } catch (error) {
       importError.value = error instanceof Error ? error.message : 'Failed to import data';
       throw error;
@@ -62,6 +68,7 @@ export const useAdminStore = defineStore('admin', () => {
     exportError,
     importError,
     exportData,
-    importData
+    importData,
+    importDataFile
   };
 });

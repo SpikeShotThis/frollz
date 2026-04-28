@@ -35,7 +35,6 @@ export class AdminController {
     if (user.email !== body.user.email) {
       throw new DomainError('FORBIDDEN', 'You can only import data for your own user account');
     }
-
-    throw new DomainError('NOT_IMPLEMENTED', 'Import functionality not yet implemented');
+    this.adminService.importUserData(user.userId, body);
   }
 }

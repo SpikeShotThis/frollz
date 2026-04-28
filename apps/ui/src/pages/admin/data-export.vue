@@ -15,7 +15,15 @@ async function handleExport() {
 }
 
 function handleImport() {
-  feedback.info('Import functionality coming soon');
+  try {
+    if (!adminStore.importDataFile) {
+      feedback.error('Please select a file to import');
+      return;
+    }
+    adminStore.importData(adminStore.importDataFile);
+  } catch (error) {
+    feedback.error(feedback.toErrorMessage(error, 'Failed to import data'));
+  }
 }
 </script>
 
@@ -73,13 +81,8 @@ function handleImport() {
           <q-separator />
 
           <q-card-actions align="right">
-            <q-btn
-              color="primary"
-              label="Export Data"
-              icon="cloud_download"
-              :loading="adminStore.isExporting"
-              @click="handleExport"
-            />
+            <q-btn color="primary" label="Export Data" icon="cloud_download" :loading="adminStore.isExporting"
+              @click="handleExport" />
           </q-card-actions>
         </q-card>
       </div>
@@ -100,25 +103,15 @@ function handleImport() {
             <p class="text-body2 q-mb-md">
               Restore your film tracking data from a previously exported JSON file.
             </p>
-            <q-banner class="bg-orange-1 text-warning" rounded dense>
-              <template #avatar>
-                <q-icon name="info" />
-              </template>
-              Import functionality is not yet implemented. Coming soon!
-            </q-banner>
+            <q-file v-model="adminStore.importDataFile" label="Chose a file to upload" accept=".json"
+              @rejected="adminStore.importError" />
           </q-card-section>
 
           <q-separator />
 
           <q-card-actions align="right">
-            <q-btn
-              color="secondary"
-              label="Import Data"
-              icon="cloud_upload"
-              :loading="adminStore.isImporting"
-              :disable="true"
-              @click="handleImport"
-            />
+            <q-btn color="secondary" label="Import Data" icon="cloud_upload" :loading="adminStore.isImporting"
+              :disable="!adminStore.importDataFile || adminStore.isImporting" @click="handleImport" />
           </q-card-actions>
         </q-card>
       </div>
