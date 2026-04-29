@@ -1,4 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
+import type { CreateEmulsionRequest } from '@frollz2/schema';
 import { ReferenceRepository } from '../../infrastructure/repositories/reference.repository.js';
 
 @Injectable()
@@ -47,5 +48,9 @@ export class ReferenceService {
 
   findEmulsionById(id: number) {
     return this.referenceRepository.findEmulsionById(id);
+  }
+
+  createEmulsion(input: CreateEmulsionRequest) {
+    return this.referenceRepository.createEmulsion(input);
   }
 }

@@ -1,4 +1,5 @@
 import type {
+  CreateEmulsionRequest,
   DevelopmentProcess,
   Emulsion,
   FilmFormat,
@@ -24,4 +25,5 @@ export abstract class ReferenceRepository {
   abstract listHolderTypes(): Promise<HolderType[]>;
   abstract listEmulsions(): Promise<Emulsion[]>;
   abstract findEmulsionById(id: number): Promise<Emulsion | null>;
+  abstract createEmulsion(input: CreateEmulsionRequest): Promise<Emulsion>;
 }

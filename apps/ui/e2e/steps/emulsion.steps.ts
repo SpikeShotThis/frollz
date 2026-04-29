@@ -41,3 +41,13 @@ Then('I see emulsion row {string}', async ({ page }, text: string) => {
 Then('I see emulsion detail process containing {string}', async ({ page }, processText: string) => {
   await expect(page.getByTestId('emulsion-detail-process-value')).toContainText(processText);
 });
+
+When('I try to submit an emulsion with missing required fields', async ({ page }) => {
+  await page.goto('/emulsions');
+  await page.getByRole('button', { name: /add emulsion/i }).click();
+  await page.getByRole('button', { name: /^create$/i }).click();
+});
+
+Then('I see an emulsion form validation message containing {string}', async ({ page }, message: string) => {
+  await expect(page.getByText(message, { exact: false })).toBeVisible();
+});

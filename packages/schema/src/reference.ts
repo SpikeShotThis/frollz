@@ -70,6 +70,14 @@ export const emulsionSchema = z.object({
   filmFormats: z.array(filmFormatSchema)
 });
 
+export const createEmulsionRequestSchema = z.object({
+  brand: z.string().min(1),
+  manufacturer: z.string().min(1),
+  isoSpeed: z.number().int().positive(),
+  developmentProcessId: idSchema,
+  filmFormatIds: z.array(idSchema).min(1)
+});
+
 export const referenceTablesSchema = z.object({
   filmFormats: z.array(filmFormatSchema),
   developmentProcesses: z.array(developmentProcessSchema),
@@ -91,4 +99,5 @@ export type SlotState = z.infer<typeof slotStateSchema>;
 export type DeviceType = z.infer<typeof deviceTypeSchema>;
 export type HolderType = z.infer<typeof holderTypeSchema>;
 export type Emulsion = z.infer<typeof emulsionSchema>;
+export type CreateEmulsionRequest = z.infer<typeof createEmulsionRequestSchema>;
 export type ReferenceTables = z.infer<typeof referenceTablesSchema>;

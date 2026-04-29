@@ -3,11 +3,13 @@
 import { computed, onMounted, ref } from 'vue';
 import { useRoute } from 'vue-router';
 import type { Emulsion } from '@frollz2/schema';
+import CreateEmulsionDialog from '../../components/CreateEmulsionDialog.vue';
 import { useReferenceStore } from '../../stores/reference.js';
 
 const route = useRoute();
 const referenceStore = useReferenceStore();
 const search = ref<string | null>('');
+const isCreateDialogOpen = ref(false);
 
 const processFilterCode = computed(() => {
   const value = route.meta.developmentProcessFilter;
@@ -73,7 +75,10 @@ onMounted(async () => {
         <div class="text-h5">Emulsions</div>
         <div class="text-subtitle2 text-grey-7">Reference library filtered by process and search.</div>
       </div>
-      <q-btn color="primary" label="Refresh" @click="referenceStore.loadAll" />
+      <div class="row q-gutter-sm">
+        <q-btn color="primary" label="Add emulsion" @click="isCreateDialogOpen = true" />
+        <q-btn flat color="primary" label="Refresh" @click="referenceStore.loadAll(true)" />
+      </div>
     </div>
 
     <q-input v-model="search" filled label="Search emulsions" clearable />
@@ -87,5 +92,7 @@ onMounted(async () => {
         </q-td>
       </template>
     </q-table>
+
+    <CreateEmulsionDialog v-model="isCreateDialogOpen" @created="referenceStore.loadAll(true)" />
   </q-page>
 </template>

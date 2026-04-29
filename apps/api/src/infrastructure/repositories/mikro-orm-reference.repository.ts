@@ -1,6 +1,8 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { EntityManager } from '@mikro-orm/core';
+import { EntityManager, UniqueConstraintViolationException } from '@mikro-orm/core';
+import type { CreateEmulsionRequest, DevelopmentProcess, FilmFormat, FilmState, HolderType, PackageType, DeviceType, SlotState, StorageLocation } from '@frollz2/schema';
 import { ReferenceRepository } from './reference.repository.js';
+import { DomainError } from '../../domain/errors.js';
 import {
   DevelopmentProcessEntity,
   EmulsionEntity,
@@ -13,7 +15,6 @@ import {
   StorageLocationEntity
 } from '../entities/index.js';
 import { mapReferenceTables, mapEmulsionEntity } from '../mappers/index.js';
-import type { DevelopmentProcess, FilmFormat, FilmState, HolderType, PackageType, DeviceType, SlotState, StorageLocation } from '@frollz2/schema';
 
 @Injectable()
 export class MikroOrmReferenceRepository extends ReferenceRepository {
@@ -130,5 +131,45 @@ export class MikroOrmReferenceRepository extends ReferenceRepository {
     const entity = await this.entityManager.findOne(EmulsionEntity, { id }, { populate: ['developmentProcess', 'filmFormats'] });
 
     return entity ? mapEmulsionEntity(entity) : null;
+  }
+
+  async createEmulsion(input: CreateEmulsionRequest) {
+    const developmentProcess = await this.entityManager.findOne(DevelopmentProcessEntity, { id: input.developmentProcessId });
+    if (!developmentProcess) {
+      throw new DomainError('NOT_FOUND', 'Development process not found');
+    }
+
+    const formats = await this.entityManager.find(FilmFormatEntity, { id: { $in: input.filmFormatIds } }, { orderBy: { id: 'asc' } });
+    if (formats.length !== new Set(input.filmFormatIds).size) {
+      throw new DomainError('NOT_FOUND', 'One or more film formats were not found');
+    }
+
+    try {
+      const entity = this.entityManager.create(EmulsionEntity, {
+        brand: input.brand.trim(),
+        manufacturer: input.manufacturer.trim(),
+        isoSpeed: input.isoSpeed,
+        developmentProcess,
+        balance: 'daylight'
+      });
+      for (const format of formats) {
+        entity.filmFormats.add(format);
+      }
+      this.entityManager.persist(entity);
+      await this.entityManager.flush();
+
+      const persisted = await this.entityManager.findOneOrFail(
+        EmulsionEntity,
+        { id: entity.id },
+        { populate: ['developmentProcess', 'filmFormats'] }
+      );
+
+      return mapEmulsionEntity(persisted);
+    } catch (error) {
+      if (error instanceof UniqueConstraintViolationException) {
+        throw new DomainError('CONFLICT', 'An emulsion with that brand, manufacturer, and ISO already exists');
+      }
+      throw error;
+    }
   }
 }

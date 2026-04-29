@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { computed, reactive, watch } from 'vue';
+import { computed, reactive, ref, watch } from 'vue';
+import type { QForm } from 'quasar';
 import { useRegleSchema } from '@regle/schemas';
 import type { FilmCreateForm } from '@frollz2/schema';
 import { filmCreateFormSchema } from '@frollz2/schema';
@@ -16,6 +17,7 @@ const emit = defineEmits<{ submit: [data: FilmCreateForm] }>();
 
 const isOpen = defineModel<boolean>({ required: true });
 const referenceStore = useReferenceStore();
+const filmCreateForm = ref<QForm | null>(null);
 
 const form = reactive({
   name: '',
@@ -100,7 +102,7 @@ async function handleSubmit(): Promise<void> {
       </q-card-section>
 
       <q-card-section>
-        <q-form class="column q-gutter-md" data-testid="film-create-form" @submit="handleSubmit">
+        <q-form ref="filmCreateForm" class="column q-gutter-md" data-testid="film-create-form" @submit="handleSubmit">
           <div data-testid="film-create-name">
             <q-input
               v-model="r$.$value.name"
@@ -164,7 +166,7 @@ async function handleSubmit(): Promise<void> {
 
       <q-card-actions align="right">
         <q-btn v-close-popup flat label="Cancel" />
-        <q-btn type="submit" color="primary" label="Create" :loading="isCreating" />
+        <q-btn color="primary" label="Create" :loading="isCreating" :disable="isCreating" @click="filmCreateForm?.submit()" />
       </q-card-actions>
     </q-card>
   </q-dialog>

@@ -17,6 +17,10 @@ Feature: Emulsion Browser
     When I open emulsion detail for "Kodak Portra"
     Then I see emulsion detail process containing "C-41"
 
+  Scenario: Emulsion form requires required fields
+    When I try to submit an emulsion with missing required fields
+    Then I see an emulsion form validation message containing "Manufacturer, brand, ISO, process, and at least one format are required"
+
   Scenario: Unauthenticated users are redirected from emulsions
     Given I am not authenticated
     When I navigate to "/emulsions"

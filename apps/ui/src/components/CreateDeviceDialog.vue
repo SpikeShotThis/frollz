@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, reactive, ref, watch } from 'vue';
+import type { QForm } from 'quasar';
 import { FRAME_SIZE_CODES, getFrameSizeCodesForFormatCode, type CreateFilmDeviceRequest } from '@frollz2/schema';
 import { useDeviceStore } from '../stores/devices.js';
 import { useReferenceStore } from '../stores/reference.js';
@@ -20,6 +21,7 @@ const deviceStore = useDeviceStore();
 const referenceStore = useReferenceStore();
 const feedback = useUiFeedback();
 const isCreating = ref(false);
+const deviceForm = ref<QForm | null>(null);
 const idempotencyKey = ref(createIdempotencyKey());
 
 const createForm = reactive({
@@ -184,7 +186,7 @@ async function submit(): Promise<void> {
       </q-card-section>
 
       <q-card-section>
-        <q-form class="column q-gutter-md" @submit="submit">
+        <q-form ref="deviceForm" class="column q-gutter-md" @submit="submit">
           <q-select
             v-model="createForm.deviceTypeCode"
             filled
@@ -252,7 +254,7 @@ async function submit(): Promise<void> {
 
       <q-card-actions align="right">
         <q-btn flat label="Cancel" @click="emit('update:modelValue', false)" />
-        <q-btn type="submit" color="primary" label="Create" :loading="isCreating" />
+        <q-btn color="primary" label="Create" :loading="isCreating" :disable="isCreating" @click="deviceForm?.submit()" />
       </q-card-actions>
     </q-card>
   </q-dialog>

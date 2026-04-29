@@ -1,8 +1,10 @@
 import { computed, ref } from 'vue';
 import { defineStore } from 'pinia';
 import {
+  createEmulsionRequestSchema,
   emulsionSchema,
   referenceTablesSchema,
+  type CreateEmulsionRequest,
   type Emulsion,
   type FilmFormat,
   type FilmState,
@@ -38,8 +40,8 @@ export const useReferenceStore = defineStore('reference', () => {
   let loadEmulsionInFlight: Promise<void> | null = null;
   let loadEmulsionInFlightId: number | null = null;
 
-  async function loadAll(): Promise<void> {
-    if (loaded.value) {
+  async function loadAll(force = false): Promise<void> {
+    if (loaded.value && !force) {
       return;
     }
 
@@ -106,6 +108,23 @@ export const useReferenceStore = defineStore('reference', () => {
     return loadEmulsionInFlight;
   }
 
+  async function createEmulsion(input: CreateEmulsionRequest, idempotencyKey?: string): Promise<Emulsion> {
+    const payload = createEmulsionRequestSchema.parse(input);
+    const init: RequestInit = {
+      method: 'POST',
+      body: JSON.stringify(payload)
+    };
+    if (idempotencyKey) {
+      init.headers = { 'idempotency-key': idempotencyKey };
+    }
+
+    const response = await request('/api/v1/reference/emulsions', init);
+    const created = emulsionSchema.parse(await readApiData(response));
+    await loadAll(true);
+
+    return created;
+  }
+
   return {
     filmFormats,
     developmentProcesses,
@@ -124,6 +143,7 @@ export const useReferenceStore = defineStore('reference', () => {
     emulsionDetailError,
     loadAll,
     loadEmulsion,
+    createEmulsion,
     packageTypesByFormat
   };
 });
