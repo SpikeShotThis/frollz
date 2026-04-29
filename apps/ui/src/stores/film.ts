@@ -128,7 +128,11 @@ export const useFilmStore = defineStore('film', () => {
 
     const response = await request('/api/v1/film/lots', init);
     filmLotDetailSchema.parse(await readApiData(response));
-    await loadFilms();
+    try {
+      await loadFilms();
+    } catch {
+      // Preserve create success; list refresh can be retried by caller/page lifecycle.
+    }
   }
 
   async function updateFilm(id: number, input: FilmUpdateRequest): Promise<void> {
@@ -136,8 +140,18 @@ export const useFilmStore = defineStore('film', () => {
       method: 'PATCH',
       body: JSON.stringify(input)
     });
-    filmSummarySchema.parse(await readApiData(response));
-    await loadFilms();
+    const updated = filmSummarySchema.parse(await readApiData(response));
+    try {
+      await loadFilms();
+    } catch {
+      films.value = films.value.map((item) => (item.id === id ? updated : item));
+      if (currentFilm.value?.id === id) {
+        currentFilm.value = {
+          ...currentFilm.value,
+          ...updated
+        };
+      }
+    }
   }
 
   async function addEvent(id: number, input: CreateFilmJourneyEventRequest, idempotencyKey?: string): Promise<void> {
@@ -150,8 +164,12 @@ export const useFilmStore = defineStore('film', () => {
     }
 
     const response = await request(`/api/v1/film/${id}/events`, init);
-    filmJourneyEventSchema.parse(await readApiData(response));
-    await loadFilm(id);
+    const created = filmJourneyEventSchema.parse(await readApiData(response));
+    try {
+      await loadFilm(id);
+    } catch {
+      currentEvents.value = [...currentEvents.value, created];
+    }
   }
 
   async function addFrameEvent(
@@ -169,8 +187,12 @@ export const useFilmStore = defineStore('film', () => {
     }
 
     const response = await request(`/api/v1/film/${id}/frames/${frameId}/events`, init);
-    frameJourneyEventSchema.parse(await readApiData(response));
-    await loadFilm(id);
+    const created = frameJourneyEventSchema.parse(await readApiData(response));
+    try {
+      await loadFilm(id);
+    } catch {
+      currentFrameEvents.value = [...currentFrameEvents.value, created];
+    }
   }
 
   return {

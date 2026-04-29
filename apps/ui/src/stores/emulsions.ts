@@ -91,7 +91,14 @@ export const useEmulsionStore = defineStore('emulsions', () => {
 
     const response = await request('/api/v1/emulsions', init);
     const created = emulsionSchema.parse(await readApiData(response));
-    await loadAll(true);
+    try {
+      await loadAll(true);
+    } catch {
+      const existing = emulsions.value.some((item) => item.id === created.id);
+      if (!existing) {
+        emulsions.value = [...emulsions.value, created];
+      }
+    }
 
     return created;
   }
@@ -104,7 +111,11 @@ export const useEmulsionStore = defineStore('emulsions', () => {
     });
     const updated = emulsionSchema.parse(await readApiData(response));
     currentEmulsion.value = updated;
-    await loadAll(true);
+    try {
+      await loadAll(true);
+    } catch {
+      emulsions.value = emulsions.value.map((item) => (item.id === id ? updated : item));
+    }
     return updated;
   }
 
@@ -113,7 +124,11 @@ export const useEmulsionStore = defineStore('emulsions', () => {
     if (currentEmulsion.value?.id === id) {
       currentEmulsion.value = null;
     }
-    await loadAll(true);
+    try {
+      await loadAll(true);
+    } catch {
+      emulsions.value = emulsions.value.filter((item) => item.id !== id);
+    }
   }
 
   return {

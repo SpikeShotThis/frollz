@@ -97,8 +97,16 @@ export const useDeviceStore = defineStore('device', () => {
     }
 
     const response = await request('/api/v1/devices', init);
-    currentDevice.value = filmDeviceSchema.parse(await readApiData(response));
-    await loadDevices();
+    const created = filmDeviceSchema.parse(await readApiData(response));
+    currentDevice.value = created;
+    try {
+      await loadDevices();
+    } catch {
+      const existing = devices.value.some((item) => item.id === created.id);
+      if (!existing) {
+        devices.value = [...devices.value, created];
+      }
+    }
   }
 
   async function updateDevice(id: number, input: UpdateFilmDeviceRequest): Promise<void> {
@@ -106,8 +114,13 @@ export const useDeviceStore = defineStore('device', () => {
       method: 'PATCH',
       body: JSON.stringify(input)
     });
-    currentDevice.value = filmDeviceSchema.parse(await readApiData(response));
-    await loadDevices();
+    const updated = filmDeviceSchema.parse(await readApiData(response));
+    currentDevice.value = updated;
+    try {
+      await loadDevices();
+    } catch {
+      devices.value = devices.value.map((item) => (item.id === id ? updated : item));
+    }
   }
 
   async function deleteDevice(id: number): Promise<void> {
@@ -115,7 +128,11 @@ export const useDeviceStore = defineStore('device', () => {
     currentDevice.value = null;
     currentSlots.value = [];
     currentLoadEvents.value = [];
-    await loadDevices();
+    try {
+      await loadDevices();
+    } catch {
+      devices.value = devices.value.filter((item) => item.id !== id);
+    }
   }
 
   return {
