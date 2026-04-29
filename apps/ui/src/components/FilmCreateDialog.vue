@@ -6,6 +6,7 @@ import type { FilmCreateForm } from '@frollz2/schema';
 import { filmCreateFormSchema } from '@frollz2/schema';
 import { useReferenceStore } from '../stores/reference.js';
 import { useEmulsionStore } from '../stores/emulsions.js';
+import { useFilmSuppliersStore } from '../stores/film-suppliers.js';
 
 interface Props {
   isFormatLocked?: boolean;
@@ -19,6 +20,7 @@ const emit = defineEmits<{ submit: [data: FilmCreateForm] }>();
 const isOpen = defineModel<boolean>({ required: true });
 const referenceStore = useReferenceStore();
 const emulsionStore = useEmulsionStore();
+const filmSuppliersStore = useFilmSuppliersStore();
 const filmCreateForm = ref<QForm | null>(null);
 
 const form = reactive({
@@ -27,6 +29,14 @@ const form = reactive({
   filmFormatId: undefined as number | undefined,
   packageTypeId: undefined as number | undefined,
   expirationDate: undefined as string | undefined,
+  supplierId: undefined as number | undefined,
+  supplierName: '' as string,
+  purchaseChannel: '' as string,
+  purchasePrice: undefined as number | undefined,
+  purchaseCurrencyCode: 'USD' as string,
+  orderRef: '' as string,
+  obtainedDate: undefined as string | undefined,
+  rating: undefined as number | undefined
 });
 
 const { r$ } = useRegleSchema(form, filmCreateFormSchema);
@@ -58,6 +68,15 @@ const packageTypeOptions = computed(() => {
     value: pkg.id,
   }));
 });
+const supplierOptions = computed(() =>
+  filmSuppliersStore.filmSuppliers.map((supplier) => ({ label: supplier.name, value: supplier.id }))
+);
+const ratingModel = computed({
+  get: () => r$.$value.rating ?? 0,
+  set: (value: number) => {
+    r$.$value.rating = value > 0 ? value : undefined;
+  },
+});
 
 const isEmulsionDisabled = computed(() => form.filmFormatId === null);
 const isPackageDisabled = computed(() => form.filmFormatId === null);
@@ -75,11 +94,20 @@ watch(
   async (newVal) => {
     if (newVal) {
       await Promise.allSettled([referenceStore.loadAll(), emulsionStore.loadAll()]);
+      await filmSuppliersStore.loadFilmSuppliers();
       form.name = '';
       form.emulsionId = undefined;
       form.filmFormatId = undefined;
       form.packageTypeId = undefined;
       form.expirationDate = undefined;
+      form.supplierId = undefined;
+      form.supplierName = '';
+      form.purchaseChannel = '';
+      form.purchasePrice = undefined;
+      form.purchaseCurrencyCode = 'USD';
+      form.orderRef = '';
+      form.obtainedDate = undefined;
+      form.rating = undefined;
       const filters = props.lockedFormatFilters ?? [];
       if (props.isFormatLocked && filters.length === 1) {
         const lockedCode = filters[0];
@@ -164,6 +192,26 @@ async function handleSubmit(): Promise<void> {
               :error-message="r$.expirationDate?.$errors[0]"
             />
           </div>
+          <q-select
+            v-model="r$.$value.supplierId"
+            filled
+            emit-value
+            map-options
+            clearable
+            :options="supplierOptions"
+            label="Supplier (existing, optional)"
+          />
+          <q-input
+            v-model="r$.$value.supplierName"
+            filled
+            label="Supplier name (optional, if not selected)"
+          />
+          <q-input v-model="r$.$value.purchaseChannel" filled label="Purchase channel (optional)" />
+          <q-input v-model.number="r$.$value.purchasePrice" filled type="number" min="0" step="0.01" label="Purchase price (optional)" />
+          <q-input v-model="r$.$value.purchaseCurrencyCode" filled label="Currency code (optional, e.g. USD)" />
+          <q-input v-model="r$.$value.orderRef" filled label="Order reference (optional)" />
+          <q-input v-model="r$.$value.obtainedDate" filled type="date" label="Obtained date (optional)" />
+          <q-rating v-model="ratingModel" :max="5" size="20px" color="amber" />
         </q-form>
       </q-card-section>
 

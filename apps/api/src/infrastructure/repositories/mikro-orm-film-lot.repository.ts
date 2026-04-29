@@ -15,7 +15,7 @@ export class MikroOrmFilmLotRepository extends FilmLotRepository {
     const lots = await this.entityManager.find(
       FilmLotEntity,
       { user: userId },
-      { populate: ['user', 'emulsion', 'emulsion.developmentProcess', 'emulsion.filmFormats', 'packageType', 'packageType.filmFormat', 'filmFormat'] }
+      { populate: ['user', 'supplier', 'emulsion', 'emulsion.developmentProcess', 'emulsion.filmFormats', 'packageType', 'packageType.filmFormat', 'filmFormat'] }
     );
 
     const filmCounts = await Promise.all(
@@ -29,7 +29,7 @@ export class MikroOrmFilmLotRepository extends FilmLotRepository {
     const lot = await this.entityManager.findOne(
       FilmLotEntity,
       { id: lotId, user: userId },
-      { populate: ['user', 'emulsion', 'emulsion.developmentProcess', 'emulsion.filmFormats', 'packageType', 'packageType.filmFormat', 'filmFormat'] }
+      { populate: ['user', 'supplier', 'emulsion', 'emulsion.developmentProcess', 'emulsion.filmFormats', 'packageType', 'packageType.filmFormat', 'filmFormat'] }
     );
 
     if (!lot) {

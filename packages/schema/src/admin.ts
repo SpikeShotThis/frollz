@@ -11,6 +11,7 @@ import {
   deviceMountSchema
 } from './film.js';
 import { filmLabSchema } from './film-lab.js';
+import { filmSupplierSchema } from './film-supplier.js';
 
 /**
  * Export data schema - complete user data snapshot
@@ -20,6 +21,7 @@ export const exportDataSchema = z.object({
   exportedAt: isoDateTimeSchema,
   user: currentUserSchema.pick({ email: true, name: true }),
   filmLabs: z.array(filmLabSchema),
+  filmSuppliers: z.array(filmSupplierSchema),
   devices: z.array(filmDeviceSchema),
   filmLots: z.array(filmLotSummarySchema),
   films: z.array(filmSummarySchema),

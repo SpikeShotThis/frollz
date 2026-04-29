@@ -628,6 +628,83 @@ describe('API integration', () => {
     expect(conflictResponse.statusCode).toBe(409);
   });
 
+  it('allows exposed after a backdated loaded event', async () => {
+    const email = `backdated-loaded-${Date.now()}@example.com`;
+    const tokens = await registerUser(email);
+    const authHeaders = { authorization: `Bearer ${tokens.accessToken}` };
+    const refs = await loadCoreReferenceData(authHeaders);
+
+    const deviceCreateResponse = await harness.app.inject({
+      method: 'POST',
+      url: '/api/v1/devices',
+      headers: { ...authHeaders, 'content-type': 'application/json' },
+      payload: {
+        deviceTypeCode: 'film_holder',
+        deviceTypeId: refs.deviceType.id,
+        filmFormatId: refs.filmFormat.id,
+        frameSize: 'full_frame',
+        name: 'Backdated Test Holder',
+        brand: 'Hasselblad',
+        holderTypeId: refs.holderType.id
+      }
+    });
+    expect(deviceCreateResponse.statusCode).toBe(201);
+    const device = filmDeviceSchema.parse(deviceCreateResponse.json());
+
+    const createdFilm = await createFilmForUser(authHeaders, 'Backdated loaded film');
+    const filmUnitId = await getFirstAvailableFilmFrameId(authHeaders, createdFilm.film.id);
+    const now = new Date();
+
+    const storedResponse = await harness.app.inject({
+      method: 'POST',
+      url: `/api/v1/film/${createdFilm.film.id}/events`,
+      headers: { ...authHeaders, 'content-type': 'application/json' },
+      payload: {
+        filmStateCode: 'stored',
+        occurredAt: now.toISOString(),
+        eventData: {
+          storageLocationId: refs.refrigerator.id,
+          storageLocationCode: refs.refrigerator.code
+        }
+      }
+    });
+    expect(storedResponse.statusCode).toBe(201);
+
+    const loadedOccurredAt = new Date(now.getTime() - 60 * 60 * 1000).toISOString();
+    const loadedResponse = await harness.app.inject({
+      method: 'POST',
+      url: `/api/v1/film/${createdFilm.film.id}/events`,
+      headers: { ...authHeaders, 'content-type': 'application/json' },
+      payload: {
+        filmStateCode: 'loaded',
+        occurredAt: loadedOccurredAt,
+        eventData: {
+          loadTargetType: 'film_holder_slot',
+          filmUnitId,
+          filmHolderId: device.id,
+          slotNumber: 1,
+          intendedPushPull: null
+        }
+      }
+    });
+    expect(loadedResponse.statusCode).toBe(201);
+
+    const exposedResponse = await harness.app.inject({
+      method: 'POST',
+      url: `/api/v1/film/${createdFilm.film.id}/events`,
+      headers: { ...authHeaders, 'content-type': 'application/json' },
+      payload: {
+        filmStateCode: 'exposed',
+        occurredAt: now.toISOString(),
+        eventData: {}
+      }
+    });
+
+    expect(exposedResponse.statusCode).toBe(201);
+    const exposedEvent = filmJourneyEventSchema.parse(exposedResponse.json());
+    expect(exposedEvent.filmStateCode).toBe('exposed');
+  });
+
   it('replays create device responses for the same idempotency key without duplicating rows', async () => {
     const email = `idempotent-${Date.now()}@example.com`;
     const tokens = await registerUser(email);

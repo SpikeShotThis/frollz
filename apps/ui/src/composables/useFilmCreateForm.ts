@@ -41,6 +41,8 @@ export function useFilmCreateForm() {
         expirationDate: data.expirationDate
           ? new Date(`${data.expirationDate}T00:00:00.000Z`).toISOString()
           : null,
+        supplierId: data.supplierId,
+        supplierName: data.supplierName?.trim() || undefined
       };
       await filmStore.createFilm(payload, idempotencyKey.value);
       feedback.success('Film created.');

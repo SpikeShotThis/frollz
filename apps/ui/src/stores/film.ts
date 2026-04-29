@@ -55,6 +55,9 @@ export const useFilmStore = defineStore('film', () => {
     if (query.emulsionId) {
       searchParams.set('emulsionId', String(query.emulsionId));
     }
+    if (query.supplierId) {
+      searchParams.set('supplierId', String(query.supplierId));
+    }
 
     isLoading.value = true;
     filmsError.value = null;
@@ -116,6 +119,8 @@ export const useFilmStore = defineStore('film', () => {
       filmFormatId: input.filmFormatId,
       quantity: 1,
       expirationDate: input.expirationDate,
+      supplierId: input.supplierId,
+      supplierName: input.supplierName,
       films: [{ name: input.name }]
     };
     const init: RequestInit = {
