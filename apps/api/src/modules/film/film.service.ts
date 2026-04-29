@@ -102,7 +102,6 @@ export class FilmService {
           quantity: input.quantity,
           expirationDate: input.expirationDate ?? null,
           supplier: supplier ? em.getReference(FilmSupplierEntity, supplier.id) : null,
-          supplierName: supplier?.name ?? this.sanitizeOptionalText(input.supplierName),
           purchaseChannel: this.sanitizeOptionalText(input.purchaseChannel),
           purchasePrice: input.purchasePrice ?? null,
           purchaseCurrencyCode: this.normalizeCurrencyCode(input.purchaseCurrencyCode),
@@ -378,7 +377,7 @@ export class FilmService {
     return entityManager.findOne(
       FilmJourneyEventEntity,
       { film: filmId, user: userId },
-      { orderBy: { occurredAt: 'desc', id: 'desc' }, populate: ['film', 'user', 'filmState'] }
+      { orderBy: { recordedAt: 'desc', id: 'desc' }, populate: ['film', 'user', 'filmState'] }
     );
   }
 
@@ -756,7 +755,7 @@ export class FilmService {
     return entityManager.findOne(
       FilmJourneyEventEntity,
       { film: filmId, user: userId, filmState: { code: filmStateCode } },
-      { orderBy: { occurredAt: 'desc', id: 'desc' }, populate: ['film', 'user', 'filmState'] }
+      { orderBy: { recordedAt: 'desc', id: 'desc' }, populate: ['film', 'user', 'filmState'] }
     );
   }
 
@@ -904,25 +903,33 @@ export class FilmService {
   }
 
   private async resolveSupplierForLot(userId: number, supplierId?: number, supplierName?: string) {
+    const normalizedSupplierName = supplierName?.trim() ?? '';
+
     if (supplierId) {
       const supplier = await this.filmSupplierRepository.findById(userId, supplierId);
       if (!supplier) {
         throw new DomainError('NOT_FOUND', 'Film supplier not found');
       }
+
+      if (normalizedSupplierName.length > 0) {
+        const byName = await this.filmSupplierRepository.findByName(userId, normalizedSupplierName);
+        if (!byName || byName.id !== supplier.id) {
+          throw new DomainError('DOMAIN_ERROR', 'Supplier ID does not match the provided supplier name');
+        }
+      }
+
       return supplier;
     }
 
-    const sanitizedName = this.sanitizeOptionalText(supplierName);
-    if (!sanitizedName) {
-      return null;
+    if (normalizedSupplierName.length > 0) {
+      const byName = await this.filmSupplierRepository.findByName(userId, normalizedSupplierName);
+      if (byName) {
+        throw new DomainError('DOMAIN_ERROR', 'Supplier name matches an existing supplier; pass supplierId instead');
+      }
+      throw new DomainError('DOMAIN_ERROR', 'Supplier name provided without supplierId. Create supplier first and pass supplierId.');
     }
 
-    const existing = await this.filmSupplierRepository.findByName(userId, sanitizedName);
-    if (existing) {
-      return existing;
-    }
-
-    return this.filmSupplierRepository.create(userId, { name: sanitizedName });
+    return null;
   }
 
   private sanitizeOptionalText(value?: string | null): string | null {

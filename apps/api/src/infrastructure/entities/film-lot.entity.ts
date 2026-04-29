@@ -27,9 +27,6 @@ export class FilmLotEntity extends AutoIncrementEntity {
   @ManyToOne(() => FilmSupplierEntity, { fieldName: 'supplier_id', nullable: true })
   supplier!: FilmSupplierEntity | null;
 
-  @Property({ type: 'text', nullable: true, fieldName: 'supplier_name' })
-  supplierName!: string | null;
-
   @Property({ type: 'text', nullable: true, fieldName: 'purchase_channel' })
   purchaseChannel!: string | null;
 

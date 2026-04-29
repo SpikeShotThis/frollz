@@ -9,7 +9,6 @@ export class Migration20260429150000 extends Migration {
     this.addSql('create unique index "film_supplier_user_normalized_name_unique" on "film_supplier" ("user_id", "normalized_name");');
 
     this.addSql('alter table "film_lot" add column "supplier_id" int null;');
-    this.addSql('alter table "film_lot" add column "supplier_name" text null;');
     this.addSql('alter table "film_lot" add column "purchase_channel" text null;');
     this.addSql('alter table "film_lot" add column "purchase_price" real null;');
     this.addSql('alter table "film_lot" add column "purchase_currency_code" text null;');
@@ -25,7 +24,6 @@ export class Migration20260429150000 extends Migration {
     this.addSql('alter table "film_lot" drop constraint if exists "film_lot_supplier_id_foreign";');
     this.addSql('drop index if exists "film_lot_supplier_id_index";');
     this.addSql('alter table "film_lot" drop column "supplier_id";');
-    this.addSql('alter table "film_lot" drop column "supplier_name";');
     this.addSql('alter table "film_lot" drop column "purchase_channel";');
     this.addSql('alter table "film_lot" drop column "purchase_price";');
     this.addSql('alter table "film_lot" drop column "purchase_currency_code";');

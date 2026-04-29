@@ -121,12 +121,6 @@ export const useFilmStore = defineStore('film', () => {
       expirationDate: input.expirationDate,
       supplierId: input.supplierId,
       supplierName: input.supplierName,
-      purchaseChannel: input.purchaseChannel,
-      purchasePrice: input.purchasePrice,
-      purchaseCurrencyCode: input.purchaseCurrencyCode,
-      orderRef: input.orderRef,
-      obtainedDate: input.obtainedDate,
-      rating: input.rating,
       films: [{ name: input.name }]
     };
     const init: RequestInit = {

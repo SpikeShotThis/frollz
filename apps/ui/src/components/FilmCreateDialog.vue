@@ -71,6 +71,12 @@ const packageTypeOptions = computed(() => {
 const supplierOptions = computed(() =>
   filmSuppliersStore.filmSuppliers.map((supplier) => ({ label: supplier.name, value: supplier.id }))
 );
+const ratingModel = computed({
+  get: () => r$.$value.rating ?? 0,
+  set: (value: number) => {
+    r$.$value.rating = value > 0 ? value : undefined;
+  },
+});
 
 const isEmulsionDisabled = computed(() => form.filmFormatId === null);
 const isPackageDisabled = computed(() => form.filmFormatId === null);
@@ -193,15 +199,19 @@ async function handleSubmit(): Promise<void> {
             map-options
             clearable
             :options="supplierOptions"
-            label="Supplier (optional)"
+            label="Supplier (existing, optional)"
           />
-          <q-input v-model="r$.$value.supplierName" filled label="Supplier name fallback (optional)" />
+          <q-input
+            v-model="r$.$value.supplierName"
+            filled
+            label="Supplier name (optional, if not selected)"
+          />
           <q-input v-model="r$.$value.purchaseChannel" filled label="Purchase channel (optional)" />
           <q-input v-model.number="r$.$value.purchasePrice" filled type="number" min="0" step="0.01" label="Purchase price (optional)" />
           <q-input v-model="r$.$value.purchaseCurrencyCode" filled label="Currency code (optional, e.g. USD)" />
           <q-input v-model="r$.$value.orderRef" filled label="Order reference (optional)" />
           <q-input v-model="r$.$value.obtainedDate" filled type="date" label="Obtained date (optional)" />
-          <q-rating v-model="r$.$value.rating" :max="5" size="20px" color="amber" />
+          <q-rating v-model="ratingModel" :max="5" size="20px" color="amber" />
         </q-form>
       </q-card-section>
 

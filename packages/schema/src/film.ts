@@ -58,7 +58,6 @@ export const filmLotSummarySchema = z.object({
   quantity: z.number().int().positive(),
   expirationDate: isoDateTimeSchema.nullable(),
   supplierId: idSchema.nullable(),
-  supplierName: z.string().nullable(),
   purchaseChannel: z.string().nullable(),
   purchasePrice: z.number().nonnegative().nullable(),
   purchaseCurrencyCode: z.string().length(3).nullable(),
@@ -78,7 +77,7 @@ export const filmLotCreateRequestSchema = z.object({
   quantity: z.number().int().positive(),
   expirationDate: isoDateTimeSchema.nullable().optional(),
   supplierId: idSchema.optional(),
-  supplierName: z.string().optional(),
+  supplierName: z.string().min(1).optional(),
   purchaseChannel: z.string().optional(),
   purchasePrice: z.number().nonnegative().optional(),
   purchaseCurrencyCode: z.string().length(3).optional(),
@@ -97,7 +96,6 @@ export const filmSummarySchema = z.object({
   packageTypeId: idSchema,
   filmFormatId: idSchema,
   supplierId: idSchema.nullable(),
-  supplierName: z.string().nullable(),
   expirationDate: isoDateTimeSchema.nullable(),
   currentStateId: idSchema,
   currentStateCode: filmStateCodeSchema,
@@ -122,7 +120,7 @@ export const filmCreateRequestSchema = z.object({
   filmFormatId: idSchema,
   expirationDate: isoDateTimeSchema.nullable().optional(),
   supplierId: idSchema.optional(),
-  supplierName: z.string().optional(),
+  supplierName: z.string().min(1).optional(),
   purchaseChannel: z.string().optional(),
   purchasePrice: z.number().nonnegative().optional(),
   purchaseCurrencyCode: z.string().length(3).optional(),
@@ -133,7 +131,8 @@ export const filmCreateRequestSchema = z.object({
 
 export const filmCreateFormSchema = filmCreateRequestSchema.extend({
   expirationDate: z.string().optional(), // YYYY-MM-DD from date input; composable transforms to ISO
-  obtainedDate: z.string().optional()
+  obtainedDate: z.string().optional(),
+  supplierName: z.string().optional()
 });
 
 export const filmUpdateRequestSchema = z.object({

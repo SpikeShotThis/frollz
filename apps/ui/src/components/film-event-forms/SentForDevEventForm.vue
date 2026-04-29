@@ -4,6 +4,7 @@ import { useRegleSchema } from '@regle/schemas';
 import type { CreateFilmJourneyEventRequest } from '@frollz2/schema';
 import { z } from 'zod';
 import { useFilmLabsStore } from '../../stores/film-labs.js';
+import { useUiFeedback } from '../../composables/useUiFeedback.js';
 
 interface Props {
   occurredAt: string;
@@ -15,6 +16,7 @@ interface Props {
 const props = defineProps<Props>();
 const emit = defineEmits<{ submit: [payload: CreateFilmJourneyEventRequest] }>();
 const filmLabsStore = useFilmLabsStore();
+const feedback = useUiFeedback();
 
 const form = reactive({
   labId: undefined as number | undefined,
@@ -27,7 +29,6 @@ const sentForDevSchema = z.object({
 });
 
 const { r$ } = useRegleSchema(form, sentForDevSchema);
-const quickCreateName = ref('');
 const creatingLab = ref(false);
 const labOptions = computed(() =>
   filmLabsStore.filmLabs.filter((lab) => lab.active).map((lab) => ({ label: lab.name, value: lab.id }))
@@ -41,15 +42,23 @@ onMounted(async () => {
   }
 });
 
-async function quickCreateLab(): Promise<void> {
-  if (!quickCreateName.value.trim() || creatingLab.value) return;
+async function createLabInline(newName: string, done: (value?: unknown, mode?: 'add' | 'add-unique' | 'toggle') => void): Promise<void> {
+  const name = newName.trim();
+  if (!name || creatingLab.value) {
+    done();
+    return;
+  }
+
   creatingLab.value = true;
   try {
-    const created = await filmLabsStore.createFilmLab({ name: quickCreateName.value.trim() });
+    const created = await filmLabsStore.createFilmLab({ name });
     r$.$value.labId = created.id;
-    quickCreateName.value = '';
+    feedback.success('Lab created.');
+  } catch (error) {
+    feedback.error(feedback.toErrorMessage(error, 'Failed to create lab.'));
   } finally {
     creatingLab.value = false;
+    done();
   }
 }
 
@@ -79,17 +88,18 @@ async function handleSubmit(): Promise<void> {
         filled
         emit-value
         map-options
+        use-input
+        fill-input
+        hide-selected
+        input-debounce="0"
         :options="labOptions"
         label="Lab"
+        :loading="creatingLab"
         :error="r$.labId?.$error"
         :error-message="r$.labId?.$errors[0]"
+        @new-value="createLabInline"
         @update:model-value="r$.$value.labId = Number($event)"
       />
-    </div>
-
-    <div class="row q-gutter-sm items-center">
-      <q-input v-model="quickCreateName" filled label="Quick add lab name" class="col" />
-      <q-btn color="secondary" label="Create" :loading="creatingLab" :disable="!quickCreateName.trim()" @click="quickCreateLab" />
     </div>
 
     <div>

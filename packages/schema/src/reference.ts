@@ -67,7 +67,6 @@ export const referenceValueKindSchema = z.enum([
   'device_system',
   'lab_name',
   'lab_contact',
-  'supplier_name',
   'supplier_channel'
 ]);
 

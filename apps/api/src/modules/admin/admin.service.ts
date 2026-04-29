@@ -249,7 +249,6 @@ export class AdminService {
           quantity: importedLot.quantity,
           expirationDate: importedLot.expirationDate ?? null,
           supplier: importedLot.supplierId ? em.getReference(FilmSupplierEntity, filmSupplierIdMap.get(importedLot.supplierId) ?? importedLot.supplierId) : null,
-          supplierName: importedLot.supplierName ?? null,
           purchaseChannel: importedLot.purchaseChannel ?? null,
           purchasePrice: importedLot.purchasePrice ?? null,
           purchaseCurrencyCode: importedLot.purchaseCurrencyCode ?? null,
