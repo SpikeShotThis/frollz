@@ -54,12 +54,13 @@ export class MikroOrmFilmRepository extends FilmRepository {
         ...(query.afterId ? { id: { $gt: query.afterId } } : {}),
         ...(query.stateCode ? { currentState: { code: query.stateCode } } : {}),
         ...(query.filmFormatId ? { filmFormat: query.filmFormatId } : {}),
-        ...(query.emulsionId ? { emulsion: query.emulsionId } : {})
+        ...(query.emulsionId ? { emulsion: query.emulsionId } : {}),
+        ...(query.supplierId ? { filmLot: { supplier: query.supplierId } } : {})
       },
       {
         orderBy: { id: 'asc' },
         limit: limit + 1,
-        populate: ['user', 'filmLot', 'emulsion', 'emulsion.developmentProcess', 'emulsion.filmFormats', 'packageType', 'packageType.filmFormat', 'filmFormat', 'currentState']
+        populate: ['user', 'filmLot', 'filmLot.supplier', 'emulsion', 'emulsion.developmentProcess', 'emulsion.filmFormats', 'packageType', 'packageType.filmFormat', 'filmFormat', 'currentState']
       }
     );
 
@@ -75,7 +76,7 @@ export class MikroOrmFilmRepository extends FilmRepository {
     const film = await this.entityManager.findOne(
       FilmEntity,
       { id: filmId, user: userId },
-      { populate: ['user', 'filmLot', 'emulsion', 'emulsion.developmentProcess', 'emulsion.filmFormats', 'packageType', 'packageType.filmFormat', 'filmFormat', 'currentState'] }
+      { populate: ['user', 'filmLot', 'filmLot.supplier', 'emulsion', 'emulsion.developmentProcess', 'emulsion.filmFormats', 'packageType', 'packageType.filmFormat', 'filmFormat', 'currentState'] }
     );
 
     if (!film) {
@@ -95,7 +96,7 @@ export class MikroOrmFilmRepository extends FilmRepository {
     const film = await this.entityManager.findOne(
       FilmEntity,
       { id: filmId, user: userId },
-      { populate: ['user', 'filmLot', 'emulsion', 'emulsion.developmentProcess', 'emulsion.filmFormats', 'packageType', 'packageType.filmFormat', 'filmFormat', 'currentState'] }
+      { populate: ['user', 'filmLot', 'filmLot.supplier', 'emulsion', 'emulsion.developmentProcess', 'emulsion.filmFormats', 'packageType', 'packageType.filmFormat', 'filmFormat', 'currentState'] }
     );
 
     return film ? mapFilmSummaryEntity(film) : null;
@@ -122,7 +123,7 @@ export class MikroOrmFilmRepository extends FilmRepository {
     const persisted = await this.entityManager.findOneOrFail(
       FilmEntity,
       { id: filmId, user: userId },
-      { populate: ['user', 'filmLot', 'emulsion', 'emulsion.developmentProcess', 'emulsion.filmFormats', 'packageType', 'packageType.filmFormat', 'filmFormat', 'currentState'] }
+      { populate: ['user', 'filmLot', 'filmLot.supplier', 'emulsion', 'emulsion.developmentProcess', 'emulsion.filmFormats', 'packageType', 'packageType.filmFormat', 'filmFormat', 'currentState'] }
     );
 
     return mapFilmSummaryEntity(persisted);

@@ -1,6 +1,7 @@
 import { Entity, ManyToOne, Property } from '@mikro-orm/decorators/legacy';
 import { AutoIncrementEntity } from './base.entity.js';
 import { EmulsionEntity, FilmFormatEntity, PackageTypeEntity } from './reference.entities.js';
+import { FilmSupplierEntity } from './film-supplier.entity.js';
 import { UserEntity } from './user.entity.js';
 
 @Entity({ tableName: 'film_lot' })
@@ -22,6 +23,30 @@ export class FilmLotEntity extends AutoIncrementEntity {
 
   @Property({ type: 'text', nullable: true, fieldName: 'expiration_date' })
   expirationDate!: string | null;
+
+  @ManyToOne(() => FilmSupplierEntity, { fieldName: 'supplier_id', nullable: true })
+  supplier!: FilmSupplierEntity | null;
+
+  @Property({ type: 'text', nullable: true, fieldName: 'supplier_name' })
+  supplierName!: string | null;
+
+  @Property({ type: 'text', nullable: true, fieldName: 'purchase_channel' })
+  purchaseChannel!: string | null;
+
+  @Property({ type: 'float', nullable: true, fieldName: 'purchase_price' })
+  purchasePrice!: number | null;
+
+  @Property({ type: 'text', nullable: true, fieldName: 'purchase_currency_code' })
+  purchaseCurrencyCode!: string | null;
+
+  @Property({ type: 'text', nullable: true, fieldName: 'order_ref' })
+  orderRef!: string | null;
+
+  @Property({ type: 'text', nullable: true, fieldName: 'obtained_date' })
+  obtainedDate!: string | null;
+
+  @Property({ type: 'integer', nullable: true })
+  rating!: number | null;
 
   @Property({ type: 'text', fieldName: 'created_at' })
   createdAt!: string;

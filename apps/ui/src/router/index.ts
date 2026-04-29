@@ -244,6 +244,11 @@ const routes: RouteRecordRaw[] = [
         component: () => import('../pages/admin/film-labs.vue'),
         meta: { layout: 'app', title: 'Film Labs' }
       },
+      {
+        path: 'admin/film-suppliers',
+        component: () => import('../pages/admin/film-suppliers.vue'),
+        meta: { layout: 'app', title: 'Film Suppliers' }
+      },
 
       // Style Guide
       {

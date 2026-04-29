@@ -24,6 +24,8 @@ import {
   SlotStateEntity
   ,
   FilmLabEntity
+  ,
+  FilmSupplierEntity
 } from '../../infrastructure/entities/index.js';
 import {
   mapCurrentUserEntity,
@@ -36,6 +38,8 @@ import {
   mapDeviceMountEntity
   ,
   mapFilmLabEntity
+  ,
+  mapFilmSupplierEntity
 } from '../../infrastructure/mappers/index.js';
 
 @Injectable()
@@ -50,6 +54,7 @@ export class AdminService {
 
     // Load all user devices with their related data
     const filmLabs = await this.entityManager.find(FilmLabEntity, { user: userId }, { populate: ['user'], orderBy: { name: 'asc' } });
+    const filmSuppliers = await this.entityManager.find(FilmSupplierEntity, { user: userId }, { populate: ['user'], orderBy: { name: 'asc' } });
 
     // Load all user devices with their related data
     const devices = await this.entityManager.find(
@@ -81,6 +86,8 @@ export class AdminService {
           'packageType',
           'packageType.filmFormat',
           'filmFormat'
+          ,
+          'supplier'
         ]
       }
     );
@@ -158,6 +165,7 @@ export class AdminService {
         name: currentUser.name
       },
       filmLabs: filmLabs.map(mapFilmLabEntity),
+      filmSuppliers: filmSuppliers.map(mapFilmSupplierEntity),
       devices: devices.map(mapFilmDeviceEntity),
       filmLots: filmLots.map(lot => mapFilmLotSummaryEntity(lot, filmCounts.get(lot.id) ?? 0)),
       films: films.map(mapFilmSummaryEntity),
@@ -193,6 +201,7 @@ export class AdminService {
       const frameIdMap = new Map<number, number>();
       const deviceIdMap = new Map<number, number>();
       const filmLabIdMap = new Map<number, number>();
+      const filmSupplierIdMap = new Map<number, number>();
 
       // Step 2: Create film labs
       for (const importedFilmLab of data.filmLabs) {
@@ -213,6 +222,23 @@ export class AdminService {
         filmLabIdMap.set(importedFilmLab.id, filmLab.id);
       }
 
+      for (const importedFilmSupplier of data.filmSuppliers ?? []) {
+        const filmSupplier = em.create(FilmSupplierEntity, {
+          user: em.getReference(UserEntity, userId),
+          name: importedFilmSupplier.name,
+          normalizedName: importedFilmSupplier.normalizedName,
+          contact: importedFilmSupplier.contact,
+          email: importedFilmSupplier.email,
+          website: importedFilmSupplier.website,
+          notes: importedFilmSupplier.notes,
+          active: importedFilmSupplier.active,
+          rating: importedFilmSupplier.rating
+        });
+        em.persist(filmSupplier);
+        await em.flush();
+        filmSupplierIdMap.set(importedFilmSupplier.id, filmSupplier.id);
+      }
+
       // Step 3: Create film lots
       for (const importedLot of data.filmLots) {
         const lot = em.create(FilmLotEntity, {
@@ -222,6 +248,14 @@ export class AdminService {
           filmFormat: em.getReference(FilmFormatEntity, importedLot.filmFormatId),
           quantity: importedLot.quantity,
           expirationDate: importedLot.expirationDate ?? null,
+          supplier: importedLot.supplierId ? em.getReference(FilmSupplierEntity, filmSupplierIdMap.get(importedLot.supplierId) ?? importedLot.supplierId) : null,
+          supplierName: importedLot.supplierName ?? null,
+          purchaseChannel: importedLot.purchaseChannel ?? null,
+          purchasePrice: importedLot.purchasePrice ?? null,
+          purchaseCurrencyCode: importedLot.purchaseCurrencyCode ?? null,
+          orderRef: importedLot.orderRef ?? null,
+          obtainedDate: importedLot.obtainedDate ?? nowIso(),
+          rating: importedLot.rating ?? null,
           createdAt: nowIso()
         });
         em.persist(lot);

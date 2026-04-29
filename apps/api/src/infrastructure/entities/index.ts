@@ -13,3 +13,4 @@ export * from './device-mount.entity.js';
 export * from './film-holder-slot.entity.js';
 export * from './reference-value.entity.js';
 export * from './film-lab.entity.js';
+export * from './film-supplier.entity.js';

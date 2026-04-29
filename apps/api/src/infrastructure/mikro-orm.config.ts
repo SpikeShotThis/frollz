@@ -30,7 +30,8 @@ import {
   StorageLocationEntity,
   UserEntity,
   ReferenceValueEntity,
-  FilmLabEntity
+  FilmLabEntity,
+  FilmSupplierEntity
 } from './entities/index.js';
 
 loadEnvFiles();
@@ -60,7 +61,8 @@ const entities = [
   FilmHolderSlotEntity,
   InterchangeableBackEntity,
   ReferenceValueEntity,
-  FilmLabEntity
+  FilmLabEntity,
+  FilmSupplierEntity
 ];
 
 const infrastructureDir = dirname(fileURLToPath(import.meta.url));

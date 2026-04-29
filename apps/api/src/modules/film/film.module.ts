@@ -7,9 +7,10 @@ import { MikroOrmFilmRepository } from '../../infrastructure/repositories/mikro-
 import { FilmLotRepository } from '../../infrastructure/repositories/film-lot.repository.js';
 import { MikroOrmFilmLotRepository } from '../../infrastructure/repositories/mikro-orm-film-lot.repository.js';
 import { FilmLabsModule } from '../film-labs/film-labs.module.js';
+import { FilmSuppliersModule } from '../film-suppliers/film-suppliers.module.js';
 
 @Module({
-  imports: [FilmLabsModule],
+  imports: [FilmLabsModule, FilmSuppliersModule],
   controllers: [FilmController],
   providers: [
     FilmService,

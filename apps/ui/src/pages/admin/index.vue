@@ -18,6 +18,13 @@ const adminSections = [
     icon: 'store',
     route: '/admin/film-labs',
     color: 'secondary'
+  },
+  {
+    title: 'Film Suppliers',
+    description: 'Manage your film suppliers and ratings',
+    icon: 'local_shipping',
+    route: '/admin/film-suppliers',
+    color: 'accent'
   }
 ];
 

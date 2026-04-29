@@ -6,9 +6,11 @@ import FilmCreateDialog from '../../components/FilmCreateDialog.vue';
 import { useFilmStore } from '../../stores/film.js';
 import { useReferenceStore } from '../../stores/reference.js';
 import { useFilmCreateForm } from '../../composables/useFilmCreateForm.js';
+import { useFilmSuppliersStore } from '../../stores/film-suppliers.js';
 
 const filmStore = useFilmStore();
 const referenceStore = useReferenceStore();
+const filmSuppliersStore = useFilmSuppliersStore();
 
 const {
   isCreateDialogOpen,
@@ -21,6 +23,7 @@ const {
 
 const search = ref<string | null>('');
 const stateFilter = ref<string | null>(null);
+const supplierFilter = ref<number | null>(null);
 
 const subtitle = computed(() =>
   lockedFormatFilters.value.length > 0
@@ -37,6 +40,9 @@ const rows = computed(() => {
     }
 
     if (stateFilter.value && film.currentStateCode !== stateFilter.value) {
+      return false;
+    }
+    if (supplierFilter.value && film.supplierId !== supplierFilter.value) {
       return false;
     }
 
@@ -93,9 +99,12 @@ const stateOptions = computed(() =>
     value: state.code
   }))
 );
+const supplierOptions = computed(() =>
+  filmSuppliersStore.filmSuppliers.map((supplier) => ({ label: supplier.name, value: supplier.id }))
+);
 
 onMounted(async () => {
-  await Promise.allSettled([referenceStore.loadAll(), filmStore.loadFilms()]);
+  await Promise.allSettled([referenceStore.loadAll(), filmStore.loadFilms(), filmSuppliersStore.loadFilmSuppliers()]);
 });
 </script>
 
@@ -123,6 +132,10 @@ onMounted(async () => {
       <div class="col-xs-12 col-lg-6">
         <q-select v-model="stateFilter" filled clearable emit-value map-options :options="stateOptions"
           label="Filter by state" />
+      </div>
+      <div class="col-xs-12 col-lg-6">
+        <q-select v-model="supplierFilter" filled clearable emit-value map-options :options="supplierOptions"
+          label="Filter by supplier" />
       </div>
     </div>
 
