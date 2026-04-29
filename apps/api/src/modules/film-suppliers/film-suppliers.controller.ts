@@ -55,8 +55,15 @@ export class FilmSuppliersController {
   update(
     @CurrentUser() user: AuthenticatedUser,
     @Param('id', ParseIntPipe) id: number,
+    @Headers('idempotency-key') idempotencyKey: string | undefined,
     @Body(new ZodSchemaPipe(updateFilmSupplierRequestSchema)) body: typeof updateFilmSupplierRequestSchema['_output']
   ) {
-    return this.filmSuppliersService.update(user.userId, id, body);
+    return this.idempotencyService.execute({
+      userId: user.userId,
+      key: idempotencyKey,
+      scope: 'film-suppliers.update',
+      requestPayload: { id, body },
+      handler: () => this.filmSuppliersService.update(user.userId, id, body)
+    });
   }
 }
