@@ -39,8 +39,8 @@ function isNavGroupExpanded(link: NavItem): boolean {
   return route.path === link.to || route.path.startsWith(`${link.to}/`);
 }
 
-async function navigateAndExpand(link: NavItem): Promise<void> {
-  expandedNavGroups.value[link.to] = true;
+async function navigateOnGroupToggle(link: NavItem, expanded: boolean): Promise<void> {
+  expandedNavGroups.value[link.to] = expanded;
 
   if (route.path !== link.to) {
     await router.push(link.to);
@@ -95,9 +95,9 @@ async function navigateAndExpand(link: NavItem): Promise<void> {
             expand-separator
             :icon="link.icon"
             :label="link.label"
+            :caption="isNavGroupExpanded(link) ? 'Collapse list and open section' : 'Expand list and open section'"
             :model-value="isNavGroupExpanded(link)"
-            @update:model-value="(value: boolean) => (expandedNavGroups[link.to] = value)"
-            @click="navigateAndExpand(link)"
+            @update:model-value="(value: boolean) => navigateOnGroupToggle(link, value)"
           >
             <q-list class="q-pl-lg q-pb-xs">
               <q-item v-for="child in link.children" :key="child.to" dense clickable :to="child.to" @click="closeDrawerOnNavigate">
