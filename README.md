@@ -20,12 +20,16 @@ Frollz is a self-hosted film photography tracking application. If you shoot on f
 
 ## Self-hosting
 
-Frollz is designed to be self-hosted. It runs as two Docker containers: the application (NestJS API + Vue SPA bundled together) and a PostgreSQL database.
+Frollz is designed to be self-hosted. The baseline stack runs as four containers:
+
+- `nginx` (ingress reverse proxy)
+- `ui` (built Vue SPA)
+- `api` (built NestJS API)
+- `postgres` (PostgreSQL 18)
 
 ### Prerequisites
 
 - Docker with the Compose plugin (`docker compose`)
-- A reverse proxy for HTTPS (Nginx Proxy Manager, Traefik, or Caddy are all good options)
 
 ### Setup
 
@@ -42,7 +46,12 @@ cd frollz
 cp .env.example .env
 ```
 
-Open `.env` and set values for `DATABASE_NAME`, `DATABASE_USER`, and `DATABASE_PASSWORD`. The defaults in `.env.example` work for a local test but **change the password** before exposing the instance to the internet.
+Open `.env` and set at least:
+
+- `DATABASE_PASSWORD`
+- `JWT_ACCESS_SECRET`
+
+The defaults are safe for local testing only.
 
 **3. Start the stack**
 
@@ -50,11 +59,19 @@ Open `.env` and set values for `DATABASE_NAME`, `DATABASE_USER`, and `DATABASE_P
 docker compose up -d
 ```
 
-The application starts on port **3000**. Point your reverse proxy at it and configure HTTPS.
+The ingress container publishes port **80** (`http://localhost` by default). API and database traffic stay on the internal Docker network.
 
 **4. Access Frollz**
 
-Once running, open your browser to the address you've configured. On first start, the database schema is created and default film stocks, formats, and tags are imported automatically.
+On first start, the API boot process auto-applies database changes and seeds reference data when `AUTO_MIGRATE_SEED=true`.
+
+### Operations
+
+```bash
+docker compose logs -f
+docker compose ps
+docker compose down
+```
 
 ### Updating
 
@@ -63,18 +80,31 @@ docker compose pull
 docker compose up -d
 ```
 
-Database migrations run automatically on startup — no manual steps needed.
+Database updates run automatically on startup when `AUTO_MIGRATE_SEED=true`.
+
+### Rebuild after code changes
+
+```bash
+docker compose build api ui
+docker compose up -d
+```
 
 ### Configuration
 
 | Variable | Default | Description |
 |---|---|---|
-| `DATABASE_HOST` | `postgres` | PostgreSQL hostname (matches the Compose service name) |
+| `DATABASE_DRIVER` | `postgres` | Selects DB runtime (`postgres` or `sqlite`) |
+| `DATABASE_HOST` | `postgres` | PostgreSQL hostname (Compose service name) |
 | `DATABASE_PORT` | `5432` | PostgreSQL port |
-| `DATABASE_NAME` | — | Database name |
-| `DATABASE_USER` | — | Database user |
-| `DATABASE_PASSWORD` | — | Database password |
-| `PORT` | `3000` | Port the application listens on |
+| `DATABASE_NAME` | `frollz` | PostgreSQL database name |
+| `DATABASE_USER` | `frollz` | PostgreSQL user |
+| `DATABASE_PASSWORD` | `changeme` | PostgreSQL password (change this) |
+| `DATABASE_URL` | `frollz2.sqlite` | SQLite file path when `DATABASE_DRIVER=sqlite` |
+| `JWT_ACCESS_SECRET` | `change-me` | JWT signing secret |
+| `ALLOWED_ORIGINS` | `http://localhost` | CORS allowlist (comma-separated) |
+| `AUTO_MIGRATE_SEED` | `true` | Runs driver-specific migrations (`migrations-postgres` or `migrations`) and seeds reference data |
+| `SEED_DEMO_USER` | `false` | Seeds demo user when `true` |
+| `PORT` | `3000` | API listen port |
 
 ## Documentation
 

@@ -1,0 +1,5708 @@
+[
+  {
+    "brand_name": "Adox CHS 100 II",
+    "maker": "Adox",
+    "chemical_process": "B&W",
+    "iso": "100",
+    "white_balance": "N/A",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 36exp",
+      "120 roll",
+      "4x5 25-sheet",
+      "8x10 10-sheet"
+    ],
+    "formats_available": [
+      "35mm",
+      "120",
+      "4x5",
+      "8x10"
+    ],
+    "brief_description": "Reengineered classic-style panchromatic black-and-white film.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "current",
+    "availability_window": "2010s-current",
+    "verification_basis": "historical list + current product pages where available"
+  },
+  {
+    "brand_name": "Adox CMS 20 II",
+    "maker": "Adox",
+    "chemical_process": "B&W",
+    "iso": "20",
+    "white_balance": "N/A",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 36exp",
+      "120 roll"
+    ],
+    "formats_available": [
+      "35mm",
+      "120"
+    ],
+    "brief_description": "Ultra-high-resolution microfilm-derived black-and-white still film.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "current",
+    "availability_window": "2010s-current",
+    "verification_basis": "historical list + current product pages where available"
+  },
+  {
+    "brand_name": "Adox Scala 50",
+    "maker": "Adox",
+    "chemical_process": "B&W reversal",
+    "iso": "50",
+    "white_balance": "N/A",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 36exp"
+    ],
+    "formats_available": [
+      "35mm"
+    ],
+    "brief_description": "Modern black-and-white reversal film/process offering.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "current_or_varied",
+    "availability_window": "2020s-current",
+    "verification_basis": "historical list + current product pages where available"
+  },
+  {
+    "brand_name": "Adox Silvermax 100",
+    "maker": "Adox",
+    "chemical_process": "B&W",
+    "iso": "100",
+    "white_balance": "N/A",
+    "infrared_sensitivity": "Extended red",
+    "package_sold_in": [
+      "35mm 36exp",
+      "120 roll"
+    ],
+    "formats_available": [
+      "35mm",
+      "120"
+    ],
+    "brief_description": "High-silver-content medium-speed black-and-white film.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "current",
+    "availability_window": "2010s-current",
+    "verification_basis": "historical list + current product pages where available"
+  },
+  {
+    "brand_name": "Agfa RSX II 100",
+    "maker": "Agfa",
+    "chemical_process": "E-6",
+    "iso": "100",
+    "white_balance": "Daylight",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 36exp",
+      "120 roll"
+    ],
+    "formats_available": [
+      "35mm",
+      "120"
+    ],
+    "brief_description": "Agfa professional slide film.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "discontinued",
+    "availability_window": "1990s-2000s",
+    "verification_basis": "historical list + current product pages where available"
+  },
+  {
+    "brand_name": "Agfa RSX II 200",
+    "maker": "Agfa",
+    "chemical_process": "E-6",
+    "iso": "200",
+    "white_balance": "Daylight",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 36exp",
+      "120 roll"
+    ],
+    "formats_available": [
+      "35mm",
+      "120"
+    ],
+    "brief_description": "Higher-speed Agfa slide film.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "discontinued",
+    "availability_window": "1990s-2000s",
+    "verification_basis": "historical list + current product pages where available"
+  },
+  {
+    "brand_name": "Agfa RSX II 50",
+    "maker": "Agfa",
+    "chemical_process": "E-6",
+    "iso": "50",
+    "white_balance": "Daylight",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 36exp",
+      "120 roll"
+    ],
+    "formats_available": [
+      "35mm",
+      "120"
+    ],
+    "brief_description": "Agfa professional slide film family member.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "discontinued",
+    "availability_window": "1990s-2000s",
+    "verification_basis": "historical list + current product pages where available"
+  },
+  {
+    "brand_name": "Agfa Scala 200x",
+    "maker": "Agfa",
+    "chemical_process": "B&W reversal",
+    "iso": "200",
+    "white_balance": "N/A",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 36exp",
+      "120 roll"
+    ],
+    "formats_available": [
+      "35mm",
+      "120"
+    ],
+    "brief_description": "Black-and-white reversal still film with dedicated process.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "discontinued",
+    "availability_window": "1990s-2005",
+    "verification_basis": "historical list + current product pages where available"
+  },
+  {
+    "brand_name": "Agfa Ultra 100",
+    "maker": "Agfa",
+    "chemical_process": "C-41",
+    "iso": "100",
+    "white_balance": "Daylight",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 36exp",
+      "120 roll"
+    ],
+    "formats_available": [
+      "35mm",
+      "120"
+    ],
+    "brief_description": "Highly saturated color negative film.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "discontinued",
+    "availability_window": "1990s-2000s",
+    "verification_basis": "historical list"
+  },
+  {
+    "brand_name": "Agfa Ultra 50",
+    "maker": "Agfa",
+    "chemical_process": "C-41",
+    "iso": "50",
+    "white_balance": "Daylight",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 36exp",
+      "120 roll"
+    ],
+    "formats_available": [
+      "35mm",
+      "120"
+    ],
+    "brief_description": "Highly saturated professional/advanced color negative film.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "discontinued",
+    "availability_window": "1990s-2000s",
+    "verification_basis": "historical list"
+  },
+  {
+    "brand_name": "Agfa Precisa 100",
+    "maker": "AgfaPhoto",
+    "chemical_process": "E-6",
+    "iso": "100",
+    "white_balance": "Daylight",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 36exp"
+    ],
+    "formats_available": [
+      "35mm"
+    ],
+    "brief_description": "Budget slide film under AgfaPhoto branding.",
+    "respool_flag": "unknown",
+    "source_emulsion_if_respool": "",
+    "status": "discontinued_or_varied",
+    "availability_window": "2000s-2010s",
+    "verification_basis": "historical list + current product pages where available"
+  },
+  {
+    "brand_name": "AgfaPhoto APX 100",
+    "maker": "AgfaPhoto",
+    "chemical_process": "B&W",
+    "iso": "100",
+    "white_balance": "N/A",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 36exp",
+      "120 roll"
+    ],
+    "formats_available": [
+      "35mm",
+      "120"
+    ],
+    "brief_description": "Reintroduced APX-branded medium-speed black-and-white film.",
+    "respool_flag": "unknown",
+    "source_emulsion_if_respool": "",
+    "status": "current",
+    "availability_window": "2000s-current",
+    "verification_basis": "historical list + current product pages where available"
+  },
+  {
+    "brand_name": "AgfaPhoto APX 400",
+    "maker": "AgfaPhoto",
+    "chemical_process": "B&W",
+    "iso": "400",
+    "white_balance": "N/A",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 36exp",
+      "120 roll"
+    ],
+    "formats_available": [
+      "35mm",
+      "120"
+    ],
+    "brief_description": "Reintroduced APX-branded high-speed black-and-white film.",
+    "respool_flag": "unknown",
+    "source_emulsion_if_respool": "",
+    "status": "current",
+    "availability_window": "2000s-current",
+    "verification_basis": "historical list + current product pages where available"
+  },
+  {
+    "brand_name": "AgfaPhoto Vista 100",
+    "maker": "AgfaPhoto",
+    "chemical_process": "C-41",
+    "iso": "100",
+    "white_balance": "Daylight",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 24exp",
+      "35mm 36exp"
+    ],
+    "formats_available": [
+      "35mm"
+    ],
+    "brief_description": "Consumer daylight color negative film under revived AgfaPhoto branding.",
+    "respool_flag": "unknown",
+    "source_emulsion_if_respool": "",
+    "status": "discontinued",
+    "availability_window": "2000s-2010s",
+    "verification_basis": "historical list + current product pages where available"
+  },
+  {
+    "brand_name": "AgfaPhoto Vista 200",
+    "maker": "AgfaPhoto",
+    "chemical_process": "C-41",
+    "iso": "200",
+    "white_balance": "Daylight",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 24exp",
+      "35mm 36exp"
+    ],
+    "formats_available": [
+      "35mm"
+    ],
+    "brief_description": "Consumer color negative film in AgfaPhoto Vista line.",
+    "respool_flag": "unknown",
+    "source_emulsion_if_respool": "",
+    "status": "discontinued",
+    "availability_window": "2000s-2010s",
+    "verification_basis": "historical list + current product pages where available"
+  },
+  {
+    "brand_name": "AgfaPhoto Vista 400",
+    "maker": "AgfaPhoto",
+    "chemical_process": "C-41",
+    "iso": "400",
+    "white_balance": "Daylight",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 24exp",
+      "35mm 36exp"
+    ],
+    "formats_available": [
+      "35mm"
+    ],
+    "brief_description": "High-speed consumer color negative film in AgfaPhoto Vista line.",
+    "respool_flag": "unknown",
+    "source_emulsion_if_respool": "",
+    "status": "discontinued",
+    "availability_window": "2000s-2010s",
+    "verification_basis": "historical list + current product pages where available"
+  },
+  {
+    "brand_name": "Aurora 400",
+    "maker": "Aurora",
+    "chemical_process": "C-41",
+    "iso": "400",
+    "white_balance": "Daylight",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 36exp"
+    ],
+    "formats_available": [
+      "35mm"
+    ],
+    "brief_description": "Boutique color negative film sold in small-batch markets.",
+    "respool_flag": "unknown",
+    "source_emulsion_if_respool": "",
+    "status": "current_or_varied",
+    "availability_window": "2020s-current",
+    "verification_basis": "mixed historical / market documentation"
+  },
+  {
+    "brand_name": "Bergger Pancro 400",
+    "maker": "Bergger",
+    "chemical_process": "B&W",
+    "iso": "400",
+    "white_balance": "N/A",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 36exp",
+      "120 roll",
+      "4x5 25-sheet",
+      "8x10 10-sheet"
+    ],
+    "formats_available": [
+      "35mm",
+      "120",
+      "4x5",
+      "8x10"
+    ],
+    "brief_description": "Dual-emulsion black-and-white film emphasizing latitude and rich tonality.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "current",
+    "availability_window": "2015-current",
+    "verification_basis": "historical list + current product pages where available"
+  },
+  {
+    "brand_name": "CatLABS X Film 320",
+    "maker": "CatLABS",
+    "chemical_process": "B&W",
+    "iso": "320",
+    "white_balance": "N/A",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 36exp",
+      "120 roll",
+      "4x5 25-sheet",
+      "8x10 10-sheet"
+    ],
+    "formats_available": [
+      "35mm",
+      "120",
+      "4x5",
+      "8x10"
+    ],
+    "brief_description": "Modern black-and-white film line distributed by CatLABS.",
+    "respool_flag": "unknown",
+    "source_emulsion_if_respool": "",
+    "status": "current",
+    "availability_window": "2010s-current",
+    "verification_basis": "mixed"
+  },
+  {
+    "brand_name": "CatLABS X Film 80",
+    "maker": "CatLABS",
+    "chemical_process": "B&W",
+    "iso": "80",
+    "white_balance": "N/A",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 36exp",
+      "120 roll",
+      "4x5 25-sheet",
+      "8x10 10-sheet"
+    ],
+    "formats_available": [
+      "35mm",
+      "120",
+      "4x5",
+      "8x10"
+    ],
+    "brief_description": "Modern black-and-white film line distributed by CatLABS.",
+    "respool_flag": "unknown",
+    "source_emulsion_if_respool": "",
+    "status": "current",
+    "availability_window": "2010s-current",
+    "verification_basis": "mixed"
+  },
+  {
+    "brand_name": "CineStill 400D",
+    "maker": "CineStill",
+    "chemical_process": "C-41",
+    "iso": "400",
+    "white_balance": "Daylight",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 36exp",
+      "120 roll"
+    ],
+    "formats_available": [
+      "35mm",
+      "120"
+    ],
+    "brief_description": "Daylight-balanced color negative film in CineStill's own still-photo line; marketed as cine-style rather than explicitly mapped to a Kodak stock.",
+    "respool_flag": "unknown",
+    "source_emulsion_if_respool": "",
+    "status": "current",
+    "availability_window": "2022-current",
+    "verification_basis": "official product page + documented lineage"
+  },
+  {
+    "brand_name": "CineStill 50D",
+    "maker": "CineStill",
+    "chemical_process": "C-41",
+    "iso": "50",
+    "white_balance": "Daylight",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 36exp",
+      "120 roll"
+    ],
+    "formats_available": [
+      "35mm",
+      "120"
+    ],
+    "brief_description": "Daylight-balanced still film derived from motion-picture stock without remjet.",
+    "respool_flag": "yes",
+    "source_emulsion_if_respool": "Kodak Vision3 50D 5203/7203-derived",
+    "status": "current",
+    "availability_window": "2015-current",
+    "verification_basis": "official product page + documented lineage"
+  },
+  {
+    "brand_name": "CineStill 800T",
+    "maker": "CineStill",
+    "chemical_process": "C-41",
+    "iso": "800",
+    "white_balance": "Tungsten",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 36exp",
+      "120 roll"
+    ],
+    "formats_available": [
+      "35mm",
+      "120"
+    ],
+    "brief_description": "Tungsten-balanced still film derived from motion-picture stock without remjet; known for halation.",
+    "respool_flag": "yes",
+    "source_emulsion_if_respool": "Kodak Vision3 500T-derived (CineStill-modified for still use)",
+    "status": "current",
+    "availability_window": "2013-current",
+    "verification_basis": "official product page + documented lineage"
+  },
+  {
+    "brand_name": "CineStill BwXX",
+    "maker": "CineStill",
+    "chemical_process": "B&W",
+    "iso": "250 daylight / 200 tungsten",
+    "white_balance": "Daylight/Tungsten",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 36exp",
+      "120 roll"
+    ],
+    "formats_available": [
+      "35mm",
+      "120"
+    ],
+    "brief_description": "Classic panchromatic black-and-white still film based on Kodak Double-X.",
+    "respool_flag": "yes",
+    "source_emulsion_if_respool": "Kodak Double-X 5222-derived",
+    "status": "current",
+    "availability_window": "2015-current",
+    "verification_basis": "official product page + documented lineage"
+  },
+  {
+    "brand_name": "CineStill Film Xpro 800T",
+    "maker": "CineStill",
+    "chemical_process": "C-41",
+    "iso": "800",
+    "white_balance": "Tungsten",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 36exp"
+    ],
+    "formats_available": [
+      "35mm"
+    ],
+    "brief_description": "Earlier naming/branding variation of CineStill's tungsten cine-derived still film.",
+    "respool_flag": "yes",
+    "source_emulsion_if_respool": "Kodak Vision3 500T-derived (CineStill-modified for still use)",
+    "status": "discontinued_or_rebranded",
+    "availability_window": "2010s",
+    "verification_basis": "official product page + documented lineage"
+  },
+  {
+    "brand_name": "Advantix 100",
+    "maker": "Eastman Kodak",
+    "chemical_process": "C-41",
+    "iso": "100",
+    "white_balance": "Daylight",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "APS cartridge"
+    ],
+    "formats_available": [
+      "APS"
+    ],
+    "brief_description": "APS color negative film for Kodak Advantix cameras.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "discontinued",
+    "availability_window": "1996-2011",
+    "verification_basis": "historical catalog/list"
+  },
+  {
+    "brand_name": "Advantix 200",
+    "maker": "Eastman Kodak",
+    "chemical_process": "C-41",
+    "iso": "200",
+    "white_balance": "Daylight",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "APS cartridge"
+    ],
+    "formats_available": [
+      "APS"
+    ],
+    "brief_description": "APS daylight color negative film.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "discontinued",
+    "availability_window": "1996-2011",
+    "verification_basis": "historical catalog/list"
+  },
+  {
+    "brand_name": "Advantix 400",
+    "maker": "Eastman Kodak",
+    "chemical_process": "C-41",
+    "iso": "400",
+    "white_balance": "Daylight",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "APS cartridge"
+    ],
+    "formats_available": [
+      "APS"
+    ],
+    "brief_description": "APS high-speed color negative film.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "discontinued",
+    "availability_window": "1996-2011",
+    "verification_basis": "historical catalog/list"
+  },
+  {
+    "brand_name": "Advantix Preview 400",
+    "maker": "Eastman Kodak",
+    "chemical_process": "C-41",
+    "iso": "400",
+    "white_balance": "Daylight",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "APS cartridge"
+    ],
+    "formats_available": [
+      "APS"
+    ],
+    "brief_description": "APS film for cameras with preview features in Kodak Advantix system.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "discontinued",
+    "availability_window": "late 1990s-2000s",
+    "verification_basis": "historical catalog/list"
+  },
+  {
+    "brand_name": "BW400CN",
+    "maker": "Eastman Kodak",
+    "chemical_process": "B&W",
+    "iso": "400",
+    "white_balance": "N/A",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 24exp",
+      "35mm 36exp",
+      "120 roll",
+      "APS cartridge"
+    ],
+    "formats_available": [
+      "35mm",
+      "120",
+      "APS"
+    ],
+    "brief_description": "Chromogenic black-and-white film for C-41 processing.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "discontinued",
+    "availability_window": "1990s-2014",
+    "verification_basis": "manufacturer datasheet/catalog or historical list"
+  },
+  {
+    "brand_name": "ColorPlus 200",
+    "maker": "Eastman Kodak",
+    "chemical_process": "C-41",
+    "iso": "200",
+    "white_balance": "Daylight",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 24exp",
+      "35mm 36exp"
+    ],
+    "formats_available": [
+      "35mm"
+    ],
+    "brief_description": "Budget-friendly color negative film with warm tones and moderate saturation.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "current",
+    "availability_window": "1990s-current",
+    "verification_basis": "manufacturer datasheet/catalog"
+  },
+  {
+    "brand_name": "Double-X 5222/7222",
+    "maker": "Eastman Kodak",
+    "chemical_process": "B&W",
+    "iso": "250 daylight / 200 tungsten",
+    "white_balance": "Daylight/Tungsten",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 400ft",
+      "35mm 1000ft",
+      "16mm 100ft",
+      "16mm 400ft"
+    ],
+    "formats_available": [
+      "35mm cine",
+      "16mm"
+    ],
+    "brief_description": "Classic panchromatic black-and-white motion-picture negative film.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "current",
+    "availability_window": "current",
+    "verification_basis": "manufacturer motion-picture catalog"
+  },
+  {
+    "brand_name": "E100G",
+    "maker": "Eastman Kodak",
+    "chemical_process": "E-6",
+    "iso": "100",
+    "white_balance": "Daylight",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 36exp",
+      "120 roll",
+      "4x5 10-sheet"
+    ],
+    "formats_available": [
+      "35mm",
+      "120",
+      "4x5"
+    ],
+    "brief_description": "Neutral-color Ektachrome professional slide film.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "discontinued",
+    "availability_window": "2000s-2012",
+    "verification_basis": "manufacturer datasheet/catalog or historical list"
+  },
+  {
+    "brand_name": "E100GX",
+    "maker": "Eastman Kodak",
+    "chemical_process": "E-6",
+    "iso": "100",
+    "white_balance": "Daylight",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 36exp",
+      "120 roll",
+      "4x5 10-sheet"
+    ],
+    "formats_available": [
+      "35mm",
+      "120",
+      "4x5"
+    ],
+    "brief_description": "Warmer-toned variant of E100G intended for flattering skin and portrait work.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "discontinued",
+    "availability_window": "2000s-2012",
+    "verification_basis": "manufacturer datasheet/catalog or historical list"
+  },
+  {
+    "brand_name": "E100VS",
+    "maker": "Eastman Kodak",
+    "chemical_process": "E-6",
+    "iso": "100",
+    "white_balance": "Daylight",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 36exp",
+      "120 roll",
+      "4x5 10-sheet"
+    ],
+    "formats_available": [
+      "35mm",
+      "120",
+      "4x5"
+    ],
+    "brief_description": "High-saturation professional Ektachrome slide film.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "discontinued",
+    "availability_window": "2000s-2012",
+    "verification_basis": "manufacturer datasheet/catalog or historical list"
+  },
+  {
+    "brand_name": "E200",
+    "maker": "Eastman Kodak",
+    "chemical_process": "E-6",
+    "iso": "200",
+    "white_balance": "Daylight",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 36exp",
+      "120 roll",
+      "4x5 10-sheet"
+    ],
+    "formats_available": [
+      "35mm",
+      "120",
+      "4x5"
+    ],
+    "brief_description": "Higher-speed Ektachrome slide film with push-processing flexibility.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "discontinued",
+    "availability_window": "1990s-2012",
+    "verification_basis": "manufacturer datasheet/catalog or historical list"
+  },
+  {
+    "brand_name": "EXR 100T 5248/7248",
+    "maker": "Eastman Kodak",
+    "chemical_process": "ECN-2",
+    "iso": "100",
+    "white_balance": "Tungsten",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 400ft",
+      "35mm 1000ft",
+      "16mm 100ft",
+      "16mm 400ft"
+    ],
+    "formats_available": [
+      "35mm cine",
+      "16mm"
+    ],
+    "brief_description": "EXR tungsten-balanced camera negative film.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "discontinued",
+    "availability_window": "1990s-2000s",
+    "verification_basis": "manufacturer motion-picture catalog"
+  },
+  {
+    "brand_name": "EXR 200T 5293/7293",
+    "maker": "Eastman Kodak",
+    "chemical_process": "ECN-2",
+    "iso": "200",
+    "white_balance": "Tungsten",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 400ft",
+      "35mm 1000ft",
+      "16mm 100ft",
+      "16mm 400ft"
+    ],
+    "formats_available": [
+      "35mm cine",
+      "16mm"
+    ],
+    "brief_description": "EXR tungsten motion-picture negative film.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "discontinued",
+    "availability_window": "1990s-2000s",
+    "verification_basis": "manufacturer motion-picture catalog"
+  },
+  {
+    "brand_name": "EXR 500T 5279/7279",
+    "maker": "Eastman Kodak",
+    "chemical_process": "ECN-2",
+    "iso": "500",
+    "white_balance": "Tungsten",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 400ft",
+      "35mm 1000ft",
+      "16mm 100ft",
+      "16mm 400ft"
+    ],
+    "formats_available": [
+      "35mm cine",
+      "16mm"
+    ],
+    "brief_description": "EXR high-speed tungsten negative motion-picture film.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "discontinued",
+    "availability_window": "1990s-2000s",
+    "verification_basis": "manufacturer motion-picture catalog"
+  },
+  {
+    "brand_name": "Ektachrome 100D",
+    "maker": "Eastman Kodak",
+    "chemical_process": "E-6",
+    "iso": "100",
+    "white_balance": "Daylight",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "Super 8 cartridge",
+      "16mm 100ft"
+    ],
+    "formats_available": [
+      "Super 8",
+      "16mm"
+    ],
+    "brief_description": "Motion-picture/consumer reversal stock also sold in Super 8 and 16mm.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "current",
+    "availability_window": "2009-2013; 2018-current in cine",
+    "verification_basis": "manufacturer datasheet/catalog or historical list"
+  },
+  {
+    "brand_name": "Ektachrome 64T",
+    "maker": "Eastman Kodak",
+    "chemical_process": "E-6",
+    "iso": "64",
+    "white_balance": "Tungsten",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 36exp",
+      "120 roll",
+      "sheet film"
+    ],
+    "formats_available": [
+      "35mm",
+      "120",
+      "sheet"
+    ],
+    "brief_description": "Tungsten-balanced professional E-6 slide film.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "discontinued",
+    "availability_window": "1990s-2000s",
+    "verification_basis": "manufacturer datasheet/catalog or historical list"
+  },
+  {
+    "brand_name": "Ektachrome E100",
+    "maker": "Eastman Kodak",
+    "chemical_process": "E-6",
+    "iso": "100",
+    "white_balance": "Daylight",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 36exp",
+      "120 roll",
+      "4x5 10-sheet"
+    ],
+    "formats_available": [
+      "35mm",
+      "120",
+      "4x5"
+    ],
+    "brief_description": "Current neutral E-6 slide film with moderate saturation and fine grain.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "current",
+    "availability_window": "2018-current",
+    "verification_basis": "manufacturer datasheet/catalog or historical list"
+  },
+  {
+    "brand_name": "Ektar 100",
+    "maker": "Eastman Kodak",
+    "chemical_process": "C-41",
+    "iso": "100",
+    "white_balance": "Daylight",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 36exp",
+      "120 roll"
+    ],
+    "formats_available": [
+      "35mm",
+      "120"
+    ],
+    "brief_description": "Ultra-fine-grain color negative film with high saturation and strong landscape/product appeal.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "current",
+    "availability_window": "2008-current",
+    "verification_basis": "manufacturer datasheet/catalog"
+  },
+  {
+    "brand_name": "Ektar 25",
+    "maker": "Eastman Kodak",
+    "chemical_process": "C-41",
+    "iso": "25",
+    "white_balance": "Daylight",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 36exp"
+    ],
+    "formats_available": [
+      "35mm"
+    ],
+    "brief_description": "Extremely slow fine-grain color negative film lingering into early part of the 30-year window.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "discontinued",
+    "availability_window": "1990s",
+    "verification_basis": "historical catalog/list"
+  },
+  {
+    "brand_name": "Elite Chrome 100",
+    "maker": "Eastman Kodak",
+    "chemical_process": "E-6",
+    "iso": "100",
+    "white_balance": "Daylight",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 24exp",
+      "35mm 36exp",
+      "APS cartridge"
+    ],
+    "formats_available": [
+      "35mm",
+      "APS"
+    ],
+    "brief_description": "Consumer/prosumer slide film under Kodak Elite branding.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "discontinued",
+    "availability_window": "1990s-2000s",
+    "verification_basis": "manufacturer datasheet/catalog or historical list"
+  },
+  {
+    "brand_name": "Elite Chrome 100 EB-3",
+    "maker": "Eastman Kodak",
+    "chemical_process": "E-6",
+    "iso": "100",
+    "white_balance": "Daylight",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 36exp"
+    ],
+    "formats_available": [
+      "35mm"
+    ],
+    "brief_description": "Elite Chrome family member found in late 1990s/early 2000s distribution.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "discontinued",
+    "availability_window": "1990s-2000s",
+    "verification_basis": "manufacturer datasheet/catalog or historical list"
+  },
+  {
+    "brand_name": "Elite Chrome 200",
+    "maker": "Eastman Kodak",
+    "chemical_process": "E-6",
+    "iso": "200",
+    "white_balance": "Daylight",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 24exp",
+      "35mm 36exp",
+      "APS cartridge"
+    ],
+    "formats_available": [
+      "35mm",
+      "APS"
+    ],
+    "brief_description": "Higher-speed Elite Chrome reversal film.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "discontinued",
+    "availability_window": "1990s-2000s",
+    "verification_basis": "manufacturer datasheet/catalog or historical list"
+  },
+  {
+    "brand_name": "Elite Chrome 400",
+    "maker": "Eastman Kodak",
+    "chemical_process": "E-6",
+    "iso": "400",
+    "white_balance": "Daylight",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 36exp"
+    ],
+    "formats_available": [
+      "35mm"
+    ],
+    "brief_description": "Fast slide film with coarser grain and stronger use-case constraints.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "discontinued",
+    "availability_window": "1990s-2000s",
+    "verification_basis": "manufacturer datasheet/catalog or historical list"
+  },
+  {
+    "brand_name": "Elite Chrome Extra Color 100",
+    "maker": "Eastman Kodak",
+    "chemical_process": "E-6",
+    "iso": "100",
+    "white_balance": "Daylight",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 36exp"
+    ],
+    "formats_available": [
+      "35mm"
+    ],
+    "brief_description": "More saturated Elite Chrome slide variant.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "discontinued",
+    "availability_window": "1990s-2000s",
+    "verification_basis": "manufacturer datasheet/catalog or historical list"
+  },
+  {
+    "brand_name": "Gold 100",
+    "maker": "Eastman Kodak",
+    "chemical_process": "C-41",
+    "iso": "100",
+    "white_balance": "Daylight",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 24exp",
+      "35mm 36exp"
+    ],
+    "formats_available": [
+      "35mm"
+    ],
+    "brief_description": "Older consumer Gold-series daylight film.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "discontinued",
+    "availability_window": "1990s-2000s",
+    "verification_basis": "historical catalog/list"
+  },
+  {
+    "brand_name": "Gold 200",
+    "maker": "Eastman Kodak",
+    "chemical_process": "C-41",
+    "iso": "200",
+    "white_balance": "Daylight",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 24exp",
+      "35mm 36exp",
+      "120 roll"
+    ],
+    "formats_available": [
+      "35mm",
+      "120"
+    ],
+    "brief_description": "Consumer daylight-balanced color negative film with warm, classic rendering.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "current",
+    "availability_window": "1997-current",
+    "verification_basis": "manufacturer datasheet/catalog"
+  },
+  {
+    "brand_name": "Gold 400",
+    "maker": "Eastman Kodak",
+    "chemical_process": "C-41",
+    "iso": "400",
+    "white_balance": "Daylight",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 24exp",
+      "35mm 36exp"
+    ],
+    "formats_available": [
+      "35mm"
+    ],
+    "brief_description": "Older high-speed Gold-series consumer film.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "discontinued",
+    "availability_window": "1990s-2000s",
+    "verification_basis": "historical catalog/list"
+  },
+  {
+    "brand_name": "High Definition 400",
+    "maker": "Eastman Kodak",
+    "chemical_process": "C-41",
+    "iso": "400",
+    "white_balance": "Daylight",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 24exp",
+      "35mm 36exp"
+    ],
+    "formats_available": [
+      "35mm"
+    ],
+    "brief_description": "Consumer Kodak HD line with higher saturation and contrast.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "discontinued",
+    "availability_window": "2000s",
+    "verification_basis": "historical catalog/list"
+  },
+  {
+    "brand_name": "High-Speed Infrared",
+    "maker": "Eastman Kodak",
+    "chemical_process": "B&W",
+    "iso": "ISO variable",
+    "white_balance": "N/A",
+    "infrared_sensitivity": "True IR",
+    "package_sold_in": [
+      "35mm 36exp",
+      "120 roll"
+    ],
+    "formats_available": [
+      "35mm",
+      "120"
+    ],
+    "brief_description": "Legendary infrared-sensitive black-and-white film with extreme halation and foliage effects.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "discontinued",
+    "availability_window": "1990s-2007",
+    "verification_basis": "manufacturer datasheet/catalog or historical list"
+  },
+  {
+    "brand_name": "Kodacolor 100",
+    "maker": "Eastman Kodak",
+    "chemical_process": "C-41",
+    "iso": "100",
+    "white_balance": "Daylight",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 36exp"
+    ],
+    "formats_available": [
+      "35mm"
+    ],
+    "brief_description": "Recent Kodak-branded consumer color negative film line distinct from Kodak Professional packaging.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "current",
+    "availability_window": "2024-current",
+    "verification_basis": "manufacturer datasheet/catalog"
+  },
+  {
+    "brand_name": "Kodacolor 200",
+    "maker": "Eastman Kodak",
+    "chemical_process": "C-41",
+    "iso": "200",
+    "white_balance": "Daylight",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 36exp"
+    ],
+    "formats_available": [
+      "35mm"
+    ],
+    "brief_description": "Recent Kodak-branded consumer color negative film in simplified retail packaging.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "current",
+    "availability_window": "2024-current",
+    "verification_basis": "manufacturer datasheet/catalog"
+  },
+  {
+    "brand_name": "Kodak Aerochrome III 1443",
+    "maker": "Eastman Kodak",
+    "chemical_process": "E-6",
+    "iso": "400",
+    "white_balance": "Daylight (with IR response)",
+    "infrared_sensitivity": "True IR false-color",
+    "package_sold_in": [
+      "35mm bulk",
+      "120 respools",
+      "aerial rolls"
+    ],
+    "formats_available": [
+      "35mm",
+      "120 respools",
+      "aerial"
+    ],
+    "brief_description": "False-color infrared aerial film later adopted by artists/photographers.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "discontinued",
+    "availability_window": "1990s-2009",
+    "verification_basis": "mixed historical / market documentation"
+  },
+  {
+    "brand_name": "Kodak Aerocolor IV 2460",
+    "maker": "Eastman Kodak",
+    "chemical_process": "C-41",
+    "iso": "125",
+    "white_balance": "Daylight",
+    "infrared_sensitivity": "Aerial surveillance spectral response",
+    "package_sold_in": [
+      "aerial rolls"
+    ],
+    "formats_available": [
+      "aerial bulk"
+    ],
+    "brief_description": "Color aerial surveillance negative film with clear base; source stock for several respools.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "current_or_varied",
+    "availability_window": "1990s-current",
+    "verification_basis": "mixed historical / market documentation"
+  },
+  {
+    "brand_name": "Kodak MAX Versatility Plus 400",
+    "maker": "Eastman Kodak",
+    "chemical_process": "C-41",
+    "iso": "400",
+    "white_balance": "Daylight",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 24exp",
+      "35mm 36exp"
+    ],
+    "formats_available": [
+      "35mm"
+    ],
+    "brief_description": "Consumer high-speed film in MAX family.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "discontinued",
+    "availability_window": "2000s",
+    "verification_basis": "historical catalog/list"
+  },
+  {
+    "brand_name": "Max 400",
+    "maker": "Eastman Kodak",
+    "chemical_process": "C-41",
+    "iso": "400",
+    "white_balance": "Daylight",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 24exp",
+      "35mm 36exp",
+      "APS cartridge",
+      "single-use camera"
+    ],
+    "formats_available": [
+      "35mm",
+      "APS"
+    ],
+    "brief_description": "Consumer Kodak MAX line color negative film.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "discontinued",
+    "availability_window": "1990s-2000s",
+    "verification_basis": "historical catalog/list"
+  },
+  {
+    "brand_name": "Max 800",
+    "maker": "Eastman Kodak",
+    "chemical_process": "C-41",
+    "iso": "800",
+    "white_balance": "Daylight",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 24exp",
+      "35mm 36exp",
+      "APS cartridge"
+    ],
+    "formats_available": [
+      "35mm",
+      "APS"
+    ],
+    "brief_description": "Fast consumer Kodak color negative film for low light.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "discontinued",
+    "availability_window": "1990s-2000s",
+    "verification_basis": "historical catalog/list"
+  },
+  {
+    "brand_name": "Plus-X Pan 125",
+    "maker": "Eastman Kodak",
+    "chemical_process": "B&W",
+    "iso": "125",
+    "white_balance": "N/A",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 24exp",
+      "35mm 36exp",
+      "120 roll",
+      "sheet film",
+      "bulk 100ft"
+    ],
+    "formats_available": [
+      "35mm",
+      "120",
+      "sheet"
+    ],
+    "brief_description": "Medium-speed classic black-and-white film with fine grain.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "discontinued",
+    "availability_window": "1990s-2011",
+    "verification_basis": "manufacturer datasheet/catalog or historical list"
+  },
+  {
+    "brand_name": "Portra 100T",
+    "maker": "Eastman Kodak",
+    "chemical_process": "C-41",
+    "iso": "100",
+    "white_balance": "Tungsten",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 36exp",
+      "120 roll",
+      "4x5 10-sheet"
+    ],
+    "formats_available": [
+      "35mm",
+      "120",
+      "4x5"
+    ],
+    "brief_description": "Tungsten-balanced Portra stock for studio and artificial light work.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "discontinued",
+    "availability_window": "1998-2006",
+    "verification_basis": "historical catalog/list"
+  },
+  {
+    "brand_name": "Portra 160",
+    "maker": "Eastman Kodak",
+    "chemical_process": "C-41",
+    "iso": "160",
+    "white_balance": "Daylight",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 36exp",
+      "120 roll",
+      "4x5 10-sheet",
+      "8x10 10-sheet"
+    ],
+    "formats_available": [
+      "35mm",
+      "120",
+      "4x5",
+      "8x10"
+    ],
+    "brief_description": "Fine-grain professional color negative film with neutral skin tones and wide latitude.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "current",
+    "availability_window": "2011-current",
+    "verification_basis": "manufacturer datasheet/catalog"
+  },
+  {
+    "brand_name": "Portra 160NC",
+    "maker": "Eastman Kodak",
+    "chemical_process": "C-41",
+    "iso": "160",
+    "white_balance": "Daylight",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 36exp",
+      "120 roll",
+      "220 roll",
+      "4x5 10-sheet",
+      "8x10 10-sheet"
+    ],
+    "formats_available": [
+      "35mm",
+      "120",
+      "220",
+      "4x5",
+      "8x10"
+    ],
+    "brief_description": "Older Portra variant with softer contrast and lower saturation for portraiture.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "discontinued",
+    "availability_window": "1998-2010",
+    "verification_basis": "historical catalog/list"
+  },
+  {
+    "brand_name": "Portra 160VC",
+    "maker": "Eastman Kodak",
+    "chemical_process": "C-41",
+    "iso": "160",
+    "white_balance": "Daylight",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 36exp",
+      "120 roll",
+      "220 roll",
+      "4x5 10-sheet",
+      "8x10 10-sheet"
+    ],
+    "formats_available": [
+      "35mm",
+      "120",
+      "220",
+      "4x5",
+      "8x10"
+    ],
+    "brief_description": "Older Portra variant with higher saturation and contrast than NC.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "discontinued",
+    "availability_window": "1998-2010",
+    "verification_basis": "historical catalog/list"
+  },
+  {
+    "brand_name": "Portra 400",
+    "maker": "Eastman Kodak",
+    "chemical_process": "C-41",
+    "iso": "400",
+    "white_balance": "Daylight",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 36exp",
+      "120 roll",
+      "4x5 10-sheet",
+      "8x10 10-sheet",
+      "4x10 10-sheet",
+      "5x7 10-sheet",
+      "11x14 10-sheet",
+      "20x24 sheet"
+    ],
+    "formats_available": [
+      "35mm",
+      "120",
+      "4x5",
+      "4x10",
+      "5x7",
+      "8x10",
+      "11x14",
+      "20x24"
+    ],
+    "brief_description": "Widely used professional color negative film with very wide exposure latitude and natural color.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "current",
+    "availability_window": "2010-current",
+    "verification_basis": "manufacturer datasheet/catalog"
+  },
+  {
+    "brand_name": "Portra 400BW",
+    "maker": "Eastman Kodak",
+    "chemical_process": "C-41",
+    "iso": "400",
+    "white_balance": "N/A",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 36exp",
+      "120 roll",
+      "220 roll"
+    ],
+    "formats_available": [
+      "35mm",
+      "120",
+      "220"
+    ],
+    "brief_description": "Chromogenic C-41 black-and-white professional film.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "discontinued",
+    "availability_window": "1998-2005",
+    "verification_basis": "manufacturer datasheet/catalog or historical list"
+  },
+  {
+    "brand_name": "Portra 400NC",
+    "maker": "Eastman Kodak",
+    "chemical_process": "C-41",
+    "iso": "400",
+    "white_balance": "Daylight",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 36exp",
+      "120 roll",
+      "220 roll",
+      "4x5 10-sheet",
+      "8x10 10-sheet"
+    ],
+    "formats_available": [
+      "35mm",
+      "120",
+      "220",
+      "4x5",
+      "8x10"
+    ],
+    "brief_description": "Lower-saturation Portra 400 predecessor aimed at portrait and wedding work.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "discontinued",
+    "availability_window": "1998-2010",
+    "verification_basis": "historical catalog/list"
+  },
+  {
+    "brand_name": "Portra 400UC",
+    "maker": "Eastman Kodak",
+    "chemical_process": "C-41",
+    "iso": "400",
+    "white_balance": "Daylight",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 36exp",
+      "120 roll"
+    ],
+    "formats_available": [
+      "35mm",
+      "120"
+    ],
+    "brief_description": "Ultra Color Portra variant with stronger saturation than standard Portra films.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "discontinued",
+    "availability_window": "2002-2006",
+    "verification_basis": "historical catalog/list"
+  },
+  {
+    "brand_name": "Portra 400VC",
+    "maker": "Eastman Kodak",
+    "chemical_process": "C-41",
+    "iso": "400",
+    "white_balance": "Daylight",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 36exp",
+      "120 roll",
+      "220 roll",
+      "4x5 10-sheet",
+      "8x10 10-sheet"
+    ],
+    "formats_available": [
+      "35mm",
+      "120",
+      "220",
+      "4x5",
+      "8x10"
+    ],
+    "brief_description": "Higher-color Portra 400 predecessor with more saturation.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "discontinued",
+    "availability_window": "1998-2010",
+    "verification_basis": "historical catalog/list"
+  },
+  {
+    "brand_name": "Portra 800",
+    "maker": "Eastman Kodak",
+    "chemical_process": "C-41",
+    "iso": "800",
+    "white_balance": "Daylight",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 36exp",
+      "120 roll"
+    ],
+    "formats_available": [
+      "35mm",
+      "120"
+    ],
+    "brief_description": "Fast professional color negative film optimized for difficult light and accurate skin tones.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "current",
+    "availability_window": "1998-current",
+    "verification_basis": "manufacturer datasheet/catalog"
+  },
+  {
+    "brand_name": "Pro Image 100",
+    "maker": "Eastman Kodak",
+    "chemical_process": "C-41",
+    "iso": "100",
+    "white_balance": "Daylight",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 36exp"
+    ],
+    "formats_available": [
+      "35mm"
+    ],
+    "brief_description": "Professional/advanced daylight color negative film with restrained contrast and portrait-friendly color.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "current",
+    "availability_window": "1997-current",
+    "verification_basis": "manufacturer datasheet/catalog"
+  },
+  {
+    "brand_name": "Royal Gold 100",
+    "maker": "Eastman Kodak",
+    "chemical_process": "C-41",
+    "iso": "100",
+    "white_balance": "Daylight",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 24exp",
+      "35mm 36exp",
+      "APS cartridge"
+    ],
+    "formats_available": [
+      "35mm",
+      "APS"
+    ],
+    "brief_description": "Consumer color negative film with warm tones and fine grain.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "discontinued",
+    "availability_window": "1990s-2000s",
+    "verification_basis": "historical catalog/list"
+  },
+  {
+    "brand_name": "Royal Gold 200",
+    "maker": "Eastman Kodak",
+    "chemical_process": "C-41",
+    "iso": "200",
+    "white_balance": "Daylight",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 24exp",
+      "35mm 36exp",
+      "APS cartridge"
+    ],
+    "formats_available": [
+      "35mm",
+      "APS"
+    ],
+    "brief_description": "Consumer daylight color negative film in the Royal Gold family.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "discontinued",
+    "availability_window": "1990s-2000s",
+    "verification_basis": "historical catalog/list"
+  },
+  {
+    "brand_name": "Royal Gold 400",
+    "maker": "Eastman Kodak",
+    "chemical_process": "C-41",
+    "iso": "400",
+    "white_balance": "Daylight",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 24exp",
+      "35mm 36exp",
+      "APS cartridge"
+    ],
+    "formats_available": [
+      "35mm",
+      "APS"
+    ],
+    "brief_description": "Higher-speed Royal Gold variant.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "discontinued",
+    "availability_window": "1990s-2000s",
+    "verification_basis": "historical catalog/list"
+  },
+  {
+    "brand_name": "Supra 100",
+    "maker": "Eastman Kodak",
+    "chemical_process": "C-41",
+    "iso": "100",
+    "white_balance": "Daylight",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 36exp",
+      "120 roll",
+      "220 roll",
+      "4x5 10-sheet"
+    ],
+    "formats_available": [
+      "35mm",
+      "120",
+      "220",
+      "4x5"
+    ],
+    "brief_description": "Professional daylight color negative film preceding later Portra families.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "discontinued",
+    "availability_window": "1990s-2002",
+    "verification_basis": "historical catalog/list"
+  },
+  {
+    "brand_name": "Supra 400",
+    "maker": "Eastman Kodak",
+    "chemical_process": "C-41",
+    "iso": "400",
+    "white_balance": "Daylight",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 36exp",
+      "120 roll",
+      "220 roll",
+      "4x5 10-sheet"
+    ],
+    "formats_available": [
+      "35mm",
+      "120",
+      "220",
+      "4x5"
+    ],
+    "brief_description": "Professional high-speed daylight color negative film in the Supra line.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "discontinued",
+    "availability_window": "1990s-2002",
+    "verification_basis": "historical catalog/list"
+  },
+  {
+    "brand_name": "Supra Endura 100",
+    "maker": "Eastman Kodak",
+    "chemical_process": "C-41",
+    "iso": "100",
+    "white_balance": "Daylight",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 36exp",
+      "120 roll",
+      "220 roll",
+      "4x5 10-sheet"
+    ],
+    "formats_available": [
+      "35mm",
+      "120",
+      "220",
+      "4x5"
+    ],
+    "brief_description": "Late-era Supra daylight color negative film with improved scan/print characteristics.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "discontinued",
+    "availability_window": "2000s",
+    "verification_basis": "historical catalog/list"
+  },
+  {
+    "brand_name": "Supra Endura 400",
+    "maker": "Eastman Kodak",
+    "chemical_process": "C-41",
+    "iso": "400",
+    "white_balance": "Daylight",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 36exp",
+      "120 roll",
+      "220 roll",
+      "4x5 10-sheet"
+    ],
+    "formats_available": [
+      "35mm",
+      "120",
+      "220",
+      "4x5"
+    ],
+    "brief_description": "Late-era high-speed Supra daylight color negative film.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "discontinued",
+    "availability_window": "2000s",
+    "verification_basis": "historical catalog/list"
+  },
+  {
+    "brand_name": "T-Max 100",
+    "maker": "Eastman Kodak",
+    "chemical_process": "B&W",
+    "iso": "100",
+    "white_balance": "N/A",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 24exp",
+      "35mm 36exp",
+      "120 roll",
+      "4x5 10-sheet",
+      "8x10 10-sheet",
+      "bulk 100ft"
+    ],
+    "formats_available": [
+      "35mm",
+      "120",
+      "4x5",
+      "8x10"
+    ],
+    "brief_description": "Tabular-grain black-and-white film with very fine grain and high sharpness.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "1986-current",
+    "availability_window": "current",
+    "verification_basis": "manufacturer datasheet/catalog or historical list"
+  },
+  {
+    "brand_name": "T-Max 400",
+    "maker": "Eastman Kodak",
+    "chemical_process": "B&W",
+    "iso": "400",
+    "white_balance": "N/A",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 24exp",
+      "35mm 36exp",
+      "120 roll",
+      "4x5 10-sheet",
+      "8x10 10-sheet",
+      "bulk 100ft"
+    ],
+    "formats_available": [
+      "35mm",
+      "120",
+      "4x5",
+      "8x10"
+    ],
+    "brief_description": "Fast T-grain black-and-white film balancing fine grain with speed.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "1986-current",
+    "availability_window": "current",
+    "verification_basis": "manufacturer datasheet/catalog or historical list"
+  },
+  {
+    "brand_name": "T-Max P3200",
+    "maker": "Eastman Kodak",
+    "chemical_process": "B&W",
+    "iso": "3200",
+    "white_balance": "N/A",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 36exp",
+      "120 roll"
+    ],
+    "formats_available": [
+      "35mm",
+      "120"
+    ],
+    "brief_description": "Very fast black-and-white film intended for low light and push processing.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "1988-current",
+    "availability_window": "current",
+    "verification_basis": "manufacturer datasheet/catalog or historical list"
+  },
+  {
+    "brand_name": "Technical Pan",
+    "maker": "Eastman Kodak",
+    "chemical_process": "B&W",
+    "iso": "25",
+    "white_balance": "N/A",
+    "infrared_sensitivity": "Extended red",
+    "package_sold_in": [
+      "35mm 36exp",
+      "bulk 100ft",
+      "sheet film"
+    ],
+    "formats_available": [
+      "35mm",
+      "sheet"
+    ],
+    "brief_description": "Ultra-high-resolution black-and-white film with unique contrast characteristics.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "discontinued",
+    "availability_window": "1990s-2004",
+    "verification_basis": "manufacturer datasheet/catalog or historical list"
+  },
+  {
+    "brand_name": "Tri-X 320",
+    "maker": "Eastman Kodak",
+    "chemical_process": "B&W",
+    "iso": "320",
+    "white_balance": "N/A",
+    "infrared_sensitivity": "Extended red sensitivity (not true IR)",
+    "package_sold_in": [
+      "4x5 10-sheet",
+      "8x10 10-sheet"
+    ],
+    "formats_available": [
+      "4x5",
+      "8x10"
+    ],
+    "brief_description": "Sheet-film Tri-X variant optimized for large-format tonal scale.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "current",
+    "availability_window": "current",
+    "verification_basis": "manufacturer datasheet/catalog or historical list"
+  },
+  {
+    "brand_name": "Tri-X 400",
+    "maker": "Eastman Kodak",
+    "chemical_process": "B&W",
+    "iso": "400",
+    "white_balance": "N/A",
+    "infrared_sensitivity": "Extended red sensitivity (not true IR)",
+    "package_sold_in": [
+      "35mm 24exp",
+      "35mm 36exp",
+      "120 roll",
+      "4x5 10-sheet",
+      "8x10 10-sheet",
+      "bulk 100ft"
+    ],
+    "formats_available": [
+      "35mm",
+      "120",
+      "4x5",
+      "8x10"
+    ],
+    "brief_description": "Classic cubic-grain black-and-white film with strong pushability and pronounced grain.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "1954-current",
+    "availability_window": "current",
+    "verification_basis": "manufacturer datasheet/catalog or historical list"
+  },
+  {
+    "brand_name": "Tri-X Reversal 7266",
+    "maker": "Eastman Kodak",
+    "chemical_process": "B&W reversal",
+    "iso": "200 daylight / 160 tungsten",
+    "white_balance": "Daylight/Tungsten",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "16mm 100ft",
+      "Super 8 cartridge"
+    ],
+    "formats_available": [
+      "16mm",
+      "Super 8"
+    ],
+    "brief_description": "Black-and-white reversal motion-picture stock for direct positive projection.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "current",
+    "availability_window": "current",
+    "verification_basis": "manufacturer motion-picture catalog"
+  },
+  {
+    "brand_name": "Ultramax 400",
+    "maker": "Eastman Kodak",
+    "chemical_process": "C-41",
+    "iso": "400",
+    "white_balance": "Daylight",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 24exp",
+      "35mm 36exp"
+    ],
+    "formats_available": [
+      "35mm"
+    ],
+    "brief_description": "Consumer high-speed color negative film with punchy contrast and flexible exposure.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "current",
+    "availability_window": "1997-current",
+    "verification_basis": "manufacturer datasheet/catalog"
+  },
+  {
+    "brand_name": "Vision 200T 5274/7274",
+    "maker": "Eastman Kodak",
+    "chemical_process": "ECN-2",
+    "iso": "200",
+    "white_balance": "Tungsten",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 400ft",
+      "35mm 1000ft",
+      "16mm 100ft",
+      "16mm 400ft"
+    ],
+    "formats_available": [
+      "35mm cine",
+      "16mm"
+    ],
+    "brief_description": "Earlier Vision-generation tungsten stock.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "discontinued",
+    "availability_window": "1996-2002",
+    "verification_basis": "manufacturer motion-picture catalog"
+  },
+  {
+    "brand_name": "Vision 320T 5277/7277",
+    "maker": "Eastman Kodak",
+    "chemical_process": "ECN-2",
+    "iso": "320",
+    "white_balance": "Tungsten",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 400ft",
+      "35mm 1000ft",
+      "16mm 100ft",
+      "16mm 400ft"
+    ],
+    "formats_available": [
+      "35mm cine",
+      "16mm"
+    ],
+    "brief_description": "Earlier Vision-generation tungsten stock.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "discontinued",
+    "availability_window": "1996-2002",
+    "verification_basis": "manufacturer motion-picture catalog"
+  },
+  {
+    "brand_name": "Vision2 100T 5212/7212",
+    "maker": "Eastman Kodak",
+    "chemical_process": "ECN-2",
+    "iso": "100",
+    "white_balance": "Tungsten",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 400ft",
+      "35mm 1000ft",
+      "16mm 100ft",
+      "16mm 400ft"
+    ],
+    "formats_available": [
+      "35mm cine",
+      "16mm"
+    ],
+    "brief_description": "Previous-generation tungsten motion-picture stock.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "discontinued",
+    "availability_window": "2002-2010",
+    "verification_basis": "manufacturer motion-picture catalog"
+  },
+  {
+    "brand_name": "Vision2 200T 5217/7217",
+    "maker": "Eastman Kodak",
+    "chemical_process": "ECN-2",
+    "iso": "200",
+    "white_balance": "Tungsten",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 400ft",
+      "35mm 1000ft",
+      "16mm 100ft",
+      "16mm 400ft"
+    ],
+    "formats_available": [
+      "35mm cine",
+      "16mm"
+    ],
+    "brief_description": "Previous-generation tungsten negative stock.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "discontinued",
+    "availability_window": "2002-2010",
+    "verification_basis": "manufacturer motion-picture catalog"
+  },
+  {
+    "brand_name": "Vision2 250D 5205/7205",
+    "maker": "Eastman Kodak",
+    "chemical_process": "ECN-2",
+    "iso": "250",
+    "white_balance": "Daylight",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 400ft",
+      "35mm 1000ft",
+      "16mm 100ft",
+      "16mm 400ft"
+    ],
+    "formats_available": [
+      "35mm cine",
+      "16mm"
+    ],
+    "brief_description": "Previous-generation daylight negative stock.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "discontinued",
+    "availability_window": "2002-2010",
+    "verification_basis": "manufacturer motion-picture catalog"
+  },
+  {
+    "brand_name": "Vision2 500T 5218/7218",
+    "maker": "Eastman Kodak",
+    "chemical_process": "ECN-2",
+    "iso": "500",
+    "white_balance": "Tungsten",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 400ft",
+      "35mm 1000ft",
+      "16mm 100ft",
+      "16mm 400ft"
+    ],
+    "formats_available": [
+      "35mm cine",
+      "16mm"
+    ],
+    "brief_description": "Previous-generation high-speed tungsten stock.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "discontinued",
+    "availability_window": "2002-2010",
+    "verification_basis": "manufacturer motion-picture catalog"
+  },
+  {
+    "brand_name": "Vision2 50D 5201/7201",
+    "maker": "Eastman Kodak",
+    "chemical_process": "ECN-2",
+    "iso": "50",
+    "white_balance": "Daylight",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 400ft",
+      "35mm 1000ft",
+      "16mm 100ft",
+      "16mm 400ft"
+    ],
+    "formats_available": [
+      "35mm cine",
+      "16mm"
+    ],
+    "brief_description": "Previous-generation daylight motion-picture stock.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "discontinued",
+    "availability_window": "2002-2010",
+    "verification_basis": "manufacturer motion-picture catalog"
+  },
+  {
+    "brand_name": "Vision3 200T 5213/7213",
+    "maker": "Eastman Kodak",
+    "chemical_process": "ECN-2",
+    "iso": "200",
+    "white_balance": "Tungsten",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 400ft",
+      "35mm 1000ft",
+      "16mm 100ft",
+      "16mm 400ft"
+    ],
+    "formats_available": [
+      "35mm cine",
+      "16mm"
+    ],
+    "brief_description": "Mid-speed tungsten-balanced motion-picture negative stock.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "current",
+    "availability_window": "current",
+    "verification_basis": "manufacturer motion-picture catalog"
+  },
+  {
+    "brand_name": "Vision3 250D 5207/7207",
+    "maker": "Eastman Kodak",
+    "chemical_process": "ECN-2",
+    "iso": "250",
+    "white_balance": "Daylight",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 400ft",
+      "35mm 1000ft",
+      "16mm 100ft",
+      "16mm 400ft"
+    ],
+    "formats_available": [
+      "35mm cine",
+      "16mm"
+    ],
+    "brief_description": "Versatile daylight-balanced motion-picture negative stock.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "current",
+    "availability_window": "current",
+    "verification_basis": "manufacturer motion-picture catalog"
+  },
+  {
+    "brand_name": "Vision3 500T 5219/7219",
+    "maker": "Eastman Kodak",
+    "chemical_process": "ECN-2",
+    "iso": "500",
+    "white_balance": "Tungsten",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 400ft",
+      "35mm 1000ft",
+      "16mm 100ft",
+      "16mm 400ft",
+      "Super 8 cartridge"
+    ],
+    "formats_available": [
+      "35mm cine",
+      "16mm",
+      "Super 8"
+    ],
+    "brief_description": "High-speed tungsten-balanced motion-picture negative stock with wide latitude.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "current",
+    "availability_window": "current",
+    "verification_basis": "manufacturer motion-picture catalog"
+  },
+  {
+    "brand_name": "Vision3 50D 5203/7203",
+    "maker": "Eastman Kodak",
+    "chemical_process": "ECN-2",
+    "iso": "50",
+    "white_balance": "Daylight",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 400ft",
+      "35mm 1000ft",
+      "16mm 100ft",
+      "16mm 400ft",
+      "Super 8 cartridge"
+    ],
+    "formats_available": [
+      "35mm cine",
+      "16mm",
+      "Super 8"
+    ],
+    "brief_description": "Fine-grain daylight-balanced camera negative motion-picture stock.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "current",
+    "availability_window": "current",
+    "verification_basis": "manufacturer motion-picture catalog"
+  },
+  {
+    "brand_name": "Efke 100",
+    "maker": "Efke / Fotokemika",
+    "chemical_process": "B&W",
+    "iso": "100",
+    "white_balance": "N/A",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 36exp",
+      "120 roll",
+      "4x5 25-sheet"
+    ],
+    "formats_available": [
+      "35mm",
+      "120",
+      "4x5"
+    ],
+    "brief_description": "Classic medium-speed black-and-white film.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "discontinued",
+    "availability_window": "1990s-2012",
+    "verification_basis": "historical list + product pages + well-documented respool lineage where noted"
+  },
+  {
+    "brand_name": "Efke 25",
+    "maker": "Efke / Fotokemika",
+    "chemical_process": "B&W",
+    "iso": "25",
+    "white_balance": "N/A",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 36exp",
+      "120 roll",
+      "4x5 25-sheet"
+    ],
+    "formats_available": [
+      "35mm",
+      "120",
+      "4x5"
+    ],
+    "brief_description": "Very fine-grain traditional-emulsion black-and-white film.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "discontinued",
+    "availability_window": "1990s-2012",
+    "verification_basis": "historical list + product pages + well-documented respool lineage where noted"
+  },
+  {
+    "brand_name": "Efke 50",
+    "maker": "Efke / Fotokemika",
+    "chemical_process": "B&W",
+    "iso": "50",
+    "white_balance": "N/A",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 36exp",
+      "120 roll",
+      "4x5 25-sheet"
+    ],
+    "formats_available": [
+      "35mm",
+      "120",
+      "4x5"
+    ],
+    "brief_description": "Slow traditional-emulsion black-and-white film.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "discontinued",
+    "availability_window": "1990s-2012",
+    "verification_basis": "historical list + product pages + well-documented respool lineage where noted"
+  },
+  {
+    "brand_name": "Efke IR 820 Aura",
+    "maker": "Efke / Fotokemika",
+    "chemical_process": "B&W",
+    "iso": "100-820 depending filter",
+    "white_balance": "N/A",
+    "infrared_sensitivity": "True IR",
+    "package_sold_in": [
+      "35mm 36exp",
+      "120 roll",
+      "sheet film"
+    ],
+    "formats_available": [
+      "35mm",
+      "120",
+      "sheet"
+    ],
+    "brief_description": "Infrared-sensitive black-and-white film known for strong halation/aura effects.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "discontinued",
+    "availability_window": "2000s-2012",
+    "verification_basis": "historical list + product pages + well-documented respool lineage where noted"
+  },
+  {
+    "brand_name": "Ferrania P30",
+    "maker": "Ferrania",
+    "chemical_process": "B&W",
+    "iso": "80",
+    "white_balance": "N/A",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 36exp",
+      "120 roll"
+    ],
+    "formats_available": [
+      "35mm",
+      "120"
+    ],
+    "brief_description": "High-contrast black-and-white film inspired by Ferrania cine heritage.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "current",
+    "availability_window": "2017-current",
+    "verification_basis": "historical list + current product pages where available"
+  },
+  {
+    "brand_name": "Ferrania Solaris 100",
+    "maker": "Ferrania",
+    "chemical_process": "C-41",
+    "iso": "100",
+    "white_balance": "Daylight",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 24exp",
+      "35mm 36exp"
+    ],
+    "formats_available": [
+      "35mm"
+    ],
+    "brief_description": "General consumer color negative film.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "discontinued",
+    "availability_window": "1990s-2000s",
+    "verification_basis": "historical list"
+  },
+  {
+    "brand_name": "Ferrania Solaris 200",
+    "maker": "Ferrania",
+    "chemical_process": "C-41",
+    "iso": "200",
+    "white_balance": "Daylight",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 24exp",
+      "35mm 36exp"
+    ],
+    "formats_available": [
+      "35mm"
+    ],
+    "brief_description": "General consumer color negative film.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "discontinued",
+    "availability_window": "1990s-2000s",
+    "verification_basis": "historical list"
+  },
+  {
+    "brand_name": "Ferrania Solaris 400",
+    "maker": "Ferrania",
+    "chemical_process": "C-41",
+    "iso": "400",
+    "white_balance": "Daylight",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 24exp",
+      "35mm 36exp"
+    ],
+    "formats_available": [
+      "35mm"
+    ],
+    "brief_description": "General consumer high-speed color negative film.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "discontinued",
+    "availability_window": "1990s-2000s",
+    "verification_basis": "historical list"
+  },
+  {
+    "brand_name": "Ferrania Solaris FG 100",
+    "maker": "Ferrania",
+    "chemical_process": "C-41",
+    "iso": "100",
+    "white_balance": "Daylight",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 24exp",
+      "35mm 36exp"
+    ],
+    "formats_available": [
+      "35mm"
+    ],
+    "brief_description": "Consumer color negative film in Solaris range.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "discontinued",
+    "availability_window": "1990s-2000s",
+    "verification_basis": "historical list + current product pages where available"
+  },
+  {
+    "brand_name": "Ferrania Solaris FG Plus 200",
+    "maker": "Ferrania",
+    "chemical_process": "C-41",
+    "iso": "200",
+    "white_balance": "Daylight",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 24exp",
+      "35mm 36exp"
+    ],
+    "formats_available": [
+      "35mm"
+    ],
+    "brief_description": "Consumer daylight color negative film in Solaris range.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "discontinued",
+    "availability_window": "1990s-2000s",
+    "verification_basis": "historical list + current product pages where available"
+  },
+  {
+    "brand_name": "Ferrania Solaris FG Plus 400",
+    "maker": "Ferrania",
+    "chemical_process": "C-41",
+    "iso": "400",
+    "white_balance": "Daylight",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 24exp",
+      "35mm 36exp"
+    ],
+    "formats_available": [
+      "35mm"
+    ],
+    "brief_description": "Higher-speed Solaris family film.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "discontinued",
+    "availability_window": "1990s-2000s",
+    "verification_basis": "historical list + current product pages where available"
+  },
+  {
+    "brand_name": "Film Electra 100",
+    "maker": "Film Electra",
+    "chemical_process": "C-41",
+    "iso": "100",
+    "white_balance": "Daylight",
+    "infrared_sensitivity": "Aerial surveillance derived",
+    "package_sold_in": [
+      "35mm 36exp"
+    ],
+    "formats_available": [
+      "35mm"
+    ],
+    "brief_description": "Aerocolor-derived color negative film sold under Film Electra branding.",
+    "respool_flag": "yes",
+    "source_emulsion_if_respool": "Kodak Aerocolor IV 2460-derived",
+    "status": "current_or_varied",
+    "availability_window": "2020s-current",
+    "verification_basis": "historical list + product pages + well-documented respool lineage where noted"
+  },
+  {
+    "brand_name": "FPP Frankenstein 200",
+    "maker": "Film Photography Project",
+    "chemical_process": "B&W",
+    "iso": "200",
+    "white_balance": "N/A",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "127 roll"
+    ],
+    "formats_available": [
+      "127"
+    ],
+    "brief_description": "Specialty 127-format black-and-white film from Film Photography Project.",
+    "respool_flag": "unknown",
+    "source_emulsion_if_respool": "",
+    "status": "current_or_varied",
+    "availability_window": "2010s-current",
+    "verification_basis": "mixed historical / market documentation"
+  },
+  {
+    "brand_name": "FPP Monster Color 100",
+    "maker": "Film Photography Project",
+    "chemical_process": "C-41",
+    "iso": "100",
+    "white_balance": "Daylight",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "127 roll",
+      "620 roll"
+    ],
+    "formats_available": [
+      "127",
+      "620"
+    ],
+    "brief_description": "Specialty color negative film for niche roll formats.",
+    "respool_flag": "unknown",
+    "source_emulsion_if_respool": "",
+    "status": "current_or_varied",
+    "availability_window": "2010s-current",
+    "verification_basis": "mixed historical / market documentation"
+  },
+  {
+    "brand_name": "Film Washi S",
+    "maker": "Film Washi",
+    "chemical_process": "B&W",
+    "iso": "50",
+    "white_balance": "N/A",
+    "infrared_sensitivity": "Orthochromatic",
+    "package_sold_in": [
+      "35mm 36exp"
+    ],
+    "formats_available": [
+      "35mm"
+    ],
+    "brief_description": "Hand-coated or specialty black-and-white film with orthographic behavior.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "current",
+    "availability_window": "2010s-current",
+    "verification_basis": "historical list + product pages + well-documented respool lineage where noted"
+  },
+  {
+    "brand_name": "Film Washi X",
+    "maker": "Film Washi",
+    "chemical_process": "C-41",
+    "iso": "100",
+    "white_balance": "Daylight",
+    "infrared_sensitivity": "Aerial surveillance derived",
+    "package_sold_in": [
+      "35mm 36exp"
+    ],
+    "formats_available": [
+      "35mm"
+    ],
+    "brief_description": "Color-negative film sold by Film Washi and widely identified as Kodak Aerocolor IV-derived.",
+    "respool_flag": "yes",
+    "source_emulsion_if_respool": "Kodak Aerocolor IV 2460-derived",
+    "status": "current_or_varied",
+    "availability_window": "2020s-current",
+    "verification_basis": "historical list + product pages + well-documented respool lineage where noted"
+  },
+  {
+    "brand_name": "Film Washi Z",
+    "maker": "Film Washi",
+    "chemical_process": "B&W",
+    "iso": "400",
+    "white_balance": "N/A",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 36exp"
+    ],
+    "formats_available": [
+      "35mm"
+    ],
+    "brief_description": "Experimental black-and-white film under Film Washi branding.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "current",
+    "availability_window": "2010s-current",
+    "verification_basis": "historical list + product pages + well-documented respool lineage where noted"
+  },
+  {
+    "brand_name": "Foma Retropan 320 Soft",
+    "maker": "Foma Bohemia",
+    "chemical_process": "B&W",
+    "iso": "320",
+    "white_balance": "N/A",
+    "infrared_sensitivity": "Extended red",
+    "package_sold_in": [
+      "35mm 36exp",
+      "120 roll",
+      "4x5 25-sheet"
+    ],
+    "formats_available": [
+      "35mm",
+      "120",
+      "4x5"
+    ],
+    "brief_description": "Soft-toned black-and-white film with old-school rendering.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "current_or_varied",
+    "availability_window": "2010s-current",
+    "verification_basis": "historical list + current product pages where available"
+  },
+  {
+    "brand_name": "Fomapan 100 Classic",
+    "maker": "Foma Bohemia",
+    "chemical_process": "B&W",
+    "iso": "100",
+    "white_balance": "N/A",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 24exp",
+      "35mm 36exp",
+      "120 roll",
+      "4x5 25-sheet",
+      "8x10 10-sheet",
+      "bulk 100ft"
+    ],
+    "formats_available": [
+      "35mm",
+      "120",
+      "4x5",
+      "8x10"
+    ],
+    "brief_description": "Traditional-grain medium-speed black-and-white film.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "current",
+    "availability_window": "1990s-current",
+    "verification_basis": "historical list + current product pages where available"
+  },
+  {
+    "brand_name": "Fomapan 200 Creative",
+    "maker": "Foma Bohemia",
+    "chemical_process": "B&W",
+    "iso": "200",
+    "white_balance": "N/A",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 24exp",
+      "35mm 36exp",
+      "120 roll"
+    ],
+    "formats_available": [
+      "35mm",
+      "120"
+    ],
+    "brief_description": "Distinctive mid-speed black-and-white film with classic grain and broad latitude.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "current",
+    "availability_window": "1990s-current",
+    "verification_basis": "historical list + current product pages where available"
+  },
+  {
+    "brand_name": "Fomapan 400 Action",
+    "maker": "Foma Bohemia",
+    "chemical_process": "B&W",
+    "iso": "400",
+    "white_balance": "N/A",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 24exp",
+      "35mm 36exp",
+      "120 roll",
+      "4x5 25-sheet",
+      "bulk 100ft"
+    ],
+    "formats_available": [
+      "35mm",
+      "120",
+      "4x5"
+    ],
+    "brief_description": "Traditional-grain high-speed black-and-white film.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "current",
+    "availability_window": "1990s-current",
+    "verification_basis": "historical list + current product pages where available"
+  },
+  {
+    "brand_name": "Arista EDU Ultra 100",
+    "maker": "Freestyle / Arista",
+    "chemical_process": "B&W",
+    "iso": "100",
+    "white_balance": "N/A",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 36exp",
+      "120 roll",
+      "4x5 25-sheet"
+    ],
+    "formats_available": [
+      "35mm",
+      "120",
+      "4x5"
+    ],
+    "brief_description": "Budget black-and-white film sold by Freestyle; commonly documented as Fomapan-made.",
+    "respool_flag": "yes",
+    "source_emulsion_if_respool": "Fomapan 100-derived/rebranded",
+    "status": "current",
+    "availability_window": "2000s-current",
+    "verification_basis": "historical list + product pages + well-documented respool lineage where noted"
+  },
+  {
+    "brand_name": "Arista EDU Ultra 200",
+    "maker": "Freestyle / Arista",
+    "chemical_process": "B&W",
+    "iso": "200",
+    "white_balance": "N/A",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 36exp",
+      "120 roll"
+    ],
+    "formats_available": [
+      "35mm",
+      "120"
+    ],
+    "brief_description": "Budget black-and-white film sold by Freestyle; commonly documented as Fomapan-made.",
+    "respool_flag": "yes",
+    "source_emulsion_if_respool": "Fomapan 200-derived/rebranded",
+    "status": "current",
+    "availability_window": "2000s-current",
+    "verification_basis": "historical list + product pages + well-documented respool lineage where noted"
+  },
+  {
+    "brand_name": "Arista EDU Ultra 400",
+    "maker": "Freestyle / Arista",
+    "chemical_process": "B&W",
+    "iso": "400",
+    "white_balance": "N/A",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 36exp",
+      "120 roll",
+      "4x5 25-sheet"
+    ],
+    "formats_available": [
+      "35mm",
+      "120",
+      "4x5"
+    ],
+    "brief_description": "Budget black-and-white film sold by Freestyle; commonly documented as Fomapan-made.",
+    "respool_flag": "yes",
+    "source_emulsion_if_respool": "Fomapan 400-derived/rebranded",
+    "status": "current",
+    "availability_window": "2000s-current",
+    "verification_basis": "historical list + product pages + well-documented respool lineage where noted"
+  },
+  {
+    "brand_name": "64T Type II",
+    "maker": "Fujifilm",
+    "chemical_process": "E-6",
+    "iso": "64",
+    "white_balance": "Tungsten",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 36exp",
+      "120 roll"
+    ],
+    "formats_available": [
+      "35mm",
+      "120"
+    ],
+    "brief_description": "Tungsten-balanced professional slide film variant.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "discontinued",
+    "availability_window": "1990s-2000s",
+    "verification_basis": "official datasheet/current page or historical list"
+  },
+  {
+    "brand_name": "Astia 100F",
+    "maker": "Fujifilm",
+    "chemical_process": "E-6",
+    "iso": "100",
+    "white_balance": "Daylight",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 36exp",
+      "120 roll",
+      "4x5 10-sheet"
+    ],
+    "formats_available": [
+      "35mm",
+      "120",
+      "4x5"
+    ],
+    "brief_description": "Lower-contrast portrait-oriented professional slide film.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "discontinued",
+    "availability_window": "1990s-2012",
+    "verification_basis": "official datasheet/current page or historical list"
+  },
+  {
+    "brand_name": "C200",
+    "maker": "Fujifilm",
+    "chemical_process": "C-41",
+    "iso": "200",
+    "white_balance": "Daylight",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 24exp",
+      "35mm 36exp"
+    ],
+    "formats_available": [
+      "35mm"
+    ],
+    "brief_description": "Affordable daylight consumer color negative film sold globally for many years.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "discontinued_or_varied",
+    "availability_window": "2000s-2024",
+    "verification_basis": "official datasheet/current page or historical list"
+  },
+  {
+    "brand_name": "Fujicolor 100",
+    "maker": "Fujifilm",
+    "chemical_process": "C-41",
+    "iso": "100",
+    "white_balance": "Daylight",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 24exp",
+      "35mm 36exp"
+    ],
+    "formats_available": [
+      "35mm"
+    ],
+    "brief_description": "General daylight consumer film sold under plain Fujicolor branding in some markets.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "discontinued_or_varied",
+    "availability_window": "1990s-2020s",
+    "verification_basis": "official datasheet/current page or historical list"
+  },
+  {
+    "brand_name": "Fujicolor 1600 Superia",
+    "maker": "Fujifilm",
+    "chemical_process": "C-41",
+    "iso": "1600",
+    "white_balance": "Daylight",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 36exp"
+    ],
+    "formats_available": [
+      "35mm"
+    ],
+    "brief_description": "Alternate market naming for high-speed Superia.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "discontinued",
+    "availability_window": "2000s",
+    "verification_basis": "historical list"
+  },
+  {
+    "brand_name": "Fujicolor 200",
+    "maker": "Fujifilm",
+    "chemical_process": "C-41",
+    "iso": "200",
+    "white_balance": "Daylight",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 24exp",
+      "35mm 36exp"
+    ],
+    "formats_available": [
+      "35mm"
+    ],
+    "brief_description": "General daylight consumer film sold under plain Fujicolor branding in some markets.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "discontinued_or_varied",
+    "availability_window": "1990s-2020s",
+    "verification_basis": "official datasheet/current page or historical list"
+  },
+  {
+    "brand_name": "Fujicolor 400",
+    "maker": "Fujifilm",
+    "chemical_process": "C-41",
+    "iso": "400",
+    "white_balance": "Daylight",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 24exp",
+      "35mm 36exp"
+    ],
+    "formats_available": [
+      "35mm"
+    ],
+    "brief_description": "General daylight consumer film sold under plain Fujicolor branding in some markets.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "discontinued_or_varied",
+    "availability_window": "1990s-2020s",
+    "verification_basis": "official datasheet/current page or historical list"
+  },
+  {
+    "brand_name": "Fujicolor Press 1600",
+    "maker": "Fujifilm",
+    "chemical_process": "C-41",
+    "iso": "1600",
+    "white_balance": "Daylight",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 36exp"
+    ],
+    "formats_available": [
+      "35mm"
+    ],
+    "brief_description": "Very fast press-oriented Fujicolor negative film.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "discontinued",
+    "availability_window": "1990s-2000s",
+    "verification_basis": "historical list"
+  },
+  {
+    "brand_name": "Fujicolor Press 800",
+    "maker": "Fujifilm",
+    "chemical_process": "C-41",
+    "iso": "800",
+    "white_balance": "Daylight",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 36exp"
+    ],
+    "formats_available": [
+      "35mm"
+    ],
+    "brief_description": "Fast press-oriented Fujicolor negative film.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "discontinued",
+    "availability_window": "1990s-2000s",
+    "verification_basis": "historical list"
+  },
+  {
+    "brand_name": "Industrial 100",
+    "maker": "Fujifilm",
+    "chemical_process": "C-41",
+    "iso": "100",
+    "white_balance": "Daylight",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 24exp",
+      "35mm 36exp"
+    ],
+    "formats_available": [
+      "35mm"
+    ],
+    "brief_description": "Japan-market daylight color negative film with neutral rendering.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "discontinued_or_varied",
+    "availability_window": "2000s-2020s",
+    "verification_basis": "official datasheet/current page or historical list"
+  },
+  {
+    "brand_name": "NPC 160",
+    "maker": "Fujifilm",
+    "chemical_process": "C-41",
+    "iso": "160",
+    "white_balance": "Daylight",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 36exp",
+      "120 roll",
+      "220 roll"
+    ],
+    "formats_available": [
+      "35mm",
+      "120",
+      "220"
+    ],
+    "brief_description": "Professional portrait color negative film in the pre-Pro line.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "discontinued",
+    "availability_window": "1990s-2004",
+    "verification_basis": "official datasheet/current page or historical list"
+  },
+  {
+    "brand_name": "NPH 400",
+    "maker": "Fujifilm",
+    "chemical_process": "C-41",
+    "iso": "400",
+    "white_balance": "Daylight",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 36exp",
+      "120 roll",
+      "220 roll"
+    ],
+    "formats_available": [
+      "35mm",
+      "120",
+      "220"
+    ],
+    "brief_description": "Professional daylight color negative film and precursor to Pro 400H style usage.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "discontinued",
+    "availability_window": "1990s-2004",
+    "verification_basis": "official datasheet/current page or historical list"
+  },
+  {
+    "brand_name": "NPS 160",
+    "maker": "Fujifilm",
+    "chemical_process": "C-41",
+    "iso": "160",
+    "white_balance": "Daylight",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 36exp",
+      "120 roll",
+      "220 roll",
+      "4x5 10-sheet",
+      "8x10 10-sheet"
+    ],
+    "formats_available": [
+      "35mm",
+      "120",
+      "220",
+      "4x5",
+      "8x10"
+    ],
+    "brief_description": "Professional daylight color negative film with smooth tonal rendition.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "discontinued",
+    "availability_window": "1990s-2004",
+    "verification_basis": "official datasheet/current page or historical list"
+  },
+  {
+    "brand_name": "NPZ 800",
+    "maker": "Fujifilm",
+    "chemical_process": "C-41",
+    "iso": "800",
+    "white_balance": "Daylight",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 36exp",
+      "120 roll",
+      "220 roll"
+    ],
+    "formats_available": [
+      "35mm",
+      "120",
+      "220"
+    ],
+    "brief_description": "Fast professional daylight color negative film before Pro 800Z.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "discontinued",
+    "availability_window": "1990s-2004",
+    "verification_basis": "official datasheet/current page or historical list"
+  },
+  {
+    "brand_name": "Natura 1600",
+    "maker": "Fujifilm",
+    "chemical_process": "C-41",
+    "iso": "1600",
+    "white_balance": "Daylight",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 24exp",
+      "35mm 36exp"
+    ],
+    "formats_available": [
+      "35mm"
+    ],
+    "brief_description": "Fast daylight consumer/prosumer film associated with compact low-light cameras.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "discontinued",
+    "availability_window": "2000s-2010s",
+    "verification_basis": "official datasheet/current page or historical list"
+  },
+  {
+    "brand_name": "Neopan 100",
+    "maker": "Fujifilm",
+    "chemical_process": "B&W",
+    "iso": "100",
+    "white_balance": "N/A",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 24exp",
+      "35mm 36exp",
+      "120 roll"
+    ],
+    "formats_available": [
+      "35mm",
+      "120"
+    ],
+    "brief_description": "General black-and-white film in Fujifilm Neopan family.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "discontinued",
+    "availability_window": "1990s-2000s",
+    "verification_basis": "official/current page or historical list"
+  },
+  {
+    "brand_name": "Neopan 100 Acros",
+    "maker": "Fujifilm",
+    "chemical_process": "B&W",
+    "iso": "100",
+    "white_balance": "N/A",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 36exp",
+      "120 roll",
+      "4x5 20-sheet"
+    ],
+    "formats_available": [
+      "35mm",
+      "120",
+      "4x5"
+    ],
+    "brief_description": "Ultra-fine-grain black-and-white film with excellent reciprocity characteristics.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "discontinued",
+    "availability_window": "2003-2018",
+    "verification_basis": "official/current page or historical list"
+  },
+  {
+    "brand_name": "Neopan 100 Acros II",
+    "maker": "Fujifilm",
+    "chemical_process": "B&W",
+    "iso": "100",
+    "white_balance": "N/A",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 36exp",
+      "120 roll"
+    ],
+    "formats_available": [
+      "35mm",
+      "120"
+    ],
+    "brief_description": "Reintroduced Acros black-and-white film with excellent sharpness and reciprocity behavior.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "current",
+    "availability_window": "2019-current",
+    "verification_basis": "official/current page or historical list"
+  },
+  {
+    "brand_name": "Neopan 1600",
+    "maker": "Fujifilm",
+    "chemical_process": "B&W",
+    "iso": "1600",
+    "white_balance": "N/A",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 36exp"
+    ],
+    "formats_available": [
+      "35mm"
+    ],
+    "brief_description": "Fast black-and-white film for low light and reportage.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "discontinued",
+    "availability_window": "1990s-2010",
+    "verification_basis": "official/current page or historical list"
+  },
+  {
+    "brand_name": "Neopan 400",
+    "maker": "Fujifilm",
+    "chemical_process": "B&W",
+    "iso": "400",
+    "white_balance": "N/A",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 24exp",
+      "35mm 36exp",
+      "120 roll"
+    ],
+    "formats_available": [
+      "35mm",
+      "120"
+    ],
+    "brief_description": "Classic Fujifilm medium/high-speed black-and-white film.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "discontinued",
+    "availability_window": "1990s-2013",
+    "verification_basis": "official/current page or historical list"
+  },
+  {
+    "brand_name": "Neopan SS",
+    "maker": "Fujifilm",
+    "chemical_process": "B&W",
+    "iso": "100",
+    "white_balance": "N/A",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 24exp",
+      "35mm 36exp",
+      "120 roll"
+    ],
+    "formats_available": [
+      "35mm",
+      "120"
+    ],
+    "brief_description": "Older medium-speed black-and-white film in Japan and export markets.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "discontinued",
+    "availability_window": "1990s-2000s",
+    "verification_basis": "official/current page or historical list"
+  },
+  {
+    "brand_name": "Press 1600",
+    "maker": "Fujifilm",
+    "chemical_process": "C-41",
+    "iso": "1600",
+    "white_balance": "Daylight",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 36exp"
+    ],
+    "formats_available": [
+      "35mm"
+    ],
+    "brief_description": "Fast professional press-oriented color negative film from Fujifilm's late 1990s/2000s range.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "discontinued",
+    "availability_window": "1990s-2000s",
+    "verification_basis": "official datasheet/current page or historical list"
+  },
+  {
+    "brand_name": "Pro 160C",
+    "maker": "Fujifilm",
+    "chemical_process": "C-41",
+    "iso": "160",
+    "white_balance": "Daylight",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 36exp",
+      "120 roll",
+      "220 roll"
+    ],
+    "formats_available": [
+      "35mm",
+      "120",
+      "220"
+    ],
+    "brief_description": "Professional daylight color negative film with higher contrast and saturation than 160S.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "discontinued",
+    "availability_window": "2004-2010",
+    "verification_basis": "official datasheet/current page or historical list"
+  },
+  {
+    "brand_name": "Pro 160NS",
+    "maker": "Fujifilm",
+    "chemical_process": "C-41",
+    "iso": "160",
+    "white_balance": "Daylight",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "120 roll",
+      "220 roll",
+      "4x5 10-sheet",
+      "8x10 10-sheet"
+    ],
+    "formats_available": [
+      "120",
+      "220",
+      "4x5",
+      "8x10"
+    ],
+    "brief_description": "Portrait-oriented professional daylight color negative film, mainly Japan-market late in life.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "discontinued",
+    "availability_window": "2010-2021",
+    "verification_basis": "official datasheet/current page or historical list"
+  },
+  {
+    "brand_name": "Pro 160S",
+    "maker": "Fujifilm",
+    "chemical_process": "C-41",
+    "iso": "160",
+    "white_balance": "Daylight",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 36exp",
+      "120 roll",
+      "220 roll",
+      "4x5 10-sheet",
+      "8x10 10-sheet"
+    ],
+    "formats_available": [
+      "35mm",
+      "120",
+      "220",
+      "4x5",
+      "8x10"
+    ],
+    "brief_description": "Professional daylight color negative film with restrained saturation and fine grain.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "discontinued",
+    "availability_window": "2004-2010",
+    "verification_basis": "official datasheet/current page or historical list"
+  },
+  {
+    "brand_name": "Pro 400H",
+    "maker": "Fujifilm",
+    "chemical_process": "C-41",
+    "iso": "400",
+    "white_balance": "Daylight",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 36exp",
+      "120 roll",
+      "220 roll"
+    ],
+    "formats_available": [
+      "35mm",
+      "120",
+      "220"
+    ],
+    "brief_description": "Professional daylight color negative film with pastel palette and excellent highlights.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "discontinued",
+    "availability_window": "2004-2021",
+    "verification_basis": "official datasheet/current page or historical list"
+  },
+  {
+    "brand_name": "Pro 800Z",
+    "maker": "Fujifilm",
+    "chemical_process": "C-41",
+    "iso": "800",
+    "white_balance": "Daylight",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 36exp",
+      "120 roll",
+      "220 roll"
+    ],
+    "formats_available": [
+      "35mm",
+      "120",
+      "220"
+    ],
+    "brief_description": "Fast professional daylight color negative film used for weddings and available light.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "discontinued",
+    "availability_window": "2004-2009",
+    "verification_basis": "official datasheet/current page or historical list"
+  },
+  {
+    "brand_name": "Provia 100F",
+    "maker": "Fujifilm",
+    "chemical_process": "E-6",
+    "iso": "100",
+    "white_balance": "Daylight",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 36exp",
+      "120 roll",
+      "4x5 10-sheet",
+      "8x10 10-sheet"
+    ],
+    "formats_available": [
+      "35mm",
+      "120",
+      "4x5",
+      "8x10"
+    ],
+    "brief_description": "Neutral professional slide film with broad subject versatility.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "current",
+    "availability_window": "current",
+    "verification_basis": "official datasheet/current page or historical list"
+  },
+  {
+    "brand_name": "Provia 400F",
+    "maker": "Fujifilm",
+    "chemical_process": "E-6",
+    "iso": "400",
+    "white_balance": "Daylight",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 36exp",
+      "120 roll"
+    ],
+    "formats_available": [
+      "35mm",
+      "120"
+    ],
+    "brief_description": "Fast E-6 professional slide film.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "discontinued",
+    "availability_window": "1990s-2013",
+    "verification_basis": "official datasheet/current page or historical list"
+  },
+  {
+    "brand_name": "RDP III",
+    "maker": "Fujifilm",
+    "chemical_process": "E-6",
+    "iso": "100",
+    "white_balance": "Daylight",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 36exp",
+      "120 roll",
+      "sheet film"
+    ],
+    "formats_available": [
+      "35mm",
+      "120",
+      "sheet"
+    ],
+    "brief_description": "Provia 100F emulsion designation used in datasheets and pro workflows.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "current_alias",
+    "availability_window": "2000s-current",
+    "verification_basis": "official datasheet/current page or historical list"
+  },
+  {
+    "brand_name": "Reala 100",
+    "maker": "Fujifilm",
+    "chemical_process": "C-41",
+    "iso": "100",
+    "white_balance": "Daylight",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 24exp",
+      "35mm 36exp",
+      "120 roll"
+    ],
+    "formats_available": [
+      "35mm",
+      "120"
+    ],
+    "brief_description": "Consumer/prosumer daylight color negative film known for realistic color.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "discontinued",
+    "availability_window": "1990s-2013",
+    "verification_basis": "official datasheet/current page or historical list"
+  },
+  {
+    "brand_name": "Sensia 100",
+    "maker": "Fujifilm",
+    "chemical_process": "E-6",
+    "iso": "100",
+    "white_balance": "Daylight",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 36exp"
+    ],
+    "formats_available": [
+      "35mm"
+    ],
+    "brief_description": "Consumer slide film under Fujichrome Sensia branding.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "discontinued",
+    "availability_window": "1990s-2000s",
+    "verification_basis": "official datasheet/current page or historical list"
+  },
+  {
+    "brand_name": "Sensia 200",
+    "maker": "Fujifilm",
+    "chemical_process": "E-6",
+    "iso": "200",
+    "white_balance": "Daylight",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 36exp"
+    ],
+    "formats_available": [
+      "35mm"
+    ],
+    "brief_description": "Higher-speed consumer slide film.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "discontinued",
+    "availability_window": "1990s-2000s",
+    "verification_basis": "official datasheet/current page or historical list"
+  },
+  {
+    "brand_name": "Sensia 400",
+    "maker": "Fujifilm",
+    "chemical_process": "E-6",
+    "iso": "400",
+    "white_balance": "Daylight",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 36exp"
+    ],
+    "formats_available": [
+      "35mm"
+    ],
+    "brief_description": "Fast consumer slide film.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "discontinued",
+    "availability_window": "1990s-2000s",
+    "verification_basis": "official datasheet/current page or historical list"
+  },
+  {
+    "brand_name": "Superia 100",
+    "maker": "Fujifilm",
+    "chemical_process": "C-41",
+    "iso": "100",
+    "white_balance": "Daylight",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 24exp",
+      "35mm 36exp",
+      "120 roll"
+    ],
+    "formats_available": [
+      "35mm",
+      "120"
+    ],
+    "brief_description": "General-purpose daylight consumer color negative film.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "discontinued_or_varied",
+    "availability_window": "1990s-2020s",
+    "verification_basis": "official datasheet/current page or historical list"
+  },
+  {
+    "brand_name": "Superia 1600",
+    "maker": "Fujifilm",
+    "chemical_process": "C-41",
+    "iso": "1600",
+    "white_balance": "Daylight",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 24exp",
+      "35mm 36exp"
+    ],
+    "formats_available": [
+      "35mm"
+    ],
+    "brief_description": "Very fast consumer daylight color negative film.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "discontinued",
+    "availability_window": "1990s-2010s",
+    "verification_basis": "official datasheet/current page or historical list"
+  },
+  {
+    "brand_name": "Superia 200",
+    "maker": "Fujifilm",
+    "chemical_process": "C-41",
+    "iso": "200",
+    "white_balance": "Daylight",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 24exp",
+      "35mm 36exp"
+    ],
+    "formats_available": [
+      "35mm"
+    ],
+    "brief_description": "Consumer daylight color negative film.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "discontinued",
+    "availability_window": "1990s-2010s",
+    "verification_basis": "official datasheet/current page or historical list"
+  },
+  {
+    "brand_name": "Superia 400",
+    "maker": "Fujifilm",
+    "chemical_process": "C-41",
+    "iso": "400",
+    "white_balance": "Daylight",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 24exp",
+      "35mm 36exp"
+    ],
+    "formats_available": [
+      "35mm"
+    ],
+    "brief_description": "Consumer daylight color negative film in older Superia branding.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "discontinued",
+    "availability_window": "1990s-2010s",
+    "verification_basis": "official datasheet/current page or historical list"
+  },
+  {
+    "brand_name": "Superia 800",
+    "maker": "Fujifilm",
+    "chemical_process": "C-41",
+    "iso": "800",
+    "white_balance": "Daylight",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 24exp",
+      "35mm 36exp"
+    ],
+    "formats_available": [
+      "35mm"
+    ],
+    "brief_description": "Fast consumer daylight color negative film.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "discontinued",
+    "availability_window": "1990s-2010s",
+    "verification_basis": "official datasheet/current page or historical list"
+  },
+  {
+    "brand_name": "Superia Reala",
+    "maker": "Fujifilm",
+    "chemical_process": "C-41",
+    "iso": "100",
+    "white_balance": "Daylight",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 36exp"
+    ],
+    "formats_available": [
+      "35mm"
+    ],
+    "brief_description": "Later branding form of Reala 100 in some markets.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "discontinued",
+    "availability_window": "2000s",
+    "verification_basis": "official datasheet/current page or historical list"
+  },
+  {
+    "brand_name": "Superia Venus 800",
+    "maker": "Fujifilm",
+    "chemical_process": "C-41",
+    "iso": "800",
+    "white_balance": "Daylight",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 36exp"
+    ],
+    "formats_available": [
+      "35mm"
+    ],
+    "brief_description": "Japan-market Superia high-speed variant.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "discontinued",
+    "availability_window": "2000s-2010s",
+    "verification_basis": "historical list"
+  },
+  {
+    "brand_name": "Superia X-TRA 400",
+    "maker": "Fujifilm",
+    "chemical_process": "C-41",
+    "iso": "400",
+    "white_balance": "Daylight",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 24exp",
+      "35mm 36exp"
+    ],
+    "formats_available": [
+      "35mm"
+    ],
+    "brief_description": "Widely sold consumer high-speed daylight color negative film.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "current",
+    "availability_window": "1998-current in some regions",
+    "verification_basis": "official datasheet/current page or historical list"
+  },
+  {
+    "brand_name": "T64",
+    "maker": "Fujifilm",
+    "chemical_process": "E-6",
+    "iso": "64",
+    "white_balance": "Tungsten",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 36exp",
+      "120 roll"
+    ],
+    "formats_available": [
+      "35mm",
+      "120"
+    ],
+    "brief_description": "Tungsten-balanced Fujichrome slide film.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "discontinued",
+    "availability_window": "1990s-2000s",
+    "verification_basis": "official datasheet/current page or historical list"
+  },
+  {
+    "brand_name": "Velvia 100",
+    "maker": "Fujifilm",
+    "chemical_process": "E-6",
+    "iso": "100",
+    "white_balance": "Daylight",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 36exp",
+      "120 roll",
+      "4x5 10-sheet"
+    ],
+    "formats_available": [
+      "35mm",
+      "120",
+      "4x5"
+    ],
+    "brief_description": "High-saturation slide film with slightly more speed than Velvia 50.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "current_or_region_varied",
+    "availability_window": "current",
+    "verification_basis": "official datasheet/current page or historical list"
+  },
+  {
+    "brand_name": "Velvia 100F",
+    "maker": "Fujifilm",
+    "chemical_process": "E-6",
+    "iso": "100",
+    "white_balance": "Daylight",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 36exp",
+      "120 roll",
+      "4x5 10-sheet",
+      "8x10 10-sheet"
+    ],
+    "formats_available": [
+      "35mm",
+      "120",
+      "4x5",
+      "8x10"
+    ],
+    "brief_description": "Slightly less aggressive saturation than Velvia 50/100.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "discontinued",
+    "availability_window": "1990s-2010s",
+    "verification_basis": "official datasheet/current page or historical list"
+  },
+  {
+    "brand_name": "Velvia 50",
+    "maker": "Fujifilm",
+    "chemical_process": "E-6",
+    "iso": "50",
+    "white_balance": "Daylight",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 36exp",
+      "120 roll",
+      "4x5 10-sheet",
+      "8x10 10-sheet"
+    ],
+    "formats_available": [
+      "35mm",
+      "120",
+      "4x5",
+      "8x10"
+    ],
+    "brief_description": "High-saturation professional slide film with very fine grain.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "current",
+    "availability_window": "current",
+    "verification_basis": "official datasheet/current page or historical list"
+  },
+  {
+    "brand_name": "Harman Phoenix 200",
+    "maker": "Harman Technology",
+    "chemical_process": "C-41",
+    "iso": "200",
+    "white_balance": "Daylight",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 36exp",
+      "120 roll"
+    ],
+    "formats_available": [
+      "35mm",
+      "120"
+    ],
+    "brief_description": "Experimental first-generation Harman-made color negative film with visible grain and bold color shifts.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "current",
+    "availability_window": "2023-current",
+    "verification_basis": "official/current page or historical list"
+  },
+  {
+    "brand_name": "Harman Red 125",
+    "maker": "Harman Technology",
+    "chemical_process": "C-41",
+    "iso": "125",
+    "white_balance": "Daylight",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 36exp"
+    ],
+    "formats_available": [
+      "35mm"
+    ],
+    "brief_description": "Redscale-oriented Harman color negative film created for dramatic warm color shifts.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "current",
+    "availability_window": "2024-current",
+    "verification_basis": "official/current page or historical list"
+  },
+  {
+    "brand_name": "Kentmere Pan 100",
+    "maker": "Harman Technology",
+    "chemical_process": "B&W",
+    "iso": "100",
+    "white_balance": "N/A",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 24exp",
+      "35mm 36exp",
+      "120 roll",
+      "bulk 100ft"
+    ],
+    "formats_available": [
+      "35mm",
+      "120"
+    ],
+    "brief_description": "Budget-friendly traditional black-and-white film made by Harman.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "current",
+    "availability_window": "2009-current",
+    "verification_basis": "official/current page or historical list"
+  },
+  {
+    "brand_name": "Kentmere Pan 200",
+    "maker": "Harman Technology",
+    "chemical_process": "B&W",
+    "iso": "200",
+    "white_balance": "N/A",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 24exp",
+      "35mm 36exp",
+      "120 roll",
+      "bulk 100ft"
+    ],
+    "formats_available": [
+      "35mm",
+      "120"
+    ],
+    "brief_description": "Mid-speed Kentmere black-and-white film added to the range in 2025.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "current",
+    "availability_window": "2025-current",
+    "verification_basis": "official/current page or historical list"
+  },
+  {
+    "brand_name": "Kentmere Pan 400",
+    "maker": "Harman Technology",
+    "chemical_process": "B&W",
+    "iso": "400",
+    "white_balance": "N/A",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 24exp",
+      "35mm 36exp",
+      "120 roll",
+      "bulk 100ft"
+    ],
+    "formats_available": [
+      "35mm",
+      "120"
+    ],
+    "brief_description": "Fast budget-friendly black-and-white film with good pushability.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "current",
+    "availability_window": "2009-current",
+    "verification_basis": "official/current page or historical list"
+  },
+  {
+    "brand_name": "Delta 100 Professional",
+    "maker": "Ilford Photo / Harman Technology",
+    "chemical_process": "B&W",
+    "iso": "100",
+    "white_balance": "N/A",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 24exp",
+      "35mm 36exp",
+      "120 roll",
+      "4x5 25-sheet",
+      "8x10 25-sheet",
+      "bulk 100ft"
+    ],
+    "formats_available": [
+      "35mm",
+      "120",
+      "4x5",
+      "8x10"
+    ],
+    "brief_description": "Modern-core-shell black-and-white film with fine grain and high sharpness.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "current",
+    "availability_window": "current",
+    "verification_basis": "official tech sheet/current page"
+  },
+  {
+    "brand_name": "Delta 3200 Professional",
+    "maker": "Ilford Photo / Harman Technology",
+    "chemical_process": "B&W",
+    "iso": "3200",
+    "white_balance": "N/A",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 36exp",
+      "120 roll"
+    ],
+    "formats_available": [
+      "35mm",
+      "120"
+    ],
+    "brief_description": "Very fast black-and-white film commonly rated from EI 1000 upward.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "current",
+    "availability_window": "current",
+    "verification_basis": "official tech sheet/current page"
+  },
+  {
+    "brand_name": "Delta 400 Professional",
+    "maker": "Ilford Photo / Harman Technology",
+    "chemical_process": "B&W",
+    "iso": "400",
+    "white_balance": "N/A",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 24exp",
+      "35mm 36exp",
+      "120 roll",
+      "4x5 25-sheet",
+      "bulk 100ft"
+    ],
+    "formats_available": [
+      "35mm",
+      "120",
+      "4x5"
+    ],
+    "brief_description": "Fast modern-grain black-and-white film with finer grain than HP5 Plus.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "current",
+    "availability_window": "current",
+    "verification_basis": "official tech sheet/current page"
+  },
+  {
+    "brand_name": "FP4 Plus",
+    "maker": "Ilford Photo / Harman Technology",
+    "chemical_process": "B&W",
+    "iso": "125",
+    "white_balance": "N/A",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 24exp",
+      "35mm 36exp",
+      "120 roll",
+      "4x5 25-sheet",
+      "8x10 25-sheet",
+      "bulk 100ft"
+    ],
+    "formats_available": [
+      "35mm",
+      "120",
+      "4x5",
+      "8x10"
+    ],
+    "brief_description": "Fine-grain traditional black-and-white film with broad tonal scale.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "current",
+    "availability_window": "current",
+    "verification_basis": "official tech sheet/current page"
+  },
+  {
+    "brand_name": "HP5 Plus",
+    "maker": "Ilford Photo / Harman Technology",
+    "chemical_process": "B&W",
+    "iso": "400",
+    "white_balance": "N/A",
+    "infrared_sensitivity": "Extended red sensitivity (not true IR)",
+    "package_sold_in": [
+      "35mm 24exp",
+      "35mm 36exp",
+      "120 roll",
+      "4x5 25-sheet",
+      "8x10 25-sheet",
+      "bulk 100ft",
+      "single-use camera 27exp"
+    ],
+    "formats_available": [
+      "35mm",
+      "120",
+      "4x5",
+      "8x10"
+    ],
+    "brief_description": "Classic high-speed black-and-white film with generous latitude and good push performance.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "current",
+    "availability_window": "current",
+    "verification_basis": "official tech sheet/current page"
+  },
+  {
+    "brand_name": "Ortho Plus",
+    "maker": "Ilford Photo / Harman Technology",
+    "chemical_process": "B&W",
+    "iso": "80",
+    "white_balance": "N/A",
+    "infrared_sensitivity": "Orthochromatic",
+    "package_sold_in": [
+      "35mm 36exp",
+      "120 roll",
+      "4x5 25-sheet"
+    ],
+    "formats_available": [
+      "35mm",
+      "120",
+      "4x5"
+    ],
+    "brief_description": "Orthochromatic black-and-white film insensitive to red, suited to portrait/studio/specialist uses.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "current",
+    "availability_window": "current",
+    "verification_basis": "official tech sheet/current page"
+  },
+  {
+    "brand_name": "Pan F Plus",
+    "maker": "Ilford Photo / Harman Technology",
+    "chemical_process": "B&W",
+    "iso": "50",
+    "white_balance": "N/A",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 24exp",
+      "35mm 36exp",
+      "120 roll",
+      "bulk 100ft"
+    ],
+    "formats_available": [
+      "35mm",
+      "120"
+    ],
+    "brief_description": "Ultra-fine-grain slow black-and-white film with crisp detail and higher contrast.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "current",
+    "availability_window": "current",
+    "verification_basis": "official tech sheet/current page"
+  },
+  {
+    "brand_name": "SFX 200",
+    "maker": "Ilford Photo / Harman Technology",
+    "chemical_process": "B&W",
+    "iso": "200",
+    "white_balance": "N/A",
+    "infrared_sensitivity": "Extended red / near IR",
+    "package_sold_in": [
+      "35mm 36exp",
+      "120 roll"
+    ],
+    "formats_available": [
+      "35mm",
+      "120"
+    ],
+    "brief_description": "Extended-red black-and-white film for faux infrared effects with deep filters.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "current",
+    "availability_window": "current",
+    "verification_basis": "official tech sheet/current page"
+  },
+  {
+    "brand_name": "XP2 Super",
+    "maker": "Ilford Photo / Harman Technology",
+    "chemical_process": "C-41",
+    "iso": "400",
+    "white_balance": "N/A",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 24exp",
+      "35mm 36exp",
+      "120 roll",
+      "single-use camera 27exp"
+    ],
+    "formats_available": [
+      "35mm",
+      "120"
+    ],
+    "brief_description": "Chromogenic black-and-white film intended for C-41 processing.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "current",
+    "availability_window": "current",
+    "verification_basis": "official tech sheet/current page"
+  },
+  {
+    "brand_name": "JCH StreetPan 200",
+    "maker": "Japan Camera Hunter",
+    "chemical_process": "B&W",
+    "iso": "200",
+    "white_balance": "N/A",
+    "infrared_sensitivity": "Extended red",
+    "package_sold_in": [
+      "120 roll"
+    ],
+    "formats_available": [
+      "120"
+    ],
+    "brief_description": "Medium-format StreetPan variant.",
+    "respool_flag": "unknown",
+    "source_emulsion_if_respool": "",
+    "status": "current_or_varied",
+    "availability_window": "2020s-current",
+    "verification_basis": "mixed"
+  },
+  {
+    "brand_name": "JCH StreetPan 400",
+    "maker": "Japan Camera Hunter",
+    "chemical_process": "B&W",
+    "iso": "400",
+    "white_balance": "N/A",
+    "infrared_sensitivity": "Extended red",
+    "package_sold_in": [
+      "35mm 36exp",
+      "120 roll"
+    ],
+    "formats_available": [
+      "35mm",
+      "120"
+    ],
+    "brief_description": "Black-and-white film with extended red sensitivity and punchy rendering.",
+    "respool_flag": "unknown",
+    "source_emulsion_if_respool": "",
+    "status": "current_or_varied",
+    "availability_window": "2015-current",
+    "verification_basis": "mixed historical / market documentation"
+  },
+  {
+    "brand_name": "Konica Centuria 100",
+    "maker": "Konica",
+    "chemical_process": "C-41",
+    "iso": "100",
+    "white_balance": "Daylight",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 24exp",
+      "35mm 36exp",
+      "APS cartridge"
+    ],
+    "formats_available": [
+      "35mm",
+      "APS"
+    ],
+    "brief_description": "Consumer daylight color negative film.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "discontinued",
+    "availability_window": "1990s-2000s",
+    "verification_basis": "historical list + product pages + well-documented respool lineage where noted"
+  },
+  {
+    "brand_name": "Konica Centuria 1600",
+    "maker": "Konica",
+    "chemical_process": "C-41",
+    "iso": "1600",
+    "white_balance": "Daylight",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 24exp",
+      "35mm 36exp"
+    ],
+    "formats_available": [
+      "35mm"
+    ],
+    "brief_description": "Very fast consumer color negative film.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "discontinued",
+    "availability_window": "1990s-2000s",
+    "verification_basis": "historical list + product pages + well-documented respool lineage where noted"
+  },
+  {
+    "brand_name": "Konica Centuria 200",
+    "maker": "Konica",
+    "chemical_process": "C-41",
+    "iso": "200",
+    "white_balance": "Daylight",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 24exp",
+      "35mm 36exp",
+      "APS cartridge"
+    ],
+    "formats_available": [
+      "35mm",
+      "APS"
+    ],
+    "brief_description": "Consumer daylight color negative film.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "discontinued",
+    "availability_window": "1990s-2000s",
+    "verification_basis": "historical list + product pages + well-documented respool lineage where noted"
+  },
+  {
+    "brand_name": "Konica Centuria 400",
+    "maker": "Konica",
+    "chemical_process": "C-41",
+    "iso": "400",
+    "white_balance": "Daylight",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 24exp",
+      "35mm 36exp",
+      "APS cartridge"
+    ],
+    "formats_available": [
+      "35mm",
+      "APS"
+    ],
+    "brief_description": "Consumer high-speed color negative film.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "discontinued",
+    "availability_window": "1990s-2000s",
+    "verification_basis": "historical list + product pages + well-documented respool lineage where noted"
+  },
+  {
+    "brand_name": "Konica Centuria 800",
+    "maker": "Konica",
+    "chemical_process": "C-41",
+    "iso": "800",
+    "white_balance": "Daylight",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 24exp",
+      "35mm 36exp"
+    ],
+    "formats_available": [
+      "35mm"
+    ],
+    "brief_description": "Fast consumer color negative film.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "discontinued",
+    "availability_window": "1990s-2000s",
+    "verification_basis": "historical list + product pages + well-documented respool lineage where noted"
+  },
+  {
+    "brand_name": "Konica Impresa 50",
+    "maker": "Konica",
+    "chemical_process": "C-41",
+    "iso": "50",
+    "white_balance": "Daylight",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 36exp"
+    ],
+    "formats_available": [
+      "35mm"
+    ],
+    "brief_description": "Fine-grain daylight consumer/prosumer color negative film.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "discontinued",
+    "availability_window": "1990s-2000s",
+    "verification_basis": "historical list + product pages + well-documented respool lineage where noted"
+  },
+  {
+    "brand_name": "Konica VX 100",
+    "maker": "Konica",
+    "chemical_process": "C-41",
+    "iso": "100",
+    "white_balance": "Daylight",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 24exp",
+      "35mm 36exp"
+    ],
+    "formats_available": [
+      "35mm"
+    ],
+    "brief_description": "Consumer daylight color negative film.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "discontinued",
+    "availability_window": "1990s-2000s",
+    "verification_basis": "historical list + product pages + well-documented respool lineage where noted"
+  },
+  {
+    "brand_name": "Konica VX 200",
+    "maker": "Konica",
+    "chemical_process": "C-41",
+    "iso": "200",
+    "white_balance": "Daylight",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 24exp",
+      "35mm 36exp"
+    ],
+    "formats_available": [
+      "35mm"
+    ],
+    "brief_description": "Consumer daylight color negative film.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "discontinued",
+    "availability_window": "1990s-2000s",
+    "verification_basis": "historical list + product pages + well-documented respool lineage where noted"
+  },
+  {
+    "brand_name": "Konica VX 400",
+    "maker": "Konica",
+    "chemical_process": "C-41",
+    "iso": "400",
+    "white_balance": "Daylight",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 24exp",
+      "35mm 36exp"
+    ],
+    "formats_available": [
+      "35mm"
+    ],
+    "brief_description": "Consumer higher-speed color negative film.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "discontinued",
+    "availability_window": "1990s-2000s",
+    "verification_basis": "historical list + product pages + well-documented respool lineage where noted"
+  },
+  {
+    "brand_name": "Konica Minolta Centuria Super 100",
+    "maker": "Konica Minolta",
+    "chemical_process": "C-41",
+    "iso": "100",
+    "white_balance": "Daylight",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 24exp",
+      "35mm 36exp"
+    ],
+    "formats_available": [
+      "35mm"
+    ],
+    "brief_description": "Late Konica Minolta consumer film branding.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "discontinued",
+    "availability_window": "2000s",
+    "verification_basis": "historical list + product pages + well-documented respool lineage where noted"
+  },
+  {
+    "brand_name": "Konica Minolta Centuria Super 200",
+    "maker": "Konica Minolta",
+    "chemical_process": "C-41",
+    "iso": "200",
+    "white_balance": "Daylight",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 24exp",
+      "35mm 36exp"
+    ],
+    "formats_available": [
+      "35mm"
+    ],
+    "brief_description": "Late Konica Minolta consumer film branding.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "discontinued",
+    "availability_window": "2000s",
+    "verification_basis": "historical list + product pages + well-documented respool lineage where noted"
+  },
+  {
+    "brand_name": "Konica Minolta Centuria Super 400",
+    "maker": "Konica Minolta",
+    "chemical_process": "C-41",
+    "iso": "400",
+    "white_balance": "Daylight",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 24exp",
+      "35mm 36exp"
+    ],
+    "formats_available": [
+      "35mm"
+    ],
+    "brief_description": "Late Konica Minolta consumer film branding.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "discontinued",
+    "availability_window": "2000s",
+    "verification_basis": "historical list + product pages + well-documented respool lineage where noted"
+  },
+  {
+    "brand_name": "Babylon Kino 13",
+    "maker": "Lomography",
+    "chemical_process": "B&W",
+    "iso": "13",
+    "white_balance": "N/A",
+    "infrared_sensitivity": "Orthochromatic-style specialist use",
+    "package_sold_in": [
+      "35mm 36exp",
+      "120 roll"
+    ],
+    "formats_available": [
+      "35mm",
+      "120"
+    ],
+    "brief_description": "Slow specialty black-and-white film emphasizing vintage tonal separation.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "current",
+    "availability_window": "2022-current",
+    "verification_basis": "current product pages + historical list"
+  },
+  {
+    "brand_name": "Berlin Kino 400",
+    "maker": "Lomography",
+    "chemical_process": "B&W",
+    "iso": "400",
+    "white_balance": "N/A",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 36exp"
+    ],
+    "formats_available": [
+      "35mm"
+    ],
+    "brief_description": "Classic-style high-speed black-and-white film.",
+    "respool_flag": "unknown",
+    "source_emulsion_if_respool": "",
+    "status": "current",
+    "availability_window": "2010s-current",
+    "verification_basis": "current product pages + historical list"
+  },
+  {
+    "brand_name": "Earl Grey 100",
+    "maker": "Lomography",
+    "chemical_process": "B&W",
+    "iso": "100",
+    "white_balance": "N/A",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "120 roll"
+    ],
+    "formats_available": [
+      "120"
+    ],
+    "brief_description": "Medium-speed medium-format black-and-white film.",
+    "respool_flag": "unknown",
+    "source_emulsion_if_respool": "",
+    "status": "current",
+    "availability_window": "2010s-current",
+    "verification_basis": "current product pages + historical list"
+  },
+  {
+    "brand_name": "Fantome Kino 8",
+    "maker": "Lomography",
+    "chemical_process": "B&W",
+    "iso": "8",
+    "white_balance": "N/A",
+    "infrared_sensitivity": "Orthochromatic-style specialist use",
+    "package_sold_in": [
+      "35mm 36exp",
+      "120 roll"
+    ],
+    "formats_available": [
+      "35mm",
+      "120"
+    ],
+    "brief_description": "Very slow specialty monochrome film with dramatic high-contrast/ethereal rendering.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "current",
+    "availability_window": "2021-current",
+    "verification_basis": "current product pages + historical list"
+  },
+  {
+    "brand_name": "Lady Grey 400",
+    "maker": "Lomography",
+    "chemical_process": "B&W",
+    "iso": "400",
+    "white_balance": "N/A",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 36exp"
+    ],
+    "formats_available": [
+      "35mm"
+    ],
+    "brief_description": "General-purpose black-and-white film marketed with smoother tonal emphasis.",
+    "respool_flag": "unknown",
+    "source_emulsion_if_respool": "",
+    "status": "current",
+    "availability_window": "2010s-current",
+    "verification_basis": "current product pages + historical list"
+  },
+  {
+    "brand_name": "LomoChrome Color '92",
+    "maker": "Lomography",
+    "chemical_process": "C-41",
+    "iso": "400",
+    "white_balance": "Daylight",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 36exp",
+      "120 roll"
+    ],
+    "formats_available": [
+      "35mm",
+      "120"
+    ],
+    "brief_description": "Retro-inspired color negative film with warm consumer-1990s aesthetic.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "current",
+    "availability_window": "2023-current",
+    "verification_basis": "current product pages + historical list"
+  },
+  {
+    "brand_name": "LomoChrome Metropolis",
+    "maker": "Lomography",
+    "chemical_process": "C-41",
+    "iso": "100-400",
+    "white_balance": "Daylight",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 36exp",
+      "120 roll",
+      "110 cartridge"
+    ],
+    "formats_available": [
+      "35mm",
+      "120",
+      "110"
+    ],
+    "brief_description": "Experimental muted-palette color negative film.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "current",
+    "availability_window": "2019-current",
+    "verification_basis": "current product pages + historical list"
+  },
+  {
+    "brand_name": "LomoChrome Purple",
+    "maker": "Lomography",
+    "chemical_process": "C-41",
+    "iso": "100-400",
+    "white_balance": "Daylight",
+    "infrared_sensitivity": "False-color style, not true IR",
+    "package_sold_in": [
+      "35mm 36exp",
+      "120 roll",
+      "110 cartridge"
+    ],
+    "formats_available": [
+      "35mm",
+      "120",
+      "110"
+    ],
+    "brief_description": "Experimental false-color C-41 film that shifts greens toward purple/magenta.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "current",
+    "availability_window": "2013-current",
+    "verification_basis": "current product pages + historical list"
+  },
+  {
+    "brand_name": "LomoChrome Turquoise",
+    "maker": "Lomography",
+    "chemical_process": "C-41",
+    "iso": "100-400",
+    "white_balance": "Daylight",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 36exp",
+      "120 roll",
+      "110 cartridge"
+    ],
+    "formats_available": [
+      "35mm",
+      "120",
+      "110"
+    ],
+    "brief_description": "Experimental false-color C-41 film with strong cyan/orange shifts.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "current",
+    "availability_window": "2021-current",
+    "verification_basis": "current product pages + historical list"
+  },
+  {
+    "brand_name": "Lomography Color Negative 100",
+    "maker": "Lomography",
+    "chemical_process": "C-41",
+    "iso": "100",
+    "white_balance": "Daylight",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 36exp",
+      "120 roll"
+    ],
+    "formats_available": [
+      "35mm",
+      "120"
+    ],
+    "brief_description": "General-purpose color negative film under Lomography branding.",
+    "respool_flag": "unknown",
+    "source_emulsion_if_respool": "",
+    "status": "current",
+    "availability_window": "2010s-current",
+    "verification_basis": "current product pages + historical list"
+  },
+  {
+    "brand_name": "Lomography Color Negative 400",
+    "maker": "Lomography",
+    "chemical_process": "C-41",
+    "iso": "400",
+    "white_balance": "Daylight",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 36exp",
+      "120 roll"
+    ],
+    "formats_available": [
+      "35mm",
+      "120"
+    ],
+    "brief_description": "General-purpose higher-speed color negative film.",
+    "respool_flag": "unknown",
+    "source_emulsion_if_respool": "",
+    "status": "current",
+    "availability_window": "2010s-current",
+    "verification_basis": "current product pages + historical list"
+  },
+  {
+    "brand_name": "Lomography Color Negative 800",
+    "maker": "Lomography",
+    "chemical_process": "C-41",
+    "iso": "800",
+    "white_balance": "Daylight",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 36exp"
+    ],
+    "formats_available": [
+      "35mm"
+    ],
+    "brief_description": "Fast Lomography color negative film.",
+    "respool_flag": "unknown",
+    "source_emulsion_if_respool": "",
+    "status": "current",
+    "availability_window": "2010s-current",
+    "verification_basis": "current product pages + historical list"
+  },
+  {
+    "brand_name": "Potsdam Kino 100",
+    "maker": "Lomography",
+    "chemical_process": "B&W",
+    "iso": "100",
+    "white_balance": "N/A",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 36exp",
+      "120 roll"
+    ],
+    "formats_available": [
+      "35mm",
+      "120"
+    ],
+    "brief_description": "Finer-grain monochrome film in Lomography's Kino line.",
+    "respool_flag": "unknown",
+    "source_emulsion_if_respool": "",
+    "status": "current",
+    "availability_window": "2020s-current",
+    "verification_basis": "current product pages + historical list"
+  },
+  {
+    "brand_name": "Redscale XR 50-200",
+    "maker": "Lomography",
+    "chemical_process": "C-41",
+    "iso": "50-200",
+    "white_balance": "Daylight",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 36exp",
+      "120 roll"
+    ],
+    "formats_available": [
+      "35mm",
+      "120"
+    ],
+    "brief_description": "Pre-exposed/reversed color negative film for red/orange palette shifts.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "current",
+    "availability_window": "2000s-current",
+    "verification_basis": "current product pages + historical list"
+  },
+  {
+    "brand_name": "Lucky Color 100",
+    "maker": "Lucky",
+    "chemical_process": "C-41",
+    "iso": "100",
+    "white_balance": "Daylight",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 24exp",
+      "35mm 36exp"
+    ],
+    "formats_available": [
+      "35mm"
+    ],
+    "brief_description": "Consumer color negative film.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "discontinued",
+    "availability_window": "2000s",
+    "verification_basis": "historical list + product pages + well-documented respool lineage where noted"
+  },
+  {
+    "brand_name": "Lucky Color 200",
+    "maker": "Lucky",
+    "chemical_process": "C-41",
+    "iso": "200",
+    "white_balance": "Daylight",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 24exp",
+      "35mm 36exp"
+    ],
+    "formats_available": [
+      "35mm"
+    ],
+    "brief_description": "Consumer color negative film.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "discontinued",
+    "availability_window": "2000s",
+    "verification_basis": "historical list + product pages + well-documented respool lineage where noted"
+  },
+  {
+    "brand_name": "Lucky Color 400",
+    "maker": "Lucky",
+    "chemical_process": "C-41",
+    "iso": "400",
+    "white_balance": "Daylight",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 24exp",
+      "35mm 36exp"
+    ],
+    "formats_available": [
+      "35mm"
+    ],
+    "brief_description": "Consumer color negative film.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "discontinued",
+    "availability_window": "2000s",
+    "verification_basis": "historical list + product pages + well-documented respool lineage where noted"
+  },
+  {
+    "brand_name": "Lucky SHD100",
+    "maker": "Lucky",
+    "chemical_process": "B&W",
+    "iso": "100",
+    "white_balance": "N/A",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 36exp"
+    ],
+    "formats_available": [
+      "35mm"
+    ],
+    "brief_description": "Chinese medium-speed black-and-white film.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "discontinued_or_varied",
+    "availability_window": "2000s-2010s",
+    "verification_basis": "historical list + product pages + well-documented respool lineage where noted"
+  },
+  {
+    "brand_name": "Lucky SHD400",
+    "maker": "Lucky",
+    "chemical_process": "B&W",
+    "iso": "400",
+    "white_balance": "N/A",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 36exp"
+    ],
+    "formats_available": [
+      "35mm"
+    ],
+    "brief_description": "Chinese high-speed black-and-white film.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "discontinued_or_varied",
+    "availability_window": "2000s-2010s",
+    "verification_basis": "historical list + product pages + well-documented respool lineage where noted"
+  },
+  {
+    "brand_name": "Luminar 100",
+    "maker": "Luminar",
+    "chemical_process": "C-41",
+    "iso": "100",
+    "white_balance": "Daylight",
+    "infrared_sensitivity": "Aerial surveillance derived",
+    "package_sold_in": [
+      "35mm 36exp"
+    ],
+    "formats_available": [
+      "35mm"
+    ],
+    "brief_description": "Aerocolor-derived color negative film sold under Luminar branding.",
+    "respool_flag": "yes",
+    "source_emulsion_if_respool": "Kodak Aerocolor IV 2460-derived",
+    "status": "current_or_varied",
+    "availability_window": "2020s-current",
+    "verification_basis": "historical list + product pages + well-documented respool lineage where noted"
+  },
+  {
+    "brand_name": "ORWO N74 Plus",
+    "maker": "ORWO / FilmoTec / Wolfen",
+    "chemical_process": "B&W",
+    "iso": "400",
+    "white_balance": "Daylight",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 400ft",
+      "16mm 100ft",
+      "16mm 400ft"
+    ],
+    "formats_available": [
+      "35mm cine",
+      "16mm"
+    ],
+    "brief_description": "Higher-speed ORWO black-and-white motion-picture negative stock.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "current",
+    "availability_window": "2000s-current",
+    "verification_basis": "official/current page or historical list"
+  },
+  {
+    "brand_name": "ORWO UN54",
+    "maker": "ORWO / FilmoTec / Wolfen",
+    "chemical_process": "B&W",
+    "iso": "100",
+    "white_balance": "Daylight",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 400ft",
+      "16mm 100ft",
+      "16mm 400ft"
+    ],
+    "formats_available": [
+      "35mm cine",
+      "16mm"
+    ],
+    "brief_description": "Classic cubic-grain black-and-white motion-picture negative stock now sold for cine and sometimes respool use.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "current",
+    "availability_window": "1990s-current",
+    "verification_basis": "official/current page or historical list"
+  },
+  {
+    "brand_name": "Wolfen NC200",
+    "maker": "ORWO / FilmoTec / Wolfen",
+    "chemical_process": "C-41",
+    "iso": "200",
+    "white_balance": "Daylight",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 36exp"
+    ],
+    "formats_available": [
+      "35mm"
+    ],
+    "brief_description": "Lower-speed Wolfen color negative film with somewhat finer grain than NC400/500.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "current",
+    "availability_window": "2024-current",
+    "verification_basis": "official/current page or historical list"
+  },
+  {
+    "brand_name": "Wolfen NC400",
+    "maker": "ORWO / FilmoTec / Wolfen",
+    "chemical_process": "C-41",
+    "iso": "400",
+    "white_balance": "Daylight",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 36exp",
+      "120 roll"
+    ],
+    "formats_available": [
+      "35mm",
+      "120"
+    ],
+    "brief_description": "Updated Wolfen color negative still film with revised speed/indexing and palette positioning.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "current",
+    "availability_window": "2024-current",
+    "verification_basis": "official/current page or historical list"
+  },
+  {
+    "brand_name": "Wolfen NC500",
+    "maker": "ORWO / FilmoTec / Wolfen",
+    "chemical_process": "C-41",
+    "iso": "400",
+    "white_balance": "Daylight",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 36exp",
+      "120 roll"
+    ],
+    "formats_available": [
+      "35mm",
+      "120"
+    ],
+    "brief_description": "ORWO/Wolfen color negative still film with distinct muted palette and visible grain.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "current",
+    "availability_window": "2022-current",
+    "verification_basis": "official/current page or historical list"
+  },
+  {
+    "brand_name": "Oriental Seagull 100",
+    "maker": "Oriental / Harman-related distribution",
+    "chemical_process": "B&W",
+    "iso": "100",
+    "white_balance": "N/A",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 36exp",
+      "120 roll"
+    ],
+    "formats_available": [
+      "35mm",
+      "120"
+    ],
+    "brief_description": "Japan-market black-and-white film under Oriental branding.",
+    "respool_flag": "unknown",
+    "source_emulsion_if_respool": "",
+    "status": "current_or_varied",
+    "availability_window": "2010s-current",
+    "verification_basis": "historical list + product pages + well-documented respool lineage where noted"
+  },
+  {
+    "brand_name": "Oriental Seagull 400",
+    "maker": "Oriental / Harman-related distribution",
+    "chemical_process": "B&W",
+    "iso": "400",
+    "white_balance": "N/A",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 36exp",
+      "120 roll"
+    ],
+    "formats_available": [
+      "35mm",
+      "120"
+    ],
+    "brief_description": "Japan-market black-and-white film under Oriental branding.",
+    "respool_flag": "unknown",
+    "source_emulsion_if_respool": "",
+    "status": "current_or_varied",
+    "availability_window": "2010s-current",
+    "verification_basis": "historical list + product pages + well-documented respool lineage where noted"
+  },
+  {
+    "brand_name": "Reflx Lab 100D",
+    "maker": "Reflx Lab",
+    "chemical_process": "C-41",
+    "iso": "100",
+    "white_balance": "Daylight",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 36exp"
+    ],
+    "formats_available": [
+      "35mm"
+    ],
+    "brief_description": "Boutique still film brand offering cine-derived daylight stock.",
+    "respool_flag": "unknown",
+    "source_emulsion_if_respool": "",
+    "status": "current",
+    "availability_window": "2020s-current",
+    "verification_basis": "mixed historical / market documentation"
+  },
+  {
+    "brand_name": "Reflx Lab 200D",
+    "maker": "Reflx Lab",
+    "chemical_process": "C-41",
+    "iso": "200",
+    "white_balance": "Daylight",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 36exp"
+    ],
+    "formats_available": [
+      "35mm"
+    ],
+    "brief_description": "Boutique still film brand offering cine-derived daylight stock.",
+    "respool_flag": "unknown",
+    "source_emulsion_if_respool": "",
+    "status": "current",
+    "availability_window": "2020s-current",
+    "verification_basis": "mixed historical / market documentation"
+  },
+  {
+    "brand_name": "Reflx Lab 400D",
+    "maker": "Reflx Lab",
+    "chemical_process": "C-41",
+    "iso": "400",
+    "white_balance": "Daylight",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 36exp"
+    ],
+    "formats_available": [
+      "35mm"
+    ],
+    "brief_description": "Boutique still film brand offering cine-style or repacked daylight stock.",
+    "respool_flag": "unknown",
+    "source_emulsion_if_respool": "",
+    "status": "current",
+    "availability_window": "2020s-current",
+    "verification_basis": "mixed historical / market documentation"
+  },
+  {
+    "brand_name": "Reflx Lab 800T",
+    "maker": "Reflx Lab",
+    "chemical_process": "C-41",
+    "iso": "800",
+    "white_balance": "Tungsten",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 36exp"
+    ],
+    "formats_available": [
+      "35mm"
+    ],
+    "brief_description": "Boutique still film brand offering tungsten cine-derived stock.",
+    "respool_flag": "unknown",
+    "source_emulsion_if_respool": "",
+    "status": "current",
+    "availability_window": "2020s-current",
+    "verification_basis": "mixed historical / market documentation"
+  },
+  {
+    "brand_name": "Rera Chrome 100",
+    "maker": "Rera",
+    "chemical_process": "E-6",
+    "iso": "100",
+    "white_balance": "Daylight",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "127 roll"
+    ],
+    "formats_available": [
+      "127"
+    ],
+    "brief_description": "127-format color reversal film.",
+    "respool_flag": "unknown",
+    "source_emulsion_if_respool": "",
+    "status": "current_or_varied",
+    "availability_window": "2018-current",
+    "verification_basis": "historical list + product pages + well-documented respool lineage where noted"
+  },
+  {
+    "brand_name": "Rera Cool 100",
+    "maker": "Rera",
+    "chemical_process": "C-41",
+    "iso": "100",
+    "white_balance": "Daylight",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "127 roll"
+    ],
+    "formats_available": [
+      "127"
+    ],
+    "brief_description": "127-format color negative film.",
+    "respool_flag": "unknown",
+    "source_emulsion_if_respool": "",
+    "status": "current_or_varied",
+    "availability_window": "2018-current",
+    "verification_basis": "historical list + product pages + well-documented respool lineage where noted"
+  },
+  {
+    "brand_name": "Rera Pan 100S",
+    "maker": "Rera",
+    "chemical_process": "B&W",
+    "iso": "100",
+    "white_balance": "N/A",
+    "infrared_sensitivity": "Extended red",
+    "package_sold_in": [
+      "127 roll"
+    ],
+    "formats_available": [
+      "127"
+    ],
+    "brief_description": "127-format black-and-white film with strong red sensitivity.",
+    "respool_flag": "unknown",
+    "source_emulsion_if_respool": "",
+    "status": "current",
+    "availability_window": "2019-current",
+    "verification_basis": "historical list + product pages + well-documented respool lineage where noted"
+  },
+  {
+    "brand_name": "Rera Pan 400",
+    "maker": "Rera",
+    "chemical_process": "B&W",
+    "iso": "400",
+    "white_balance": "N/A",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "127 roll"
+    ],
+    "formats_available": [
+      "127"
+    ],
+    "brief_description": "127-format black-and-white film.",
+    "respool_flag": "unknown",
+    "source_emulsion_if_respool": "",
+    "status": "current",
+    "availability_window": "2018-current",
+    "verification_basis": "historical list + product pages + well-documented respool lineage where noted"
+  },
+  {
+    "brand_name": "Rollei Infrared 400",
+    "maker": "Rollei / Maco",
+    "chemical_process": "B&W",
+    "iso": "400",
+    "white_balance": "N/A",
+    "infrared_sensitivity": "True/strong IR sensitivity with filter",
+    "package_sold_in": [
+      "35mm 36exp",
+      "120 roll"
+    ],
+    "formats_available": [
+      "35mm",
+      "120"
+    ],
+    "brief_description": "Infrared-capable black-and-white film for stronger IR effects than Retro 400S.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "current",
+    "availability_window": "2000s-current",
+    "verification_basis": "historical list + current product pages where available"
+  },
+  {
+    "brand_name": "Rollei Ortho 25",
+    "maker": "Rollei / Maco",
+    "chemical_process": "B&W",
+    "iso": "25",
+    "white_balance": "N/A",
+    "infrared_sensitivity": "Orthochromatic",
+    "package_sold_in": [
+      "35mm 36exp",
+      "120 roll"
+    ],
+    "formats_available": [
+      "35mm",
+      "120"
+    ],
+    "brief_description": "Slow orthographic black-and-white film for graphic and pictorial work.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "current_or_varied",
+    "availability_window": "2010s-current",
+    "verification_basis": "historical list + current product pages where available"
+  },
+  {
+    "brand_name": "Rollei RPX 100",
+    "maker": "Rollei / Maco",
+    "chemical_process": "B&W",
+    "iso": "100",
+    "white_balance": "N/A",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 36exp",
+      "120 roll",
+      "4x5 25-sheet"
+    ],
+    "formats_available": [
+      "35mm",
+      "120",
+      "4x5"
+    ],
+    "brief_description": "General-purpose medium-speed black-and-white film.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "current",
+    "availability_window": "2010s-current",
+    "verification_basis": "historical list + current product pages where available"
+  },
+  {
+    "brand_name": "Rollei RPX 25",
+    "maker": "Rollei / Maco",
+    "chemical_process": "B&W",
+    "iso": "25",
+    "white_balance": "N/A",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 36exp",
+      "120 roll"
+    ],
+    "formats_available": [
+      "35mm",
+      "120"
+    ],
+    "brief_description": "Very slow fine-grain black-and-white film.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "current_or_varied",
+    "availability_window": "2010s-current",
+    "verification_basis": "historical list + current product pages where available"
+  },
+  {
+    "brand_name": "Rollei RPX 400",
+    "maker": "Rollei / Maco",
+    "chemical_process": "B&W",
+    "iso": "400",
+    "white_balance": "N/A",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 36exp",
+      "120 roll",
+      "4x5 25-sheet"
+    ],
+    "formats_available": [
+      "35mm",
+      "120",
+      "4x5"
+    ],
+    "brief_description": "General-purpose high-speed black-and-white film.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "current",
+    "availability_window": "2010s-current",
+    "verification_basis": "historical list + current product pages where available"
+  },
+  {
+    "brand_name": "Rollei Retro 400S",
+    "maker": "Rollei / Maco",
+    "chemical_process": "B&W",
+    "iso": "400",
+    "white_balance": "N/A",
+    "infrared_sensitivity": "Extended red / near IR",
+    "package_sold_in": [
+      "35mm 36exp",
+      "120 roll"
+    ],
+    "formats_available": [
+      "35mm",
+      "120"
+    ],
+    "brief_description": "High-speed black-and-white film with extended red response useful for faux infrared work.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "current",
+    "availability_window": "2000s-current",
+    "verification_basis": "historical list + current product pages where available"
+  },
+  {
+    "brand_name": "Rollei Retro 80S",
+    "maker": "Rollei / Maco",
+    "chemical_process": "B&W",
+    "iso": "80",
+    "white_balance": "N/A",
+    "infrared_sensitivity": "Extended red",
+    "package_sold_in": [
+      "35mm 36exp",
+      "120 roll",
+      "sheet film"
+    ],
+    "formats_available": [
+      "35mm",
+      "120",
+      "4x5"
+    ],
+    "brief_description": "Sharp polyester-base black-and-white film with extended red sensitivity.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "current",
+    "availability_window": "2000s-current",
+    "verification_basis": "historical list + current product pages where available"
+  },
+  {
+    "brand_name": "Rollei Superpan 200",
+    "maker": "Rollei / Maco",
+    "chemical_process": "B&W",
+    "iso": "200",
+    "white_balance": "N/A",
+    "infrared_sensitivity": "Extended red",
+    "package_sold_in": [
+      "35mm 36exp",
+      "120 roll"
+    ],
+    "formats_available": [
+      "35mm",
+      "120"
+    ],
+    "brief_description": "Mid-speed black-and-white film with good tonal range and extended red sensitivity.",
+    "respool_flag": "no",
+    "source_emulsion_if_respool": "",
+    "status": "current",
+    "availability_window": "2000s-current",
+    "verification_basis": "historical list + current product pages where available"
+  },
+  {
+    "brand_name": "SantaColor 100",
+    "maker": "Santa / Camera Rescue / Kamerastore distribution",
+    "chemical_process": "C-41",
+    "iso": "100",
+    "white_balance": "Daylight",
+    "infrared_sensitivity": "Aerial surveillance derived",
+    "package_sold_in": [
+      "35mm 36exp"
+    ],
+    "formats_available": [
+      "35mm"
+    ],
+    "brief_description": "Fine-grain color negative film widely documented as repackaged Kodak Aerocolor IV aerial film.",
+    "respool_flag": "yes",
+    "source_emulsion_if_respool": "Kodak Aerocolor IV 2460-derived",
+    "status": "current",
+    "availability_window": "2021-current",
+    "verification_basis": "historical list + product pages + well-documented respool lineage where noted"
+  },
+  {
+    "brand_name": "Silberra Color 160",
+    "maker": "Silberra",
+    "chemical_process": "C-41",
+    "iso": "160",
+    "white_balance": "Daylight",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 36exp"
+    ],
+    "formats_available": [
+      "35mm"
+    ],
+    "brief_description": "Silberra daylight color negative film.",
+    "respool_flag": "unknown",
+    "source_emulsion_if_respool": "",
+    "status": "current_or_varied",
+    "availability_window": "2010s-current",
+    "verification_basis": "mixed historical / market documentation"
+  },
+  {
+    "brand_name": "Silberra Pan 100",
+    "maker": "Silberra",
+    "chemical_process": "B&W",
+    "iso": "100",
+    "white_balance": "N/A",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 36exp",
+      "120 roll"
+    ],
+    "formats_available": [
+      "35mm",
+      "120"
+    ],
+    "brief_description": "Silberra medium-speed black-and-white film.",
+    "respool_flag": "unknown",
+    "source_emulsion_if_respool": "",
+    "status": "current_or_varied",
+    "availability_window": "2010s-current",
+    "verification_basis": "mixed historical / market documentation"
+  },
+  {
+    "brand_name": "Silberra Pan 160",
+    "maker": "Silberra",
+    "chemical_process": "B&W",
+    "iso": "160",
+    "white_balance": "N/A",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 36exp"
+    ],
+    "formats_available": [
+      "35mm"
+    ],
+    "brief_description": "Silberra medium-speed black-and-white film.",
+    "respool_flag": "unknown",
+    "source_emulsion_if_respool": "",
+    "status": "current_or_varied",
+    "availability_window": "2010s-current",
+    "verification_basis": "mixed historical / market documentation"
+  },
+  {
+    "brand_name": "Silberra Pan 400",
+    "maker": "Silberra",
+    "chemical_process": "B&W",
+    "iso": "400",
+    "white_balance": "N/A",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 36exp",
+      "120 roll"
+    ],
+    "formats_available": [
+      "35mm",
+      "120"
+    ],
+    "brief_description": "Silberra high-speed black-and-white film.",
+    "respool_flag": "unknown",
+    "source_emulsion_if_respool": "",
+    "status": "current_or_varied",
+    "availability_window": "2010s-current",
+    "verification_basis": "mixed historical / market documentation"
+  },
+  {
+    "brand_name": "Silberra Pan 50",
+    "maker": "Silberra",
+    "chemical_process": "B&W",
+    "iso": "50",
+    "white_balance": "N/A",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 36exp"
+    ],
+    "formats_available": [
+      "35mm"
+    ],
+    "brief_description": "Silberra slow black-and-white film.",
+    "respool_flag": "unknown",
+    "source_emulsion_if_respool": "",
+    "status": "current_or_varied",
+    "availability_window": "2010s-current",
+    "verification_basis": "mixed historical / market documentation"
+  },
+  {
+    "brand_name": "Ultrafine Finesse 100",
+    "maker": "Ultrafine",
+    "chemical_process": "B&W",
+    "iso": "100",
+    "white_balance": "N/A",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "bulk 100ft"
+    ],
+    "formats_available": [
+      "35mm"
+    ],
+    "brief_description": "Bulk-roll-oriented house-brand black-and-white film.",
+    "respool_flag": "unknown",
+    "source_emulsion_if_respool": "",
+    "status": "current_or_varied",
+    "availability_window": "2000s-current",
+    "verification_basis": "historical list + product pages + well-documented respool lineage where noted"
+  },
+  {
+    "brand_name": "Ultrafine Finesse 400",
+    "maker": "Ultrafine",
+    "chemical_process": "B&W",
+    "iso": "400",
+    "white_balance": "N/A",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "bulk 100ft"
+    ],
+    "formats_available": [
+      "35mm"
+    ],
+    "brief_description": "Bulk-roll-oriented house-brand black-and-white film.",
+    "respool_flag": "unknown",
+    "source_emulsion_if_respool": "",
+    "status": "current_or_varied",
+    "availability_window": "2000s-current",
+    "verification_basis": "historical list + product pages + well-documented respool lineage where noted"
+  },
+  {
+    "brand_name": "Ultrafine eXtreme 100",
+    "maker": "Ultrafine",
+    "chemical_process": "B&W",
+    "iso": "100",
+    "white_balance": "N/A",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 12exp",
+      "35mm 24exp",
+      "35mm 36exp",
+      "120 roll",
+      "bulk 100ft"
+    ],
+    "formats_available": [
+      "35mm",
+      "120"
+    ],
+    "brief_description": "House-brand general-purpose black-and-white film.",
+    "respool_flag": "unknown",
+    "source_emulsion_if_respool": "",
+    "status": "current",
+    "availability_window": "2008-current",
+    "verification_basis": "historical list + product pages + well-documented respool lineage where noted"
+  },
+  {
+    "brand_name": "Ultrafine eXtreme 400",
+    "maker": "Ultrafine",
+    "chemical_process": "B&W",
+    "iso": "400",
+    "white_balance": "N/A",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 12exp",
+      "35mm 24exp",
+      "35mm 36exp",
+      "120 roll",
+      "bulk 100ft"
+    ],
+    "formats_available": [
+      "35mm",
+      "120"
+    ],
+    "brief_description": "House-brand higher-speed black-and-white film.",
+    "respool_flag": "unknown",
+    "source_emulsion_if_respool": "",
+    "status": "current",
+    "availability_window": "2008-current",
+    "verification_basis": "historical list + product pages + well-documented respool lineage where noted"
+  },
+  {
+    "brand_name": "Kodak 5203 Repack (generic still respools)",
+    "maker": "Various respoolers",
+    "chemical_process": "C-41",
+    "iso": "50",
+    "white_balance": "Daylight",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 36exp"
+    ],
+    "formats_available": [
+      "35mm"
+    ],
+    "brief_description": "Generic descriptor for still-photo respools of Kodak Vision3 50D-style stocks without remjet.",
+    "respool_flag": "yes",
+    "source_emulsion_if_respool": "Kodak 50D cine stock-derived",
+    "status": "varied",
+    "availability_window": "2010s-current",
+    "verification_basis": "mixed historical / market documentation"
+  },
+  {
+    "brand_name": "Kodak 5207 Repack (generic still respools)",
+    "maker": "Various respoolers",
+    "chemical_process": "C-41",
+    "iso": "250",
+    "white_balance": "Daylight",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 36exp"
+    ],
+    "formats_available": [
+      "35mm"
+    ],
+    "brief_description": "Generic descriptor for still-photo respools of Kodak Vision3 250D-style stocks without remjet.",
+    "respool_flag": "yes",
+    "source_emulsion_if_respool": "Kodak 250D cine stock-derived",
+    "status": "varied",
+    "availability_window": "2010s-current",
+    "verification_basis": "mixed historical / market documentation"
+  },
+  {
+    "brand_name": "Kodak 5218 Repack (generic still respools)",
+    "maker": "Various respoolers",
+    "chemical_process": "C-41",
+    "iso": "500",
+    "white_balance": "Tungsten",
+    "infrared_sensitivity": "No",
+    "package_sold_in": [
+      "35mm 36exp"
+    ],
+    "formats_available": [
+      "35mm"
+    ],
+    "brief_description": "Generic descriptor for still-photo respools of Kodak Vision2/3 500T-style stocks without remjet.",
+    "respool_flag": "yes",
+    "source_emulsion_if_respool": "Kodak 500T cine stock-derived",
+    "status": "varied",
+    "availability_window": "2010s-current",
+    "verification_basis": "mixed historical / market documentation"
+  }
+]

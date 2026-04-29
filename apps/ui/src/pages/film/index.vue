@@ -1,0 +1,151 @@
+<!-- eslint-disable vue/multi-word-component-names -->
+<script setup lang="ts">
+import { computed, onMounted, ref } from 'vue';
+import type { FilmSummary } from '@frollz2/schema';
+import FilmCreateDialog from '../../components/FilmCreateDialog.vue';
+import { useFilmStore } from '../../stores/film.js';
+import { useReferenceStore } from '../../stores/reference.js';
+import { useFilmCreateForm } from '../../composables/useFilmCreateForm.js';
+
+const filmStore = useFilmStore();
+const referenceStore = useReferenceStore();
+
+const {
+  isCreateDialogOpen,
+  isCreating,
+  lockedFormatFilters,
+  isFormatLocked,
+  openCreateDialog,
+  handleCreate,
+} = useFilmCreateForm();
+
+const search = ref<string | null>('');
+const stateFilter = ref<string | null>(null);
+
+const subtitle = computed(() =>
+  lockedFormatFilters.value.length > 0
+    ? 'Filtered view for selected film formats.'
+    : 'Track film stock and move rolls through state transitions.'
+);
+
+const rows = computed(() => {
+  const query = (search.value ?? '').trim().toLowerCase();
+
+  return filmStore.films.filter((film) => {
+    if (lockedFormatFilters.value.length > 0 && !lockedFormatFilters.value.includes(film.filmFormat.code)) {
+      return false;
+    }
+
+    if (stateFilter.value && film.currentStateCode !== stateFilter.value) {
+      return false;
+    }
+
+    if (!query) {
+      return true;
+    }
+
+    const haystack = `${film.name} ${film.emulsion.manufacturer} ${film.emulsion.brand} ${film.currentState.label}`.toLowerCase();
+    return haystack.includes(query);
+  });
+});
+
+const columns = [
+  {
+    name: 'name',
+    label: 'Film',
+    field: 'name',
+    sortable: true,
+    align: 'left'
+  },
+  {
+    name: 'state',
+    label: 'State',
+    field: (row: FilmSummary) => row.currentState.label,
+    sortable: true,
+    align: 'left'
+  },
+  {
+    name: 'emulsion',
+    label: 'Emulsion',
+    field: (row: FilmSummary) => `${row.emulsion.manufacturer} ${row.emulsion.brand}`,
+    sortable: true,
+    align: 'left'
+  },
+  {
+    name: 'format',
+    label: 'Format',
+    field: (row: FilmSummary) => row.filmFormat.label,
+    sortable: true,
+    align: 'left'
+  },
+  {
+    name: 'iso',
+    label: 'ISO',
+    field: (row: FilmSummary) => row.emulsion.isoSpeed,
+    sortable: true,
+    align: 'left'
+  }
+];
+
+const stateOptions = computed(() =>
+  referenceStore.filmStates.map((state) => ({
+    label: state.label,
+    value: state.code
+  }))
+);
+
+onMounted(async () => {
+  await Promise.allSettled([referenceStore.loadAll(), filmStore.loadFilms()]);
+});
+</script>
+
+<template>
+  <q-page class="q-pa-md column q-gutter-md">
+    <div class="row items-center justify-between q-gutter-sm">
+      <div>
+        <div class="text-h5">Film Inventory</div>
+        <div class="text-subtitle2 text-grey-7">{{ subtitle }}</div>
+      </div>
+      <div class="row q-gutter-sm">
+        <q-btn color="primary" label="Add film" @click="openCreateDialog" />
+        <q-btn flat color="primary" label="Refresh" @click="filmStore.loadFilms" />
+      </div>
+    </div>
+
+    <q-banner v-if="filmStore.filmsError" class="bg-red-1 text-negative" rounded>
+      {{ filmStore.filmsError }}
+    </q-banner>
+
+    <div class="row q-col-gutter-md">
+      <div class="col-xs-12 col-lg-6">
+        <q-input v-model="search" filled clearable label="Search films" />
+      </div>
+      <div class="col-xs-12 col-lg-6">
+        <q-select v-model="stateFilter" filled clearable emit-value map-options :options="stateOptions" label="Filter by state" />
+      </div>
+    </div>
+
+    <q-table :rows="rows" :columns="columns" row-key="id" flat bordered :loading="filmStore.isLoading">
+      <template #body-cell-name="props">
+        <q-td :props="props">
+          <RouterLink :to="`/film/${props.row.id}`" class="text-primary text-weight-medium">
+            {{ props.row.name }}
+          </RouterLink>
+        </q-td>
+      </template>
+      <template #body-cell-state="props">
+        <q-td :props="props">
+          <q-badge color="primary" outline>{{ props.row.currentState.label }}</q-badge>
+        </q-td>
+      </template>
+    </q-table>
+
+    <FilmCreateDialog
+      v-model="isCreateDialogOpen"
+      :is-format-locked="isFormatLocked"
+      :locked-format-filters="lockedFormatFilters"
+      :is-creating="isCreating"
+      @submit="handleCreate"
+    />
+  </q-page>
+</template>

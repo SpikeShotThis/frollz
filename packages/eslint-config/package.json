@@ -1,0 +1,17 @@
+{
+  "name": "@frollz2/eslint-config",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "clean": ""
+  },
+  "peerDependencies": {
+    "eslint": "^10.2.1"
+  },
+  "dependencies": {
+    "@typescript-eslint/eslint-plugin": "^8.59.0",
+    "@typescript-eslint/parser": "^8.59.0",
+    "eslint-plugin-vue": "^10.9.0"
+  }
+}

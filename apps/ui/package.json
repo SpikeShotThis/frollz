@@ -1,0 +1,42 @@
+{
+  "name": "@frollz2/ui",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "build": "quasar build",
+    "check-types": "vue-tsc --noEmit -p tsconfig.json",
+    "dev": "quasar dev",
+    "clean": "rm -rf dist node_modules",
+    "lint": "eslint --max-warnings 0 \"src/**/*.{ts,vue}\"",
+    "test": "vitest run",
+    "test:bdd:guard": "sh -c 'if rg -n \"page\\\\.route\\\\(|route\\\\.fulfill\\\\(\" e2e/steps; then echo \"BDD steps must not mock network calls\"; exit 1; fi'",
+    "test:bdd": "pnpm run test:bdd:guard && playwright test --project bdd",
+    "test:e2e": "playwright test --project e2e",
+    "test:e2e:ui": "playwright test --project e2e --ui",
+    "bdd:gen": "./node_modules/.bin/bddgen"
+  },
+  "dependencies": {
+    "@fontsource/plus-jakarta-sans": "^5.2.8",
+    "@fontsource/space-grotesk": "^5.2.8",
+    "@frollz2/schema": "workspace:*",
+    "@quasar/extras": "^1.18.0",
+    "@regle/schemas": "^1.23.2",
+    "pinia": "^3.0.4",
+    "quasar": "^2.18.6",
+    "vue": "^3.5.33",
+    "vue-router": "^5.0.6",
+    "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.56.1",
+    "@quasar/app-vite": "^2.5.0",
+    "@types/node": "^25.6.0",
+    "cross-env": "^10.1.0",
+    "playwright-bdd": "^8.5.0",
+    "typescript": "^6.0.0",
+    "vite-plugin-vue-devtools": "^8.1.1",
+    "vitest": "^4.1.5",
+    "vue-tsc": "^3.1.1"
+  }
+}

@@ -36,9 +36,42 @@ frollz-ui/src/**/*.d.ts
 .DS_Store
 Thumbs.db
 
-# ── Claude Code local settings (personal overrides, not for version control) ──
-.claude/
+# ── Claude Code — commit skills + agents, ignore everything else ──
+.claude/settings.local.json
 frollz-api/coverage
 frollz-ui/coverage
-frollz-api/dev.db
-frollz-api/dev.db
+**/*/*.sqlite.json
+**/frollz-api/dev.db
+.turbo/**
+**/.turbo/**
+
+# ── codebase-memory MCP tool output (generated, not for version control) ──────
+.codebase-memory/*.sqlite
+**/*.sqlite
+**/*/.env
+
+# ── playwright-bdd generated test wrappers (generated at runtime) ──────
+**/.features-gen/
+
+
+report.html
+apps/api/src/infrastructure/migrations/.snapshot-frollz2.sqlite.json
+apps/api/src/infrastructure/migrations/.snapshot-test.sqlite.json
+report.json
+trace-mobile-film.json
+
+# --- Ignore generated files ---
+
+**/*.js.map
+**/*.d.ts
+
+# -- ignore java script files, except for the eslint config
+**/*.js
+!packages/eslint-config/eslint.config.js
+apps/ui/.quasar
+
+# -- Vue Router auto-generated types ---
+apps/ui/src/typed-router.d.ts
+apps/ui/test-results/
+
+apps/api/src/infrastructure/migrations/.snapshot-memory.json

@@ -1,0 +1,81 @@
+services:
+  postgres:
+    image: postgres:18-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DATABASE_NAME:-frollz}
+      POSTGRES_USER: ${DATABASE_USER:-frollz}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD:-changeme}
+      PGDATA: /var/lib/postgresql/18/docker
+    volumes:
+      - postgres-data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DATABASE_USER:-frollz} -d ${DATABASE_NAME:-frollz}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    restart: unless-stopped
+    user: "1000:1000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      DATABASE_DRIVER: postgres
+      DATABASE_HOST: postgres
+      DATABASE_PORT: 5432
+      DATABASE_NAME: ${DATABASE_NAME:-frollz}
+      DATABASE_USER: ${DATABASE_USER:-frollz}
+      DATABASE_PASSWORD: ${DATABASE_PASSWORD:-changeme}
+      AUTO_MIGRATE_SEED: ${AUTO_MIGRATE_SEED:-true}
+      SEED_DEMO_USER: ${SEED_DEMO_USER:-false}
+      JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET:-change-me}
+      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-http://localhost}
+      PORT: 3000
+    healthcheck:
+      test: ["CMD-SHELL", "node -e \"const net=require('node:net');const socket=net.createConnection({host:'127.0.0.1',port:3000},()=>{socket.end();process.exit(0);});socket.on('error',()=>process.exit(1));setTimeout(()=>process.exit(1),3000);\""]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+
+  ui:
+    build:
+      context: .
+      dockerfile: apps/ui/Dockerfile
+    restart: unless-stopped
+    user: "101:101"
+    depends_on:
+      api:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget --spider -q http://127.0.0.1:8080 || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+
+  nginx:
+    image: nginxinc/nginx-unprivileged:1.29-alpine
+    restart: unless-stopped
+    user: "101:101"
+    depends_on:
+      api:
+        condition: service_healthy
+      ui:
+        condition: service_healthy
+    ports:
+      - "8180:8080"
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    healthcheck:
+      test: ["CMD-SHELL", "wget --spider -q http://127.0.0.1:8080/healthz || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  postgres-data:

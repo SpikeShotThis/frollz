@@ -1,0 +1,10 @@
+{
+  "name": "@frollz2/typescript-config",
+  "private": true,
+  "version": "0.0.0",
+  "exports": {
+    "./base": "./base.json",
+    "./node": "./node.json",
+    "./vue": "./vue.json"
+  }
+}

@@ -1,0 +1,81 @@
+sandbox_mode = "workspace-write"
+
+[sandbox_workspace_write]
+network_access = true
+
+[mcp_servers.filesystem]
+command = "npx"
+args = [
+  "-y",
+  "@modelcontextprotocol/server-filesystem",
+  "/Users/joshholl/Source/frollz"
+]
+
+[mcp_servers.shell]
+command = "npx"
+args = [ "-y", "@modelcontextprotocol/server-shell" ]
+
+[mcp_servers.shell.env]
+ALLOWED_COMMANDS = "pnpm,node,npx,npm"
+ALLOWED_DIRECTORIES = "/Users/joshholl/Source/frollz"
+NPM_CONFIG_REGISTRY = "https://registry.npmjs.org/"
+
+[mcp_servers.sqlite]
+command = "npx"
+args = [
+  "-y",
+  "@modelcontextprotocol/server-sqlite",
+  "--db-path",
+  "/Users/joshholl/Source/frollz/apps/api/frollz2.sqlite"
+]
+
+[mcp_servers.git]
+command = "npx"
+args = [
+  "-y",
+  "@modelcontextprotocol/server-git",
+  "--repository",
+  "/Users/joshholl/Source/frollz"
+]
+
+[mcp_servers.playwright]
+command = "npx"
+args = [ "-y", "@playwright/mcp" ]
+
+[mcp_servers.docker]
+command = "npx"
+args = [ "-y", "@modelcontextprotocol/server-docker" ]
+
+[mcp_servers.chrome-devtools]
+command = "npx"
+args = [ "-y", "chrome-devtools-mcp@latest", "--no-usage-statistics" ]
+
+[mcp_servers.chrome-devtools.tools.lighthouse_audit]
+approval_mode = "approve"
+
+[mcp_servers.chrome-devtools.tools.click]
+approval_mode = "approve"
+
+[mcp_servers.chrome-devtools.tools.take_snapshot]
+approval_mode = "approve"
+
+[mcp_servers.chrome-devtools.tools.emulate]
+approval_mode = "approve"
+
+[mcp_servers.chrome-devtools.tools.evaluate_script]
+approval_mode = "approve"
+
+[mcp_servers.chrome-devtools.tools.fill]
+approval_mode = "approve"
+
+[mcp_servers.chrome-devtools.tools.performance_start_trace]
+approval_mode = "approve"
+
+[mcp_servers.chrome-devtools.tools.new_page]
+approval_mode = "approve"
+
+[mcp_servers.chrome-devtools.tools.fill_form]
+approval_mode = "approve"
+
+[mcp_servers.chrome-devtools.tools.navigate_page]
+approval_mode = "approve"
