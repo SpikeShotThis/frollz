@@ -5,11 +5,13 @@ import { useRoute, useRouter } from 'vue-router';
 import { type ThemePreference, useTheme } from '../composables/useTheme.js';
 import { useAuthStore } from '../stores/auth.js';
 import { useNavigation } from '../composables/useNavigation.js';
+import type { NavItem } from '../composables/useNavigation.js';
 
 const authStore = useAuthStore();
 const route = useRoute();
 const router = useRouter();
 const leftDrawerOpen = ref(false);
+const expandedNavGroups = ref<Record<string, boolean>>({});
 const { themePreference, themeOptions, activeThemeLabel, setThemePreference } = useTheme();
 
 // Auto-generated navigation from route metadata
@@ -29,6 +31,23 @@ function closeDrawerOnNavigate(): void {
   }
 }
 
+function isNavGroupExpanded(link: NavItem): boolean {
+  const explicitState = expandedNavGroups.value[link.to];
+  if (typeof explicitState === 'boolean') {
+    return explicitState;
+  }
+  return route.path === link.to || route.path.startsWith(`${link.to}/`);
+}
+
+async function navigateAndExpand(link: NavItem): Promise<void> {
+  expandedNavGroups.value[link.to] = true;
+
+  if (route.path !== link.to) {
+    await router.push(link.to);
+  }
+
+  closeDrawerOnNavigate();
+}
 </script>
 
 <template>
@@ -69,11 +88,19 @@ function closeDrawerOnNavigate(): void {
         </q-item>
 
         <template v-for="link in navigationTree" :key="link.to">
-          <q-expansion-item v-if="link.children && link.children.length > 0" dense dense-toggle expand-separator
-            :icon="link.icon" :label="link.label">
+          <q-expansion-item
+            v-if="link.children && link.children.length > 0"
+            dense
+            dense-toggle
+            expand-separator
+            :icon="link.icon"
+            :label="link.label"
+            :model-value="isNavGroupExpanded(link)"
+            @update:model-value="(value: boolean) => (expandedNavGroups[link.to] = value)"
+            @click="navigateAndExpand(link)"
+          >
             <q-list class="q-pl-lg q-pb-xs">
-              <q-item v-for="child in link.children" :key="child.to" dense clickable :to="child.to"
-                @click="closeDrawerOnNavigate">
+              <q-item v-for="child in link.children" :key="child.to" dense clickable :to="child.to" @click="closeDrawerOnNavigate">
                 <q-item-section>{{ child.label }}</q-item-section>
               </q-item>
             </q-list>

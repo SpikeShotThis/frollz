@@ -85,7 +85,7 @@ onMounted(async () => {
       {{ filmStore.filmsError }}
     </q-banner>
 
-    <div class="row q-col-gutter-md">
+    <div class="row q-pa-md q-col-gutter-md">
       <div class="col-xs-12 col-lg-6">
         <q-input v-model="search" filled clearable label="Search films" />
       </div>

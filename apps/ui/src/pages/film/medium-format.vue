@@ -85,7 +85,7 @@ onMounted(async () => {
       {{ filmStore.filmsError }}
     </q-banner>
 
-    <div class="row q-col-gutter-md">
+    <div class="row q-pa-md q-col-gutter-md">
       <div class="col-xs-12 col-lg-6">
         <q-input v-model="search" filled clearable label="Search films" />
       </div>
@@ -95,22 +95,11 @@ onMounted(async () => {
       </div>
     </div>
 
-    <FilmInventoryTable
-      :rows="rows"
-      :is-loading="filmStore.isLoading"
-      :extract-name="extractName"
-      :extract-state="extractState"
-      :extract-emulsion="extractEmulsion"
-      :extract-format="extractFormat"
-      :extract-iso="extractIso"
-    />
+    <FilmInventoryTable :rows="rows" :is-loading="filmStore.isLoading" :extract-name="extractName"
+      :extract-state="extractState" :extract-emulsion="extractEmulsion" :extract-format="extractFormat"
+      :extract-iso="extractIso" />
 
-    <FilmCreateDialog
-      v-model="isCreateDialogOpen"
-      :is-format-locked="isFormatLocked"
-      :locked-format-filters="lockedFormatFilters"
-      :is-creating="isCreating"
-      @submit="handleCreate"
-    />
+    <FilmCreateDialog v-model="isCreateDialogOpen" :is-format-locked="isFormatLocked"
+      :locked-format-filters="lockedFormatFilters" :is-creating="isCreating" @submit="handleCreate" />
   </q-page>
 </template>
