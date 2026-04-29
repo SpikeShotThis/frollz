@@ -2,6 +2,27 @@ import { Migration } from '@mikro-orm/migrations';
 
 export class Migration20260426000000 extends Migration {
   override async up(): Promise<void> {
+    // Check if film_lot already has film_lot_id (meaning initial schema is already correct)
+    const filmHasLotId = await this.execute(`
+      SELECT column_name
+      FROM information_schema.columns
+      WHERE table_name = 'film' AND column_name = 'film_lot_id'
+    `);
+
+    // If film already has film_lot_id, the schema is already at target state (clean install)
+    if (filmHasLotId.length > 0) {
+      console.log('Migration20260426000000: Schema already at target state, skipping');
+      return;
+    }
+
+    // Otherwise, perform the migration from old schema to new schema
+
+    // Drop film_lot_id constraint from film if it exists
+    this.addSql(`ALTER TABLE "film" DROP CONSTRAINT IF EXISTS "film_film_lot_id_foreign";`);
+
+    // Drop and recreate film_lot with temporary _film_id column for backfill
+    this.addSql(`DROP TABLE IF EXISTS "film_lot" CASCADE;`);
+
     // 1. Create film_lot with a temporary _film_id column for backfill correlation
     this.addSql(`
       CREATE TABLE "film_lot" (
