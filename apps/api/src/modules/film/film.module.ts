@@ -6,10 +6,10 @@ import { FilmRepository } from '../../infrastructure/repositories/film.repositor
 import { MikroOrmFilmRepository } from '../../infrastructure/repositories/mikro-orm-film.repository.js';
 import { FilmLotRepository } from '../../infrastructure/repositories/film-lot.repository.js';
 import { MikroOrmFilmLotRepository } from '../../infrastructure/repositories/mikro-orm-film-lot.repository.js';
-import { ReferenceModule } from '../reference/reference.module.js';
+import { FilmLabsModule } from '../film-labs/film-labs.module.js';
 
 @Module({
-  imports: [ReferenceModule],
+  imports: [FilmLabsModule],
   controllers: [FilmController],
   providers: [
     FilmService,

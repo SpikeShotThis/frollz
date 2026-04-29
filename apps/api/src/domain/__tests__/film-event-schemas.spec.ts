@@ -54,4 +54,28 @@ describe('filmJourneyEventPayloadSchema', () => {
       })
     ).toThrow();
   });
+
+  it('parses sent_for_dev payloads with required labId', () => {
+    expect(
+      filmJourneyEventPayloadSchema.parse({
+        filmStateCode: 'sent_for_dev',
+        eventData: {
+          labId: 7,
+          actualPushPull: null
+        }
+      })
+    ).toMatchObject({ filmStateCode: 'sent_for_dev' });
+  });
+
+  it('rejects sent_for_dev payloads without labId', () => {
+    expect(() =>
+      filmJourneyEventPayloadSchema.parse({
+        filmStateCode: 'sent_for_dev',
+        eventData: {
+          labName: 'Legacy Lab',
+          actualPushPull: null
+        }
+      })
+    ).toThrow();
+  });
 });

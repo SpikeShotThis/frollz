@@ -10,6 +10,7 @@ import {
   frameJourneyEventSchema,
   deviceMountSchema
 } from './film.js';
+import { filmLabSchema } from './film-lab.js';
 
 /**
  * Export data schema - complete user data snapshot
@@ -18,6 +19,7 @@ export const exportDataSchema = z.object({
   version: z.literal('1.0'),
   exportedAt: isoDateTimeSchema,
   user: currentUserSchema.pick({ email: true, name: true }),
+  filmLabs: z.array(filmLabSchema),
   devices: z.array(filmDeviceSchema),
   filmLots: z.array(filmLotSummarySchema),
   films: z.array(filmSummarySchema),
@@ -37,6 +39,7 @@ export const importDataRequestSchema = exportDataSchema;
  * Import response schema - statistics about what was imported
  */
 export const importDataResponseSchema = z.object({
+  filmLabsCreated: z.number().int().nonnegative(),
   devicesCreated: z.number().int().nonnegative(),
   filmLotsCreated: z.number().int().nonnegative(),
   filmsCreated: z.number().int().nonnegative(),

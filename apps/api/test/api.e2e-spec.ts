@@ -441,6 +441,15 @@ describe('API integration', () => {
       expect(deviceAfterRemoved.slots.at(-1)?.slotStateCode).toBe('removed');
     }
 
+    const labResponse = await harness.app.inject({
+      method: 'POST',
+      url: '/api/v1/film-labs',
+      headers: { ...authHeaders, 'content-type': 'application/json' },
+      payload: { name: 'Local Lab' }
+    });
+    expect(labResponse.statusCode).toBe(201);
+    const lab = labResponse.json();
+
     const sentForDevResponse = await harness.app.inject({
       method: 'POST',
       url: `/api/v1/film/${createdFilm.id}/events`,
@@ -449,8 +458,7 @@ describe('API integration', () => {
         filmStateCode: 'sent_for_dev',
         occurredAt: new Date().toISOString(),
         eventData: {
-          labName: 'Local Lab',
-          labContact: null,
+          labId: lab.id,
           actualPushPull: null
         }
       }
@@ -465,7 +473,7 @@ describe('API integration', () => {
         filmStateCode: 'developed',
         occurredAt: new Date().toISOString(),
         eventData: {
-          labName: 'Local Lab',
+          labId: lab.id,
           actualPushPull: null
         }
       }

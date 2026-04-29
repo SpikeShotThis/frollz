@@ -61,7 +61,8 @@ async function navigateOnGroupToggle(link: NavItem, expanded: boolean): Promise<
             <q-tooltip>Theme: {{ activeThemeLabel }}</q-tooltip>
             <q-menu auto-close>
               <q-list dense>
-                <q-item v-for="option in themeOptions" :key="option.value" clickable @click="setThemePreference(option.value as ThemePreference)">
+                <q-item v-for="option in themeOptions" :key="option.value" clickable
+                  @click="setThemePreference(option.value as ThemePreference)">
                   <q-item-section avatar>
                     <q-icon :name="option.value === themePreference ? 'check' : option.icon" />
                   </q-item-section>
@@ -88,19 +89,12 @@ async function navigateOnGroupToggle(link: NavItem, expanded: boolean): Promise<
         </q-item>
 
         <template v-for="link in navigationTree" :key="link.to">
-          <q-expansion-item
-            v-if="link.children && link.children.length > 0"
-            dense
-            dense-toggle
-            expand-separator
-            :icon="link.icon"
-            :label="link.label"
-            :caption="isNavGroupExpanded(link) ? 'Collapse list and open section' : 'Expand list and open section'"
-            :model-value="isNavGroupExpanded(link)"
-            @update:model-value="(value: boolean) => navigateOnGroupToggle(link, value)"
-          >
+          <q-expansion-item v-if="link.children && link.children.length > 0" dense dense-toggle expand-separator
+            :icon="link.icon" :label="link.label" :model-value="isNavGroupExpanded(link)"
+            @update:model-value="(value: boolean) => navigateOnGroupToggle(link, value)">
             <q-list class="q-pl-lg q-pb-xs">
-              <q-item v-for="child in link.children" :key="child.to" dense clickable :to="child.to" @click="closeDrawerOnNavigate">
+              <q-item v-for="child in link.children" :key="child.to" dense clickable :to="child.to"
+                @click="closeDrawerOnNavigate">
                 <q-item-section>{{ child.label }}</q-item-section>
               </q-item>
             </q-list>

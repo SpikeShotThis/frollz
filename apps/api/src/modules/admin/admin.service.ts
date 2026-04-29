@@ -22,6 +22,8 @@ import {
   FilmHolderSlotEntity,
   HolderTypeEntity,
   SlotStateEntity
+  ,
+  FilmLabEntity
 } from '../../infrastructure/entities/index.js';
 import {
   mapCurrentUserEntity,
@@ -32,6 +34,8 @@ import {
   mapFilmFrameEntity,
   mapFrameJourneyEventEntity,
   mapDeviceMountEntity
+  ,
+  mapFilmLabEntity
 } from '../../infrastructure/mappers/index.js';
 
 @Injectable()
@@ -43,6 +47,9 @@ export class AdminService {
   async exportUserData(userId: number): Promise<ExportData> {
     // Load user with all related data
     const user = await this.entityManager.findOneOrFail(UserEntity, { id: userId });
+
+    // Load all user devices with their related data
+    const filmLabs = await this.entityManager.find(FilmLabEntity, { user: userId }, { populate: ['user'], orderBy: { name: 'asc' } });
 
     // Load all user devices with their related data
     const devices = await this.entityManager.find(
@@ -150,6 +157,7 @@ export class AdminService {
         email: currentUser.email,
         name: currentUser.name
       },
+      filmLabs: filmLabs.map(mapFilmLabEntity),
       devices: devices.map(mapFilmDeviceEntity),
       filmLots: filmLots.map(lot => mapFilmLotSummaryEntity(lot, filmCounts.get(lot.id) ?? 0)),
       films: films.map(mapFilmSummaryEntity),
@@ -184,8 +192,28 @@ export class AdminService {
       const filmIdMap = new Map<number, number>();
       const frameIdMap = new Map<number, number>();
       const deviceIdMap = new Map<number, number>();
+      const filmLabIdMap = new Map<number, number>();
 
-      // Step 2: Create film lots
+      // Step 2: Create film labs
+      for (const importedFilmLab of data.filmLabs) {
+        const filmLab = em.create(FilmLabEntity, {
+          user: em.getReference(UserEntity, userId),
+          name: importedFilmLab.name,
+          normalizedName: importedFilmLab.normalizedName,
+          contact: importedFilmLab.contact,
+          email: importedFilmLab.email,
+          website: importedFilmLab.website,
+          defaultProcesses: importedFilmLab.defaultProcesses,
+          notes: importedFilmLab.notes,
+          active: importedFilmLab.active,
+          rating: importedFilmLab.rating
+        });
+        em.persist(filmLab);
+        await em.flush();
+        filmLabIdMap.set(importedFilmLab.id, filmLab.id);
+      }
+
+      // Step 3: Create film lots
       for (const importedLot of data.filmLots) {
         const lot = em.create(FilmLotEntity, {
           user: em.getReference(UserEntity, userId),
@@ -201,7 +229,7 @@ export class AdminService {
         lotIdMap.set(importedLot.id, lot.id);
       }
 
-      // Step 3: Create films
+      // Step 4: Create films
       for (const importedFilm of data.films) {
         const newLotId = lotIdMap.get(importedFilm.filmLotId);
         if (!newLotId) {
@@ -223,7 +251,7 @@ export class AdminService {
         filmIdMap.set(importedFilm.id, film.id);
       }
 
-      // Step 4: Create film journey events
+      // Step 5: Create film journey events
       for (const importedEvent of data.filmEvents) {
         const newFilmId = filmIdMap.get(importedEvent.filmId);
         if (!newFilmId) {
@@ -231,6 +259,13 @@ export class AdminService {
         }
 
         const filmState = await em.findOneOrFail(FilmStateEntity, { code: importedEvent.filmStateCode });
+        const eventData = { ...importedEvent.eventData };
+        if (typeof eventData['labId'] === 'number') {
+          const newFilmLabId = filmLabIdMap.get(eventData['labId']);
+          if (newFilmLabId) {
+            eventData['labId'] = newFilmLabId;
+          }
+        }
         const event = em.create(FilmJourneyEventEntity, {
           film: em.getReference(FilmEntity, newFilmId),
           user: em.getReference(UserEntity, userId),
@@ -238,13 +273,13 @@ export class AdminService {
           occurredAt: importedEvent.occurredAt,
           recordedAt: importedEvent.recordedAt,
           notes: importedEvent.notes ?? null,
-          eventData: importedEvent.eventData
+          eventData
         });
         em.persist(event);
       }
       await em.flush();
 
-      // Step 5: Create frames
+      // Step 6: Create frames
       for (const importedFrame of data.frames) {
         const newFilmId = filmIdMap.get(importedFrame.filmId);
         if (!newFilmId) {
@@ -263,7 +298,7 @@ export class AdminService {
         frameIdMap.set(importedFrame.id, frame.id);
       }
 
-      // Step 6: Create frame journey events
+      // Step 7: Create frame journey events
       for (const importedFrameEvent of data.frameEvents) {
         const newFilmId = filmIdMap.get(importedFrameEvent.filmId);
         const newFrameId = frameIdMap.get(importedFrameEvent.filmFrameId);
@@ -289,7 +324,7 @@ export class AdminService {
       }
       await em.flush();
 
-      // Step 7: Create devices
+      // Step 8: Create devices
       for (const importedDevice of data.devices) {
         const base = em.create(FilmDeviceEntity, {
           user: em.getReference(UserEntity, userId),

@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { reactive, ref } from 'vue';
+import { computed, onMounted, reactive, ref } from 'vue';
 import { useRegleSchema } from '@regle/schemas';
-import type { CreateFilmJourneyEventRequest, ReferenceValueKind } from '@frollz2/schema';
+import type { CreateFilmJourneyEventRequest } from '@frollz2/schema';
 import { z } from 'zod';
-import { useReferenceValuesStore } from '../../stores/reference-values.js';
+import { useFilmLabsStore } from '../../stores/film-labs.js';
 
 interface Props {
   occurredAt: string;
@@ -14,40 +14,43 @@ interface Props {
 
 const props = defineProps<Props>();
 const emit = defineEmits<{ submit: [payload: CreateFilmJourneyEventRequest] }>();
-const referenceValuesStore = useReferenceValuesStore();
+const filmLabsStore = useFilmLabsStore();
 
 const form = reactive({
-  labName: '',
+  labId: undefined as number | undefined,
   actualPushPull: undefined as number | undefined,
 });
 
 const developedSchema = z.object({
-  labName: z.string().optional(),
+  labId: z.number().int().positive(),
   actualPushPull: z.number().int().optional(),
 });
 
 const { r$ } = useRegleSchema(form, developedSchema);
-const labNameOptions = ref<string[]>([]);
-type QSelectFilterUpdate = (callback: () => void) => void;
+const quickCreateName = ref('');
+const creatingLab = ref(false);
+const labOptions = computed(() =>
+  filmLabsStore.filmLabs.filter((lab) => lab.active).map((lab) => ({ label: lab.name, value: lab.id }))
+);
 
-async function fetchSuggestions(kind: ReferenceValueKind, term: string): Promise<string[]> {
-  try {
-    return await referenceValuesStore.loadSuggestions(kind, term);
-  } catch {
-    return referenceValuesStore.getSuggestions(kind);
+onMounted(async () => {
+  await filmLabsStore.loadFilmLabs();
+  const firstLab = filmLabsStore.filmLabs.find((lab) => lab.active);
+  if (firstLab && !r$.$value.labId) {
+    r$.$value.labId = firstLab.id;
   }
-}
+});
 
-function onFieldFilter(kind: ReferenceValueKind, value: string, update: QSelectFilterUpdate): void {
-  void fetchSuggestions(kind, value).then((items) => {
-    update(() => {
-      labNameOptions.value = items;
-    });
-  });
-}
-
-function onLabNameFilter(value: string, update: QSelectFilterUpdate): void {
-  onFieldFilter('lab_name', value, update);
+async function quickCreateLab(): Promise<void> {
+  if (!quickCreateName.value.trim() || creatingLab.value) return;
+  creatingLab.value = true;
+  try {
+    const created = await filmLabsStore.createFilmLab({ name: quickCreateName.value.trim() });
+    r$.$value.labId = created.id;
+    quickCreateName.value = '';
+  } finally {
+    creatingLab.value = false;
+  }
 }
 
 async function handleSubmit(): Promise<void> {
@@ -61,7 +64,7 @@ async function handleSubmit(): Promise<void> {
     occurredAt: props.occurredAt,
     notes: props.notes || undefined,
     eventData: {
-      labName: data.labName || null,
+      labId: data.labId,
       actualPushPull: data.actualPushPull ?? null,
     },
   });
@@ -72,22 +75,21 @@ async function handleSubmit(): Promise<void> {
   <q-form class="column q-gutter-md" @submit="handleSubmit">
     <div>
       <q-select
-        :model-value="r$.$value.labName"
+        :model-value="r$.$value.labId"
         filled
-        use-input
-        fill-input
-        hide-selected
-        hide-dropdown-icon
-        input-debounce="150"
-        :options="labNameOptions"
-        label="Lab name (optional)"
-        new-value-mode="add-unique"
-        :error="r$.labName?.$error"
-        :error-message="r$.labName?.$errors[0]"
-        @update:model-value="r$.$value.labName = String($event ?? '')"
-        @input-value="r$.$value.labName = String($event ?? '')"
-        @filter="onLabNameFilter"
+        emit-value
+        map-options
+        :options="labOptions"
+        label="Lab"
+        :error="r$.labId?.$error"
+        :error-message="r$.labId?.$errors[0]"
+        @update:model-value="r$.$value.labId = Number($event)"
       />
+    </div>
+
+    <div class="row q-gutter-sm items-center">
+      <q-input v-model="quickCreateName" filled label="Quick add lab name" class="col" />
+      <q-btn color="secondary" label="Create" :loading="creatingLab" :disable="!quickCreateName.trim()" @click="quickCreateLab" />
     </div>
 
     <div>

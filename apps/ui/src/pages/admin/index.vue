@@ -11,6 +11,13 @@ const adminSections = [
     icon: 'cloud_download',
     route: '/admin/data-export',
     color: 'primary'
+  },
+  {
+    title: 'Film Labs',
+    description: 'Manage your film labs and ratings',
+    icon: 'store',
+    route: '/admin/film-labs',
+    color: 'secondary'
   }
 ];
 

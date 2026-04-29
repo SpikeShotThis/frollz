@@ -11,6 +11,7 @@ import { ReferenceModule } from './modules/reference/reference.module.js';
 import { EmulsionsModule } from './modules/emulsions/emulsions.module.js';
 import { TestModule } from './modules/test/test.module.js';
 import { AdminModule } from './modules/admin/admin.module.js';
+import { FilmLabsModule } from './modules/film-labs/film-labs.module.js';
 import { HealthController } from './presentation/controllers/health.controller.js';
 
 const conditionalModules = process.env['NODE_ENV'] === 'test' ? [TestModule] : [];
@@ -25,6 +26,7 @@ const conditionalModules = process.env['NODE_ENV'] === 'test' ? [TestModule] : [
     EmulsionsModule,
     FilmModule,
     DevicesModule,
+    FilmLabsModule,
     AdminModule,
     ...conditionalModules,
   ],

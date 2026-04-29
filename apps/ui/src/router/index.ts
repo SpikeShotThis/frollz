@@ -239,6 +239,11 @@ const routes: RouteRecordRaw[] = [
         component: () => import('../pages/admin/data-export.vue'),
         meta: { layout: 'app', title: 'Data Export' }
       },
+      {
+        path: 'admin/film-labs',
+        component: () => import('../pages/admin/film-labs.vue'),
+        meta: { layout: 'app', title: 'Film Labs' }
+      },
 
       // Style Guide
       {

@@ -184,12 +184,14 @@ export const filmJourneyEventDataLoadedSchema = nonLargeFilmLoadTargetSchema;
 export const filmJourneyEventDataExposedSchema = z.object({}).strict();
 export const filmJourneyEventDataRemovedSchema = z.object({}).strict();
 export const filmJourneyEventDataSentForDevSchema = z.object({
-  labName: nullableTextSchema,
-  labContact: nullableTextSchema,
+  labId: idSchema,
+  labName: nullableTextSchema.optional(),
+  labContact: nullableTextSchema.optional(),
   actualPushPull: z.number().int().nullable()
 });
 export const filmJourneyEventDataDevelopedSchema = z.object({
-  labName: nullableTextSchema,
+  labId: idSchema,
+  labName: nullableTextSchema.optional(),
   actualPushPull: z.number().int().nullable()
 });
 export const filmJourneyEventDataScannedSchema = z.object({
@@ -219,14 +221,13 @@ export const storedEventFormSchema = z.object({
 // Lab-based
 export const sentForDevEventFormSchema = z.object({
   ...eventFormBaseFields,
-  labName: z.string().optional(),
-  labContact: z.string().optional(),
+  labId: idSchema,
   actualPushPull: z.number().int().optional(),
 });
 
 export const developedEventFormSchema = z.object({
   ...eventFormBaseFields,
-  labName: z.string().optional(),
+  labId: idSchema,
   actualPushPull: z.number().int().optional(),
 });
 
