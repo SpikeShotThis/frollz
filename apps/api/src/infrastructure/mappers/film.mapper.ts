@@ -1,6 +1,6 @@
-import type { FilmDetail, FilmFrame, FilmJourneyEvent, FilmLotDetail, FilmLotSummary, FilmSummary } from '@frollz2/schema';
-import { filmStateSchema, filmJourneyEventDataLoadedSchema } from '@frollz2/schema';
-import type { FilmEntity, FilmFrameEntity, FilmJourneyEventEntity, FilmLotEntity } from '../entities/index.js';
+import type { FilmDetail, FilmFrame, FilmJourneyEvent, FilmLotDetail, FilmLotSummary, FilmSummary, FrameJourneyEvent } from '@frollz2/schema';
+import { filmStateSchema, frameStateCodeSchema, filmJourneyEventDataLoadedSchema } from '@frollz2/schema';
+import type { FilmEntity, FilmFrameEntity, FilmJourneyEventEntity, FilmLotEntity, FrameJourneyEventEntity } from '../entities/index.js';
 import { mapEmulsionEntity, mapFilmFormatEntity, mapFilmStateEntity, mapPackageTypeEntity } from './reference.mapper.js';
 
 export type NormalizedLoadedEventData = {
@@ -98,5 +98,20 @@ export function mapFilmFrameEntity(entity: FilmFrameEntity): FilmFrame {
     currentStateId: entity.currentState.id,
     currentStateCode: filmStateSchema.shape.code.parse(entity.currentState.code),
     currentState: mapFilmStateEntity(entity.currentState)
+  };
+}
+
+export function mapFrameJourneyEventEntity(entity: FrameJourneyEventEntity): FrameJourneyEvent {
+  return {
+    id: entity.id,
+    filmId: entity.film.id,
+    filmFrameId: entity.filmFrame.id,
+    userId: entity.user.id,
+    filmStateId: entity.filmState.id,
+    frameStateCode: frameStateCodeSchema.parse(entity.filmState.code),
+    occurredAt: entity.occurredAt,
+    recordedAt: entity.recordedAt,
+    notes: entity.notes,
+    eventData: entity.eventData
   };
 }

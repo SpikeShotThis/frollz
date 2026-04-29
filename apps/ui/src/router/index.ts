@@ -228,6 +228,18 @@ const routes: RouteRecordRaw[] = [
         meta: { layout: 'app', title: 'Emulsion Detail' }
       },
 
+      // Admin routes
+      {
+        path: 'admin',
+        component: () => import('../pages/admin/index.vue'),
+        meta: { layout: 'app', title: 'Admin', icon: 'settings', showInNav: true, order: 98 }
+      },
+      {
+        path: 'admin/data-export',
+        component: () => import('../pages/admin/data-export.vue'),
+        meta: { layout: 'app', title: 'Data Export' }
+      },
+
       // Style Guide
       {
         path: 'style-guide',

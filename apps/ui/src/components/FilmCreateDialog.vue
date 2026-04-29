@@ -164,7 +164,7 @@ async function handleSubmit(): Promise<void> {
 
       <q-card-actions align="right">
         <q-btn v-close-popup flat label="Cancel" />
-        <q-btn color="primary" label="Create" :loading="isCreating" @click="handleSubmit" />
+        <q-btn type="submit" color="primary" label="Create" :loading="isCreating" />
       </q-card-actions>
     </q-card>
   </q-dialog>

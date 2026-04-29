@@ -252,7 +252,7 @@ async function submit(): Promise<void> {
 
       <q-card-actions align="right">
         <q-btn flat label="Cancel" @click="emit('update:modelValue', false)" />
-        <q-btn color="primary" label="Create" :loading="isCreating" @click="submit" />
+        <q-btn type="submit" color="primary" label="Create" :loading="isCreating" />
       </q-card-actions>
     </q-card>
   </q-dialog>
