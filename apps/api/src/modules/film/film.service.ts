@@ -11,6 +11,7 @@ import type {
   FilmLotCreateRequest,
   FilmLotDetail,
   FilmSummary,
+  FilmSupplier,
   FilmUpdateRequest,
   FrameJourneyEvent,
   FrameSizeCode
@@ -902,31 +903,32 @@ export class FilmService {
     await entityManager.flush();
   }
 
-  private async resolveSupplierForLot(userId: number, supplierId?: number, supplierName?: string) {
-    const normalizedSupplierName = supplierName?.trim() ?? '';
-
+  private async resolveSupplierForLot(userId: number, supplierId?: number, supplierName?: string): Promise<FilmSupplier | null> {
+    // If supplier ID is provided, use it
     if (supplierId) {
       const supplier = await this.filmSupplierRepository.findById(userId, supplierId);
       if (!supplier) {
         throw new DomainError('NOT_FOUND', 'Film supplier not found');
       }
-
-      if (normalizedSupplierName.length > 0) {
-        const byName = await this.filmSupplierRepository.findByName(userId, normalizedSupplierName);
-        if (!byName || byName.id !== supplier.id) {
-          throw new DomainError('DOMAIN_ERROR', 'Supplier ID does not match the provided supplier name');
-        }
-      }
-
       return supplier;
     }
 
+    // If supplier name is provided, look up or create
+    const normalizedSupplierName = supplierName?.trim() ?? '';
     if (normalizedSupplierName.length > 0) {
-      const byName = await this.filmSupplierRepository.findByName(userId, normalizedSupplierName);
-      if (byName) {
-        throw new DomainError('DOMAIN_ERROR', 'Supplier name matches an existing supplier; pass supplierId instead');
+      const existing = await this.filmSupplierRepository.findByName(userId, normalizedSupplierName);
+      if (existing) {
+        return existing;
       }
-      throw new DomainError('DOMAIN_ERROR', 'Supplier name provided without supplierId. Create supplier first and pass supplierId.');
+
+      // Auto-create supplier if it doesn't exist
+      return await this.filmSupplierRepository.create(userId, {
+        name: normalizedSupplierName,
+        contact: null,
+        email: null,
+        website: null,
+        notes: null
+      });
     }
 
     return null;
