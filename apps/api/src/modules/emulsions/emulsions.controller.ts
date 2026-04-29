@@ -42,7 +42,7 @@ export class EmulsionsController {
       key: idempotencyKey,
       scope: 'emulsions.create',
       requestPayload: body,
-      handler: () => this.emulsionsService.create(body)
+      handler: () => this.emulsionsService.create(user.userId, body)
     });
   }
 
@@ -50,10 +50,11 @@ export class EmulsionsController {
   @ApiOperation({ summary: 'Update an emulsion' })
   @ApiResponse({ status: 200, description: 'Emulsion updated' })
   update(
+    @CurrentUser() user: AuthenticatedUser,
     @Param('id', ParseIntPipe) id: number,
     @Body(new ZodSchemaPipe(updateEmulsionRequestSchema)) body: typeof updateEmulsionRequestSchema['_output']
   ) {
-    return this.emulsionsService.update(id, body);
+    return this.emulsionsService.update(user.userId, id, body);
   }
 
   @Delete(':id')

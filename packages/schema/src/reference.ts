@@ -59,6 +59,43 @@ export const holderTypeSchema = z.object({
   label: labelSchema
 });
 
+export const referenceValueKindSchema = z.enum([
+  'manufacturer',
+  'brand',
+  'device_make',
+  'device_model',
+  'device_system',
+  'lab_name',
+  'lab_contact',
+  'supplier_name',
+  'supplier_channel'
+]);
+
+export const referenceValueSchema = z.object({
+  id: idSchema,
+  userId: idSchema,
+  kind: referenceValueKindSchema,
+  value: z.string().min(1),
+  normalizedValue: z.string().min(1),
+  usageCount: z.number().int().nonnegative(),
+  lastUsedAt: z.string().min(1)
+});
+
+export const listReferenceValuesQuerySchema = z.object({
+  kind: referenceValueKindSchema,
+  q: z.string().optional().default(''),
+  limit: z.coerce.number().int().min(1).max(50).optional().default(10)
+});
+
+export const upsertReferenceValueInputSchema = z.object({
+  kind: referenceValueKindSchema,
+  value: z.string().min(1)
+});
+
+export const upsertReferenceValuesRequestSchema = z.object({
+  items: z.array(upsertReferenceValueInputSchema).min(1).max(100)
+});
+
 export const emulsionSchema = z.object({
   id: idSchema,
   brand: z.string().min(1),
@@ -105,6 +142,11 @@ export type StorageLocation = z.infer<typeof storageLocationSchema>;
 export type SlotState = z.infer<typeof slotStateSchema>;
 export type DeviceType = z.infer<typeof deviceTypeSchema>;
 export type HolderType = z.infer<typeof holderTypeSchema>;
+export type ReferenceValueKind = z.infer<typeof referenceValueKindSchema>;
+export type ReferenceValue = z.infer<typeof referenceValueSchema>;
+export type ListReferenceValuesQuery = z.infer<typeof listReferenceValuesQuerySchema>;
+export type UpsertReferenceValueInput = z.infer<typeof upsertReferenceValueInputSchema>;
+export type UpsertReferenceValuesRequest = z.infer<typeof upsertReferenceValuesRequestSchema>;
 export type Emulsion = z.infer<typeof emulsionSchema>;
 export type CreateEmulsionRequest = z.infer<typeof createEmulsionRequestSchema>;
 export type UpdateEmulsionRequest = z.infer<typeof updateEmulsionRequestSchema>;

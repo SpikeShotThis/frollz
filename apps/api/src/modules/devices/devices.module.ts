@@ -6,8 +6,10 @@ import { DeviceRepository } from '../../infrastructure/repositories/device.repos
 import { FilmRepository } from '../../infrastructure/repositories/film.repository.js';
 import { MikroOrmDeviceRepository } from '../../infrastructure/repositories/mikro-orm-device.repository.js';
 import { MikroOrmFilmRepository } from '../../infrastructure/repositories/mikro-orm-film.repository.js';
+import { ReferenceModule } from '../reference/reference.module.js';
 
 @Module({
+  imports: [ReferenceModule],
   controllers: [DevicesController],
   providers: [
     DevicesService,

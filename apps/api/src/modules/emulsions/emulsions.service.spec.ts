@@ -11,10 +11,11 @@ describe('EmulsionsService', () => {
       delete: vi.fn(),
       isInUse: vi.fn()
     };
-    const service = new EmulsionsService(repo as never);
+    const referenceService = { upsertReferenceValues: vi.fn() };
+    const service = new EmulsionsService(repo as never, referenceService as never);
 
     await expect(
-      service.update(123, {
+      service.update(1, 123, {
         manufacturer: 'A',
         brand: 'B',
         isoSpeed: 100,
@@ -33,7 +34,8 @@ describe('EmulsionsService', () => {
       delete: vi.fn(),
       isInUse: vi.fn().mockResolvedValue(true)
     };
-    const service = new EmulsionsService(repo as never);
+    const referenceService = { upsertReferenceValues: vi.fn() };
+    const service = new EmulsionsService(repo as never, referenceService as never);
 
     await expect(service.delete(99)).rejects.toMatchObject({ code: 'CONFLICT' });
     expect(repo.delete).not.toHaveBeenCalled();

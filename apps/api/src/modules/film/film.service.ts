@@ -11,6 +11,7 @@ import type {
   FilmLotCreateRequest,
   FilmLotDetail,
   FilmSummary,
+  UpsertReferenceValueInput,
   FilmUpdateRequest,
   FrameJourneyEvent,
   FrameSizeCode
@@ -37,6 +38,7 @@ import {
 } from '../../infrastructure/entities/index.js';
 import { mapFilmJourneyEventEntity, parseLoadedEventData, type NormalizedLoadedEventData } from '../../infrastructure/mappers/index.js';
 import { nowIso } from '../../common/utils/time.js';
+import { ReferenceService } from '../reference/reference.service.js';
 
 type NormalizedLoadedFrameEventData = NormalizedLoadedEventData & { filmFrameId: number };
 
@@ -45,7 +47,8 @@ export class FilmService {
   constructor(
     @Inject(FilmRepository) private readonly filmRepository: FilmRepository,
     @Inject(FilmLotRepository) private readonly filmLotRepository: FilmLotRepository,
-    @Inject(EntityManager) private readonly entityManager: EntityManager
+    @Inject(EntityManager) private readonly entityManager: EntityManager,
+    @Inject(ReferenceService) private readonly referenceService: ReferenceService
   ) { }
 
   list(userId: number, query: FilmListQuery): Promise<FilmListResponse> {
@@ -226,6 +229,10 @@ export class FilmService {
       transactionalEntityManager.persist([film, event]);
       await transactionalEntityManager.flush();
 
+      if (input.filmStateCode === 'sent_for_dev' || input.filmStateCode === 'developed') {
+        await this.referenceService.upsertReferenceValues(userId, this.extractLabReferenceValues(input.eventData));
+      }
+
       const persistedEvent = await transactionalEntityManager.findOneOrFail(
         FilmJourneyEventEntity,
         { id: event.id },
@@ -362,6 +369,20 @@ export class FilmService {
       { film: filmId, user: userId },
       { orderBy: { occurredAt: 'desc', id: 'desc' }, populate: ['film', 'user', 'filmState'] }
     );
+  }
+
+  private extractLabReferenceValues(eventData: Record<string, unknown>): UpsertReferenceValueInput[] {
+    const items: UpsertReferenceValueInput[] = [];
+
+    if (typeof eventData.labName === 'string' && eventData.labName.trim().length > 0) {
+      items.push({ kind: 'lab_name', value: eventData.labName });
+    }
+
+    if (typeof eventData.labContact === 'string' && eventData.labContact.trim().length > 0) {
+      items.push({ kind: 'lab_contact', value: eventData.labContact });
+    }
+
+    return items;
   }
 
   private async applyLoadedEventSideEffects(

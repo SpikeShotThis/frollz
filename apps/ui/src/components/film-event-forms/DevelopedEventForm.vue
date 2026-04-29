@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { reactive } from 'vue';
+import { reactive, ref } from 'vue';
 import { useRegleSchema } from '@regle/schemas';
-import type { CreateFilmJourneyEventRequest } from '@frollz2/schema';
+import type { CreateFilmJourneyEventRequest, ReferenceValueKind } from '@frollz2/schema';
 import { z } from 'zod';
+import { useReferenceValuesStore } from '../../stores/reference-values.js';
 
 interface Props {
   occurredAt: string;
@@ -13,6 +14,7 @@ interface Props {
 
 const props = defineProps<Props>();
 const emit = defineEmits<{ submit: [payload: CreateFilmJourneyEventRequest] }>();
+const referenceValuesStore = useReferenceValuesStore();
 
 const form = reactive({
   labName: '',
@@ -25,6 +27,28 @@ const developedSchema = z.object({
 });
 
 const { r$ } = useRegleSchema(form, developedSchema);
+const labNameOptions = ref<string[]>([]);
+type QSelectFilterUpdate = (callback: () => void) => void;
+
+async function fetchSuggestions(kind: ReferenceValueKind, term: string): Promise<string[]> {
+  try {
+    return await referenceValuesStore.loadSuggestions(kind, term);
+  } catch {
+    return referenceValuesStore.getSuggestions(kind);
+  }
+}
+
+function onFieldFilter(kind: ReferenceValueKind, value: string, update: QSelectFilterUpdate): void {
+  void fetchSuggestions(kind, value).then((items) => {
+    update(() => {
+      labNameOptions.value = items;
+    });
+  });
+}
+
+function onLabNameFilter(value: string, update: QSelectFilterUpdate): void {
+  onFieldFilter('lab_name', value, update);
+}
 
 async function handleSubmit(): Promise<void> {
   if (!props.occurredAt) return;
@@ -47,12 +71,22 @@ async function handleSubmit(): Promise<void> {
 <template>
   <q-form class="column q-gutter-md" @submit="handleSubmit">
     <div>
-      <q-input
-        v-model="r$.$value.labName"
+      <q-select
+        :model-value="r$.$value.labName"
         filled
+        use-input
+        fill-input
+        hide-selected
+        hide-dropdown-icon
+        input-debounce="150"
+        :options="labNameOptions"
         label="Lab name (optional)"
+        new-value-mode="add-unique"
         :error="r$.labName?.$error"
         :error-message="r$.labName?.$errors[0]"
+        @update:model-value="r$.$value.labName = String($event ?? '')"
+        @input-value="r$.$value.labName = String($event ?? '')"
+        @filter="onLabNameFilter"
       />
     </div>
 

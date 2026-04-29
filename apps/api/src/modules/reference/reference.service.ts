@@ -1,4 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
+import type { ListReferenceValuesQuery, UpsertReferenceValueInput } from '@frollz2/schema';
 import { ReferenceRepository } from '../../infrastructure/repositories/reference.repository.js';
 
 @Injectable()
@@ -39,6 +40,14 @@ export class ReferenceService {
 
   listHolderTypes() {
     return this.referenceRepository.listHolderTypes();
+  }
+
+  listReferenceValues(userId: number, query: ListReferenceValuesQuery) {
+    return this.referenceRepository.listReferenceValues(userId, query);
+  }
+
+  upsertReferenceValues(userId: number, values: UpsertReferenceValueInput[]) {
+    return this.referenceRepository.upsertReferenceValues(userId, values);
   }
 
 }

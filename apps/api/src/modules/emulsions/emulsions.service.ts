@@ -2,10 +2,14 @@ import { Inject, Injectable } from '@nestjs/common';
 import type { CreateEmulsionRequest, Emulsion, UpdateEmulsionRequest } from '@frollz2/schema';
 import { DomainError } from '../../domain/errors.js';
 import { EmulsionRepository } from '../../infrastructure/repositories/emulsion.repository.js';
+import { ReferenceService } from '../reference/reference.service.js';
 
 @Injectable()
 export class EmulsionsService {
-  constructor(@Inject(EmulsionRepository) private readonly emulsionRepository: EmulsionRepository) { }
+  constructor(
+    @Inject(EmulsionRepository) private readonly emulsionRepository: EmulsionRepository,
+    @Inject(ReferenceService) private readonly referenceService: ReferenceService
+  ) { }
 
   list(): Promise<Emulsion[]> {
     return this.emulsionRepository.list();
@@ -19,15 +23,24 @@ export class EmulsionsService {
     return emulsion;
   }
 
-  create(input: CreateEmulsionRequest): Promise<Emulsion> {
-    return this.emulsionRepository.create(input);
+  async create(userId: number, input: CreateEmulsionRequest): Promise<Emulsion> {
+    const emulsion = await this.emulsionRepository.create(input);
+    await this.referenceService.upsertReferenceValues(userId, [
+      { kind: 'manufacturer', value: input.manufacturer },
+      { kind: 'brand', value: input.brand }
+    ]);
+    return emulsion;
   }
 
-  async update(id: number, input: UpdateEmulsionRequest): Promise<Emulsion> {
+  async update(userId: number, id: number, input: UpdateEmulsionRequest): Promise<Emulsion> {
     const emulsion = await this.emulsionRepository.update(id, input);
     if (!emulsion) {
       throw new DomainError('NOT_FOUND', 'Emulsion not found');
     }
+    await this.referenceService.upsertReferenceValues(userId, [
+      { kind: 'manufacturer', value: input.manufacturer },
+      { kind: 'brand', value: input.brand }
+    ]);
     return emulsion;
   }
 

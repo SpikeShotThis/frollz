@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import { computed, reactive, ref, watch } from 'vue';
-import { createEmulsionRequestSchema } from '@frollz2/schema';
+import { createEmulsionRequestSchema, type ReferenceValueKind } from '@frollz2/schema';
 import type { QForm } from 'quasar';
 import { createIdempotencyKey } from '../composables/idempotency.js';
 import { useUiFeedback } from '../composables/useUiFeedback.js';
 import { useEmulsionStore } from '../stores/emulsions.js';
 import { useReferenceStore } from '../stores/reference.js';
+import { useReferenceValuesStore } from '../stores/reference-values.js';
 
 const props = defineProps<{
   modelValue: boolean;
@@ -17,6 +18,7 @@ const emit = defineEmits<{
 }>();
 
 const referenceStore = useReferenceStore();
+const referenceValuesStore = useReferenceValuesStore();
 const emulsionStore = useEmulsionStore();
 const feedback = useUiFeedback();
 const isCreating = ref(false);
@@ -30,6 +32,9 @@ const form = reactive({
   developmentProcessId: null as number | null,
   filmFormatIds: [] as number[]
 });
+
+const manufacturerOptions = ref<string[]>([]);
+const brandOptions = ref<string[]>([]);
 
 const developmentProcessOptions = computed(() =>
   referenceStore.developmentProcesses.map((process) => ({
@@ -52,6 +57,30 @@ function reset(): void {
   form.developmentProcessId = null;
   form.filmFormatIds = [];
   idempotencyKey.value = createIdempotencyKey();
+}
+
+async function fetchSuggestions(kind: ReferenceValueKind, term: string): Promise<string[]> {
+  try {
+    return await referenceValuesStore.loadSuggestions(kind, term);
+  } catch {
+    return referenceValuesStore.getSuggestions(kind);
+  }
+}
+
+function onManufacturerFilter(value: string, update: (callback: () => void) => void): void {
+  void fetchSuggestions('manufacturer', value).then((items) => {
+    update(() => {
+      manufacturerOptions.value = items;
+    });
+  });
+}
+
+function onBrandFilter(value: string, update: (callback: () => void) => void): void {
+  void fetchSuggestions('brand', value).then((items) => {
+    update(() => {
+      brandOptions.value = items;
+    });
+  });
 }
 
 watch(() => props.modelValue, (open) => {
@@ -100,8 +129,38 @@ async function submit(): Promise<void> {
 
       <q-card-section>
         <q-form ref="emulsionForm" class="column q-gutter-md" data-testid="emulsion-create-form" @submit="submit">
-          <q-input v-model="form.manufacturer" filled label="Manufacturer" data-testid="emulsion-create-manufacturer" />
-          <q-input v-model="form.brand" filled label="Brand" data-testid="emulsion-create-brand" />
+          <q-select
+            :model-value="form.manufacturer"
+            filled
+            use-input
+            fill-input
+            hide-selected
+            hide-dropdown-icon
+            input-debounce="150"
+            :options="manufacturerOptions"
+            label="Manufacturer"
+            new-value-mode="add-unique"
+            data-testid="emulsion-create-manufacturer"
+            @update:model-value="form.manufacturer = String($event ?? '')"
+            @input-value="form.manufacturer = String($event ?? '')"
+            @filter="onManufacturerFilter"
+          />
+          <q-select
+            :model-value="form.brand"
+            filled
+            use-input
+            fill-input
+            hide-selected
+            hide-dropdown-icon
+            input-debounce="150"
+            :options="brandOptions"
+            label="Brand"
+            new-value-mode="add-unique"
+            data-testid="emulsion-create-brand"
+            @update:model-value="form.brand = String($event ?? '')"
+            @input-value="form.brand = String($event ?? '')"
+            @filter="onBrandFilter"
+          />
           <q-input
             v-model.number="form.isoSpeed"
             filled

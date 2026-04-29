@@ -3,7 +3,10 @@ import type {
   FilmFormat,
   FilmState,
   HolderType,
+  ListReferenceValuesQuery,
   PackageType,
+  ReferenceValue,
+  UpsertReferenceValueInput,
   DeviceType,
   ReferenceTables,
   SlotState,
@@ -21,4 +24,6 @@ export abstract class ReferenceRepository {
   abstract listSlotStates(): Promise<SlotState[]>;
   abstract listDeviceTypes(): Promise<DeviceType[]>;
   abstract listHolderTypes(): Promise<HolderType[]>;
+  abstract listReferenceValues(userId: number, query: ListReferenceValuesQuery): Promise<ReferenceValue[]>;
+  abstract upsertReferenceValues(userId: number, values: UpsertReferenceValueInput[]): Promise<void>;
 }

@@ -1,6 +1,18 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { EntityManager } from '@mikro-orm/core';
-import type { DevelopmentProcess, FilmFormat, FilmState, HolderType, PackageType, DeviceType, SlotState, StorageLocation } from '@frollz2/schema';
+import type {
+  DevelopmentProcess,
+  DeviceType,
+  FilmFormat,
+  FilmState,
+  HolderType,
+  ListReferenceValuesQuery,
+  PackageType,
+  ReferenceValue,
+  SlotState,
+  StorageLocation,
+  UpsertReferenceValueInput
+} from '@frollz2/schema';
 import { ReferenceRepository } from './reference.repository.js';
 import {
   DevelopmentProcessEntity,
@@ -10,9 +22,13 @@ import {
   PackageTypeEntity,
   DeviceTypeEntity,
   SlotStateEntity,
-  StorageLocationEntity
+  StorageLocationEntity,
+  ReferenceValueEntity,
+  UserEntity
 } from '../entities/index.js';
 import { mapReferenceTables } from '../mappers/index.js';
+import { normalizeReferenceValue, sanitizeReferenceValue } from '../../domain/reference/reference-value.utils.js';
+import { nowIso } from '../../common/utils/time.js';
 
 @Injectable()
 export class MikroOrmReferenceRepository extends ReferenceRepository {
@@ -115,6 +131,74 @@ export class MikroOrmReferenceRepository extends ReferenceRepository {
       code: entity.code as HolderType['code'],
       label: entity.label
     }));
+  }
+
+  async listReferenceValues(userId: number, query: ListReferenceValuesQuery): Promise<ReferenceValue[]> {
+    const normalizedQuery = normalizeReferenceValue(query.q ?? '');
+    const values = await this.entityManager.find(
+      ReferenceValueEntity,
+      {
+        user: userId,
+        kind: query.kind,
+        ...(normalizedQuery.length > 0 ? { normalizedValue: { $like: `${normalizedQuery}%` } } : {})
+      },
+      {
+        orderBy: [{ usageCount: 'desc' }, { lastUsedAt: 'desc' }, { id: 'desc' }],
+        limit: query.limit
+      }
+    );
+
+    return values.map((entity) => ({
+      id: entity.id,
+      userId,
+      kind: entity.kind as ReferenceValue['kind'],
+      value: entity.value,
+      normalizedValue: entity.normalizedValue,
+      usageCount: entity.usageCount,
+      lastUsedAt: entity.lastUsedAt
+    }));
+  }
+
+  async upsertReferenceValues(userId: number, values: UpsertReferenceValueInput[]): Promise<void> {
+    if (values.length === 0) {
+      return;
+    }
+
+    const at = nowIso();
+    await this.entityManager.transactional(async (em) => {
+      for (const item of values) {
+        const value = sanitizeReferenceValue(item.value);
+        if (!value) {
+          continue;
+        }
+
+        const normalizedValue = normalizeReferenceValue(value);
+        const existing = await em.findOne(ReferenceValueEntity, {
+          user: userId,
+          kind: item.kind,
+          normalizedValue
+        });
+
+        if (existing) {
+          existing.usageCount += 1;
+          existing.lastUsedAt = at;
+          existing.value = value;
+          em.persist(existing);
+          continue;
+        }
+
+        const referenceValue = em.create(ReferenceValueEntity, {
+          user: em.getReference(UserEntity, userId),
+          kind: item.kind,
+          value,
+          normalizedValue,
+          usageCount: 1,
+          lastUsedAt: at
+        });
+        em.persist(referenceValue);
+      }
+      await em.flush();
+    });
   }
 
 }

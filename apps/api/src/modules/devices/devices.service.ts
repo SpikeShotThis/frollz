@@ -15,13 +15,15 @@ import { DomainError } from '../../domain/errors.js';
 import { FilmFormatEntity } from '../../infrastructure/entities/index.js';
 import { FilmRepository } from '../../infrastructure/repositories/film.repository.js';
 import { DeviceRepository } from '../../infrastructure/repositories/device.repository.js';
+import { ReferenceService } from '../reference/reference.service.js';
 
 @Injectable()
 export class DevicesService {
   constructor(
     @Inject(DeviceRepository) private readonly deviceRepository: DeviceRepository,
     @Inject(FilmRepository) private readonly filmRepository: FilmRepository,
-    @Inject(EntityManager) private readonly entityManager: EntityManager
+    @Inject(EntityManager) private readonly entityManager: EntityManager,
+    @Inject(ReferenceService) private readonly referenceService: ReferenceService
   ) { }
 
   list(userId: number): Promise<FilmDevice[]> {
@@ -40,7 +42,9 @@ export class DevicesService {
 
   async create(userId: number, input: CreateFilmDeviceRequest): Promise<FilmDevice> {
     await this.assertFrameSizeMatchesFormat(input.filmFormatId, input.frameSize);
-    return this.deviceRepository.create(userId, input);
+    const device = await this.deviceRepository.create(userId, input);
+    await this.upsertReferenceValues(userId, input as Record<string, unknown>);
+    return device;
   }
 
   async update(userId: number, deviceId: number, input: UpdateFilmDeviceRequest): Promise<FilmDevice> {
@@ -57,6 +61,8 @@ export class DevicesService {
     if (!device) {
       throw new DomainError('NOT_FOUND', 'Device not found');
     }
+
+    await this.upsertReferenceValues(userId, input as Record<string, unknown>);
 
     return device;
   }
@@ -168,6 +174,30 @@ export class DevicesService {
 
     if (!isFrameSizeValidForFormatCode(format.code, frameSize)) {
       throw new DomainError('DOMAIN_ERROR', `Frame size ${frameSize} is not valid for ${format.code}`);
+    }
+  }
+
+  private async upsertReferenceValues(userId: number, input: Record<string, unknown>): Promise<void> {
+    const items: Array<{ kind: 'device_make' | 'device_model' | 'brand' | 'device_system'; value: string }> = [];
+
+    if (typeof input.make === 'string') {
+      items.push({ kind: 'device_make' as const, value: input.make });
+    }
+    if (typeof input.model === 'string') {
+      items.push({ kind: 'device_model' as const, value: input.model });
+    }
+    if (typeof input.brand === 'string') {
+      items.push({ kind: 'brand' as const, value: input.brand });
+    }
+    const systemValue = typeof input.system === 'string'
+      ? input.system
+      : (typeof input.cameraSystem === 'string' ? input.cameraSystem : null);
+    if (systemValue) {
+      items.push({ kind: 'device_system' as const, value: systemValue });
+    }
+
+    if (items.length > 0) {
+      await this.referenceService.upsertReferenceValues(userId, items);
     }
   }
 }
