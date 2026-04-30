@@ -20,7 +20,6 @@ const form = reactive({
   rating: null as number | null
 });
 const isSaving = ref(false);
-const loadError = ref<string | null>(null);
 const createIdempotency = ref(createIdempotencyKey());
 const ratingModel = computed({
   get: () => form.rating ?? 0,
@@ -30,12 +29,7 @@ const ratingModel = computed({
 });
 
 async function loadSuppliers(): Promise<void> {
-  try {
-    await filmSuppliersStore.loadFilmSuppliers({ q: query.value, includeInactive: includeInactive.value });
-    loadError.value = null;
-  } catch (error) {
-    loadError.value = error instanceof Error ? error.message : 'Failed to load suppliers';
-  }
+  await filmSuppliersStore.loadFilmSuppliers({ q: query.value, includeInactive: includeInactive.value });
 }
 
 function beginCreate(): void {
@@ -121,8 +115,8 @@ onMounted(async () => {
       <q-input v-model="query" filled label="Search suppliers" class="col" @update:model-value="loadSuppliers" />
       <q-toggle v-model="includeInactive" label="Show inactive" @update:model-value="loadSuppliers" />
     </div>
-    <q-banner v-if="loadError" class="bg-red-1 text-negative" rounded>
-      {{ loadError }}
+    <q-banner v-if="filmSuppliersStore.listError" class="bg-red-1 text-negative" rounded>
+      {{ filmSuppliersStore.listError }}
     </q-banner>
 
     <q-table
