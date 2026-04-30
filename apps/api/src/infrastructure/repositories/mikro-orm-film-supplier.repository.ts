@@ -47,16 +47,15 @@ export class MikroOrmFilmSupplierRepository extends FilmSupplierRepository {
       user: this.entityManager.getReference(UserEntity, userId),
       name,
       normalizedName: normalizeReferenceValue(name),
-      contact: sanitizeOptional(input.contact),
-      email: sanitizeOptional(input.email),
-      website: sanitizeOptional(input.website),
-      notes: sanitizeOptional(input.notes),
+      contact: input.contact ?? null,
+      email: input.email ?? null,
+      website: input.website ?? null,
+      notes: input.notes ?? null,
       active: true,
       rating: input.rating ?? null
     });
     this.entityManager.persist(entity);
     await this.entityManager.flush();
-    await this.entityManager.populate(entity, ['user']);
     return mapFilmSupplierEntity(entity);
   }
 
@@ -71,23 +70,14 @@ export class MikroOrmFilmSupplierRepository extends FilmSupplierRepository {
       entity.name = name;
       entity.normalizedName = normalizeReferenceValue(name);
     }
-    if (input.contact !== undefined) entity.contact = sanitizeNullable(input.contact);
-    if (input.email !== undefined) entity.email = sanitizeNullable(input.email);
-    if (input.website !== undefined) entity.website = sanitizeNullable(input.website);
-    if (input.notes !== undefined) entity.notes = sanitizeNullable(input.notes);
+    if (input.contact !== undefined) entity.contact = input.contact ?? null;
+    if (input.email !== undefined) entity.email = input.email ?? null;
+    if (input.website !== undefined) entity.website = input.website ?? null;
+    if (input.notes !== undefined) entity.notes = input.notes ?? null;
     if (input.active !== undefined) entity.active = input.active;
-    if (input.rating !== undefined) entity.rating = input.rating;
+    if (input.rating !== undefined) entity.rating = input.rating ?? null;
 
     await this.entityManager.flush();
     return mapFilmSupplierEntity(entity);
   }
-}
-
-function sanitizeOptional(value: string | undefined): string | null {
-  return sanitizeNullable(value ?? null);
-}
-
-function sanitizeNullable(value: string | null): string | null {
-  const next = sanitizeReferenceValue(value ?? '');
-  return next.length > 0 ? next : null;
 }

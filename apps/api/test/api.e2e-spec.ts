@@ -10,6 +10,7 @@ import {
   filmFrameSchema,
   filmFormatSchema,
   filmDeviceSchema,
+  filmSupplierSchema,
   holderTypeSchema,
   packageTypeSchema,
   deviceTypeSchema,
@@ -1368,5 +1369,307 @@ describe('API integration', () => {
         code: 'CONFLICT'
       }
     });
+  });
+
+  it('manages film supplier lifecycle (create, list, get, update, archive, restore)', async () => {
+    const email = `supplier-lifecycle-${Date.now()}@example.com`;
+    const tokens = await registerUser(email);
+    const authHeaders = { authorization: `Bearer ${tokens.accessToken}` };
+
+    const createResponse = await harness.app.inject({
+      method: 'POST',
+      url: '/api/v1/film-suppliers',
+      headers: { ...authHeaders, 'content-type': 'application/json', 'idempotency-key': `supplier-create-${Date.now()}` },
+      payload: { name: 'Adorama', contact: 'Support Team', email: 'support@adorama.com', rating: 4 }
+    });
+    expect(createResponse.statusCode).toBe(201);
+    const created = filmSupplierSchema.parse(createResponse.json());
+    expect(created.name).toBe('Adorama');
+    expect(created.rating).toBe(4);
+    expect(created.active).toBe(true);
+
+    const getResponse = await harness.app.inject({
+      method: 'GET',
+      url: `/api/v1/film-suppliers/${created.id}`,
+      headers: authHeaders
+    });
+    expect(getResponse.statusCode).toBe(200);
+    filmSupplierSchema.parse(getResponse.json());
+
+    const listResponse = await harness.app.inject({ method: 'GET', url: '/api/v1/film-suppliers', headers: authHeaders });
+    expect(listResponse.statusCode).toBe(200);
+    const activeSuppliers = filmSupplierSchema.array().parse(listResponse.json());
+    expect(activeSuppliers.some((s) => s.id === created.id)).toBe(true);
+    expect(activeSuppliers.every((s) => s.active)).toBe(true);
+
+    const updateResponse = await harness.app.inject({
+      method: 'PATCH',
+      url: `/api/v1/film-suppliers/${created.id}`,
+      headers: { ...authHeaders, 'content-type': 'application/json', 'idempotency-key': `supplier-update-${Date.now()}` },
+      payload: { name: 'Adorama Pro', rating: 5 }
+    });
+    expect(updateResponse.statusCode).toBe(200);
+    const updated = filmSupplierSchema.parse(updateResponse.json());
+    expect(updated.name).toBe('Adorama Pro');
+    expect(updated.rating).toBe(5);
+
+    const archiveResponse = await harness.app.inject({
+      method: 'PATCH',
+      url: `/api/v1/film-suppliers/${created.id}`,
+      headers: { ...authHeaders, 'content-type': 'application/json', 'idempotency-key': `supplier-archive-${Date.now()}` },
+      payload: { active: false }
+    });
+    expect(archiveResponse.statusCode).toBe(200);
+    expect(filmSupplierSchema.parse(archiveResponse.json()).active).toBe(false);
+
+    const activeOnlyList = await harness.app.inject({ method: 'GET', url: '/api/v1/film-suppliers', headers: authHeaders });
+    const activeOnly = filmSupplierSchema.array().parse(activeOnlyList.json());
+    expect(activeOnly.some((s) => s.id === created.id)).toBe(false);
+
+    const allList = await harness.app.inject({ method: 'GET', url: '/api/v1/film-suppliers?includeInactive=true', headers: authHeaders });
+    const all = filmSupplierSchema.array().parse(allList.json());
+    expect(all.some((s) => s.id === created.id && !s.active)).toBe(true);
+
+    const restoreResponse = await harness.app.inject({
+      method: 'PATCH',
+      url: `/api/v1/film-suppliers/${created.id}`,
+      headers: { ...authHeaders, 'content-type': 'application/json', 'idempotency-key': `supplier-restore-${Date.now()}` },
+      payload: { active: true }
+    });
+    expect(restoreResponse.statusCode).toBe(200);
+    expect(filmSupplierSchema.parse(restoreResponse.json()).active).toBe(true);
+  });
+
+  it('returns 409 when creating a film supplier with a duplicate name', async () => {
+    const email = `supplier-dup-${Date.now()}@example.com`;
+    const tokens = await registerUser(email);
+    const authHeaders = { authorization: `Bearer ${tokens.accessToken}` };
+    const name = `Duplicate Lab ${Date.now()}`;
+
+    const first = await harness.app.inject({
+      method: 'POST',
+      url: '/api/v1/film-suppliers',
+      headers: { ...authHeaders, 'content-type': 'application/json', 'idempotency-key': `supplier-dup-a-${Date.now()}` },
+      payload: { name }
+    });
+    expect(first.statusCode).toBe(201);
+
+    const second = await harness.app.inject({
+      method: 'POST',
+      url: '/api/v1/film-suppliers',
+      headers: { ...authHeaders, 'content-type': 'application/json', 'idempotency-key': `supplier-dup-b-${Date.now()}` },
+      payload: { name }
+    });
+    expect(second.statusCode).toBe(409);
+    expect(second.json()).toMatchObject({ error: { code: 'CONFLICT' } });
+  });
+
+  it('isolates film suppliers between users', async () => {
+    const emailA = `supplier-iso-a-${Date.now()}@example.com`;
+    const emailB = `supplier-iso-b-${Date.now()}@example.com`;
+    const tokensA = await registerUser(emailA);
+    const tokensB = await registerUser(emailB);
+    const headersA = { authorization: `Bearer ${tokensA.accessToken}` };
+    const headersB = { authorization: `Bearer ${tokensB.accessToken}` };
+
+    const createResponse = await harness.app.inject({
+      method: 'POST',
+      url: '/api/v1/film-suppliers',
+      headers: { ...headersA, 'content-type': 'application/json', 'idempotency-key': `supplier-iso-${Date.now()}` },
+      payload: { name: 'User A Supplier' }
+    });
+    expect(createResponse.statusCode).toBe(201);
+    const created = filmSupplierSchema.parse(createResponse.json());
+
+    const getResponse = await harness.app.inject({
+      method: 'GET',
+      url: `/api/v1/film-suppliers/${created.id}`,
+      headers: headersB
+    });
+    expect(getResponse.statusCode).toBe(404);
+
+    const listResponse = await harness.app.inject({ method: 'GET', url: '/api/v1/film-suppliers', headers: headersB });
+    const otherSuppliers = filmSupplierSchema.array().parse(listResponse.json());
+    expect(otherSuppliers.some((s) => s.id === created.id)).toBe(false);
+  });
+
+  it('replays create supplier responses for the same idempotency key without duplicating rows', async () => {
+    const email = `supplier-idempotent-${Date.now()}@example.com`;
+    const tokens = await registerUser(email);
+    const authHeaders = { authorization: `Bearer ${tokens.accessToken}` };
+    const key = `supplier-idem-${Date.now()}`;
+    const payload = { name: `Replay Supplier ${Date.now()}`, rating: 3 };
+
+    const first = await harness.app.inject({
+      method: 'POST',
+      url: '/api/v1/film-suppliers',
+      headers: { ...authHeaders, 'content-type': 'application/json', 'idempotency-key': key },
+      payload
+    });
+    expect(first.statusCode).toBe(201);
+    const firstSupplier = filmSupplierSchema.parse(first.json());
+
+    const second = await harness.app.inject({
+      method: 'POST',
+      url: '/api/v1/film-suppliers',
+      headers: { ...authHeaders, 'content-type': 'application/json', 'idempotency-key': key },
+      payload
+    });
+    expect(second.statusCode).toBe(201);
+    expect(filmSupplierSchema.parse(second.json()).id).toBe(firstSupplier.id);
+
+    const list = await harness.app.inject({ method: 'GET', url: '/api/v1/film-suppliers', headers: authHeaders });
+    const suppliers = filmSupplierSchema.array().parse(list.json());
+    expect(suppliers.filter((s) => s.name === payload.name)).toHaveLength(1);
+  });
+
+  it('returns 409 when a supplier idempotency key is reused with a different payload', async () => {
+    const email = `supplier-idem-conflict-${Date.now()}@example.com`;
+    const tokens = await registerUser(email);
+    const authHeaders = { authorization: `Bearer ${tokens.accessToken}` };
+    const key = `supplier-idem-conflict-${Date.now()}`;
+
+    const first = await harness.app.inject({
+      method: 'POST',
+      url: '/api/v1/film-suppliers',
+      headers: { ...authHeaders, 'content-type': 'application/json', 'idempotency-key': key },
+      payload: { name: `Conflict Supplier A ${Date.now()}` }
+    });
+    expect(first.statusCode).toBe(201);
+
+    const second = await harness.app.inject({
+      method: 'POST',
+      url: '/api/v1/film-suppliers',
+      headers: { ...authHeaders, 'content-type': 'application/json', 'idempotency-key': key },
+      payload: { name: `Conflict Supplier B ${Date.now()}` }
+    });
+    expect(second.statusCode).toBe(409);
+  });
+
+  it('resolves supplier by supplierId when creating a film lot', async () => {
+    const email = `supplier-lot-id-${Date.now()}@example.com`;
+    const tokens = await registerUser(email);
+    const authHeaders = { authorization: `Bearer ${tokens.accessToken}` };
+    const refs = await loadCoreReferenceData(authHeaders);
+
+    const supplierResponse = await harness.app.inject({
+      method: 'POST',
+      url: '/api/v1/film-suppliers',
+      headers: { ...authHeaders, 'content-type': 'application/json', 'idempotency-key': `supplier-lot-id-${Date.now()}` },
+      payload: { name: 'B&H Photo' }
+    });
+    expect(supplierResponse.statusCode).toBe(201);
+    const supplier = filmSupplierSchema.parse(supplierResponse.json());
+
+    const lotResponse = await harness.app.inject({
+      method: 'POST',
+      url: '/api/v1/film/lots',
+      headers: { ...authHeaders, 'content-type': 'application/json' },
+      payload: {
+        emulsionId: refs.emulsion.id,
+        packageTypeId: refs.packageType.id,
+        filmFormatId: refs.filmFormat.id,
+        quantity: 1,
+        films: [{ name: 'Supplier ID Lot' }],
+        expirationDate: null,
+        supplierId: supplier.id
+      }
+    });
+    expect(lotResponse.statusCode).toBe(201);
+    const lot = filmLotDetailSchema.parse(lotResponse.json());
+    expect(lot.supplierId).toBe(supplier.id);
+  });
+
+  it('auto-creates supplier by name when creating a film lot with an unknown supplier name', async () => {
+    const email = `supplier-lot-name-${Date.now()}@example.com`;
+    const tokens = await registerUser(email);
+    const authHeaders = { authorization: `Bearer ${tokens.accessToken}` };
+    const refs = await loadCoreReferenceData(authHeaders);
+    const supplierName = `Auto Supplier ${Date.now()}`;
+
+    const lotResponse = await harness.app.inject({
+      method: 'POST',
+      url: '/api/v1/film/lots',
+      headers: { ...authHeaders, 'content-type': 'application/json' },
+      payload: {
+        emulsionId: refs.emulsion.id,
+        packageTypeId: refs.packageType.id,
+        filmFormatId: refs.filmFormat.id,
+        quantity: 1,
+        films: [{ name: 'Auto Supplier Lot' }],
+        expirationDate: null,
+        supplierName
+      }
+    });
+    expect(lotResponse.statusCode).toBe(201);
+    const lot = filmLotDetailSchema.parse(lotResponse.json());
+    expect(lot.supplierId).not.toBeNull();
+
+    const supplierList = await harness.app.inject({ method: 'GET', url: '/api/v1/film-suppliers', headers: authHeaders });
+    const suppliers = filmSupplierSchema.array().parse(supplierList.json());
+    expect(suppliers.some((s) => s.name === supplierName)).toBe(true);
+  });
+
+  it('reuses an existing supplier when creating a film lot with a known supplier name', async () => {
+    const email = `supplier-lot-reuse-${Date.now()}@example.com`;
+    const tokens = await registerUser(email);
+    const authHeaders = { authorization: `Bearer ${tokens.accessToken}` };
+    const refs = await loadCoreReferenceData(authHeaders);
+    const supplierName = `Reuse Supplier ${Date.now()}`;
+
+    const supplierResponse = await harness.app.inject({
+      method: 'POST',
+      url: '/api/v1/film-suppliers',
+      headers: { ...authHeaders, 'content-type': 'application/json', 'idempotency-key': `supplier-lot-reuse-${Date.now()}` },
+      payload: { name: supplierName }
+    });
+    expect(supplierResponse.statusCode).toBe(201);
+    const existing = filmSupplierSchema.parse(supplierResponse.json());
+
+    const lotResponse = await harness.app.inject({
+      method: 'POST',
+      url: '/api/v1/film/lots',
+      headers: { ...authHeaders, 'content-type': 'application/json' },
+      payload: {
+        emulsionId: refs.emulsion.id,
+        packageTypeId: refs.packageType.id,
+        filmFormatId: refs.filmFormat.id,
+        quantity: 1,
+        films: [{ name: 'Reuse Supplier Lot' }],
+        expirationDate: null,
+        supplierName
+      }
+    });
+    expect(lotResponse.statusCode).toBe(201);
+    const lot = filmLotDetailSchema.parse(lotResponse.json());
+    expect(lot.supplierId).toBe(existing.id);
+
+    const supplierList = await harness.app.inject({ method: 'GET', url: '/api/v1/film-suppliers', headers: authHeaders });
+    const suppliers = filmSupplierSchema.array().parse(supplierList.json());
+    expect(suppliers.filter((s) => s.name === supplierName)).toHaveLength(1);
+  });
+
+  it('returns 404 when creating a film lot with a non-existent supplierId', async () => {
+    const email = `supplier-lot-invalid-${Date.now()}@example.com`;
+    const tokens = await registerUser(email);
+    const authHeaders = { authorization: `Bearer ${tokens.accessToken}` };
+    const refs = await loadCoreReferenceData(authHeaders);
+
+    const lotResponse = await harness.app.inject({
+      method: 'POST',
+      url: '/api/v1/film/lots',
+      headers: { ...authHeaders, 'content-type': 'application/json' },
+      payload: {
+        emulsionId: refs.emulsion.id,
+        packageTypeId: refs.packageType.id,
+        filmFormatId: refs.filmFormat.id,
+        quantity: 1,
+        films: [{ name: 'Bad Supplier Lot' }],
+        expirationDate: null,
+        supplierId: 999999
+      }
+    });
+    expect(lotResponse.statusCode).toBe(404);
+    expect(lotResponse.json()).toMatchObject({ error: { code: 'NOT_FOUND' } });
   });
 });

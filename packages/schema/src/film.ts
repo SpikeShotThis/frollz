@@ -11,7 +11,7 @@ import {
   slotStateSchema,
   storageLocationSchema
 } from './reference.js';
-import { idSchema, isoDateTimeSchema, nullableTextSchema } from './common.js';
+import { idSchema, isoDateTimeSchema, nullableTextSchema, LIST_DEFAULT_LIMIT, LIST_MAX_LIMIT } from './common.js';
 
 export const cameraLoadModeSchema = z.enum(['direct', 'interchangeable_back', 'film_holder']);
 
@@ -146,7 +146,7 @@ export const filmListQuerySchema = z.object({
   emulsionId: z.coerce.number().int().positive().optional(),
   supplierId: z.coerce.number().int().positive().optional(),
   afterId: z.coerce.number().int().positive().optional(),
-  limit: z.coerce.number().int().min(1).max(200).optional().default(50)
+  limit: z.coerce.number().int().min(1).max(LIST_MAX_LIMIT).optional().default(LIST_DEFAULT_LIMIT)
 });
 
 export const filmListResponseSchema = z.object({

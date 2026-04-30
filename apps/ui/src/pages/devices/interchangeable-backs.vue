@@ -2,7 +2,11 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
 import { useRoute } from 'vue-router';
-import { type FilmDevice } from '@frollz2/schema';
+import { type FilmDevice, filmFormatDefinitions } from '@frollz2/schema';
+
+const frameSizeLabelMap = new Map(
+  Object.values(filmFormatDefinitions).flatMap((f) => f.frameSizes.map((fs) => [fs.code, fs.label]))
+);
 import { useDeviceStore } from '../../stores/devices.js';
 import { useReferenceStore } from '../../stores/reference.js';
 import CreateDeviceDialog from '../../components/CreateDeviceDialog.vue';
@@ -52,13 +56,13 @@ const columns = [
   {
     name: 'format',
     label: 'Film Format',
-    field: (row: FilmDevice) => row.filmFormatId,
+    field: (row: FilmDevice) => referenceStore.filmFormats.find((f) => f.id === row.filmFormatId)?.label,
     align: 'left'
   },
   {
     name: 'frame',
     label: 'Frame Size',
-    field: (row: FilmDevice) => row.frameSize,
+    field: (row: FilmDevice) => (row.frameSize ? (frameSizeLabelMap.get(row.frameSize) ?? row.frameSize) : '—'),
     align: 'left'
   }
 ];
@@ -114,9 +118,7 @@ onMounted(async () => {
       </template>
     </q-table>
 
-    <CreateDeviceDialog
-      v-model="isCreateDialogOpen"
-      v-bind="routeTypeFilter ? { deviceTypeFilter: routeTypeFilter } : {}"
-    />
+    <CreateDeviceDialog v-model="isCreateDialogOpen"
+      v-bind="routeTypeFilter ? { deviceTypeFilter: routeTypeFilter } : {}" />
   </q-page>
 </template>

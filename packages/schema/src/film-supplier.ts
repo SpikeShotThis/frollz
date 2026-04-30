@@ -1,5 +1,8 @@
 import { z } from 'zod';
-import { idSchema } from './common.js';
+import { idSchema, LIST_DEFAULT_LIMIT, LIST_MAX_LIMIT } from './common.js';
+
+// Expresses "omit the field entirely" vs "explicitly clear it to null"
+const nullableOptional = <T extends z.ZodTypeAny>(schema: T) => schema.nullable().optional();
 
 export const filmSupplierRatingSchema = z.number().int().min(1).max(5);
 
@@ -9,8 +12,8 @@ export const filmSupplierSchema = z.object({
   name: z.string().min(1),
   normalizedName: z.string().min(1),
   contact: z.string().nullable(),
-  email: z.string().email().nullable(),
-  website: z.string().url().nullable(),
+  email: z.email().nullable(),
+  website: z.url().nullable(),
   notes: z.string().nullable(),
   active: z.boolean(),
   rating: filmSupplierRatingSchema.nullable()
@@ -18,27 +21,27 @@ export const filmSupplierSchema = z.object({
 
 export const createFilmSupplierRequestSchema = z.object({
   name: z.string().min(1),
-  contact: z.string().optional(),
-  email: z.string().email().optional(),
-  website: z.string().url().optional(),
-  notes: z.string().optional(),
+  contact: nullableOptional(z.string()),
+  email: nullableOptional(z.email()),
+  website: nullableOptional(z.url()),
+  notes: nullableOptional(z.string()),
   rating: filmSupplierRatingSchema.optional()
 });
 
 export const updateFilmSupplierRequestSchema = z.object({
   name: z.string().min(1).optional(),
-  contact: z.string().nullable().optional(),
-  email: z.string().email().nullable().optional(),
-  website: z.string().url().nullable().optional(),
-  notes: z.string().nullable().optional(),
+  contact: nullableOptional(z.string()),
+  email: nullableOptional(z.email()),
+  website: nullableOptional(z.url()),
+  notes: nullableOptional(z.string()),
   active: z.boolean().optional(),
-  rating: filmSupplierRatingSchema.nullable().optional()
+  rating: nullableOptional(filmSupplierRatingSchema)
 });
 
 export const listFilmSuppliersQuerySchema = z.object({
   q: z.string().optional().default(''),
   includeInactive: z.coerce.boolean().optional().default(false),
-  limit: z.coerce.number().int().min(1).max(200).optional().default(100)
+  limit: z.coerce.number().int().min(1).max(LIST_MAX_LIMIT).optional().default(LIST_DEFAULT_LIMIT)
 });
 
 export type FilmSupplier = z.infer<typeof filmSupplierSchema>;
