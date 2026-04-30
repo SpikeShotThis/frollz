@@ -44,7 +44,6 @@ onMounted(async () => {
         <div class="text-h5">Emulsions</div>
         <div class="text-subtitle2 text-grey-7">Shared catalog filtered by process and search.</div>
       </div>
-      <q-btn color="primary" label="Refresh" @click="emulsionStore.loadAll" />
     </div>
 
     <q-input v-model="search" filled label="Search emulsions" clearable />

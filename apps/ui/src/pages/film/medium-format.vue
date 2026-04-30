@@ -55,6 +55,23 @@ const extractState = (row: FilmSummary) => row.currentState.label;
 const extractEmulsion = (row: FilmSummary) => `${row.emulsion.manufacturer} ${row.emulsion.brand}`;
 const extractFormat = (row: FilmSummary) => row.filmFormat.label;
 const extractIso = (row: FilmSummary) => row.emulsion.isoSpeed.toString();
+const extractKnownCost = (row: FilmSummary) => {
+  const purchase = row.purchaseCostAllocated;
+  const development = row.developmentCost;
+  if (!purchase && !development) {
+    return 'Not recorded';
+  }
+
+  const format = (amount: number, code: string) => `${code} ${amount.toFixed(2)}`;
+  if (purchase && development && purchase.currencyCode === development.currencyCode) {
+    return format(purchase.amount + development.amount, purchase.currencyCode);
+  }
+  if (purchase && development) {
+    return `${format(purchase.amount, purchase.currencyCode)} + ${format(development.amount, development.currencyCode)}`;
+  }
+  const value = purchase ?? development;
+  return value ? format(value.amount, value.currencyCode) : 'Not recorded';
+};
 
 const stateOptions = computed(() =>
   referenceStore.filmStates.map((state) => ({
@@ -77,7 +94,6 @@ onMounted(async () => {
       </div>
       <div class="row q-gutter-sm">
         <q-btn color="primary" label="Add film" @click="openCreateDialog" />
-        <q-btn flat color="primary" label="Refresh" @click="filmStore.loadFilms" />
       </div>
     </div>
 
@@ -97,7 +113,8 @@ onMounted(async () => {
 
     <FilmInventoryTable :rows="rows" :is-loading="filmStore.isLoading" :extract-name="extractName"
       :extract-state="extractState" :extract-emulsion="extractEmulsion" :extract-format="extractFormat"
-      :extract-iso="extractIso" />
+      :extract-iso="extractIso"
+      :extract-known-cost="extractKnownCost" />
 
     <FilmCreateDialog v-model="isCreateDialogOpen" :is-format-locked="isFormatLocked"
       :locked-format-filters="lockedFormatFilters" :is-creating="isCreating" @submit="handleCreate" />

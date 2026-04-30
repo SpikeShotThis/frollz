@@ -9,6 +9,7 @@ interface Props {
   extractEmulsion: (row: FilmSummary) => string;
   extractFormat: (row: FilmSummary) => string;
   extractIso: (row: FilmSummary) => string;
+  extractKnownCost: (row: FilmSummary) => string;
 }
 
 withDefaults(defineProps<Props>(), {
@@ -50,6 +51,13 @@ const columns = [
     field: 'iso',
     sortable: true,
     align: 'left' as const
+  },
+  {
+    name: 'knownCost',
+    label: 'Known cost',
+    field: 'knownCost',
+    sortable: false,
+    align: 'left' as const
   }
 ];
 </script>
@@ -81,6 +89,11 @@ const columns = [
     <template #body-cell-iso="props">
       <q-td :props="props">
         {{ extractIso(props.row) }}
+      </q-td>
+    </template>
+    <template #body-cell-knownCost="props">
+      <q-td :props="props">
+        {{ extractKnownCost(props.row) }}
       </q-td>
     </template>
   </q-table>

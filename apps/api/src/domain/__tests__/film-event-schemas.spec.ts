@@ -61,10 +61,24 @@ describe('filmJourneyEventPayloadSchema', () => {
         filmStateCode: 'sent_for_dev',
         eventData: {
           labId: 7,
-          actualPushPull: null
+          actualPushPull: null,
+          cost: { amount: 12.5, currencyCode: 'USD' }
         }
       })
     ).toMatchObject({ filmStateCode: 'sent_for_dev' });
+  });
+
+  it('rejects sent_for_dev payloads with invalid currency code', () => {
+    expect(() =>
+      filmJourneyEventPayloadSchema.parse({
+        filmStateCode: 'sent_for_dev',
+        eventData: {
+          labId: 7,
+          actualPushPull: null,
+          cost: { amount: 10, currencyCode: 'usd' }
+        }
+      })
+    ).toThrow();
   });
 
   it('rejects sent_for_dev payloads without labId', () => {

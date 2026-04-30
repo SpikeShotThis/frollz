@@ -1,5 +1,6 @@
 import type { FilmDetail, FilmFrame, FilmJourneyEvent, FilmLotDetail, FilmLotSummary, FilmSummary, FrameJourneyEvent } from '@frollz2/schema';
 import { filmStateSchema, frameStateCodeSchema, filmJourneyEventDataLoadedSchema } from '@frollz2/schema';
+import { allocateCostForFilm } from '../../domain/film/cost-allocation.js';
 import type { FilmEntity, FilmFrameEntity, FilmJourneyEventEntity, FilmLotEntity, FrameJourneyEventEntity } from '../entities/index.js';
 import { mapEmulsionEntity, mapFilmFormatEntity, mapFilmStateEntity, mapPackageTypeEntity } from './reference.mapper.js';
 
@@ -8,6 +9,31 @@ export type NormalizedLoadedEventData = {
   slotSideNumber: number | null;
   loadTargetType: 'camera_direct' | 'interchangeable_back' | 'film_holder_slot';
 };
+
+type CostProjection = { amount: number; currencyCode: string } | null;
+
+function allocatePurchaseCost(entity: FilmLotEntity, filmId: number): CostProjection {
+  const total = entity.purchaseInfo?.price;
+  const currencyCode = entity.purchaseInfo?.currencyCode;
+  if (total == null || !currencyCode || entity.quantity <= 0) {
+    return null;
+  }
+
+  return { amount: allocateCostForFilm(total, entity.quantity, filmId), currencyCode };
+}
+
+export function parseDevelopmentCost(eventData: Record<string, unknown>): CostProjection {
+  const cost = eventData.cost;
+  if (!cost || typeof cost !== 'object') {
+    return null;
+  }
+  const amount = Reflect.get(cost as object, 'amount');
+  const currencyCode = Reflect.get(cost as object, 'currencyCode');
+  if (typeof amount !== 'number' || typeof currencyCode !== 'string') {
+    return null;
+  }
+  return { amount, currencyCode };
+}
 
 export function parseLoadedEventData(raw: unknown): NormalizedLoadedEventData | null {
   const parsed = filmJourneyEventDataLoadedSchema.safeParse(raw);
@@ -35,12 +61,16 @@ export function mapFilmLotSummaryEntity(entity: FilmLotEntity, filmCount: number
     filmFormatId: entity.filmFormat.id,
     quantity: entity.quantity,
     expirationDate: entity.expirationDate,
-    supplierId: entity.supplier?.id ?? null,
-    purchaseChannel: entity.purchaseChannel,
-    purchasePrice: entity.purchasePrice,
-    purchaseCurrencyCode: entity.purchaseCurrencyCode,
-    orderRef: entity.orderRef,
-    obtainedDate: entity.obtainedDate,
+    purchaseInfo: (entity.purchaseInfo || entity.supplier)
+      ? {
+        supplierId: entity.supplier?.id,
+        channel: entity.purchaseInfo?.channel ?? null,
+        price: entity.purchaseInfo?.price ?? null,
+        currencyCode: entity.purchaseInfo?.currencyCode ?? null,
+        orderRef: entity.purchaseInfo?.orderRef ?? null,
+        obtainedDate: entity.purchaseInfo?.obtainedDate ?? null
+      }
+      : null,
     rating: entity.rating,
     filmCount,
     emulsion: mapEmulsionEntity(entity.emulsion),
@@ -52,11 +82,11 @@ export function mapFilmLotSummaryEntity(entity: FilmLotEntity, filmCount: number
 export function mapFilmLotDetailEntity(entity: FilmLotEntity, films: FilmEntity[]): FilmLotDetail {
   return {
     ...mapFilmLotSummaryEntity(entity, films.length),
-    films: films.map(mapFilmSummaryEntity)
+    films: films.map((film) => mapFilmSummaryEntity(film))
   };
 }
 
-export function mapFilmSummaryEntity(entity: FilmEntity): FilmSummary {
+export function mapFilmSummaryEntity(entity: FilmEntity, developmentCost: CostProjection = null): FilmSummary {
   return {
     id: entity.id,
     userId: entity.user.id,
@@ -66,6 +96,8 @@ export function mapFilmSummaryEntity(entity: FilmEntity): FilmSummary {
     packageTypeId: entity.packageType.id,
     filmFormatId: entity.filmFormat.id,
     supplierId: entity.filmLot.supplier?.id ?? null,
+    purchaseCostAllocated: allocatePurchaseCost(entity.filmLot, entity.id),
+    developmentCost,
     expirationDate: entity.expirationDate,
     currentStateId: entity.currentState.id,
     currentStateCode: filmStateSchema.shape.code.parse(entity.currentState.code),
@@ -90,9 +122,9 @@ export function mapFilmJourneyEventEntity(entity: FilmJourneyEventEntity): FilmJ
   };
 }
 
-export function mapFilmDetailEntity(entity: FilmEntity, latestEvent: FilmJourneyEventEntity | null): FilmDetail {
+export function mapFilmDetailEntity(entity: FilmEntity, latestEvent: FilmJourneyEventEntity | null, developmentCost: CostProjection = null): FilmDetail {
   return {
-    ...mapFilmSummaryEntity(entity),
+    ...mapFilmSummaryEntity(entity, developmentCost),
     latestEvent: latestEvent ? mapFilmJourneyEventEntity(latestEvent) : null
   };
 }

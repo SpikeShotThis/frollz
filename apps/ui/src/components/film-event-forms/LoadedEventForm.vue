@@ -44,8 +44,6 @@ const deviceOptions = computed(() => {
       let displayName = '';
       if (d.deviceTypeCode === 'camera') {
         displayName = `${d.make} ${d.model}`;
-      } else if (d.deviceTypeCode === 'interchangeable_back') {
-        displayName = d.name;
       } else {
         displayName = d.name;
       }
@@ -106,45 +104,20 @@ async function handleSubmit(): Promise<void> {
 <template>
   <q-form class="column q-gutter-md" @submit="handleSubmit">
     <div>
-      <q-select
-        v-model="r$.$value.deviceId"
-        filled
-        emit-value
-        map-options
-        :options="deviceOptions"
-        label="Device"
-        :error="r$.deviceId.$error"
-        :error-message="r$.deviceId.$errors[0]"
-      />
+      <q-select v-model="r$.$value.deviceId" filled emit-value map-options :options="deviceOptions" label="Device"
+        :error="r$.deviceId.$error" :error-message="r$.deviceId.$errors[0]" />
     </div>
 
     <div v-if="isFilmHolder">
-      <q-select
-        v-model="r$.$value.slotNumber"
-        filled
-        :options="[1, 2]"
-        label="Slot number"
-        :error="r$.slotNumber?.$error"
-        :error-message="r$.slotNumber?.$errors[0]"
-      />
+      <q-select v-model="r$.$value.slotNumber" filled :options="[1, 2]" label="Slot number"
+        :error="r$.slotNumber?.$error" :error-message="r$.slotNumber?.$errors[0]" />
     </div>
 
     <div>
-      <q-input
-        v-model.number="r$.$value.intendedPushPull"
-        filled
-        type="number"
-        label="Intended push/pull (optional)"
-        :error="r$.intendedPushPull?.$error"
-        :error-message="r$.intendedPushPull?.$errors[0]"
-      />
+      <q-input v-model.number="r$.$value.intendedPushPull" filled type="number" label="Intended push/pull (optional)"
+        :error="r$.intendedPushPull?.$error" :error-message="r$.intendedPushPull?.$errors[0]" />
     </div>
 
-    <q-btn
-      type="submit"
-      color="primary"
-      label="Add Event"
-      :loading="isSubmitting"
-    />
+    <q-btn type="submit" color="primary" label="Add Event" :loading="isSubmitting" />
   </q-form>
 </template>

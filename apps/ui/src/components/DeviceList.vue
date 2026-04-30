@@ -93,7 +93,6 @@ onMounted(async () => {
       </div>
       <div class="row q-gutter-sm">
         <q-btn color="primary" label="Add device" @click="isCreateDialogOpen = true" />
-        <q-btn flat color="primary" label="Refresh" @click="deviceStore.loadDevices" />
       </div>
     </div>
 

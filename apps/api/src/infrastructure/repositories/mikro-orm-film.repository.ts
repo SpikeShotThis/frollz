@@ -3,7 +3,7 @@ import { EntityManager } from '@mikro-orm/core';
 import type { DeviceLoadTimelineEvent, FilmListQuery } from '@frollz2/schema';
 import { FilmRepository } from './film.repository.js';
 import { FilmEntity, FilmFrameEntity, FilmJourneyEventEntity } from '../entities/index.js';
-import { mapFilmDetailEntity, mapFilmFrameEntity, mapFilmJourneyEventEntity, mapFilmSummaryEntity, parseLoadedEventData, formatEmulsionName } from '../mappers/index.js';
+import { mapFilmDetailEntity, mapFilmFrameEntity, mapFilmJourneyEventEntity, mapFilmSummaryEntity, parseDevelopmentCost, parseLoadedEventData, formatEmulsionName } from '../mappers/index.js';
 
 function toStockLabel(film: FilmEntity): string | null {
   const formatCode = film.filmFormat.code;
@@ -66,8 +66,22 @@ export class MikroOrmFilmRepository extends FilmRepository {
 
     const hasMore = films.length > limit;
     const items = hasMore ? films.slice(0, limit) : films;
+    const developmentCostByFilmId = new Map<number, { amount: number; currencyCode: string } | null>();
+    if (items.length > 0) {
+      const sentEvents = await this.entityManager.find(
+        FilmJourneyEventEntity,
+        { user: userId, film: { id: { $in: items.map((film) => film.id) } }, filmState: { code: 'sent_for_dev' } },
+        { orderBy: { film: { id: 'asc' }, occurredAt: 'desc', id: 'desc' }, populate: ['film', 'filmState', 'user'] }
+      );
+      for (const event of sentEvents) {
+        if (!developmentCostByFilmId.has(event.film.id)) {
+          developmentCostByFilmId.set(event.film.id, parseDevelopmentCost(event.eventData));
+        }
+      }
+    }
+
     return {
-      items: items.map(mapFilmSummaryEntity),
+      items: items.map((item) => mapFilmSummaryEntity(item, developmentCostByFilmId.get(item.id) ?? null)),
       nextCursor: hasMore ? (items[items.length - 1]?.id ?? null) : null
     };
   }
@@ -89,7 +103,13 @@ export class MikroOrmFilmRepository extends FilmRepository {
       { orderBy: { occurredAt: 'desc', id: 'desc' }, populate: ['film', 'user', 'filmState'] }
     );
 
-    return mapFilmDetailEntity(film, latestEvent ?? null);
+    const latestSentForDevEvent = await this.entityManager.findOne(
+      FilmJourneyEventEntity,
+      { film: film.id, user: userId, filmState: { code: 'sent_for_dev' } },
+      { orderBy: { occurredAt: 'desc', id: 'desc' }, populate: ['film', 'user', 'filmState'] }
+    );
+
+    return mapFilmDetailEntity(film, latestEvent ?? null, latestSentForDevEvent ? parseDevelopmentCost(latestSentForDevEvent.eventData) : null);
   }
 
   async findByIdSummary(userId: number, filmId: number) {

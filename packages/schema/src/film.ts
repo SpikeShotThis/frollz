@@ -11,7 +11,7 @@ import {
   slotStateSchema,
   storageLocationSchema
 } from './reference.js';
-import { idSchema, isoDateTimeSchema, nullableTextSchema, LIST_DEFAULT_LIMIT, LIST_MAX_LIMIT } from './common.js';
+import { currencyCodeSchema, idSchema, isoDateTimeSchema, nullableTextSchema, LIST_DEFAULT_LIMIT, LIST_MAX_LIMIT } from './common.js';
 
 export const cameraLoadModeSchema = z.enum(['direct', 'interchangeable_back', 'film_holder']);
 
@@ -36,6 +36,18 @@ export const FRAME_SIZE_CODES = [
 ] as const;
 
 export const frameSizeCodeSchema = z.enum(FRAME_SIZE_CODES);
+export const costAmountSchema = z.object({
+  amount: z.number().nonnegative(),
+  currencyCode: currencyCodeSchema
+});
+export const purchaseInfoSchema = z.object({
+  supplierId: idSchema.optional(),
+  channel: nullableTextSchema.optional(),
+  price: z.number().nonnegative().nullable().optional(),
+  currencyCode: currencyCodeSchema.nullable().optional(),
+  orderRef: nullableTextSchema.optional(),
+  obtainedDate: isoDateTimeSchema.nullable().optional()
+}).nullable();
 
 export const filmTransitionMap = new Map<string, string[]>([
   ['purchased', ['stored', 'loaded']],
@@ -57,12 +69,7 @@ export const filmLotSummarySchema = z.object({
   filmFormatId: idSchema,
   quantity: z.number().int().positive(),
   expirationDate: isoDateTimeSchema.nullable(),
-  supplierId: idSchema.nullable(),
-  purchaseChannel: z.string().nullable(),
-  purchasePrice: z.number().nonnegative().nullable(),
-  purchaseCurrencyCode: z.string().length(3).nullable(),
-  orderRef: z.string().nullable(),
-  obtainedDate: isoDateTimeSchema.nullable(),
+  purchaseInfo: purchaseInfoSchema.optional().default(null),
   rating: z.number().int().min(1).max(5).nullable(),
   filmCount: z.number().int().nonnegative(),
   emulsion: emulsionSchema,
@@ -76,13 +83,8 @@ export const filmLotCreateRequestSchema = z.object({
   filmFormatId: idSchema,
   quantity: z.number().int().positive(),
   expirationDate: isoDateTimeSchema.nullable().optional(),
-  supplierId: idSchema.optional(),
   supplierName: z.string().min(1).optional(),
-  purchaseChannel: z.string().optional(),
-  purchasePrice: z.number().nonnegative().optional(),
-  purchaseCurrencyCode: z.string().length(3).optional(),
-  orderRef: z.string().optional(),
-  obtainedDate: isoDateTimeSchema.nullable().optional(),
+  purchaseInfo: purchaseInfoSchema.optional(),
   rating: z.number().int().min(1).max(5).optional(),
   films: z.array(z.object({ name: z.string().min(1) })).optional()
 });
@@ -96,6 +98,8 @@ export const filmSummarySchema = z.object({
   packageTypeId: idSchema,
   filmFormatId: idSchema,
   supplierId: idSchema.nullable(),
+  purchaseCostAllocated: costAmountSchema.nullable(),
+  developmentCost: costAmountSchema.nullable(),
   expirationDate: isoDateTimeSchema.nullable(),
   currentStateId: idSchema,
   currentStateCode: filmStateCodeSchema,
@@ -119,19 +123,21 @@ export const filmCreateRequestSchema = z.object({
   packageTypeId: idSchema,
   filmFormatId: idSchema,
   expirationDate: isoDateTimeSchema.nullable().optional(),
-  supplierId: idSchema.optional(),
   supplierName: z.string().min(1).optional(),
-  purchaseChannel: z.string().optional(),
-  purchasePrice: z.number().nonnegative().optional(),
-  purchaseCurrencyCode: z.string().length(3).optional(),
-  orderRef: z.string().optional(),
-  obtainedDate: isoDateTimeSchema.nullable().optional(),
+  purchaseInfo: purchaseInfoSchema.optional(),
   rating: z.number().int().min(1).max(5).optional()
 });
 
 export const filmCreateFormSchema = filmCreateRequestSchema.extend({
   expirationDate: z.string().optional(), // YYYY-MM-DD from date input; composable transforms to ISO
-  obtainedDate: z.string().optional(),
+  purchaseInfo: z.object({
+    supplierId: idSchema.optional(),
+    channel: z.string().optional(),
+    price: z.number().nonnegative().optional(),
+    currencyCode: z.string().optional(),
+    orderRef: z.string().optional(),
+    obtainedDate: z.string().optional()
+  }),
   supplierName: z.string().optional()
 });
 
@@ -214,7 +220,8 @@ export const filmJourneyEventDataSentForDevSchema = z.object({
   labId: idSchema,
   labName: nullableTextSchema.optional(),
   labContact: nullableTextSchema.optional(),
-  actualPushPull: z.number().int().nullable()
+  actualPushPull: z.number().int().nullable(),
+  cost: costAmountSchema.nullable().optional()
 });
 export const filmJourneyEventDataDevelopedSchema = z.object({
   labId: idSchema,
@@ -250,6 +257,8 @@ export const sentForDevEventFormSchema = z.object({
   ...eventFormBaseFields,
   labId: idSchema,
   actualPushPull: z.number().int().optional(),
+  costAmount: z.number().nonnegative().optional(),
+  costCurrencyCode: currencyCodeSchema.optional()
 });
 
 export const developedEventFormSchema = z.object({

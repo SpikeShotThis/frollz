@@ -1572,12 +1572,12 @@ describe('API integration', () => {
         quantity: 1,
         films: [{ name: 'Supplier ID Lot' }],
         expirationDate: null,
-        supplierId: supplier.id
+        purchaseInfo: { supplierId: supplier.id }
       }
     });
     expect(lotResponse.statusCode).toBe(201);
     const lot = filmLotDetailSchema.parse(lotResponse.json());
-    expect(lot.supplierId).toBe(supplier.id);
+    expect(lot.purchaseInfo?.supplierId).toBe(supplier.id);
   });
 
   it('auto-creates supplier by name when creating a film lot with an unknown supplier name', async () => {
@@ -1603,7 +1603,7 @@ describe('API integration', () => {
     });
     expect(lotResponse.statusCode).toBe(201);
     const lot = filmLotDetailSchema.parse(lotResponse.json());
-    expect(lot.supplierId).not.toBeNull();
+    expect(lot.purchaseInfo?.supplierId).not.toBeNull();
 
     const supplierList = await harness.app.inject({ method: 'GET', url: '/api/v1/film-suppliers', headers: authHeaders });
     const suppliers = filmSupplierSchema.array().parse(supplierList.json());
@@ -1642,7 +1642,7 @@ describe('API integration', () => {
     });
     expect(lotResponse.statusCode).toBe(201);
     const lot = filmLotDetailSchema.parse(lotResponse.json());
-    expect(lot.supplierId).toBe(existing.id);
+    expect(lot.purchaseInfo?.supplierId).toBe(existing.id);
 
     const supplierList = await harness.app.inject({ method: 'GET', url: '/api/v1/film-suppliers', headers: authHeaders });
     const suppliers = filmSupplierSchema.array().parse(supplierList.json());
@@ -1666,7 +1666,7 @@ describe('API integration', () => {
         quantity: 1,
         films: [{ name: 'Bad Supplier Lot' }],
         expirationDate: null,
-        supplierId: 999999
+        purchaseInfo: { supplierId: 999999 }
       }
     });
     expect(lotResponse.statusCode).toBe(404);

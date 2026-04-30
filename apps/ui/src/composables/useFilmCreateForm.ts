@@ -41,8 +41,17 @@ export function useFilmCreateForm() {
         expirationDate: data.expirationDate
           ? new Date(`${data.expirationDate}T00:00:00.000Z`).toISOString()
           : null,
-        supplierId: data.supplierId,
-        supplierName: data.supplierName?.trim() || undefined
+        supplierName: data.supplierName?.trim() || undefined,
+        purchaseInfo: {
+          supplierId: data.purchaseInfo?.supplierId,
+          channel: data.purchaseInfo?.channel?.trim() || null,
+          price: data.purchaseInfo?.price ?? null,
+          currencyCode: data.purchaseInfo?.currencyCode?.trim().toUpperCase() || null,
+          orderRef: data.purchaseInfo?.orderRef?.trim() || null,
+          obtainedDate: data.purchaseInfo?.obtainedDate
+            ? new Date(`${data.purchaseInfo.obtainedDate}T00:00:00.000Z`).toISOString()
+            : null
+        }
       };
       await filmStore.createFilm(payload, idempotencyKey.value);
       feedback.success('Film created.');

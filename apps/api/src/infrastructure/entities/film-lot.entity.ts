@@ -27,20 +27,14 @@ export class FilmLotEntity extends AutoIncrementEntity {
   @ManyToOne(() => FilmSupplierEntity, { fieldName: 'supplier_id', nullable: true })
   supplier!: FilmSupplierEntity | null;
 
-  @Property({ type: 'text', nullable: true, fieldName: 'purchase_channel' })
-  purchaseChannel!: string | null;
-
-  @Property({ type: 'float', nullable: true, fieldName: 'purchase_price' })
-  purchasePrice!: number | null;
-
-  @Property({ type: 'text', nullable: true, fieldName: 'purchase_currency_code' })
-  purchaseCurrencyCode!: string | null;
-
-  @Property({ type: 'text', nullable: true, fieldName: 'order_ref' })
-  orderRef!: string | null;
-
-  @Property({ type: 'text', nullable: true, fieldName: 'obtained_date' })
-  obtainedDate!: string | null;
+  @Property({ type: 'json', nullable: true, fieldName: 'purchase_info' })
+  purchaseInfo!: {
+    channel?: string | null;
+    price?: number | null;
+    currencyCode?: string | null;
+    orderRef?: string | null;
+    obtainedDate?: string | null;
+  } | null;
 
   @Property({ type: 'integer', nullable: true })
   rating!: number | null;

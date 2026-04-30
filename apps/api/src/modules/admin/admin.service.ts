@@ -168,7 +168,7 @@ export class AdminService {
       filmSuppliers: filmSuppliers.map(mapFilmSupplierEntity),
       devices: devices.map(mapFilmDeviceEntity),
       filmLots: filmLots.map(lot => mapFilmLotSummaryEntity(lot, filmCounts.get(lot.id) ?? 0)),
-      films: films.map(mapFilmSummaryEntity),
+      films: films.map((film) => mapFilmSummaryEntity(film)),
       filmEvents: filmEvents.map(mapFilmJourneyEventEntity),
       frames: frames.map(mapFilmFrameEntity),
       frameEvents: frameEvents.map(mapFrameJourneyEventEntity),
@@ -248,12 +248,18 @@ export class AdminService {
           filmFormat: em.getReference(FilmFormatEntity, importedLot.filmFormatId),
           quantity: importedLot.quantity,
           expirationDate: importedLot.expirationDate ?? null,
-          supplier: importedLot.supplierId ? em.getReference(FilmSupplierEntity, filmSupplierIdMap.get(importedLot.supplierId) ?? importedLot.supplierId) : null,
-          purchaseChannel: importedLot.purchaseChannel ?? null,
-          purchasePrice: importedLot.purchasePrice ?? null,
-          purchaseCurrencyCode: importedLot.purchaseCurrencyCode ?? null,
-          orderRef: importedLot.orderRef ?? null,
-          obtainedDate: importedLot.obtainedDate ?? nowIso(),
+          supplier: importedLot.purchaseInfo?.supplierId
+            ? em.getReference(FilmSupplierEntity, filmSupplierIdMap.get(importedLot.purchaseInfo.supplierId) ?? importedLot.purchaseInfo.supplierId)
+            : null,
+          purchaseInfo: importedLot.purchaseInfo
+            ? {
+              channel: importedLot.purchaseInfo.channel ?? null,
+              price: importedLot.purchaseInfo.price ?? null,
+              currencyCode: importedLot.purchaseInfo.currencyCode ?? null,
+              orderRef: importedLot.purchaseInfo.orderRef ?? null,
+              obtainedDate: importedLot.purchaseInfo.obtainedDate ?? nowIso()
+            }
+            : null,
           rating: importedLot.rating ?? null,
           createdAt: nowIso()
         });

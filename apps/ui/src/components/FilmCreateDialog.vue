@@ -29,13 +29,15 @@ const form = reactive({
   filmFormatId: undefined as number | undefined,
   packageTypeId: undefined as number | undefined,
   expirationDate: undefined as string | undefined,
-  supplierId: undefined as number | undefined,
   supplierName: '' as string,
-  purchaseChannel: '' as string,
-  purchasePrice: undefined as number | undefined,
-  purchaseCurrencyCode: 'USD' as string,
-  orderRef: '' as string,
-  obtainedDate: undefined as string | undefined,
+  purchaseInfo: {
+    supplierId: undefined as number | undefined,
+    channel: '' as string,
+    price: undefined as number | undefined,
+    currencyCode: 'USD' as string,
+    orderRef: '' as string,
+    obtainedDate: undefined as string | undefined
+  },
   rating: undefined as number | undefined
 });
 
@@ -100,13 +102,15 @@ watch(
       form.filmFormatId = undefined;
       form.packageTypeId = undefined;
       form.expirationDate = undefined;
-      form.supplierId = undefined;
       form.supplierName = '';
-      form.purchaseChannel = '';
-      form.purchasePrice = undefined;
-      form.purchaseCurrencyCode = 'USD';
-      form.orderRef = '';
-      form.obtainedDate = undefined;
+      form.purchaseInfo = {
+        supplierId: undefined,
+        channel: '',
+        price: undefined,
+        currencyCode: 'USD',
+        orderRef: '',
+        obtainedDate: undefined
+      };
       form.rating = undefined;
       const filters = props.lockedFormatFilters ?? [];
       if (props.isFormatLocked && filters.length === 1) {
@@ -193,7 +197,7 @@ async function handleSubmit(): Promise<void> {
             />
           </div>
           <q-select
-            v-model="r$.$value.supplierId"
+            v-model="form.purchaseInfo.supplierId"
             filled
             emit-value
             map-options
@@ -206,11 +210,11 @@ async function handleSubmit(): Promise<void> {
             filled
             label="Supplier name (optional, if not selected)"
           />
-          <q-input v-model="r$.$value.purchaseChannel" filled label="Purchase channel (optional)" />
-          <q-input v-model.number="r$.$value.purchasePrice" filled type="number" min="0" step="0.01" label="Purchase price (optional)" />
-          <q-input v-model="r$.$value.purchaseCurrencyCode" filled label="Currency code (optional, e.g. USD)" />
-          <q-input v-model="r$.$value.orderRef" filled label="Order reference (optional)" />
-          <q-input v-model="r$.$value.obtainedDate" filled type="date" label="Obtained date (optional)" />
+          <q-input v-model="form.purchaseInfo.channel" filled label="Purchase channel (optional)" />
+          <q-input v-model.number="form.purchaseInfo.price" filled type="number" min="0" step="0.01" label="Purchase price (optional)" />
+          <q-input v-model="form.purchaseInfo.currencyCode" filled label="Currency code (optional, e.g. USD)" />
+          <q-input v-model="form.purchaseInfo.orderRef" filled label="Order reference (optional)" />
+          <q-input v-model="form.purchaseInfo.obtainedDate" filled type="date" label="Obtained date (optional)" />
           <q-rating v-model="ratingModel" :max="5" size="20px" color="amber" />
         </q-form>
       </q-card-section>

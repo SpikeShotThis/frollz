@@ -93,7 +93,8 @@ export class FilmService {
         const purchasedState = await em.findOneOrFail(FilmStateEntity, { code: 'purchased' });
         const user = em.getReference(UserEntity, userId);
         const isLargeFormat = this.isLargeFormatCode(filmFormat.code);
-        const supplier = await this.resolveSupplierForLot(userId, input.supplierId, input.supplierName);
+        const supplier = await this.resolveSupplierForLot(userId, input.purchaseInfo?.supplierId, input.supplierName);
+        const normalizedPurchaseInfo = this.normalizePurchaseInfo(input.purchaseInfo);
 
         const lot = em.create(FilmLotEntity, {
           user,
@@ -103,11 +104,7 @@ export class FilmService {
           quantity: input.quantity,
           expirationDate: input.expirationDate ?? null,
           supplier: supplier ? em.getReference(FilmSupplierEntity, supplier.id) : null,
-          purchaseChannel: this.sanitizeOptionalText(input.purchaseChannel),
-          purchasePrice: input.purchasePrice ?? null,
-          purchaseCurrencyCode: this.normalizeCurrencyCode(input.purchaseCurrencyCode),
-          orderRef: this.sanitizeOptionalText(input.orderRef),
-          obtainedDate: input.obtainedDate ?? null,
+          purchaseInfo: normalizedPurchaseInfo,
           rating: input.rating ?? null,
           createdAt: nowIso()
         });
@@ -942,6 +939,35 @@ export class FilmService {
   private normalizeCurrencyCode(value?: string): string | null {
     const trimmed = this.sanitizeOptionalText(value);
     return trimmed ? trimmed.toUpperCase() : null;
+  }
+
+  private normalizePurchaseInfo(
+    purchaseInfo?: {
+      supplierId?: number | null | undefined;
+      channel?: string | null | undefined;
+      price?: number | null | undefined;
+      currencyCode?: string | null | undefined;
+      orderRef?: string | null | undefined;
+      obtainedDate?: string | null | undefined;
+    } | null
+  ): FilmLotEntity['purchaseInfo'] {
+    if (!purchaseInfo) {
+      return null;
+    }
+
+    const normalized = {
+      channel: this.sanitizeOptionalText(purchaseInfo.channel),
+      price: purchaseInfo.price ?? null,
+      currencyCode: this.normalizeCurrencyCode(purchaseInfo.currencyCode ?? undefined),
+      orderRef: this.sanitizeOptionalText(purchaseInfo.orderRef),
+      obtainedDate: purchaseInfo.obtainedDate ?? null
+    };
+
+    if (!normalized.channel && normalized.price == null && !normalized.currencyCode && !normalized.orderRef && !normalized.obtainedDate) {
+      return null;
+    }
+
+    return normalized;
   }
 
   private isLargeFormatCode(formatCode: string): boolean {
