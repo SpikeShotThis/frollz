@@ -5,6 +5,7 @@ import { useRoute } from 'vue-router';
 import type { Emulsion } from '@frollz2/schema';
 import CreateEmulsionDialog from '../../components/CreateEmulsionDialog.vue';
 import EditEmulsionDialog from '../../components/EditEmulsionDialog.vue';
+import EmulsionTable from '../../components/EmulsionTable.vue';
 import { useUiFeedback } from '../../composables/useUiFeedback.js';
 import { useEmulsionStore } from '../../stores/emulsions.js';
 
@@ -39,42 +40,6 @@ const rows = computed(() => {
     return haystack.includes(query);
   });
 });
-
-const columns = [
-  {
-    name: 'name',
-    label: 'Emulsion',
-    field: (row: Emulsion) => `${row.manufacturer} ${row.brand}`,
-    sortable: true,
-    align: 'left'
-  },
-  {
-    name: 'iso',
-    label: 'ISO',
-    field: 'isoSpeed',
-    sortable: true,
-    align: 'left'
-  },
-  {
-    name: 'process',
-    label: 'Process',
-    field: (row: Emulsion) => row.developmentProcess.label,
-    sortable: true,
-    align: 'left'
-  },
-  {
-    name: 'formats',
-    label: 'Formats',
-    field: (row: Emulsion) => row.filmFormats.map((format) => format.label).join(', '),
-    align: 'left'
-  },
-  {
-    name: 'actions',
-    label: 'Actions',
-    field: 'id',
-    align: 'right'
-  }
-];
 
 onMounted(async () => {
   await emulsionStore.loadAll();
@@ -119,21 +84,12 @@ async function confirmDelete(): Promise<void> {
 
     <q-input v-model="search" filled label="Search emulsions" clearable />
 
-    <q-table :rows="rows" :columns="columns" row-key="id" flat bordered :loading="emulsionStore.isLoading">
-      <template #body-cell-name="props">
-        <q-td :props="props">
-          <RouterLink :to="`/emulsions/${props.row.id}`" class="text-primary text-weight-medium">
-            {{ props.row.manufacturer }} {{ props.row.brand }}
-          </RouterLink>
-        </q-td>
+    <EmulsionTable :rows="rows" :is-loading="emulsionStore.isLoading">
+      <template #actions="{ row }">
+        <q-btn flat dense color="primary" label="Edit" data-testid="emulsion-row-edit" @click="openEditDialog(row)" />
+        <q-btn flat dense color="negative" label="Delete" data-testid="emulsion-row-delete" @click="openDeleteDialog(row)" />
       </template>
-      <template #body-cell-actions="props">
-        <q-td :props="props" class="text-right">
-          <q-btn flat dense color="primary" label="Edit" data-testid="emulsion-row-edit" @click="openEditDialog(props.row)" />
-          <q-btn flat dense color="negative" label="Delete" data-testid="emulsion-row-delete" @click="openDeleteDialog(props.row)" />
-        </q-td>
-      </template>
-    </q-table>
+    </EmulsionTable>
 
     <CreateEmulsionDialog v-model="isCreateDialogOpen" @created="emulsionStore.loadAll(true)" />
     <EditEmulsionDialog v-model="isEditDialogOpen" :emulsion="editingEmulsion" @updated="emulsionStore.loadAll(true)" />

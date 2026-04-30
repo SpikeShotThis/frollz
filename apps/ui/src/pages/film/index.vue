@@ -3,6 +3,7 @@
 import { computed, onMounted, ref } from 'vue';
 import type { FilmSummary } from '@frollz2/schema';
 import FilmCreateDialog from '../../components/FilmCreateDialog.vue';
+import FilmInventoryTable from '../../components/FilmInventoryTable.vue';
 import { useFilmStore } from '../../stores/film.js';
 import { useReferenceStore } from '../../stores/reference.js';
 import { useFilmCreateForm } from '../../composables/useFilmCreateForm.js';
@@ -55,49 +56,14 @@ const rows = computed(() => {
   });
 });
 
-const columns = [
-  {
-    name: 'name',
-    label: 'Film',
-    field: 'name',
-    sortable: true,
-    align: 'left'
-  },
-  {
-    name: 'state',
-    label: 'State',
-    field: (row: FilmSummary) => row.currentState.label,
-    sortable: true,
-    align: 'left'
-  },
-  {
-    name: 'emulsion',
-    label: 'Emulsion',
-    field: (row: FilmSummary) => `${row.emulsion.manufacturer} ${row.emulsion.brand}`,
-    sortable: true,
-    align: 'left'
-  },
-  {
-    name: 'format',
-    label: 'Format',
-    field: (row: FilmSummary) => row.filmFormat.label,
-    sortable: true,
-    align: 'left'
-  },
-  {
-    name: 'iso',
-    label: 'ISO',
-    field: (row: FilmSummary) => row.emulsion.isoSpeed,
-    sortable: true,
-    align: 'left'
-  }
-];
+const extractName = (row: FilmSummary) => row.name;
+const extractState = (row: FilmSummary) => row.currentState.label;
+const extractEmulsion = (row: FilmSummary) => `${row.emulsion.manufacturer} ${row.emulsion.brand}`;
+const extractFormat = (row: FilmSummary) => row.filmFormat.label;
+const extractIso = (row: FilmSummary) => row.emulsion.isoSpeed.toString();
 
 const stateOptions = computed(() =>
-  referenceStore.filmStates.map((state) => ({
-    label: state.label,
-    value: state.code
-  }))
+  referenceStore.filmStates.map((state) => ({ label: state.label, value: state.code }))
 );
 const supplierOptions = computed(() =>
   filmSuppliersStore.filmSuppliers.map((supplier) => ({ label: supplier.name, value: supplier.id }))
@@ -139,22 +105,22 @@ onMounted(async () => {
       </div>
     </div>
 
-    <q-table :rows="rows" :columns="columns" row-key="id" flat bordered :loading="filmStore.isLoading">
-      <template #body-cell-name="props">
-        <q-td :props="props">
-          <RouterLink :to="`/film/${props.row.id}`" class="text-primary text-weight-medium">
-            {{ props.row.name }}
-          </RouterLink>
-        </q-td>
-      </template>
-      <template #body-cell-state="props">
-        <q-td :props="props">
-          <q-badge color="primary" outline>{{ props.row.currentState.label }}</q-badge>
-        </q-td>
-      </template>
-    </q-table>
+    <FilmInventoryTable
+      :rows="rows"
+      :is-loading="filmStore.isLoading"
+      :extract-name="extractName"
+      :extract-state="extractState"
+      :extract-emulsion="extractEmulsion"
+      :extract-format="extractFormat"
+      :extract-iso="extractIso"
+    />
 
-    <FilmCreateDialog v-model="isCreateDialogOpen" :is-format-locked="isFormatLocked"
-      :locked-format-filters="lockedFormatFilters" :is-creating="isCreating" @submit="handleCreate" />
+    <FilmCreateDialog
+      v-model="isCreateDialogOpen"
+      :is-format-locked="isFormatLocked"
+      :locked-format-filters="lockedFormatFilters"
+      :is-creating="isCreating"
+      @submit="handleCreate"
+    />
   </q-page>
 </template>

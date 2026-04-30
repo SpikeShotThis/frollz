@@ -3,6 +3,7 @@
 import { computed, onMounted, ref } from 'vue';
 import { useRoute } from 'vue-router';
 import type { Emulsion } from '@frollz2/schema';
+import EmulsionTable from '../../components/EmulsionTable.vue';
 import { useEmulsionStore } from '../../stores/emulsions.js';
 
 const route = useRoute();
@@ -31,36 +32,6 @@ const rows = computed(() => {
   });
 });
 
-const columns = [
-  {
-    name: 'name',
-    label: 'Emulsion',
-    field: (row: Emulsion) => `${row.manufacturer} ${row.brand}`,
-    sortable: true,
-    align: 'left'
-  },
-  {
-    name: 'iso',
-    label: 'ISO',
-    field: 'isoSpeed',
-    sortable: true,
-    align: 'left'
-  },
-  {
-    name: 'process',
-    label: 'Process',
-    field: (row: Emulsion) => row.developmentProcess.label,
-    sortable: true,
-    align: 'left'
-  },
-  {
-    name: 'formats',
-    label: 'Formats',
-    field: (row: Emulsion) => row.filmFormats.map((format) => format.label).join(', '),
-    align: 'left'
-  }
-];
-
 onMounted(async () => {
   await emulsionStore.loadAll();
 });
@@ -78,14 +49,6 @@ onMounted(async () => {
 
     <q-input v-model="search" filled label="Search emulsions" clearable />
 
-    <q-table :rows="rows" :columns="columns" row-key="id" flat bordered :loading="emulsionStore.isLoading">
-      <template #body-cell-name="props">
-        <q-td :props="props">
-          <RouterLink :to="`/emulsions/${props.row.id}`" class="text-primary text-weight-medium">
-            {{ props.row.manufacturer }} {{ props.row.brand }}
-          </RouterLink>
-        </q-td>
-      </template>
-    </q-table>
+    <EmulsionTable :rows="rows" :is-loading="emulsionStore.isLoading" />
   </q-page>
 </template>
