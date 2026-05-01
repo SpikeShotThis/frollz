@@ -74,6 +74,46 @@ const packageTypeOptions = computed(() => {
 const supplierOptions = computed(() =>
   filmSuppliersStore.filmSuppliers.map((supplier) => ({ label: supplier.name, value: supplier.id }))
 );
+
+type SupplierOption = { label: string; value: number | string };
+
+const supplierModel = ref<SupplierOption | null>(null);
+const filteredSupplierOptions = ref<SupplierOption[]>([]);
+
+watch(supplierOptions, (opts) => { filteredSupplierOptions.value = opts; }, { immediate: true });
+
+watch(supplierModel, (selected) => {
+  if (!selected) {
+    form.purchaseInfo.supplierId = undefined;
+    form.supplierName = '';
+    return;
+  }
+  if (typeof selected.value === 'number') {
+    form.purchaseInfo.supplierId = selected.value;
+    form.supplierName = '';
+  } else {
+    form.purchaseInfo.supplierId = undefined;
+    form.supplierName = String(selected.value);
+  }
+});
+
+function onNewSupplierValue(inputVal: string, done: (item?: unknown) => void): void {
+  const trimmed = inputVal.trim();
+  if (trimmed.length > 0) {
+    done({ label: trimmed, value: trimmed });
+  } else {
+    done();
+  }
+}
+
+function onSupplierFilter(val: string, update: (fn: () => void) => void): void {
+  update(() => {
+    const needle = val.toLowerCase();
+    filteredSupplierOptions.value = needle === ''
+      ? supplierOptions.value
+      : supplierOptions.value.filter((opt) => opt.label.toLowerCase().includes(needle));
+  });
+}
 const ratingModel = computed({
   get: () => r$.$value.rating ?? 0,
   set: (value: number) => {
@@ -103,7 +143,7 @@ watch(
       form.filmFormatId = undefined;
       form.packageTypeId = undefined;
       form.expirationDate = currentDateLocal();
-      form.supplierName = '';
+      supplierModel.value = null;
       form.purchaseInfo = {
         supplierId: undefined,
         channel: '',
@@ -112,6 +152,7 @@ watch(
         orderRef: '',
         obtainedDate: currentDateLocal()
       };
+      form.supplierName = '';
       form.rating = undefined;
       const filters = props.lockedFormatFilters ?? [];
       if (props.isFormatLocked && filters.length === 1) {
@@ -144,6 +185,7 @@ async function handleSubmit(): Promise<void> {
               v-model="r$.$value.name"
               filled
               label="Film name"
+              :disable="props.isCreating"
               :error="r$.name.$error"
               :error-message="r$.name.$errors[0]"
             />
@@ -155,7 +197,7 @@ async function handleSubmit(): Promise<void> {
               emit-value
               map-options
               :options="formatOptions"
-              :disable="isFormatLocked"
+              :disable="isFormatLocked || props.isCreating"
               label="Film format"
               :error="r$.filmFormatId.$error"
               :error-message="r$.filmFormatId.$errors[0]"
@@ -168,7 +210,7 @@ async function handleSubmit(): Promise<void> {
               emit-value
               map-options
               :options="emulsionOptions"
-              :disable="isEmulsionDisabled"
+              :disable="isEmulsionDisabled || props.isCreating"
               label="Emulsion"
               :error="r$.emulsionId.$error"
               :error-message="r$.emulsionId.$errors[0]"
@@ -181,7 +223,7 @@ async function handleSubmit(): Promise<void> {
               emit-value
               map-options
               :options="packageTypeOptions"
-              :disable="isPackageDisabled"
+              :disable="isPackageDisabled || props.isCreating"
               label="Package type"
               :error="r$.packageTypeId.$error"
               :error-message="r$.packageTypeId.$errors[0]"
@@ -193,30 +235,31 @@ async function handleSubmit(): Promise<void> {
               filled
               type="date"
               label="Expiration date (optional)"
+              :disable="props.isCreating"
               :error="r$.expirationDate?.$error"
               :error-message="r$.expirationDate?.$errors[0]"
             />
           </div>
           <q-select
-            v-model="form.purchaseInfo.supplierId"
+            v-model="supplierModel"
             filled
-            emit-value
-            map-options
+            use-input
+            fill-input
+            hide-selected
             clearable
-            :options="supplierOptions"
-            label="Supplier (existing, optional)"
+            input-debounce="0"
+            :options="filteredSupplierOptions"
+            :disable="props.isCreating"
+            label="Supplier (select existing or type new)"
+            @new-value="onNewSupplierValue"
+            @filter="onSupplierFilter"
           />
-          <q-input
-            v-model="r$.$value.supplierName"
-            filled
-            label="Supplier name (optional, if not selected)"
-          />
-          <q-input v-model="form.purchaseInfo.channel" filled label="Purchase channel (optional)" />
-          <q-input v-model.number="form.purchaseInfo.price" filled type="number" min="0" step="0.01" label="Purchase price (optional)" />
-          <q-input v-model="form.purchaseInfo.currencyCode" filled label="Currency code (optional, e.g. USD)" />
-          <q-input v-model="form.purchaseInfo.orderRef" filled label="Order reference (optional)" />
-          <q-input v-model="form.purchaseInfo.obtainedDate" filled type="date" label="Obtained date (optional)" />
-          <q-rating v-model="ratingModel" :max="5" size="20px" color="amber" />
+          <q-input v-model="form.purchaseInfo.channel" filled label="Purchase channel (optional)" :disable="props.isCreating" />
+          <q-input v-model.number="form.purchaseInfo.price" filled type="number" min="0" step="0.01" label="Purchase price (optional)" :disable="props.isCreating" />
+          <q-input v-model="form.purchaseInfo.currencyCode" filled label="Currency code (optional, e.g. USD)" :disable="props.isCreating" />
+          <q-input v-model="form.purchaseInfo.orderRef" filled label="Order reference (optional)" :disable="props.isCreating" />
+          <q-input v-model="form.purchaseInfo.obtainedDate" filled type="date" label="Obtained date (optional)" :disable="props.isCreating" />
+          <q-rating v-model="ratingModel" :max="5" size="20px" color="amber" :disable="props.isCreating" />
         </q-form>
       </q-card-section>
 
