@@ -3,6 +3,7 @@ import { computed, reactive, ref } from 'vue';
 import { useRoute } from 'vue-router';
 import type { CreateFilmJourneyEventRequest } from '@frollz2/schema';
 import { filmTransitionMap } from '@frollz2/schema';
+import { currentDateLocal, dateToISODateTime } from '../composables/dateDefaults.js';
 import { useFilmStore } from '../stores/film.js';
 import { useReferenceStore } from '../stores/reference.js';
 import { useUiFeedback } from '../composables/useUiFeedback.js';
@@ -40,7 +41,7 @@ const errorMessage = ref<string | null>(null);
 const idempotencyKey = ref(createIdempotencyKey());
 
 const form = reactive({
-  occurredAt: '',
+  occurredAt: currentDateLocal(),
   notes: '',
 });
 
@@ -74,16 +75,14 @@ async function handleSubFormSubmit(payload: EventPayload): Promise<void> {
   idempotencyKey.value = createIdempotencyKey();
 
   try {
-    // Convert datetime-local (e.g. "2026-04-27T12:20:30") to ISO 8601 with Z                                                                                                      
-    const occurredAtIso = `${payload.occurredAt}Z`;
     const enrichedPayload: CreateFilmJourneyEventRequest = {
       ...payload,
-      occurredAt: occurredAtIso,
+      occurredAt: dateToISODateTime(payload.occurredAt),
     };
 
     await filmStore.addEvent(filmId.value, enrichedPayload, idempotencyKey.value);
     feedback.success('Event added.');
-    form.occurredAt = '';
+    form.occurredAt = currentDateLocal();
     form.notes = '';
     selectedStateCode.value = null;
     emit('event-added');
@@ -108,7 +107,7 @@ async function handleSubFormSubmit(payload: EventPayload): Promise<void> {
 
     <div v-if="selectedStateCode" class="column q-gutter-md">
       <div>
-        <q-input v-model="form.occurredAt" filled type="datetime-local" label="Occurred at" required />
+        <q-input v-model="form.occurredAt" filled type="date" label="Occurred at" required />
       </div>
 
       <div>
