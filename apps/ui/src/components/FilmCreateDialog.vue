@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, reactive, ref, watch } from 'vue';
+import { currentDateLocal } from '../composables/dateDefaults.js';
 import type { QForm } from 'quasar';
 import { useRegleSchema } from '@regle/schemas';
 import type { FilmCreateForm } from '@frollz2/schema';
@@ -28,7 +29,7 @@ const form = reactive({
   emulsionId: undefined as number | undefined,
   filmFormatId: undefined as number | undefined,
   packageTypeId: undefined as number | undefined,
-  expirationDate: undefined as string | undefined,
+  expirationDate: currentDateLocal() as string | undefined,
   supplierName: '' as string,
   purchaseInfo: {
     supplierId: undefined as number | undefined,
@@ -36,7 +37,7 @@ const form = reactive({
     price: undefined as number | undefined,
     currencyCode: 'USD' as string,
     orderRef: '' as string,
-    obtainedDate: undefined as string | undefined
+    obtainedDate: currentDateLocal() as string | undefined
   },
   rating: undefined as number | undefined
 });
@@ -101,7 +102,7 @@ watch(
       form.emulsionId = undefined;
       form.filmFormatId = undefined;
       form.packageTypeId = undefined;
-      form.expirationDate = undefined;
+      form.expirationDate = currentDateLocal();
       form.supplierName = '';
       form.purchaseInfo = {
         supplierId: undefined,
@@ -109,7 +110,7 @@ watch(
         price: undefined,
         currencyCode: 'USD',
         orderRef: '',
-        obtainedDate: undefined
+        obtainedDate: currentDateLocal()
       };
       form.rating = undefined;
       const filters = props.lockedFormatFilters ?? [];
