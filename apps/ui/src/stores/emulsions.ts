@@ -21,6 +21,8 @@ export const useEmulsionStore = defineStore('emulsions', () => {
   const isLoadingEmulsionDetail = ref(false);
   const loadError = ref<string | null>(null);
   const emulsionDetailError = ref<string | null>(null);
+  const emulsionSearch = ref<string>('');
+  const emulsionProcessFilter = ref<string | null>(null);
   let loadAllInFlight: Promise<void> | null = null;
   let loadEmulsionInFlight: Promise<void> | null = null;
   let loadEmulsionInFlightId: number | null = null;
@@ -131,6 +133,20 @@ export const useEmulsionStore = defineStore('emulsions', () => {
     }
   }
 
+  function setProcessFilterFromMeta(value: unknown): void {
+    emulsionProcessFilter.value = typeof value === 'string' ? value : null;
+  }
+
+  const filteredEmulsions = computed(() => {
+    const query = emulsionSearch.value.trim().toLowerCase();
+    return emulsions.value.filter((emulsion) => {
+      if (emulsionProcessFilter.value && emulsion.developmentProcess.code !== emulsionProcessFilter.value) return false;
+      if (!query) return true;
+      const haystack = `${emulsion.manufacturer} ${emulsion.brand} ${emulsion.developmentProcess.label} ${emulsion.isoSpeed}`.toLowerCase();
+      return haystack.includes(query);
+    });
+  });
+
   return {
     emulsions,
     currentEmulsion,
@@ -139,10 +155,14 @@ export const useEmulsionStore = defineStore('emulsions', () => {
     isLoadingEmulsionDetail,
     loadError,
     emulsionDetailError,
+    emulsionSearch,
+    emulsionProcessFilter,
+    filteredEmulsions,
     loadAll,
     loadEmulsion,
     createEmulsion,
     updateEmulsion,
-    deleteEmulsion
+    deleteEmulsion,
+    setProcessFilterFromMeta
   };
 });

@@ -1,38 +1,15 @@
 <!-- eslint-disable vue/multi-word-component-names -->
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue';
+import { onMounted } from 'vue';
 import { useRoute } from 'vue-router';
-import type { Emulsion } from '@frollz2/schema';
 import EmulsionTable from '../../components/EmulsionTable.vue';
 import { useEmulsionStore } from '../../stores/emulsions.js';
 
 const route = useRoute();
 const emulsionStore = useEmulsionStore();
-const search = ref<string | null>('');
-
-const processFilterCode = computed(() => {
-  const value = route.meta.developmentProcessFilter;
-  return typeof value === 'string' ? value : null;
-});
-
-const rows = computed(() => {
-  const query = (search.value ?? '').trim().toLowerCase();
-
-  return emulsionStore.emulsions.filter((emulsion) => {
-    if (processFilterCode.value && emulsion.developmentProcess.code !== processFilterCode.value) {
-      return false;
-    }
-
-    if (!query) {
-      return true;
-    }
-
-    const haystack = `${emulsion.manufacturer} ${emulsion.brand} ${emulsion.developmentProcess.label} ${emulsion.isoSpeed}`.toLowerCase();
-    return haystack.includes(query);
-  });
-});
 
 onMounted(async () => {
+  emulsionStore.setProcessFilterFromMeta(route.meta.developmentProcessFilter);
   await emulsionStore.loadAll();
 });
 </script>
@@ -46,8 +23,8 @@ onMounted(async () => {
       </div>
     </div>
 
-    <q-input v-model="search" filled label="Search emulsions" clearable />
+    <q-input v-model="emulsionStore.emulsionSearch" filled label="Search emulsions" clearable />
 
-    <EmulsionTable :rows="rows" :is-loading="emulsionStore.isLoading" />
+    <EmulsionTable :rows="emulsionStore.filteredEmulsions" :is-loading="emulsionStore.isLoading" />
   </q-page>
 </template>

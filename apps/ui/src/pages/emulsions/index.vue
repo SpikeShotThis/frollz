@@ -1,7 +1,6 @@
 <!-- eslint-disable vue/multi-word-component-names -->
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue';
-import { useRoute } from 'vue-router';
+import { onMounted, ref } from 'vue';
 import type { Emulsion } from '@frollz2/schema';
 import CreateEmulsionDialog from '../../components/CreateEmulsionDialog.vue';
 import EditEmulsionDialog from '../../components/EditEmulsionDialog.vue';
@@ -9,39 +8,16 @@ import EmulsionTable from '../../components/EmulsionTable.vue';
 import { useUiFeedback } from '../../composables/useUiFeedback.js';
 import { useEmulsionStore } from '../../stores/emulsions.js';
 
-const route = useRoute();
 const emulsionStore = useEmulsionStore();
 const feedback = useUiFeedback();
-const search = ref<string | null>('');
 const isCreateDialogOpen = ref(false);
 const isEditDialogOpen = ref(false);
 const editingEmulsion = ref<Emulsion | null>(null);
 const deletingEmulsion = ref<Emulsion | null>(null);
 const isDeleting = ref(false);
 
-const processFilterCode = computed(() => {
-  const value = route.meta.developmentProcessFilter;
-  return typeof value === 'string' ? value : null;
-});
-
-const rows = computed(() => {
-  const query = (search.value ?? '').trim().toLowerCase();
-
-  return emulsionStore.emulsions.filter((emulsion) => {
-    if (processFilterCode.value && emulsion.developmentProcess.code !== processFilterCode.value) {
-      return false;
-    }
-
-    if (!query) {
-      return true;
-    }
-
-    const haystack = `${emulsion.manufacturer} ${emulsion.brand} ${emulsion.developmentProcess.label} ${emulsion.isoSpeed}`.toLowerCase();
-    return haystack.includes(query);
-  });
-});
-
 onMounted(async () => {
+  emulsionStore.emulsionProcessFilter = null;
   await emulsionStore.loadAll();
 });
 
@@ -81,9 +57,9 @@ async function confirmDelete(): Promise<void> {
       </div>
     </div>
 
-    <q-input v-model="search" filled label="Search emulsions" clearable />
+    <q-input v-model="emulsionStore.emulsionSearch" filled label="Search emulsions" clearable />
 
-    <EmulsionTable :rows="rows" :is-loading="emulsionStore.isLoading">
+    <EmulsionTable :rows="emulsionStore.filteredEmulsions" :is-loading="emulsionStore.isLoading">
       <template #actions="{ row }">
         <q-btn flat dense color="primary" label="Edit" data-testid="emulsion-row-edit" @click="openEditDialog(row)" />
         <q-btn flat dense color="negative" label="Delete" data-testid="emulsion-row-delete" @click="openDeleteDialog(row)" />
