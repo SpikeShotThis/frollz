@@ -71,6 +71,11 @@ function onManufacturerFilter(value: string, update: (callback: () => void) => v
   void fetchSuggestions('manufacturer', value).then((items) => {
     update(() => {
       manufacturerOptions.value = items;
+      const normalized = value.toLowerCase();
+      const match = items.find((item) => item.toLowerCase() === normalized);
+      if (match !== undefined && match !== value) {
+        form.manufacturer = match;
+      }
     });
   });
 }
@@ -79,6 +84,11 @@ function onBrandFilter(value: string, update: (callback: () => void) => void): v
   void fetchSuggestions('brand', value).then((items) => {
     update(() => {
       brandOptions.value = items;
+      const normalized = value.toLowerCase();
+      const match = items.find((item) => item.toLowerCase() === normalized);
+      if (match !== undefined && match !== value) {
+        form.brand = match;
+      }
     });
   });
 }
