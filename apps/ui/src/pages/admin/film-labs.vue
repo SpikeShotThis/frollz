@@ -3,13 +3,22 @@
 import { computed, onMounted, reactive, ref } from 'vue';
 import { useFilmLabsStore } from '../../stores/film-labs.js';
 import { useUiFeedback } from '../../composables/useUiFeedback.js';
+import { useCrudDialog } from '../../composables/useCrudDialog.js';
 
 const filmLabsStore = useFilmLabsStore();
 const feedback = useUiFeedback();
+const {
+  isDialogOpen: isLabDialogOpen,
+  isSaving,
+  archiveTarget,
+  openForCreate,
+  openForEdit,
+  closeDialog,
+  beginArchive,
+  cancelArchive,
+} = useCrudDialog();
 const includeInactive = ref(false);
 const query = ref('');
-const isLabDialogOpen = ref(false);
-const archiveTarget = ref<{ id: number; name: string } | null>(null);
 const form = reactive({
   id: null as number | null,
   name: '',
@@ -20,7 +29,6 @@ const form = reactive({
   notes: '',
   rating: null as number | null
 });
-const isSaving = ref(false);
 const ratingModel = computed({
   get: () => form.rating ?? 0,
   set: (value: number) => {
@@ -33,29 +41,31 @@ async function loadLabs(): Promise<void> {
 }
 
 function beginCreate(): void {
-  form.id = null;
-  form.name = '';
-  form.contact = '';
-  form.email = '';
-  form.website = '';
-  form.defaultProcesses = '';
-  form.notes = '';
-  form.rating = null;
-  isLabDialogOpen.value = true;
+  openForCreate(() => {
+    form.id = null;
+    form.name = '';
+    form.contact = '';
+    form.email = '';
+    form.website = '';
+    form.defaultProcesses = '';
+    form.notes = '';
+    form.rating = null;
+  });
 }
 
 function beginEdit(id: number): void {
   const lab = filmLabsStore.filmLabs.find((item) => item.id === id);
   if (!lab) return;
-  form.id = lab.id;
-  form.name = lab.name;
-  form.contact = lab.contact ?? '';
-  form.email = lab.email ?? '';
-  form.website = lab.website ?? '';
-  form.defaultProcesses = lab.defaultProcesses ?? '';
-  form.notes = lab.notes ?? '';
-  form.rating = lab.rating;
-  isLabDialogOpen.value = true;
+  openForEdit(() => {
+    form.id = lab.id;
+    form.name = lab.name;
+    form.contact = lab.contact ?? '';
+    form.email = lab.email ?? '';
+    form.website = lab.website ?? '';
+    form.defaultProcesses = lab.defaultProcesses ?? '';
+    form.notes = lab.notes ?? '';
+    form.rating = lab.rating;
+  });
 }
 
 async function save(): Promise<void> {
@@ -77,7 +87,7 @@ async function save(): Promise<void> {
     } else {
       await filmLabsStore.createFilmLab(payload);
     }
-    isLabDialogOpen.value = false;
+    closeDialog();
     form.id = null;
     feedback.success(isEditing ? 'Lab updated.' : 'Lab created.');
     await loadLabs();
@@ -88,16 +98,16 @@ async function save(): Promise<void> {
   }
 }
 
-function beginArchive(id: number): void {
+function startArchive(id: number): void {
   const lab = filmLabsStore.filmLabs.find((item) => item.id === id);
   if (!lab) return;
-  archiveTarget.value = { id, name: lab.name };
+  beginArchive(id, lab.name);
 }
 
 async function confirmArchive(): Promise<void> {
   if (!archiveTarget.value) return;
   const { id } = archiveTarget.value;
-  archiveTarget.value = null;
+  cancelArchive();
   try {
     await filmLabsStore.updateFilmLab(id, { active: false });
     await loadLabs();
@@ -161,7 +171,7 @@ onMounted(async () => {
       <template #body-cell-actions="props">
         <q-td :props="props" class="row q-gutter-xs">
           <q-btn flat dense color="primary" label="Edit" @click="beginEdit(props.row.id)" />
-          <q-btn v-if="props.row.active" flat dense color="negative" label="Archive" @click="beginArchive(props.row.id)" />
+          <q-btn v-if="props.row.active" flat dense color="negative" label="Archive" @click="startArchive(props.row.id)" />
           <q-btn v-else flat dense color="positive" label="Restore" @click="restore(props.row.id)" />
         </q-td>
       </template>
@@ -188,14 +198,14 @@ onMounted(async () => {
       </q-card>
     </q-dialog>
 
-    <q-dialog :model-value="archiveTarget !== null" @update:model-value="archiveTarget = null">
+    <q-dialog :model-value="archiveTarget !== null" @update:model-value="cancelArchive">
       <q-card>
         <q-card-section class="text-h6">Archive lab</q-card-section>
         <q-card-section>
           Archive <strong>{{ archiveTarget?.name }}</strong>? It will be hidden but can be restored later.
         </q-card-section>
         <q-card-actions align="right">
-          <q-btn flat label="Cancel" @click="archiveTarget = null" />
+          <q-btn flat label="Cancel" @click="cancelArchive" />
           <q-btn color="negative" label="Archive" @click="confirmArchive" />
         </q-card-actions>
       </q-card>

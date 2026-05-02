@@ -4,13 +4,22 @@ import { computed, onMounted, reactive, ref } from 'vue';
 import { useFilmSuppliersStore } from '../../stores/film-suppliers.js';
 import { useUiFeedback } from '../../composables/useUiFeedback.js';
 import { createIdempotencyKey } from '../../composables/idempotency.js';
+import { useCrudDialog } from '../../composables/useCrudDialog.js';
 
 const filmSuppliersStore = useFilmSuppliersStore();
 const feedback = useUiFeedback();
+const {
+  isDialogOpen: isSupplierDialogOpen,
+  isSaving,
+  archiveTarget,
+  openForCreate,
+  openForEdit,
+  closeDialog,
+  beginArchive,
+  cancelArchive,
+} = useCrudDialog();
 const includeInactive = ref(false);
 const query = ref('');
-const isSupplierDialogOpen = ref(false);
-const archiveTarget = ref<{ id: number; name: string } | null>(null);
 const form = reactive({
   id: null as number | null,
   name: '',
@@ -20,7 +29,6 @@ const form = reactive({
   notes: '',
   rating: null as number | null
 });
-const isSaving = ref(false);
 const createIdempotency = ref(createIdempotencyKey());
 const ratingModel = computed({
   get: () => form.rating ?? 0,
@@ -34,28 +42,30 @@ async function loadSuppliers(): Promise<void> {
 }
 
 function beginCreate(): void {
-  form.id = null;
-  form.name = '';
-  form.contact = '';
-  form.email = '';
-  form.website = '';
-  form.notes = '';
-  form.rating = null;
-  createIdempotency.value = createIdempotencyKey();
-  isSupplierDialogOpen.value = true;
+  openForCreate(() => {
+    form.id = null;
+    form.name = '';
+    form.contact = '';
+    form.email = '';
+    form.website = '';
+    form.notes = '';
+    form.rating = null;
+    createIdempotency.value = createIdempotencyKey();
+  });
 }
 
 function beginEdit(id: number): void {
   const supplier = filmSuppliersStore.filmSuppliers.find((item) => item.id === id);
   if (!supplier) return;
-  form.id = supplier.id;
-  form.name = supplier.name;
-  form.contact = supplier.contact ?? '';
-  form.email = supplier.email ?? '';
-  form.website = supplier.website ?? '';
-  form.notes = supplier.notes ?? '';
-  form.rating = supplier.rating;
-  isSupplierDialogOpen.value = true;
+  openForEdit(() => {
+    form.id = supplier.id;
+    form.name = supplier.name;
+    form.contact = supplier.contact ?? '';
+    form.email = supplier.email ?? '';
+    form.website = supplier.website ?? '';
+    form.notes = supplier.notes ?? '';
+    form.rating = supplier.rating;
+  });
 }
 
 async function save(): Promise<void> {
@@ -77,7 +87,7 @@ async function save(): Promise<void> {
     } else {
       await filmSuppliersStore.createFilmSupplier(payload, createIdempotency.value);
     }
-    isSupplierDialogOpen.value = false;
+    closeDialog();
     form.id = null;
     feedback.success(isEditing ? 'Supplier updated.' : 'Supplier created.');
     await loadSuppliers();
@@ -88,16 +98,16 @@ async function save(): Promise<void> {
   }
 }
 
-function beginArchive(id: number): void {
+function startArchive(id: number): void {
   const supplier = filmSuppliersStore.filmSuppliers.find((item) => item.id === id);
   if (!supplier) return;
-  archiveTarget.value = { id, name: supplier.name };
+  beginArchive(id, supplier.name);
 }
 
 async function confirmArchive(): Promise<void> {
   if (!archiveTarget.value) return;
   const { id } = archiveTarget.value;
-  archiveTarget.value = null;
+  cancelArchive();
   try {
     await filmSuppliersStore.updateFilmSupplier(id, { active: false });
     if (!includeInactive.value) {
@@ -161,7 +171,7 @@ onMounted(async () => {
       <template #body-cell-actions="props">
         <q-td :props="props" class="row q-gutter-xs">
           <q-btn flat dense color="primary" label="Edit" @click="beginEdit(props.row.id)" />
-          <q-btn v-if="props.row.active" flat dense color="negative" label="Archive" @click="beginArchive(props.row.id)" />
+          <q-btn v-if="props.row.active" flat dense color="negative" label="Archive" @click="startArchive(props.row.id)" />
           <q-btn v-else flat dense color="positive" label="Restore" @click="restore(props.row.id)" />
         </q-td>
       </template>
@@ -188,14 +198,14 @@ onMounted(async () => {
       </q-card>
     </q-dialog>
 
-    <q-dialog :model-value="archiveTarget !== null" @update:model-value="archiveTarget = null">
+    <q-dialog :model-value="archiveTarget !== null" @update:model-value="cancelArchive">
       <q-card>
         <q-card-section class="text-h6">Archive supplier</q-card-section>
         <q-card-section>
           Archive <strong>{{ archiveTarget?.name }}</strong>? It will be hidden but can be restored later.
         </q-card-section>
         <q-card-actions align="right">
-          <q-btn flat label="Cancel" @click="archiveTarget = null" />
+          <q-btn flat label="Cancel" @click="cancelArchive" />
           <q-btn color="negative" label="Archive" @click="confirmArchive" />
         </q-card-actions>
       </q-card>

@@ -20,10 +20,12 @@
       "persistent": true
     },
     "test": {
+      "cache": false,
       "dependsOn": ["build"],
       "outputs": []
     },
     "check-types": {
+      "cache": false,
       "dependsOn": ["^check-types"],
       "outputs": []
     },
