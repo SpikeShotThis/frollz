@@ -3,10 +3,13 @@
 import { computed, onMounted, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import type { DeviceLoadTimelineEvent, FilmHolderSlot } from '@frollz2/schema';
+import { getFrameSizeDefinitionsForFormatCode } from '@frollz2/schema';
 import { useDeviceStore, deviceLabel } from '../../stores/devices.js';
+import { useReferenceStore } from '../../stores/reference.js';
 
 const route = useRoute();
 const deviceStore = useDeviceStore();
+const referenceStore = useReferenceStore();
 
 const deviceId = computed(() => Number(route.params.id));
 const currentDeviceLabel = computed(() =>
@@ -62,12 +65,37 @@ const slotColumns = [
   }
 ];
 
+const filmFormatLabel = computed(() => {
+  const device = deviceStore.currentDevice;
+  if (!device) return '—';
+  return referenceStore.filmFormats.find((f) => f.id === device.filmFormatId)?.label ?? String(device.filmFormatId);
+});
+
+const deviceTypeLabel = computed(() => {
+  const device = deviceStore.currentDevice;
+  if (!device) return '—';
+  return referenceStore.deviceTypes.find((t) => t.code === device.deviceTypeCode)?.label ?? device.deviceTypeCode;
+});
+
+const frameSizeLabel = computed(() => {
+  const device = deviceStore.currentDevice;
+  if (!device) return '—';
+  if (device.deviceTypeCode === 'camera' && device.loadMode !== 'direct') return 'Not applicable';
+  if (!device.frameSize) return '—';
+  const formatCode = referenceStore.filmFormats.find((f) => f.id === device.filmFormatId)?.code;
+  if (!formatCode) return device.frameSize;
+  return getFrameSizeDefinitionsForFormatCode(formatCode).find((fs) => fs.code === device.frameSize)?.label ?? device.frameSize;
+});
+
 async function load(): Promise<void> {
   if (!Number.isFinite(deviceId.value)) {
     return;
   }
 
-  await deviceStore.loadDevice(deviceId.value);
+  await Promise.all([
+    referenceStore.loadAll(),
+    deviceStore.loadDevice(deviceId.value)
+  ]);
 }
 
 onMounted(load);
@@ -91,9 +119,9 @@ watch(deviceId, load);
       <q-card-section>
         <div class="row q-col-gutter-md">
           <div class="col-12 col-md-6"><span class="text-grey-7">Device ID:</span> {{ deviceStore.currentDevice.id }}</div>
-          <div class="col-12 col-md-6"><span class="text-grey-7">Film format ID:</span> {{ deviceStore.currentDevice.filmFormatId }}</div>
-          <div class="col-12 col-md-6"><span class="text-grey-7">Frame size:</span> {{ deviceStore.currentDevice.frameSize }}</div>
-          <div class="col-12 col-md-6"><span class="text-grey-7">Type:</span> {{ deviceStore.currentDevice.deviceTypeCode }}</div>
+          <div class="col-12 col-md-6"><span class="text-grey-7">Film format:</span> {{ filmFormatLabel }}</div>
+          <div class="col-12 col-md-6"><span class="text-grey-7">Frame size:</span> {{ frameSizeLabel }}</div>
+          <div class="col-12 col-md-6"><span class="text-grey-7">Type:</span> {{ deviceTypeLabel }}</div>
         </div>
       </q-card-section>
     </q-card>
