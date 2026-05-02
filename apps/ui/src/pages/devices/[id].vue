@@ -3,12 +3,15 @@
 import { computed, onMounted, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import type { DeviceLoadTimelineEvent, FilmHolderSlot } from '@frollz2/schema';
-import { useDeviceStore } from '../../stores/devices.js';
+import { useDeviceStore, deviceLabel } from '../../stores/devices.js';
 
 const route = useRoute();
 const deviceStore = useDeviceStore();
 
 const deviceId = computed(() => Number(route.params.id));
+const currentDeviceLabel = computed(() =>
+  deviceStore.currentDevice ? deviceLabel(deviceStore.currentDevice) : ''
+);
 
 const timelineColumns = [
   {
@@ -59,24 +62,6 @@ const slotColumns = [
   }
 ];
 
-function deviceLabel(): string {
-  const device = deviceStore.currentDevice;
-
-  if (!device) {
-    return '';
-  }
-
-  if (device.deviceTypeCode === 'camera') {
-    return `${device.make} ${device.model}`;
-  }
-
-  if (device.deviceTypeCode === 'film_holder') {
-    return `${device.brand} ${device.name}`;
-  }
-
-  return device.name;
-}
-
 async function load(): Promise<void> {
   if (!Number.isFinite(deviceId.value)) {
     return;
@@ -99,7 +84,7 @@ watch(deviceId, load);
 
     <q-card v-if="deviceStore.currentDevice" flat bordered>
       <q-card-section>
-        <div class="text-h5">{{ deviceLabel() }}</div>
+        <div class="text-h5">{{ currentDeviceLabel }}</div>
         <div class="text-subtitle2 text-grey-7">{{ deviceStore.currentDevice.deviceTypeCode }}</div>
       </q-card-section>
       <q-separator />

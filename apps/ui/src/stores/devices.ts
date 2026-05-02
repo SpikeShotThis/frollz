@@ -151,3 +151,9 @@ export const useDeviceStore = defineStore('device', () => {
     deleteDevice
   };
 });
+
+export function deviceLabel(device: FilmDevice): string {
+  if (device.deviceTypeCode === 'camera') return `${device.make} ${device.model}`;
+  if (device.deviceTypeCode === 'film_holder') return `${device.brand} ${device.name}`;
+  return device.name;
+}

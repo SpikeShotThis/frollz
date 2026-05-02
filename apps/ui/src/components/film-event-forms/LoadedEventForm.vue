@@ -4,7 +4,7 @@ import { useRegleSchema } from '@regle/schemas';
 import type { CreateFilmJourneyEventRequest } from '@frollz2/schema';
 import { z } from 'zod';
 import { idSchema } from '@frollz2/schema';
-import { useDeviceStore } from '../../stores/devices.js';
+import { useDeviceStore, deviceLabel } from '../../stores/devices.js';
 import { useReferenceStore } from '../../stores/reference.js';
 
 interface Props {
@@ -41,14 +41,8 @@ const deviceOptions = computed(() => {
       const typeLabel = referenceStore.deviceTypes.find(
         (t) => t.code === d.deviceTypeCode
       )?.label ?? d.deviceTypeCode;
-      let displayName = '';
-      if (d.deviceTypeCode === 'camera') {
-        displayName = `${d.make} ${d.model}`;
-      } else {
-        displayName = d.name;
-      }
       return {
-        label: `${displayName} (${typeLabel})`,
+        label: `${deviceLabel(d)} (${typeLabel})`,
         value: d.id,
       };
     });

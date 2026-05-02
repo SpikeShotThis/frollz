@@ -3,7 +3,7 @@
 import { computed, onMounted, ref } from 'vue';
 import { useRoute } from 'vue-router';
 import { type FilmDevice, filmFormatDefinitions } from '@frollz2/schema';
-import { useDeviceStore } from '../stores/devices.js';
+import { useDeviceStore, deviceLabel } from '../stores/devices.js';
 import { useReferenceStore } from '../stores/reference.js';
 import CreateDeviceDialog from './CreateDeviceDialog.vue';
 
@@ -66,18 +66,6 @@ const columns = [
     align: 'left'
   }
 ];
-
-function deviceLabel(device: FilmDevice): string {
-  if (device.deviceTypeCode === 'camera') {
-    return `${device.make} ${device.model}`;
-  }
-
-  if (device.deviceTypeCode === 'film_holder') {
-    return `${device.brand} ${device.name}`;
-  }
-
-  return device.name;
-}
 
 onMounted(async () => {
   await Promise.allSettled([referenceStore.loadAll(), deviceStore.loadDevices()]);
