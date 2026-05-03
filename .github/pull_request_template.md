@@ -9,7 +9,7 @@
 ## Checklist
 
 - [ ] Tests added or updated
-- [ ] All tests pass (`npm test` in `frollz-api/` and `frollz-ui/`)
-- [ ] Lint passes (`npm run lint` in both)
+- [ ] All tests pass (`pnpm --filter @frollz2/api test` and `pnpm --filter @frollz2/web test:bdd`)
+- [ ] Lint passes (`pnpm --filter @frollz2/api lint` and `pnpm --filter @frollz2/web lint`)
 - [ ] No `console.log` left in committed code
 - [ ] PR targets the `development` branch (not `main`)

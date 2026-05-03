@@ -24,7 +24,7 @@ assignees: ''
 
 - Frollz version (or commit SHA):
 - Docker version (`docker --version`):
-- Browser (if UI issue):
+- Browser (if web issue):
 - OS:
 
 ## Logs or screenshots

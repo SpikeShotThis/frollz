@@ -34,16 +34,16 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Build internal packages
-        run: pnpm --filter @frollz/shared --filter @frollz/vitest-config run build
+        run: pnpm --filter @frollz2/schema run build
 
       - name: Lint API
-        run: pnpm --filter @frollz/frollz-api run lint
+        run: pnpm --filter @frollz2/api run lint
 
       - name: Test API
-        run: pnpm --filter @frollz/frollz-api test
+        run: pnpm --filter @frollz2/api test
 
-  ci-ui:
-    name: UI — Lint, Type-check & Test
+  ci-web:
+    name: Web — Lint, Type-check & Test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -64,16 +64,16 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Build internal packages
-        run: pnpm --filter @frollz/shared --filter @frollz/vitest-config run build
+        run: pnpm --filter @frollz2/schema --filter @frollz2/contracts --filter @frollz2/api-client --filter @frollz2/design-tokens run build
 
-      - name: Lint UI
-        run: pnpm --filter @frollz/frollz-ui run lint
+      - name: Lint web
+        run: pnpm --filter @frollz2/web run lint
 
-      - name: Check-types UI
-        run: pnpm --filter @frollz/frollz-ui run check-types
+      - name: Check-types web
+        run: pnpm --filter @frollz2/web run check-types
 
-      - name: Test UI
-        run: pnpm --filter @frollz/frollz-ui test
+      - name: Test web
+        run: pnpm --filter @frollz2/web run test:bdd
 
   semgrep:
     name: SAST — Semgrep
@@ -89,7 +89,7 @@ jobs:
   build-and-push:
     name: Build & Push Images
     runs-on: ubuntu-latest
-    needs: [ci-api, ci-ui, semgrep]
+    needs: [ci-api, ci-web, semgrep]
     if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v'))
     permissions:
       contents: read
@@ -118,11 +118,11 @@ jobs:
             type=raw,value=latest,enable={{is_default_branch}}
             type=sha,prefix=sha-,format=short
 
-      - name: Extract UI metadata
-        id: meta-ui
+      - name: Extract web metadata
+        id: meta-web
         uses: docker/metadata-action@v5
         with:
-          images: ghcr.io/${{ github.repository_owner }}/frollz-ui
+          images: ghcr.io/${{ github.repository_owner }}/frollz-web
           tags: |
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
@@ -140,13 +140,13 @@ jobs:
           cache-from: type=gha,scope=api
           cache-to: type=gha,mode=max,scope=api
 
-      - name: Build & push UI image
+      - name: Build & push web image
         uses: docker/build-push-action@v6
         with:
           context: .
-          file: apps/ui/Dockerfile
+          file: apps/web/Dockerfile
           push: true
-          tags: ${{ steps.meta-ui.outputs.tags }}
-          labels: ${{ steps.meta-ui.outputs.labels }}
-          cache-from: type=gha,scope=ui
-          cache-to: type=gha,mode=max,scope=ui
+          tags: ${{ steps.meta-web.outputs.tags }}
+          labels: ${{ steps.meta-web.outputs.labels }}
+          cache-from: type=gha,scope=web
+          cache-to: type=gha,mode=max,scope=web

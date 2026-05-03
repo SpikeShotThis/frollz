@@ -9,11 +9,23 @@
     "@frollz2/api#build": {
       "outputs": ["dist/**"]
     },
-    "@frollz2/ui#build": {
+    "@frollz2/web#build": {
+      "outputs": [".next/**"]
+    },
+    "@frollz2/mobile#build": {
       "outputs": ["dist/**"]
     },
     "@frollz2/schema#build": {
       "outputs": []
+    },
+    "@frollz2/contracts#build": {
+      "outputs": ["dist/**"]
+    },
+    "@frollz2/api-client#build": {
+      "outputs": ["dist/**"]
+    },
+    "@frollz2/design-tokens#build": {
+      "outputs": ["dist/**"]
     },
     "dev": {
       "cache": false,
@@ -32,7 +44,13 @@
     "@frollz2/api#test": {
       "outputs": []
     },
-    "@frollz2/ui#test": {
+    "@frollz2/web#test": {
+      "outputs": []
+    },
+    "@frollz2/contracts#test": {
+      "outputs": []
+    },
+    "@frollz2/api-client#test": {
       "outputs": []
     },
     "lint": {

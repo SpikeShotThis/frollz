@@ -13,7 +13,12 @@ import { AuthService } from './auth.service.js';
 import { ZodSchemaPipe } from '../../common/pipes/zod-schema.pipe.js';
 import type { AuthenticatedUser } from './auth.types.js';
 
-@Throttle({ default: { ttl: 60_000, limit: 5 } })
+const isDevelopment = process.env['NODE_ENV'] === 'development';
+const devThrottleEnabled = process.env['API_DEV_THROTTLE_ENABLED'] === 'true';
+const configuredDevLimit = Number.parseInt(process.env['API_DEV_THROTTLE_LIMIT'] ?? '1000', 10);
+const resolvedDevLimit = Number.isFinite(configuredDevLimit) && configuredDevLimit > 0 ? configuredDevLimit : 1000;
+
+@Throttle({ default: { ttl: 60_000, limit: isDevelopment && devThrottleEnabled ? resolvedDevLimit : 5 } })
 @ApiTags('auth')
 @Controller('auth')
 @UseGuards(JwtAuthGuard)

@@ -6,7 +6,8 @@
 frollz/
 ├── apps/
 │   ├── api/          — NestJS + Fastify backend
-│   └── ui/           — Vue 3 + Quasar frontend
+│   ├── web/          — Next.js + React web app
+│   └── mobile/       — Expo + React Native mobile app
 └── packages/
     └── schema/       — Shared Zod contracts (source of truth for all types)
 ```
@@ -23,7 +24,7 @@ Build system: **Turborepo**. Package manager: **pnpm** (never npm or yarn).
 | Domain | `apps/api/src/domain` | Pure TypeScript business logic. Must not import NestJS, MikroORM, or transport concerns. Contains `applyFilmTransition`, `DomainError`, cost allocation. |
 | Infrastructure | `apps/api/src/infrastructure` | MikroORM entities, repositories, mappers, migrations, seeds, `database-runtime.ts`. |
 | Modules | `apps/api/src/modules` | NestJS modules: HTTP routing, guards, request parsing, controller → service delegation. |
-| UI | `apps/ui/src` | Vue 3 + Quasar. Consumes types from `packages/schema`. Must not duplicate backend domain rules. |
+| Web | `apps/web` | Next.js + React. Consumes `packages/schema`, `packages/contracts`, and `packages/api-client`. Must not duplicate backend domain rules. |
 
 **Key constraint**: the domain layer must remain framework-free. If you need to call business logic from a test without spinning up NestJS, the domain layer is where that logic lives.
 
@@ -64,7 +65,7 @@ Build system: **Turborepo**. Package manager: **pnpm** (never npm or yarn).
 ## ID Strategy
 
 - All entities use `INTEGER PRIMARY KEY AUTOINCREMENT`.
-- IDs are serialized as numeric JSON values across API and UI.
+- IDs are serialized as numeric JSON values across API and web clients.
 - No UUIDs or string IDs are used in runtime contracts.
 
 ---
@@ -120,11 +121,11 @@ Build system: **Turborepo**. Package manager: **pnpm** (never npm or yarn).
 
 `packages/schema/src/film-format-definition.ts` is a static catalog — not a database table — that drives:
 
-- UI format and package-type selection dropdowns
+- Web format and package-type selection dropdowns
 - Frame count resolution at load time (`resolveNonLargeFrameCount`)
 - Validation of frame size / package type combinations
 
-The catalog is keyed by the `film_format.code` values from the database (e.g. `'35mm'`, `'120'`, `'4x5'`). Both API and UI consume it directly from `packages/schema`.
+The catalog is keyed by the `film_format.code` values from the database (e.g. `'35mm'`, `'120'`, `'4x5'`). Both API and web clients consume it directly from `packages/schema`.
 
 ---
 
@@ -169,14 +170,15 @@ Never hardcode a database assumption. All persistence code must work with both d
 
 ---
 
-## UI Architecture
+## Web Architecture
 
-- Vue 3 (Composition API) + Quasar (component library and build tooling).
-- State management via **Pinia** stores (`apps/ui/src/stores/`). One store per domain: `film`, `devices`, `reference`, `emulsions`, `film-labs`, `film-suppliers`, `auth`.
-- Routing via Vue Router; routes defined in `apps/ui/src/router/`.
-- Styling via SCSS tokens (`app.scss`, `_tokens.scss`). Avoid ad-hoc inline styles.
-- Types consumed directly from `packages/schema` — never duplicated in the UI.
-- `filmTransitionMap` from `packages/schema` drives which event form options are shown to the user in `FilmEventForm.vue`.
+- Next.js App Router + React 19.
+- Routes live in `apps/web/app/`; reusable domain components live in `apps/web/src/components/`.
+- Auth/session state is provided by `apps/web/src/auth/session.tsx` and `AppProviders`.
+- API access goes through `@frollz2/api-client` from `apps/web/src/api.ts` and session-scoped clients.
+- Styling lives in `apps/web/app/globals.css` and shared tokens from `@frollz2/design-tokens`.
+- Types consumed directly from `packages/schema` — never duplicated in the web app.
+- `filmTransitionMap` from `packages/schema` drives which event form options are shown to the user in `FilmEventForm.tsx`.
 
 ---
 
@@ -187,5 +189,5 @@ Never hardcode a database assumption. All persistence code must work with both d
 3. Extend `filmTransitionMap` and add domain tests in `apps/api/src/domain/__tests__/`.
 4. Add service preconditions and transactional side effects in `FilmService`.
 5. Expose via the appropriate controller and update OpenAPI docs.
-6. Load any new supporting reference data in the relevant UI Pinia store.
-7. Add a sub-form component in `apps/ui/src/components/film-event-forms/` and register it in `FilmEventForm.vue`.
+6. Load any new supporting reference data through `@frollz2/api-client` in the relevant web component or hook.
+7. Add or update the relevant React sub-form in `apps/web/src/components/FilmEventForm.tsx`.

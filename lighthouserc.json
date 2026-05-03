@@ -1,7 +1,7 @@
 {
   "ci": {
     "collect": {
-      "startServerCommand": "pnpm --filter @frollz2/ui exec vite preview --host 127.0.0.1 --port 4173",
+      "startServerCommand": "pnpm --filter @frollz2/web exec next dev -p 4173 -H 127.0.0.1",
       "startServerReadyPattern": "4173",
       "startServerReadyTimeout": 60000,
       "url": [

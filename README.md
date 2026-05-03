@@ -23,7 +23,7 @@ Frollz is a self-hosted film photography tracking application. If you shoot on f
 Frollz is designed to be self-hosted. The baseline stack runs as four containers:
 
 - `nginx` (ingress reverse proxy)
-- `ui` (built Vue SPA)
+- `web` (built Next.js web app)
 - `api` (built NestJS API)
 - `postgres` (PostgreSQL 18)
 
@@ -85,7 +85,7 @@ Database updates run automatically on startup when `AUTO_MIGRATE_SEED=true`.
 ### Rebuild after code changes
 
 ```bash
-docker compose build api ui
+docker compose build api web
 docker compose up -d
 ```
 

@@ -45,9 +45,9 @@ pnpm dev
 
 This starts:
 - `@frollz2/api` — NestJS API on port 3000
-- `@frollz2/ui` — Vite dev server on port 5173
+- `@frollz2/web` — Next.js web app on port 3001
 
-The UI dev server proxies `/api` requests to the API service automatically.
+The web app rewrites `/api` requests to the API service automatically.
 
 If you want the production-like container stack locally, use:
 
@@ -63,11 +63,11 @@ pnpm --filter @frollz2/api test
 pnpm --filter @frollz2/api lint
 ```
 
-**UI**:
+**Web**:
 ```bash
-pnpm --filter @frollz2/ui test
-pnpm --filter @frollz2/ui lint
-pnpm --filter @frollz2/ui check-types
+pnpm --filter @frollz2/web test:bdd
+pnpm --filter @frollz2/web lint
+pnpm --filter @frollz2/web check-types
 ```
 
 The pre-commit hook runs all of the above plus a Semgrep SAST scan automatically before every commit. If the hook passes, CI will pass.
@@ -86,7 +86,6 @@ Open the command palette (`Cmd+Shift+P`) → **"Extensions: Show Recommended Ext
 
 | Extension | Purpose |
 |---|---|
-| **Vue - Official** (`vue.volar`) | Vue 3 language server — type-checking, template intellisense, inlay hints |
 | **ESLint** (`dbaeumer.vscode-eslint`) | Auto-fixes lint errors on save |
 | **Vitest** (`vitest.explorer`) | In-editor test runner — pass/fail gutter icons and a test sidebar panel |
 | **Turbo Console** (`ms-vscode.vscode-turbo`) | Run turbo tasks from the command palette; visualise the task dependency graph |
@@ -96,15 +95,14 @@ Open the command palette (`Cmd+Shift+P`) → **"Extensions: Show Recommended Ext
 
 #### What the workspace settings do
 
-- **Format on save** is enabled. TypeScript and JavaScript files use the VS Code built-in formatter; Vue files use Volar; JSON files use the built-in JSON formatter.
-- **ESLint auto-fix on save** runs alongside formatting to catch lint violations (unused imports, consistent type imports, Vue template rules).
+- **Format on save** is enabled. TypeScript, TSX, and JavaScript files use the VS Code built-in formatter; JSON files use the built-in JSON formatter.
+- **ESLint auto-fix on save** runs alongside formatting to catch lint violations (unused imports, consistent type imports).
 - **`dist/`, `coverage/`, and `.turbo/`** are excluded from both the file explorer and search results so generated output stays out of your way.
 - **Workspace TypeScript** — VS Code will prompt you to switch to the workspace version of TypeScript (hoisted to `node_modules/typescript/lib` by pnpm). Accept the prompt or set it manually via `Cmd+Shift+P` → **"TypeScript: Select TypeScript Version"** → **"Use Workspace Version"**.
-- **Volar inlay hints** — missing required props and inline handler event types are shown inline in templates.
 
 #### Tasks
 
-`Cmd+Shift+B` runs the default build task (`dev: all` — starts both the API and UI in watch mode via Turborepo).
+`Cmd+Shift+B` runs the default build task (`dev: all` — starts both the API and web app in watch mode via Turborepo).
 
 `Cmd+Shift+T` runs the default test task (`pnpm test` across all packages).
 
@@ -112,17 +110,17 @@ All other tasks are available via `Cmd+Shift+P` → **"Tasks: Run Task"**:
 
 | Task | Command |
 |---|---|
-| `dev: all` | `pnpm dev` — API + UI in parallel watch mode |
+| `dev: all` | `pnpm dev` — API + web in parallel watch mode |
 | `check-types` | `pnpm check-types` — full monorepo type check |
 | `lint` | `pnpm lint` — ESLint across all packages |
 | `test` | `pnpm test` — all Vitest suites |
-| `ui: e2e` | Playwright end-to-end tests |
+| `web: e2e` | Playwright end-to-end tests |
 | `db: migrate` | Apply MikroORM migrations |
 | `db: seed` | Run the idempotent reference data seed |
 
 #### Other editors
 
-JetBrains IDEs (WebStorm / IntelliJ) work well with this stack out of the box — enable **Volar** (or the bundled Vue plugin in recent versions) and configure ESLint to use the flat config at the repo root. No `.idea/` config is committed to keep the repo editor-agnostic.
+JetBrains IDEs (WebStorm / IntelliJ) work well with this stack out of the box. Configure ESLint to use the flat config at the repo root. No `.idea/` config is committed to keep the repo editor-agnostic.
 
 ---
 
@@ -148,7 +146,7 @@ All new code should have unit tests. If you're fixing a bug, add a test that wou
 
 Test files live alongside the code they test:
 - API: `apps/api/src/<module>/<module>.spec.ts`
-- UI: `apps/ui/src/<feature>/<feature>.spec.ts`
+- Web: `apps/web/src/<feature>/<feature>.spec.tsx`
 
 ### Database changes
 
@@ -184,12 +182,12 @@ The codebase follows a consistent set of patterns — please match the style of 
 - Services return typed entity objects; controllers return those directly (NestJS serializes them)
 - Row mappers (`mapX(row)`) translate snake_case DB columns to camelCase TypeScript fields
 
-### Frontend (Vue 3)
+### Web (React + Next.js)
 
-- All HTTP calls go through `src/services/api-client.ts` — views never call fetch/axios directly
-- Views are per-domain and live in `src/views/`
-- Shared UI components go in `src/components/`
-- Use the Composition API (`<script setup>`) — not the Options API
+- All HTTP calls go through `@frollz2/api-client` — views never call fetch directly
+- Routes live in `app/` and domain components live under `src/components/`
+- Shared web components go in `src/components/`
+- Use the shared schema, contracts, and API client packages instead of duplicating client-side domain rules
 
 ### General
 

@@ -10,5 +10,17 @@ export const currencyCodeSchema = z.string().regex(/^[A-Z]{3}$/);
 export const isoDateTimeSchema = z.iso.datetime();
 export const nullableTextSchema = z.string().nullable();
 export const emptyObjectSchema = z.object({}).strict();
+export const queryBooleanSchema = z.preprocess((value) => {
+  if (typeof value === 'boolean') {
+    return value;
+  }
+
+  if (typeof value === 'string') {
+    if (value === 'true') return true;
+    if (value === 'false') return false;
+  }
+
+  return value;
+}, z.boolean());
 
 export type Id = z.infer<typeof idSchema>;

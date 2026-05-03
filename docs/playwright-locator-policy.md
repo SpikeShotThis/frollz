@@ -1,7 +1,7 @@
 # Playwright Locator Policy
 
 ## Goal
-Write E2E tests that are stable across UI refactors and reflect how users interact with the app.
+Write E2E tests that are stable across web refactors and reflect how users interact with the app.
 
 ## Locator Priority
 Use locators in this order:
@@ -13,15 +13,15 @@ Use locators in this order:
 
 Avoid CSS/XPath selectors for behavior tests unless no semantic locator is practical.
 
-## Quasar Notes
-Quasar components (for example `QInput`) may not render DOM structure like plain HTML inputs.
+## Web Component Notes
+The web app uses React components and standard HTML controls. Preserve semantic labels and roles when wrapping fields in custom components.
 
 - Do not assume nested native elements (for example `.locator('input')` chained from a wrapper).
 - Prefer `getByLabel('Email')` / `getByRole('textbox', { name: 'Email' })` for fields.
-- If a test id is required on the native input, pass it explicitly with `input-attrs`:
+- If a test id is required, place it on the interactive element that receives the user action:
 
-```vue
-<q-input :input-attrs="{ 'data-testid': 'login-email' }" />
+```tsx
+<input aria-label="Email" data-testid="login-email" />
 ```
 
 ## Examples

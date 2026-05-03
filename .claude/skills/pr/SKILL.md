@@ -42,8 +42,8 @@ Use this structure:
 ## Changes
 
 - `packages/shared` — <schema changes if any>
-- `apps/frollz-api` — <API changes>
-- `apps/frollz-ui` — <UI changes>
+- `apps/api` — <API changes>
+- `apps/web` — <web changes>
 - `apps/frollz-api/migrations/` — <migration summary if any>
 
 ## Test Plan

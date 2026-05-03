@@ -1,0 +1,22 @@
+{
+  "expo": {
+    "name": "Frollz",
+    "slug": "frollz",
+    "scheme": "frollz",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#F7F1E8"
+      }
+    },
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}

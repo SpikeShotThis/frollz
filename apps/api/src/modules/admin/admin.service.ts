@@ -21,10 +21,8 @@ import {
   FilmHolderEntity,
   FilmHolderSlotEntity,
   HolderTypeEntity,
-  SlotStateEntity
-  ,
-  FilmLabEntity
-  ,
+  SlotStateEntity,
+  FilmLabEntity,
   FilmSupplierEntity
 } from '../../infrastructure/entities/index.js';
 import {
@@ -35,12 +33,88 @@ import {
   mapFilmJourneyEventEntity,
   mapFilmFrameEntity,
   mapFrameJourneyEventEntity,
-  mapDeviceMountEntity
-  ,
-  mapFilmLabEntity
-  ,
+  mapDeviceMountEntity,
+  mapFilmLabEntity,
   mapFilmSupplierEntity
 } from '../../infrastructure/mappers/index.js';
+
+type EventDataRecord = Record<string, unknown>;
+
+function remapKeyedId(eventData: EventDataRecord, key: string, idMap: Map<number, number>): void {
+  const value = eventData[key];
+  if (typeof value !== 'number') {
+    return;
+  }
+
+  const mapped = idMap.get(value);
+  if (mapped) {
+    eventData[key] = mapped;
+  }
+}
+
+function remapLoadedDeviceIds(eventData: EventDataRecord, deviceIdMap: Map<number, number>): void {
+  switch (eventData['loadTargetType']) {
+    case 'camera_direct':
+      remapKeyedId(eventData, 'cameraId', deviceIdMap);
+      return;
+    case 'interchangeable_back':
+      remapKeyedId(eventData, 'interchangeableBackId', deviceIdMap);
+      return;
+    case 'film_holder_slot':
+      remapKeyedId(eventData, 'filmHolderId', deviceIdMap);
+      return;
+  }
+}
+
+function readLoadedDeviceId(eventData: EventDataRecord): number | null {
+  const keyByTarget = {
+    camera_direct: 'cameraId',
+    interchangeable_back: 'interchangeableBackId',
+    film_holder_slot: 'filmHolderId'
+  } as const;
+  const target = eventData['loadTargetType'];
+  const key = typeof target === 'string' && target in keyByTarget
+    ? keyByTarget[target as keyof typeof keyByTarget]
+    : null;
+  if (!key) {
+    return null;
+  }
+
+  const value = eventData[key];
+  return typeof value === 'number' ? value : null;
+}
+
+function remapEventData(
+  eventData: EventDataRecord,
+  idMaps: {
+    filmLabIdMap: Map<number, number>;
+    deviceIdMap: Map<number, number>;
+    frameIdMap?: Map<number, number>;
+  }
+): EventDataRecord {
+  const next = { ...eventData };
+  remapKeyedId(next, 'labId', idMaps.filmLabIdMap);
+  remapLoadedDeviceIds(next, idMaps.deviceIdMap);
+
+  if (idMaps.frameIdMap) {
+    remapKeyedId(next, 'filmFrameId', idMaps.frameIdMap);
+  }
+
+  return next;
+}
+
+function findImportedCurrentDeviceId(data: ExportData, importedFilmId: number): number | null {
+  const film = data.films.find((item) => item.id === importedFilmId);
+  if (!film || (film.currentStateCode !== 'loaded' && film.currentStateCode !== 'exposed')) {
+    return null;
+  }
+
+  const latestLoadedEvent = [...data.filmEvents].reverse().find((event) => (
+    event.filmId === importedFilmId && event.filmStateCode === 'loaded'
+  ));
+
+  return latestLoadedEvent ? readLoadedDeviceId(latestLoadedEvent.eventData) : null;
+}
 
 @Injectable()
 export class AdminService {
@@ -275,7 +349,7 @@ export class AdminService {
           throw new Error(`Film lot ${importedFilm.filmLotId} not found in mappings`);
         }
 
-        const purchasedState = await em.findOneOrFail(FilmStateEntity, { code: 'purchased' });
+        const currentState = await em.findOneOrFail(FilmStateEntity, { code: importedFilm.currentStateCode });
         const film = em.create(FilmEntity, {
           user: em.getReference(UserEntity, userId),
           filmLot: em.getReference(FilmLotEntity, newLotId),
@@ -283,87 +357,15 @@ export class AdminService {
           packageType: em.getReference(PackageTypeEntity, importedFilm.packageTypeId),
           filmFormat: em.getReference(FilmFormatEntity, importedFilm.filmFormatId),
           name: importedFilm.name,
-          currentState: purchasedState
+          expirationDate: importedFilm.expirationDate,
+          currentState
         });
         em.persist(film);
         await em.flush();
         filmIdMap.set(importedFilm.id, film.id);
       }
 
-      // Step 5: Create film journey events
-      for (const importedEvent of data.filmEvents) {
-        const newFilmId = filmIdMap.get(importedEvent.filmId);
-        if (!newFilmId) {
-          throw new Error(`Film ${importedEvent.filmId} not found in mappings`);
-        }
-
-        const filmState = await em.findOneOrFail(FilmStateEntity, { code: importedEvent.filmStateCode });
-        const eventData = { ...importedEvent.eventData };
-        if (typeof eventData['labId'] === 'number') {
-          const newFilmLabId = filmLabIdMap.get(eventData['labId']);
-          if (newFilmLabId) {
-            eventData['labId'] = newFilmLabId;
-          }
-        }
-        const event = em.create(FilmJourneyEventEntity, {
-          film: em.getReference(FilmEntity, newFilmId),
-          user: em.getReference(UserEntity, userId),
-          filmState,
-          occurredAt: importedEvent.occurredAt,
-          recordedAt: importedEvent.recordedAt,
-          notes: importedEvent.notes ?? null,
-          eventData
-        });
-        em.persist(event);
-      }
-      await em.flush();
-
-      // Step 6: Create frames
-      for (const importedFrame of data.frames) {
-        const newFilmId = filmIdMap.get(importedFrame.filmId);
-        if (!newFilmId) {
-          throw new Error(`Film ${importedFrame.filmId} not found in mappings`);
-        }
-
-        const frameState = await em.findOneOrFail(FilmStateEntity, { code: importedFrame.currentStateCode });
-        const frame = em.create(FilmFrameEntity, {
-          film: em.getReference(FilmEntity, newFilmId),
-          user: em.getReference(UserEntity, userId),
-          frameNumber: importedFrame.frameNumber,
-          currentState: frameState
-        });
-        em.persist(frame);
-        await em.flush();
-        frameIdMap.set(importedFrame.id, frame.id);
-      }
-
-      // Step 7: Create frame journey events
-      for (const importedFrameEvent of data.frameEvents) {
-        const newFilmId = filmIdMap.get(importedFrameEvent.filmId);
-        const newFrameId = frameIdMap.get(importedFrameEvent.filmFrameId);
-        if (!newFilmId) {
-          throw new Error(`Film ${importedFrameEvent.filmId} not found in mappings`);
-        }
-        if (!newFrameId) {
-          throw new Error(`Frame ${importedFrameEvent.filmFrameId} not found in mappings`);
-        }
-
-        const frameState = await em.findOneOrFail(FilmStateEntity, { code: importedFrameEvent.frameStateCode });
-        const frameEvent = em.create(FrameJourneyEventEntity, {
-          film: em.getReference(FilmEntity, newFilmId),
-          filmFrame: em.getReference(FilmFrameEntity, newFrameId),
-          user: em.getReference(UserEntity, userId),
-          filmState: frameState,
-          occurredAt: importedFrameEvent.occurredAt,
-          recordedAt: importedFrameEvent.recordedAt,
-          notes: importedFrameEvent.notes ?? null,
-          eventData: importedFrameEvent.eventData
-        });
-        em.persist(frameEvent);
-      }
-      await em.flush();
-
-      // Step 8: Create devices
+      // Step 5: Create devices
       for (const importedDevice of data.devices) {
         const base = em.create(FilmDeviceEntity, {
           user: em.getReference(UserEntity, userId),
@@ -425,7 +427,7 @@ export class AdminService {
                 user: em.getReference(UserEntity, userId),
                 filmHolder,
                 sideNumber: importedSlot.sideNumber,
-                slotState: em.getReference(SlotStateEntity, importedSlot.slotStateId),
+                slotState: await em.findOneOrFail(SlotStateEntity, { code: importedSlot.slotStateCode }),
                 slotStateCode: importedSlot.slotStateCode,
                 loadedFilm: mappedLoadedFilmId ? em.getReference(FilmEntity, mappedLoadedFilmId) : null,
                 createdAt: importedSlot.createdAt
@@ -439,7 +441,90 @@ export class AdminService {
         deviceIdMap.set(importedDevice.id, base.id);
       }
 
-      // Step 8: Create device mounts
+      for (const importedFilm of data.films) {
+        const newFilmId = filmIdMap.get(importedFilm.id);
+        const importedDeviceId = findImportedCurrentDeviceId(data, importedFilm.id);
+        const newDeviceId = importedDeviceId ? deviceIdMap.get(importedDeviceId) : null;
+        if (!newFilmId || !newDeviceId) {
+          continue;
+        }
+
+        const film = await em.findOneOrFail(FilmEntity, { id: newFilmId, user: userId });
+        film.currentDevice = em.getReference(FilmDeviceEntity, newDeviceId);
+        em.persist(film);
+      }
+      await em.flush();
+
+      // Step 6: Create film journey events
+      for (const importedEvent of data.filmEvents) {
+        const newFilmId = filmIdMap.get(importedEvent.filmId);
+        if (!newFilmId) {
+          throw new Error(`Film ${importedEvent.filmId} not found in mappings`);
+        }
+
+        const filmState = await em.findOneOrFail(FilmStateEntity, { code: importedEvent.filmStateCode });
+        const event = em.create(FilmJourneyEventEntity, {
+          film: em.getReference(FilmEntity, newFilmId),
+          user: em.getReference(UserEntity, userId),
+          filmState,
+          occurredAt: importedEvent.occurredAt,
+          recordedAt: importedEvent.recordedAt,
+          notes: importedEvent.notes ?? null,
+          eventData: remapEventData(importedEvent.eventData, { filmLabIdMap, deviceIdMap })
+        });
+        em.persist(event);
+      }
+      await em.flush();
+
+      // Step 7: Create frames
+      for (const importedFrame of data.frames) {
+        const newFilmId = filmIdMap.get(importedFrame.filmId);
+        if (!newFilmId) {
+          throw new Error(`Film ${importedFrame.filmId} not found in mappings`);
+        }
+
+        const frameState = await em.findOneOrFail(FilmStateEntity, { code: importedFrame.currentStateCode });
+        const frame = em.create(FilmFrameEntity, {
+          film: em.getReference(FilmEntity, newFilmId),
+          user: em.getReference(UserEntity, userId),
+          frameNumber: importedFrame.frameNumber,
+          currentState: frameState,
+          aperture: importedFrame.aperture,
+          shutterSpeedSeconds: importedFrame.shutterSpeedSeconds,
+          filterUsed: importedFrame.filterUsed
+        });
+        em.persist(frame);
+        await em.flush();
+        frameIdMap.set(importedFrame.id, frame.id);
+      }
+
+      // Step 8: Create frame journey events
+      for (const importedFrameEvent of data.frameEvents) {
+        const newFilmId = filmIdMap.get(importedFrameEvent.filmId);
+        const newFrameId = frameIdMap.get(importedFrameEvent.filmFrameId);
+        if (!newFilmId) {
+          throw new Error(`Film ${importedFrameEvent.filmId} not found in mappings`);
+        }
+        if (!newFrameId) {
+          throw new Error(`Frame ${importedFrameEvent.filmFrameId} not found in mappings`);
+        }
+
+        const frameState = await em.findOneOrFail(FilmStateEntity, { code: importedFrameEvent.frameStateCode });
+        const frameEvent = em.create(FrameJourneyEventEntity, {
+          film: em.getReference(FilmEntity, newFilmId),
+          filmFrame: em.getReference(FilmFrameEntity, newFrameId),
+          user: em.getReference(UserEntity, userId),
+          filmState: frameState,
+          occurredAt: importedFrameEvent.occurredAt,
+          recordedAt: importedFrameEvent.recordedAt,
+          notes: importedFrameEvent.notes ?? null,
+          eventData: remapEventData(importedFrameEvent.eventData, { filmLabIdMap, deviceIdMap, frameIdMap })
+        });
+        em.persist(frameEvent);
+      }
+      await em.flush();
+
+      // Step 9: Create device mounts
       for (const importedMount of data.deviceMounts) {
         const cameraDeviceId = deviceIdMap.get(importedMount.cameraDeviceId);
         const mountedDeviceId = deviceIdMap.get(importedMount.mountedDeviceId);
@@ -456,7 +541,7 @@ export class AdminService {
           mountedDevice: em.getReference(FilmDeviceEntity, mountedDeviceId),
           user: em.getReference(UserEntity, userId),
           mountedAt: importedMount.mountedAt,
-          unmountedAt: null
+          unmountedAt: importedMount.unmountedAt
         });
         em.persist(mount);
       }

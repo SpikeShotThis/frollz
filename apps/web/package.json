@@ -1,0 +1,34 @@
+{
+  "name": "@frollz2/web",
+  "private": true,
+  "version": "0.0.0",
+  "scripts": {
+    "dev": "next dev -p 3001",
+    "build": "next build",
+    "start": "next start -p 3001",
+    "check-types": "tsc -p tsconfig.json --noEmit",
+    "test:bdd:guard": "sh -c 'if rg -n \"page\\\\.route\\\\(|route\\\\.fulfill\\\\(\" e2e/steps; then echo \"BDD steps must not mock network calls\"; exit 1; fi'",
+    "bdd:gen": "./node_modules/.bin/bddgen",
+    "test:bdd": "pnpm run test:bdd:guard && pnpm run bdd:gen && playwright test --project bdd",
+    "test": "pnpm run test:bdd",
+    "lint": "eslint --max-warnings 0 \"app/**/*.{ts,tsx}\" \"src/**/*.{ts,tsx}\" \"e2e/**/*.ts\""
+  },
+  "dependencies": {
+    "@frollz2/api-client": "workspace:*",
+    "@frollz2/contracts": "workspace:*",
+    "@frollz2/schema": "workspace:*",
+    "@frollz2/design-tokens": "workspace:*",
+    "bootstrap-icons": "^1.13.1",
+    "next": "^15.3.0",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.56.1",
+    "@types/node": "^25.6.0",
+    "@types/react": "^19.1.1",
+    "@types/react-dom": "^19.1.1",
+    "playwright-bdd": "^8.5.0",
+    "typescript": "^6.0.3"
+  }
+}

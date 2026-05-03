@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto';
 import { Inject, Injectable } from '@nestjs/common';
-import { EntityManager } from '@mikro-orm/core';
+import { EntityManager, UniqueConstraintViolationException } from '@mikro-orm/core';
 import { DomainError } from '../../domain/errors.js';
 import { IdempotencyKeyEntity, UserEntity } from '../../infrastructure/entities/index.js';
 import { nowIso } from '../utils/time.js';
@@ -13,9 +13,28 @@ function requestHash(payload: unknown): string {
   return createHash('sha256').update(JSON.stringify(payload)).digest('hex');
 }
 
+const PENDING_RESPONSE_BODY = { __frollzIdempotencyPending: true };
+const RESPONSE_BODY_KEY = '__frollzIdempotencyResponse';
+
+function wrapResponseBody(response: unknown): Record<string, unknown> {
+  return { [RESPONSE_BODY_KEY]: response };
+}
+
+function unwrapResponseBody<T>(responseBody: unknown): T {
+  if (responseBody && typeof responseBody === 'object' && RESPONSE_BODY_KEY in responseBody) {
+    return (responseBody as Record<string, unknown>)[RESPONSE_BODY_KEY] as T;
+  }
+
+  return responseBody as T;
+}
+
 function isUniqueConstraintError(error: unknown): boolean {
+  if (error instanceof UniqueConstraintViolationException) {
+    return true;
+  }
+
   const message = error instanceof Error ? error.message : String(error);
-  return message.includes('UNIQUE constraint failed');
+  return message.includes('UNIQUE constraint failed') || message.includes('duplicate key value violates unique constraint');
 }
 
 @Injectable()
@@ -54,26 +73,23 @@ export class IdempotencyService {
           throw new DomainError('CONFLICT', 'Idempotency key was already used with a different payload');
         }
 
-        return existing.responseBody as T;
+        return unwrapResponseBody<T>(existing.responseBody);
       }
 
-      const response = await params.handler();
+      let entry: IdempotencyKeyEntity;
 
       try {
-        const entry = transactionalEntityManager.create(IdempotencyKeyEntity, {
+        entry = transactionalEntityManager.create(IdempotencyKeyEntity, {
           user: transactionalEntityManager.getReference(UserEntity, params.userId),
           scope: params.scope,
           key: normalizedKey,
           requestHash: hashedPayload,
-          responseBody: response,
+          responseBody: PENDING_RESPONSE_BODY,
           createdAt: now,
           expiresAt: idempotencyExpiresAt()
         });
         transactionalEntityManager.persist(entry);
         await transactionalEntityManager.flush();
-
-        // Fire-and-forget: prune expired keys outside the transaction to avoid deadlocks
-        this.entityManager.nativeDelete(IdempotencyKeyEntity, { expiresAt: { $lte: now } }).catch(() => {});
       } catch (error) {
         if (!isUniqueConstraintError(error)) {
           throw error;
@@ -89,8 +105,15 @@ export class IdempotencyService {
           throw new DomainError('CONFLICT', 'Idempotency key was already used with a different payload');
         }
 
-        return concurrent.responseBody as T;
+        return unwrapResponseBody<T>(concurrent.responseBody);
       }
+
+      const response = await params.handler();
+      entry.responseBody = wrapResponseBody(response);
+      await transactionalEntityManager.flush();
+
+      // Fire-and-forget: prune expired keys outside the transaction to avoid deadlocks
+      this.entityManager.nativeDelete(IdempotencyKeyEntity, { expiresAt: { $lte: now } }).catch(() => {});
 
       return response;
     });

@@ -3,10 +3,14 @@ import { UniqueConstraintViolationException } from '@mikro-orm/core';
 import type { CreateFilmLabRequest, FilmLab, ListFilmLabsQuery, UpdateFilmLabRequest } from '@frollz2/schema';
 import { DomainError } from '../../domain/errors.js';
 import { FilmLabRepository } from '../../infrastructure/repositories/film-lab.repository.js';
+import { ReferenceService } from '../reference/reference.service.js';
 
 @Injectable()
 export class FilmLabsService {
-  constructor(@Inject(FilmLabRepository) private readonly filmLabRepository: FilmLabRepository) {}
+  constructor(
+    @Inject(FilmLabRepository) private readonly filmLabRepository: FilmLabRepository,
+    @Inject(ReferenceService) private readonly referenceService: ReferenceService
+  ) {}
 
   list(userId: number, query: ListFilmLabsQuery): Promise<FilmLab[]> {
     return this.filmLabRepository.list(userId, query);
@@ -22,7 +26,9 @@ export class FilmLabsService {
 
   async create(userId: number, input: CreateFilmLabRequest): Promise<FilmLab> {
     try {
-      return await this.filmLabRepository.create(userId, input);
+      const lab = await this.filmLabRepository.create(userId, input);
+      await this.upsertReferenceValues(userId, lab);
+      return lab;
     } catch (error) {
       if (error instanceof UniqueConstraintViolationException) {
         throw new DomainError('CONFLICT', 'A film lab with that name already exists');
@@ -37,12 +43,24 @@ export class FilmLabsService {
       if (!updated) {
         throw new DomainError('NOT_FOUND', 'Film lab not found');
       }
+      await this.upsertReferenceValues(userId, updated);
       return updated;
     } catch (error) {
       if (error instanceof UniqueConstraintViolationException) {
         throw new DomainError('CONFLICT', 'A film lab with that name already exists');
       }
       throw error;
+    }
+  }
+
+  private async upsertReferenceValues(userId: number, lab: FilmLab): Promise<void> {
+    const items = [
+      { kind: 'lab_name' as const, value: lab.name },
+      ...(lab.contact ? [{ kind: 'lab_contact' as const, value: lab.contact }] : [])
+    ];
+
+    if (items.length > 0) {
+      await this.referenceService.upsertReferenceValues(userId, items);
     }
   }
 }

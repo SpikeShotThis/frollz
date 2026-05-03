@@ -1,7 +1,8 @@
-# UI Behavior
+# Web Behavior
 
-- Schema-driven UI
+- Schema-driven web flows
 - Dynamic event forms
-- Quasar components
-- SCSS tokens for styling
+- React components
+- Next.js App Router pages
+- Shared design tokens from `@frollz2/design-tokens`
 - No duplicated domain logic

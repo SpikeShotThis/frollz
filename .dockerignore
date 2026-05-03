@@ -13,7 +13,8 @@ apps/*/dist
 apps/*/node_modules
 apps/api/*.sqlite
 apps/api/temp
-apps/ui/test-results
+apps/web/.next
+apps/web/test-results
 **/*.log
 **/.DS_Store
 # Additional build optimization
