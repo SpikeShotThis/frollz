@@ -54,83 +54,87 @@ watch(filmId, load);
 </script>
 
 <template>
-  <q-page class="q-pa-md column q-gutter-md">
+  <q-page class="q-pa-md column">
     <q-btn flat color="primary" icon="arrow_back" label="Back to film" to="/film" class="self-start" />
 
     <q-banner v-if="filmStore.detailError" class="bg-red-1 text-negative" rounded>
       {{ filmStore.detailError }}
     </q-banner>
+    <div class="row q-gutter-sm">
+      <div class="col-8">
 
-    <q-card v-if="filmStore.currentFilm" flat bordered>
-      <q-card-section>
-        <div class="text-h5">{{ filmStore.currentFilm.name }}</div>
-        <div class="text-subtitle2 text-grey-7">
-          {{ filmStore.currentFilm.emulsion.manufacturer }} {{ filmStore.currentFilm.emulsion.brand }} ·
-          {{ filmStore.currentFilm.filmFormat.label }}
-        </div>
-      </q-card-section>
-      <q-separator />
-      <q-card-section class="row q-col-gutter-md">
-        <div class="col-12 col-md-6"><span class="text-grey-7">Current state:</span> {{
-          filmStore.currentFilm.currentState.label }}</div>
-        <div class="col-12 col-md-6">
-          <span class="text-grey-7">Expiration:</span>
-          {{ filmStore.currentFilm.expirationDate ? new Date(filmStore.currentFilm.expirationDate).toLocaleDateString()
-            : 'N/A' }}
-        </div>
-        <div class="col-12 col-md-6"><span class="text-grey-7">Purchase cost:</span> {{
-          formatCost(filmStore.currentFilm.purchaseCostAllocated) }}</div>
-        <div class="col-12 col-md-6"><span class="text-grey-7">Development cost:</span> {{
-          formatCost(filmStore.currentFilm.developmentCost) }}</div>
-        <div class="col-12 col-md-6"><span class="text-grey-7">Known total cost:</span> {{ formatKnownCost(filmStore.currentFilm!) }}</div>
-      </q-card-section>
-    </q-card>
+        <q-card v-if="filmStore.currentFilm" flat bordered q-pad-md q-gutter-sm>
+          <q-card-section>
+            <div class="text-h5">{{ filmStore.currentFilm.name }}</div>
+            <div class="text-subtitle2 text-grey-7">
+              {{ filmStore.currentFilm.emulsion.manufacturer }} {{ filmStore.currentFilm.emulsion.brand }} ·
+              {{ filmStore.currentFilm.filmFormat.label }}
+            </div>
+          </q-card-section>
+          <q-separator />
+          <q-card-section class="row q-col-gutter-md">
+            <div class="col-12 col-md-6"><span class="text-grey-7">Current state:</span> {{
+              filmStore.currentFilm.currentState.label }}</div>
+            <div class="col-12 col-md-6">
+              <span class="text-grey-7">Expiration:</span>
+              {{ filmStore.currentFilm.expirationDate ? new
+                Date(filmStore.currentFilm.expirationDate).toLocaleDateString()
+                : 'N/A' }}
+            </div>
+            <div class="col-12 col-md-6"><span class="text-grey-7">Purchase cost:</span> {{
+              formatCost(filmStore.currentFilm.purchaseCostAllocated) }}</div>
+            <div class="col-12 col-md-6"><span class="text-grey-7">Development cost:</span> {{
+              formatCost(filmStore.currentFilm.developmentCost) }}</div>
+            <div class="col-12 col-md-6"><span class="text-grey-7">Known total cost:</span> {{
+              formatKnownCost(filmStore.currentFilm!) }}</div>
+          </q-card-section>
+        </q-card>
+        <q-card flat bordered>
+          <q-card-section class="text-subtitle1">Frames</q-card-section>
+          <q-separator />
+          <q-card-section class="q-pa-none">
+            <q-table :rows="filmStore.currentFrames" :columns="frameColumns" row-key="id" flat bordered
+              :loading="filmStore.isDetailLoading">
+              <template #body="tProps">
+                <q-tr :props="tProps" class="cursor-pointer" @click="toggleFrame(tProps.row.id)">
+                  <q-td v-for="col in tProps.cols" :key="col.name" :props="tProps">
+                    {{ col.value }}
+                  </q-td>
+                </q-tr>
+                <q-tr v-if="expandedFrameIds.has(tProps.row.id)" :props="tProps">
+                  <q-td colspan="100%" class="q-pa-none">
+                    <FrameMetadataEditor :frame="tProps.row" :film-id="filmId" :readonly="!isFrameEditable" />
+                  </q-td>
+                </q-tr>
+              </template>
+            </q-table>
+          </q-card-section>
+        </q-card>
+      </div>
+      <div class="col-3">
+        <q-card v-if="filmStore.currentFilm" flat bordered>
+          <q-card-section>
+            <div class="text-subtitle1">Add transition event</div>
+          </q-card-section>
+          <q-separator />
+          <q-card-section>
+            <FilmEventForm :current-state-code="filmStore.currentFilm.currentStateCode"
+              :film-format-id="filmStore.currentFilm.filmFormatId" @event-added="handleEventAdded" />
+          </q-card-section>
+        </q-card>
 
-    <q-card v-if="filmStore.currentFilm" flat bordered>
-      <q-card-section>
-        <div class="text-subtitle1">Add transition event</div>
-      </q-card-section>
-      <q-separator />
-      <q-card-section>
-        <FilmEventForm :current-state-code="filmStore.currentFilm.currentStateCode"
-          :film-format-id="filmStore.currentFilm.filmFormatId" @event-added="handleEventAdded" />
-      </q-card-section>
-    </q-card>
+
+        <q-timeline layout="dense" side="left" color="secondary">
+          <q-timeline-entry heading tag="h5">Journey events</q-timeline-entry>
+          <q-timeline-entry v-for="event in filmStore.currentEvents" :key="event.id" tag="h6">
+            <template #title> {{referenceStore.filmStates.find((s) => s.code === event.filmStateCode)?.label}}
+            </template>
+            <template #subtitle>{{ new Date(event.occurredAt).toLocaleString() }}</template>
+          </q-timeline-entry>
+        </q-timeline>
+      </div>
+    </div>
 
 
-    <q-timeline layout="dense" side="right" color="secondary">
-      <q-timeline-entry heading>Journey events</q-timeline-entry>
-      <q-timeline-entry v-for="event in filmStore.currentEvents" :key="event.id">
-        <template #title> {{referenceStore.filmStates.find((s) => s.code === event.filmStateCode)?.label}} </template>
-        <template #subtitle>{{ new Date(event.occurredAt).toLocaleString() }}</template>
-      </q-timeline-entry>
-    </q-timeline>
-
-
-    <q-card flat bordered>
-      <q-card-section class="text-subtitle1">Frames</q-card-section>
-      <q-separator />
-      <q-card-section class="q-pa-none">
-        <q-table :rows="filmStore.currentFrames" :columns="frameColumns" row-key="id" flat bordered
-          :loading="filmStore.isDetailLoading">
-          <template #body="tProps">
-            <q-tr :props="tProps" class="cursor-pointer" @click="toggleFrame(tProps.row.id)">
-              <q-td v-for="col in tProps.cols" :key="col.name" :props="tProps">
-                {{ col.value }}
-              </q-td>
-            </q-tr>
-            <q-tr v-if="expandedFrameIds.has(tProps.row.id)" :props="tProps">
-              <q-td colspan="100%" class="q-pa-none">
-                <FrameMetadataEditor
-                  :frame="tProps.row"
-                  :film-id="filmId"
-                  :readonly="!isFrameEditable"
-                />
-              </q-td>
-            </q-tr>
-          </template>
-        </q-table>
-      </q-card-section>
-    </q-card>
   </q-page>
 </template>

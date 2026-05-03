@@ -3,9 +3,9 @@ import type { Emulsion } from '@frollz2/schema';
 import { Then, When, Given, loadEmulsions, loadReferenceData, apiCall, createFilmLotFixture } from './fixtures.js';
 
 const SECTION_PATHS: Record<string, string> = {
-  'colour negative': '/emulsions/color-negative-c41',
+  'color negative': '/emulsions/color-negative-c41',
   'black-and-white': '/emulsions/black-and-white',
-  'colour positive': '/emulsions/color-positive-e6',
+  'color positive': '/emulsions/color-positive-e6',
   'cine': '/emulsions/cine-ecn2',
 };
 
