@@ -1,6 +1,7 @@
 <!-- eslint-disable vue/multi-word-component-names -->
 <script setup lang="ts">
 import { computed, onMounted } from 'vue';
+import { useRoute } from 'vue-router';
 import type { FilmSummary } from '@frollz2/schema';
 import FilmCreateDialog from '../../components/FilmCreateDialog.vue';
 import FilmInventoryTable from '../../components/FilmInventoryTable.vue';
@@ -13,6 +14,7 @@ import { useFilmSuppliersStore } from '../../stores/film-suppliers.js';
 const filmStore = useFilmStore();
 const referenceStore = useReferenceStore();
 const filmSuppliersStore = useFilmSuppliersStore();
+const route = useRoute();
 
 const {
   isCreateDialogOpen,
@@ -45,6 +47,8 @@ const supplierOptions = computed(() =>
 );
 
 onMounted(async () => {
+  const stateCodeFromQuery = typeof route.query.stateCode === 'string' ? route.query.stateCode : null;
+  filmStore.filmListStateFilter = stateCodeFromQuery;
   filmStore.filmListLockedFormats = lockedFormatFilters.value;
   await Promise.allSettled([referenceStore.loadAll(), filmStore.loadFilms(), filmSuppliersStore.loadFilmSuppliers()]);
 });
