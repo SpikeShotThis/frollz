@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start -p 3001",
     "check-types": "tsc -p tsconfig.json --noEmit",
-    "test:bdd:guard": "sh -c 'if rg -n \"page\\\\.route\\\\(|route\\\\.fulfill\\\\(\" e2e/steps; then echo \"BDD steps must not mock network calls\"; exit 1; fi'",
+    "test:bdd:guard": "sh -c 'if grep -rn --include=\"*.ts\" -E \"page\\.route\\(|route\\.fulfill\\(\" e2e/steps; then echo \"BDD steps must not mock network calls\"; exit 1; fi'",
     "bdd:gen": "./node_modules/.bin/bddgen",
     "test:bdd": "pnpm run test:bdd:guard && pnpm run bdd:gen && playwright test --project bdd",
     "test": "pnpm run test:bdd",

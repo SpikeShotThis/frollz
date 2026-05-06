@@ -73,6 +73,9 @@ jobs:
         run: pnpm --filter @frollz2/web run check-types
 
       - name: Test web
+        env:
+          JWT_ACCESS_SECRET: ci-bdd-test-secret
+          AUTO_MIGRATE_SEED: 'true'
         run: pnpm --filter @frollz2/web run test:bdd
 
   semgrep:
