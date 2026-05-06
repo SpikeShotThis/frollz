@@ -1,0 +1,29 @@
+{
+  "name": "@frollz2/mobile",
+  "private": true,
+  "version": "0.0.0",
+  "main": "expo-router/entry",
+  "scripts": {
+    "dev": "expo start",
+    "build": "expo export --platform web",
+    "ios": "expo start --ios",
+    "android": "expo start --android",
+    "web": "expo start --web",
+    "check-types": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@frollz2/api-client": "workspace:*",
+    "@frollz2/contracts": "workspace:*",
+    "@frollz2/design-tokens": "workspace:*",
+    "expo": "^53.0.0",
+    "expo-router": "^4.0.0",
+    "react": "^19.1.0",
+    "react-native": "^0.79.0",
+    "react-native-safe-area-context": "^5.3.0",
+    "react-native-screens": "^4.11.0"
+  },
+  "devDependencies": {
+    "@types/react": "^19.1.1",
+    "typescript": "^6.0.3"
+  }
+}

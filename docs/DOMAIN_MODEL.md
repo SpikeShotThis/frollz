@@ -199,7 +199,7 @@ A FilmFrame represents one individual exposure slot within a Film.
 
 ### Per-frame exposure metadata
 
-Each frame can record the aperture, shutter speed, and filter use at the time of exposure. These fields are nullable — they may be filled in before or after exposure but are never required. The UI surfaces these as `f/5.6`, formatted shutter speeds (e.g. `1/250`), and a Yes/No/unknown indicator.
+Each frame can record the aperture, shutter speed, and filter use at the time of exposure. These fields are nullable — they may be filled in before or after exposure but are never required. The web app surfaces these as `f/5.6`, formatted shutter speeds (e.g. `1/250`), and a Yes/No/unknown indicator.
 
 `aperture` stores the raw f-number (e.g. `5.6`). Valid values are drawn from `APERTURE_PRESETS` in `packages/schema/src/film.ts`, which covers full, half, and third stops from f/1 to f/64.
 
@@ -457,7 +457,7 @@ label TEXT NOT NULL          -- human-readable label
 
 ## Film Format Definition System
 
-`packages/schema/src/film-format-definition.ts` is the source of truth for all format-specific business logic. It is **not** a database table — it is a static catalog consumed by both API and UI at runtime.
+`packages/schema/src/film-format-definition.ts` is the source of truth for all format-specific business logic. It is **not** a database table — it is a static catalog consumed by both API and web clients at runtime.
 
 Each entry in `filmFormatDefinitions` describes:
 

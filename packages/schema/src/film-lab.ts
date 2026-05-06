@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { idSchema, LIST_DEFAULT_LIMIT, LIST_MAX_LIMIT } from './common.js';
+import { idSchema, LIST_DEFAULT_LIMIT, LIST_MAX_LIMIT, queryBooleanSchema } from './common.js';
 
 export const filmLabRatingSchema = z.number().int().min(1).max(5);
 
@@ -40,7 +40,7 @@ export const updateFilmLabRequestSchema = z.object({
 
 export const listFilmLabsQuerySchema = z.object({
   q: z.string().optional().default(''),
-  includeInactive: z.coerce.boolean().optional().default(false),
+  includeInactive: queryBooleanSchema.optional().default(false),
   limit: z.coerce.number().int().min(1).max(LIST_MAX_LIMIT).optional().default(LIST_DEFAULT_LIMIT)
 });
 

@@ -4,7 +4,6 @@
   "version": "0.0.0",
   "exports": {
     "./base": "./base.json",
-    "./node": "./node.json",
-    "./vue": "./vue.json"
+    "./node": "./node.json"
   }
 }

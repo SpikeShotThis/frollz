@@ -4,12 +4,21 @@ import { MikroOrmModule } from '@mikro-orm/nestjs';
 // eslint-disable-next-line @typescript-eslint/consistent-type-imports
 import { MikroORM } from '@mikro-orm/core';
 import ormConfig from './mikro-orm.config.js';
-import { applyDatabaseMigrations } from './database-runtime.js';
+import { applyDatabaseMigrations, resolveDatabaseRuntime, resolveSqliteDatabasePath } from './database-runtime.js';
 import { seedDatabase } from './seed.js';
 
 @Global()
 @Module({
-  imports: [MikroOrmModule.forRoot(ormConfig)]
+  imports: [
+    MikroOrmModule.forRootAsync({
+      useFactory: () => {
+        if (resolveDatabaseRuntime() !== 'postgres') {
+          return { ...ormConfig, dbName: resolveSqliteDatabasePath() };
+        }
+        return { ...ormConfig };
+      }
+    })
+  ]
 })
 export class DatabaseModule implements OnModuleInit {
   constructor(private readonly orm: MikroORM) { }

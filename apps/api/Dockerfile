@@ -6,7 +6,6 @@ RUN corepack enable
 # Copy package manifests for dependency installation (layer caching optimization)
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml turbo.json ./
 COPY apps/api/package.json apps/api/package.json
-COPY apps/ui/package.json apps/ui/package.json
 COPY packages/schema/package.json packages/schema/package.json
 COPY packages/eslint-config/package.json packages/eslint-config/package.json
 COPY packages/typescript-config/package.json packages/typescript-config/package.json

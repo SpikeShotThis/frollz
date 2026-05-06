@@ -17,6 +17,8 @@ import { FilmRepository } from '../../infrastructure/repositories/film.repositor
 import { DeviceRepository } from '../../infrastructure/repositories/device.repository.js';
 import { ReferenceService } from '../reference/reference.service.js';
 
+type DeviceReferenceInput = Partial<Record<'make' | 'model' | 'brand' | 'system' | 'cameraSystem', unknown>>;
+
 @Injectable()
 export class DevicesService {
   constructor(
@@ -42,14 +44,15 @@ export class DevicesService {
 
   async create(userId: number, input: CreateFilmDeviceRequest): Promise<FilmDevice> {
 
-    if ((input.deviceTypeCode === 'camera' && input.loadMode === 'direct') || input.deviceTypeCode !== 'camera') {
+    if (this.requiresFrameSize(input.deviceTypeCode, this.readLoadMode(input))) {
       if (input.frameSize == null) {
         throw new DomainError('DOMAIN_ERROR', 'Directly loadable cameras require a frame size');
       }
       await this.assertFrameSizeMatchesFormat(input.filmFormatId, input.frameSize);
     }
+    await this.assertNoDuplicateDevice(userId, input);
     const device = await this.deviceRepository.create(userId, input);
-    await this.upsertReferenceValues(userId, input as Record<string, unknown>);
+    await this.upsertReferenceValues(userId, input);
     return device;
   }
 
@@ -59,11 +62,9 @@ export class DevicesService {
       if (!current) {
         throw new DomainError('NOT_FOUND', 'Device not found');
       }
-      const effectiveLoadMode = current.deviceTypeCode === 'camera'
-        ? (input.loadMode ?? current.loadMode)
-        : null;
-      const isDirectlyLoadable = effectiveLoadMode !== 'interchangeable_back' && effectiveLoadMode !== 'film_holder';
-      if (isDirectlyLoadable) {
+      const requestedLoadMode = 'loadMode' in input ? input.loadMode : undefined;
+      const effectiveLoadMode = requestedLoadMode ?? this.readLoadMode(current);
+      if (this.requiresFrameSize(current.deviceTypeCode, effectiveLoadMode)) {
         const effectiveFrameSize = input.frameSize !== undefined ? input.frameSize : current.frameSize;
         if (effectiveFrameSize != null) {
           await this.assertFrameSizeMatchesFormat(input.filmFormatId ?? current.filmFormatId, effectiveFrameSize);
@@ -77,7 +78,7 @@ export class DevicesService {
       throw new DomainError('NOT_FOUND', 'Device not found');
     }
 
-    await this.upsertReferenceValues(userId, input as Record<string, unknown>);
+    await this.upsertReferenceValues(userId, input);
 
     return device;
   }
@@ -192,7 +193,15 @@ export class DevicesService {
     }
   }
 
-  private async upsertReferenceValues(userId: number, input: Record<string, unknown>): Promise<void> {
+  private requiresFrameSize(deviceTypeCode: string, loadMode: string | null | undefined): boolean {
+    return deviceTypeCode !== 'camera' || loadMode === 'direct';
+  }
+
+  private readLoadMode(device: { deviceTypeCode: string } & Partial<{ loadMode: string | null }>): string | null | undefined {
+    return device.deviceTypeCode === 'camera' ? device.loadMode : null;
+  }
+
+  private async upsertReferenceValues(userId: number, input: DeviceReferenceInput): Promise<void> {
     const items: Array<{ kind: 'device_make' | 'device_model' | 'brand' | 'device_system'; value: string }> = [];
 
     if (typeof input.make === 'string') {
@@ -213,6 +222,42 @@ export class DevicesService {
 
     if (items.length > 0) {
       await this.referenceService.upsertReferenceValues(userId, items);
+    }
+  }
+
+  private normalize(value: string | null | undefined): string {
+    return (value ?? '').trim().toLowerCase();
+  }
+
+  private async assertNoDuplicateDevice(userId: number, input: CreateFilmDeviceRequest): Promise<void> {
+    const existing = await this.deviceRepository.list(userId);
+
+    const hasDuplicate = existing.some((device) => {
+      if (device.deviceTypeCode !== input.deviceTypeCode) return false;
+      if (device.filmFormatId !== input.filmFormatId) return false;
+      if ((device.frameSize ?? null) !== (input.frameSize ?? null)) return false;
+
+      switch (device.deviceTypeCode) {
+        case 'camera':
+          if (input.deviceTypeCode !== 'camera') return false;
+          return this.normalize(device.make) === this.normalize(input.make)
+            && this.normalize(device.model) === this.normalize(input.model)
+            && device.loadMode === input.loadMode;
+        case 'interchangeable_back':
+          if (input.deviceTypeCode !== 'interchangeable_back') return false;
+          return this.normalize(device.name) === this.normalize(input.name)
+            && this.normalize(device.system) === this.normalize(input.system);
+        case 'film_holder':
+          if (input.deviceTypeCode !== 'film_holder') return false;
+          return this.normalize(device.name) === this.normalize(input.name)
+            && this.normalize(device.brand) === this.normalize(input.brand)
+            && device.holderTypeId === input.holderTypeId
+            && device.slotCount === input.slotCount;
+      }
+    });
+
+    if (hasDuplicate) {
+      throw new DomainError('CONFLICT', 'A device with those details already exists');
     }
   }
 }

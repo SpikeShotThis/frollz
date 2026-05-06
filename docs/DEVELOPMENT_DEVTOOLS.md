@@ -1,12 +1,10 @@
 # Development Devtools Guide
 
-This repository includes Vue development tooling for the UI and automatic environment loading for the API.
-
-- Vue Devtools (for `apps/ui`)
+This repository includes Next.js development tooling for the web app and automatic environment loading for the API.
 
 ## Installed Tooling
 
-- UI: `vite-plugin-vue-devtools`
+- Web: Next.js development server (`apps/web`)
 - Cross-platform env support: `cross-env`
 - API configuration: `@nestjs/config` + `dotenv` loader
 
@@ -14,27 +12,23 @@ This repository includes Vue development tooling for the UI and automatic enviro
 
 These checks ensure tooling stays off outside local development:
 
-- UI Vite plugin is enabled only if `process.env['NODE_ENV'] === 'development'`
-- API `NODE_ENV` controls `.env` file selection (`.env.development`, `.env.production`, etc.)
+- Web app: `pnpm --filter @frollz2/web dev` runs `next dev` on port 3001
+- API: `NODE_ENV` controls `.env` file selection (`.env.development`, `.env.production`, etc.)
 
 The `dev` scripts already set `NODE_ENV=development`:
 
 - root: `pnpm dev`
 - API: `pnpm --filter @frollz2/api dev`
-- UI: `pnpm --filter @frollz2/ui dev`
+- Web: `pnpm --filter @frollz2/web dev`
 
-## How To Use Vue Devtools
+## How To Use Web Devtools
 
-### Option 1: Built-in Vite plugin (recommended in this repo)
+1. Start the web app:
+   - `pnpm --filter @frollz2/web dev`
+2. Open `http://localhost:3001` in your browser.
+3. Use the browser's React Developer Tools extension or the Next.js dev overlay for component and runtime diagnostics.
 
-1. Start the UI:
-   - `pnpm --filter @frollz2/ui dev`
-2. Open the app in your browser.
-3. Use the Vue Devtools UI provided by the plugin.
-
-### Option 2: Browser extension (still supported)
-
-You can also install and use the Vue browser extension. The repo configuration does not block extension usage.
+The web app rewrites `/api` requests to the API service through `apps/web/next.config.ts`.
 
 ## API Environment Loading
 
@@ -49,14 +43,14 @@ You can also install and use the Vue browser extension. The repo configuration d
 ### Verify tooling is active in development
 
 1. Run `pnpm dev`.
-2. Confirm UI devtools is available in the frontend dev session.
+2. Confirm the web app is available at `http://localhost:3001`.
 3. Confirm API startup logs show loaded env files.
 
 ### Verify tooling is off in production mode
 
 1. Start API with `NODE_ENV=production`.
 2. Confirm production env files are used (`.env.production*` if present).
-3. Build/preview UI in non-development mode and confirm no devtools plugin behavior.
+3. Build/start the web app in production mode and confirm development-only overlays are absent.
 
 ## Security Note
 

@@ -43,17 +43,22 @@ services:
       timeout: 5s
       retries: 10
 
-  ui:
+  web:
     build:
       context: .
-      dockerfile: apps/ui/Dockerfile
+      dockerfile: apps/web/Dockerfile
     restart: unless-stopped
-    user: "101:101"
+    user: "1000:1000"
     depends_on:
       api:
         condition: service_healthy
+    environment:
+      NODE_ENV: production
+      API_URL: http://api:3000
+      NEXT_PUBLIC_API_BASE_URL: /api/v1
+      PORT: 3001
     healthcheck:
-      test: ["CMD-SHELL", "wget --spider -q http://127.0.0.1:8080 || exit 1"]
+      test: ["CMD-SHELL", "wget --spider -q http://127.0.0.1:3001 || exit 1"]
       interval: 15s
       timeout: 5s
       retries: 10
@@ -65,7 +70,7 @@ services:
     depends_on:
       api:
         condition: service_healthy
-      ui:
+      web:
         condition: service_healthy
     ports:
       - "8180:8080"

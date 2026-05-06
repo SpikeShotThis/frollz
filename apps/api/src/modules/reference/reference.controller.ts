@@ -1,16 +1,18 @@
-import { Body, Controller, Get, Inject, Post, Query } from '@nestjs/common';
+import { Body, Controller, Get, Headers, Inject, Post, Query } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { listReferenceValuesQuerySchema, upsertReferenceValuesRequestSchema } from '@frollz2/schema';
 import { ZodSchemaPipe } from '../../common/pipes/zod-schema.pipe.js';
 import { CurrentUser } from '../auth/current-user.decorator.js';
 import type { AuthenticatedUser } from '../auth/auth.types.js';
+import { IdempotencyService } from '../../common/services/idempotency.service.js';
 import { ReferenceService } from './reference.service.js';
 
 @ApiTags('reference')
 @Controller('reference')
 export class ReferenceController {
   constructor(
-    @Inject(ReferenceService) private readonly referenceService: ReferenceService
+    @Inject(ReferenceService) private readonly referenceService: ReferenceService,
+    @Inject(IdempotencyService) private readonly idempotencyService: IdempotencyService
   ) { }
 
   @Get()
@@ -91,10 +93,19 @@ export class ReferenceController {
   @ApiResponse({ status: 201, description: 'Reference values upserted' })
   async upsertBatch(
     @CurrentUser() user: AuthenticatedUser,
+    @Headers('idempotency-key') idempotencyKey: string | undefined,
     @Body(new ZodSchemaPipe(upsertReferenceValuesRequestSchema)) body: typeof upsertReferenceValuesRequestSchema['_output']
   ) {
-    await this.referenceService.upsertReferenceValues(user.userId, body.items);
-    return null;
+    return this.idempotencyService.execute({
+      userId: user.userId,
+      key: idempotencyKey,
+      scope: 'reference.values.upsert-batch',
+      requestPayload: body,
+      handler: async () => {
+        await this.referenceService.upsertReferenceValues(user.userId, body.items);
+        return null;
+      }
+    });
   }
 
 }

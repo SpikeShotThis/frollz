@@ -5,17 +5,17 @@ yarn-debug.log*
 yarn-error.log*
 
 # ── Build output ──────────────────────────────────────────────────────────────
-frollz-api/dist/
-frollz-ui/dist/
+apps/api/dist/
+apps/web/.next/
 
 # ── SQLite development database ───────────────────────────────────────────────
-frollz-api/dev.db
+apps/api/dev.db
 
 # ── TypeScript ────────────────────────────────────────────────────────────────
 *.tsbuildinfo
 # Prevent tsc composite-mode from committing emitted files into src/
-frollz-ui/src/**/*.js
-frollz-ui/src/**/*.d.ts
+apps/web/**/*.js
+apps/web/**/*.d.ts
 
 # ── Environment variables ─────────────────────────────────────────────────────
 .env
@@ -38,8 +38,8 @@ Thumbs.db
 
 # ── Claude Code — commit skills + agents, ignore everything else ──
 .claude/settings.local.json
-frollz-api/coverage
-frollz-ui/coverage
+apps/api/coverage
+apps/web/coverage
 **/*/*.sqlite.json
 **/frollz-api/dev.db
 .turbo/**
@@ -68,10 +68,6 @@ trace-mobile-film.json
 # -- ignore java script files, except for the eslint config
 **/*.js
 !packages/eslint-config/eslint.config.js
-apps/ui/.quasar
-
-# -- Vue Router auto-generated types ---
-apps/ui/src/typed-router.d.ts
-apps/ui/test-results/
-
 apps/api/src/infrastructure/migrations/.snapshot-memory.json
+apps/web/test-results/
+apps/web/tsconfig.tsbuildinfo

@@ -71,9 +71,16 @@ export class DevicesController {
   mount(
     @CurrentUser() user: AuthenticatedUser,
     @Param('id', ParseIntPipe) id: number,
+    @Headers('idempotency-key') idempotencyKey: string | undefined,
     @Body(new ZodSchemaPipe(createDeviceMountRequestSchema)) body: typeof createDeviceMountRequestSchema['_output']
   ) {
-    return this.devicesService.mount(user.userId, id, body);
+    return this.idempotencyService.execute({
+      userId: user.userId,
+      key: idempotencyKey,
+      scope: 'devices.mount',
+      requestPayload: { cameraDeviceId: id, ...body },
+      handler: () => this.devicesService.mount(user.userId, id, body)
+    });
   }
 
   @Post(':id/unmount')
@@ -82,9 +89,16 @@ export class DevicesController {
   unmount(
     @CurrentUser() user: AuthenticatedUser,
     @Param('id', ParseIntPipe) id: number,
+    @Headers('idempotency-key') idempotencyKey: string | undefined,
     @Body(new ZodSchemaPipe(unmountDeviceRequestSchema)) body: typeof unmountDeviceRequestSchema['_output']
   ) {
-    return this.devicesService.unmount(user.userId, id, body);
+    return this.idempotencyService.execute({
+      userId: user.userId,
+      key: idempotencyKey,
+      scope: 'devices.unmount',
+      requestPayload: { cameraDeviceId: id, ...body },
+      handler: () => this.devicesService.unmount(user.userId, id, body)
+    });
   }
 
   @Patch(':id')
@@ -93,17 +107,35 @@ export class DevicesController {
   update(
     @CurrentUser() user: AuthenticatedUser,
     @Param('id', ParseIntPipe) id: number,
+    @Headers('idempotency-key') idempotencyKey: string | undefined,
     @Body(new ZodSchemaPipe(updateFilmDeviceRequestSchema)) body: typeof updateFilmDeviceRequestSchema['_output']
   ) {
-    return this.devicesService.update(user.userId, id, body);
+    return this.idempotencyService.execute({
+      userId: user.userId,
+      key: idempotencyKey,
+      scope: 'devices.update',
+      requestPayload: { id, body },
+      handler: () => this.devicesService.update(user.userId, id, body)
+    });
   }
 
   @Delete(':id')
   @ApiOperation({ summary: 'Delete a device' })
   @ApiResponse({ status: 200, description: 'Device deleted' })
-  async delete(@CurrentUser() user: AuthenticatedUser, @Param('id', ParseIntPipe) id: number) {
-    await this.devicesService.delete(user.userId, id);
-
-    return null;
+  delete(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('id', ParseIntPipe) id: number,
+    @Headers('idempotency-key') idempotencyKey: string | undefined
+  ) {
+    return this.idempotencyService.execute({
+      userId: user.userId,
+      key: idempotencyKey,
+      scope: 'devices.delete',
+      requestPayload: { id },
+      handler: async () => {
+        await this.devicesService.delete(user.userId, id);
+        return null;
+      }
+    });
   }
 }

@@ -5,14 +5,14 @@ set -euo pipefail
 
 ROOT="$(git rev-parse --show-toplevel)"
 
-echo "▶ pre-commit: UI lint"
-(cd "$ROOT/apps/ui" && pnpm lint)
+echo "▶ pre-commit: web lint"
+(cd "$ROOT/apps/web" && pnpm lint)
 
-echo "▶ pre-commit: UI check-types"
-(cd "$ROOT/apps/ui" && pnpm check-types)
+echo "▶ pre-commit: web check-types"
+(cd "$ROOT/apps/web" && pnpm check-types)
 
-echo "▶ pre-commit: UI tests"
-(cd "$ROOT/apps/ui" && pnpm test -- --run)
+echo "▶ pre-commit: web BDD tests"
+(cd "$ROOT/apps/web" && pnpm test:bdd)
 
 echo "▶ pre-commit: API lint"
 (cd "$ROOT/apps/api" && pnpm lint)

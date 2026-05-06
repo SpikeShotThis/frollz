@@ -17,7 +17,8 @@ All state changes occur via Film or Frame journey events.
 * Package manager: `pnpm` (never npm or yarn)
 * Monorepo: Turborepo
 * Backend: NestJS + Fastify + MikroORM
-* Frontend: Vue 3 + Quasar (via Quasar CLI)
+* Web: Next.js + React
+* Mobile: Expo + React Native
 * Validation/contracts: Zod (`packages/schema`)
 
 Use existing scripts from root `package.json` and app-level `package.json`s.
@@ -53,7 +54,8 @@ Almost all features require coordinated changes across:
 
 1. `packages/schema`
 2. `apps/api`
-3. `apps/ui`
+3. `apps/web`
+4. `apps/mobile`
 
 Never implement features in only one layer.
 
@@ -93,10 +95,10 @@ All write endpoints:
 
 ---
 
-## UI Constraints
+## Web Constraints
 
-* Built with Quasar
-* Styling via SCSS tokens (`app.scss`, `_tokens.scss`)
+* Built with Next.js App Router and React
+* Styling via `apps/web/app/globals.css` and `@frollz2/design-tokens`
 * Avoid ad-hoc styling
 * Forms and interactions must follow schema definitions
 
@@ -110,8 +112,8 @@ All write endpoints:
 * Do not bypass service layer business logic
 * Do not perform partial state updates (events must be transactional)
 * Do not assume a specific database (runtime decides)
-* Do not hardcode UI options that come from reference data or schema
-* Do not implement features in only one layer (schema/api/ui must stay aligned)
+* Do not hardcode web options that come from reference data or schema
+* Do not implement features in only one layer (schema/api/web must stay aligned)
 
 ---
 
@@ -119,5 +121,5 @@ All write endpoints:
 
 * Domain logic → `docs/domain.md`
 * API flows → `docs/api.md`
-* UI behavior → `docs/ui.md`
+* Web behavior → `docs/ui.md`
 * DB / infra → `docs/infra.md`

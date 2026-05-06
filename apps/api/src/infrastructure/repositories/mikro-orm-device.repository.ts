@@ -15,6 +15,33 @@ import {
   UserEntity
 } from '../entities/index.js';
 import { mapDeviceMountEntity, mapFilmHolderSlotEntity, mapFilmDeviceEntity } from '../mappers/index.js';
+import { nowIso } from '../../common/utils/time.js';
+
+const DEVICE_DETAIL_POPULATE = [
+  'user',
+  'deviceType',
+  'filmFormat',
+  'camera',
+  'interchangeableBack',
+  'filmHolder',
+  'filmHolder.holderType',
+  'filmHolder.slots',
+  'filmHolder.slots.slotState',
+  'filmHolder.slots.loadedFilm'
+] as const;
+
+const DEVICE_EDIT_POPULATE = [
+  'camera',
+  'interchangeableBack',
+  'filmHolder',
+  'filmHolder.holderType',
+  'filmHolder.slots',
+  'filmHolder.slots.slotState',
+  'filmHolder.slots.loadedFilm'
+] as const;
+
+const HOLDER_SLOT_POPULATE = ['user', 'filmHolder', 'slotState', 'loadedFilm'] as const;
+const DEVICE_MOUNT_POPULATE = ['user', 'cameraDevice', 'mountedDevice'] as const;
 
 @Injectable()
 export class MikroOrmDeviceRepository extends DeviceRepository {
@@ -27,18 +54,7 @@ export class MikroOrmDeviceRepository extends DeviceRepository {
       FilmDeviceEntity,
       { user: userId },
       {
-        populate: [
-          'user',
-          'deviceType',
-          'filmFormat',
-          'camera',
-          'interchangeableBack',
-          'filmHolder',
-          'filmHolder.holderType',
-          'filmHolder.slots',
-          'filmHolder.slots.slotState',
-          'filmHolder.slots.loadedFilm'
-        ],
+        populate: DEVICE_DETAIL_POPULATE,
         orderBy: { id: 'asc' }
       }
     );
@@ -51,18 +67,7 @@ export class MikroOrmDeviceRepository extends DeviceRepository {
       FilmDeviceEntity,
       { id: deviceId, user: userId },
       {
-        populate: [
-          'user',
-          'deviceType',
-          'filmFormat',
-          'camera',
-          'interchangeableBack',
-          'filmHolder',
-          'filmHolder.holderType',
-          'filmHolder.slots',
-          'filmHolder.slots.slotState',
-          'filmHolder.slots.loadedFilm'
-        ]
+        populate: DEVICE_DETAIL_POPULATE
       }
     );
 
@@ -127,18 +132,7 @@ export class MikroOrmDeviceRepository extends DeviceRepository {
         FilmDeviceEntity,
         { id: base.id, user: userId },
         {
-          populate: [
-            'user',
-            'deviceType',
-            'filmFormat',
-            'camera',
-            'interchangeableBack',
-            'filmHolder',
-            'filmHolder.holderType',
-            'filmHolder.slots',
-            'filmHolder.slots.slotState',
-            'filmHolder.slots.loadedFilm'
-          ]
+          populate: DEVICE_DETAIL_POPULATE
         }
       );
 
@@ -154,7 +148,7 @@ export class MikroOrmDeviceRepository extends DeviceRepository {
     const device = await this.entityManager.findOne(
       FilmDeviceEntity,
       { id: deviceId, user: userId },
-      { populate: ['camera', 'interchangeableBack', 'filmHolder', 'filmHolder.holderType', 'filmHolder.slots', 'filmHolder.slots.slotState', 'filmHolder.slots.loadedFilm'] }
+      { populate: DEVICE_EDIT_POPULATE }
     );
 
     if (!device) {
@@ -224,18 +218,7 @@ export class MikroOrmDeviceRepository extends DeviceRepository {
       FilmDeviceEntity,
       { id: deviceId, user: userId },
       {
-        populate: [
-          'user',
-          'deviceType',
-          'filmFormat',
-          'camera',
-          'interchangeableBack',
-          'filmHolder',
-          'filmHolder.holderType',
-          'filmHolder.slots',
-          'filmHolder.slots.slotState',
-          'filmHolder.slots.loadedFilm'
-        ]
+        populate: DEVICE_DETAIL_POPULATE
       }
     );
 
@@ -272,7 +255,7 @@ export class MikroOrmDeviceRepository extends DeviceRepository {
     const slots = await this.entityManager.find(
       FilmHolderSlotEntity,
       { user: userId, filmHolder: { filmDevice: filmDeviceId } },
-      { populate: ['user', 'filmHolder', 'slotState', 'loadedFilm'], orderBy: { sideNumber: 'asc', createdAt: 'asc', id: 'asc' } }
+      { populate: HOLDER_SLOT_POPULATE, orderBy: { sideNumber: 'asc', createdAt: 'asc', id: 'asc' } }
     );
 
     return slots.map(mapFilmHolderSlotEntity);
@@ -282,7 +265,7 @@ export class MikroOrmDeviceRepository extends DeviceRepository {
     const slot = await this.entityManager.findOne(
       FilmHolderSlotEntity,
       { user: userId, filmHolder: { filmDevice: filmDeviceId }, sideNumber },
-      { populate: ['user', 'filmHolder', 'slotState', 'loadedFilm'], orderBy: { createdAt: 'desc', id: 'desc' } }
+      { populate: HOLDER_SLOT_POPULATE, orderBy: { createdAt: 'desc', id: 'desc' } }
     );
 
     return slot ? mapFilmHolderSlotEntity(slot) : null;
@@ -292,7 +275,7 @@ export class MikroOrmDeviceRepository extends DeviceRepository {
     const mounts = await this.entityManager.find(
       DeviceMountEntity,
       { user: userId, cameraDevice: cameraDeviceId },
-      { populate: ['user', 'cameraDevice', 'mountedDevice'], orderBy: { mountedAt: 'desc', id: 'desc' } }
+      { populate: DEVICE_MOUNT_POPULATE, orderBy: { mountedAt: 'desc', id: 'desc' } }
     );
 
     return mounts.map(mapDeviceMountEntity);
@@ -311,7 +294,7 @@ export class MikroOrmDeviceRepository extends DeviceRepository {
       user,
       cameraDevice,
       mountedDevice,
-      mountedAt: input.mountedAt ?? new Date().toISOString(),
+      mountedAt: input.mountedAt ?? nowIso(),
       unmountedAt: null
     });
 
@@ -321,7 +304,7 @@ export class MikroOrmDeviceRepository extends DeviceRepository {
     const persisted = await this.entityManager.findOneOrFail(
       DeviceMountEntity,
       { id: mount.id },
-      { populate: ['user', 'cameraDevice', 'mountedDevice'] }
+      { populate: DEVICE_MOUNT_POPULATE }
     );
     return mapDeviceMountEntity(persisted);
   }
@@ -339,14 +322,14 @@ export class MikroOrmDeviceRepository extends DeviceRepository {
         mountedDevice: input.mountedDeviceId,
         unmountedAt: null
       },
-      { populate: ['user', 'cameraDevice', 'mountedDevice'], orderBy: { mountedAt: 'desc', id: 'desc' } }
+      { populate: DEVICE_MOUNT_POPULATE, orderBy: { mountedAt: 'desc', id: 'desc' } }
     );
 
     if (!activeMount) {
       return null;
     }
 
-    activeMount.unmountedAt = input.unmountedAt ?? new Date().toISOString();
+    activeMount.unmountedAt = input.unmountedAt ?? nowIso();
     this.entityManager.persist(activeMount);
     await this.entityManager.flush();
 
@@ -357,7 +340,7 @@ export class MikroOrmDeviceRepository extends DeviceRepository {
     const mount = await this.entityManager.findOne(
       DeviceMountEntity,
       { user: userId, cameraDevice: cameraDeviceId, unmountedAt: null },
-      { populate: ['user', 'cameraDevice', 'mountedDevice'], orderBy: { mountedAt: 'desc', id: 'desc' } }
+      { populate: DEVICE_MOUNT_POPULATE, orderBy: { mountedAt: 'desc', id: 'desc' } }
     );
     return mount ? mapDeviceMountEntity(mount) : null;
   }
@@ -366,7 +349,7 @@ export class MikroOrmDeviceRepository extends DeviceRepository {
     const mount = await this.entityManager.findOne(
       DeviceMountEntity,
       { user: userId, mountedDevice: mountedDeviceId, unmountedAt: null },
-      { populate: ['user', 'cameraDevice', 'mountedDevice'], orderBy: { mountedAt: 'desc', id: 'desc' } }
+      { populate: DEVICE_MOUNT_POPULATE, orderBy: { mountedAt: 'desc', id: 'desc' } }
     );
     return mount ? mapDeviceMountEntity(mount) : null;
   }

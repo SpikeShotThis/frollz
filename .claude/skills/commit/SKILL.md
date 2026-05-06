@@ -27,19 +27,19 @@ Map changed files to scope:
 | Files changed | Scope |
 |---|---|
 | `packages/shared/` | `shared` |
-| `apps/frollz-api/src/domain/film/` or `modules/film/` or `infrastructure/persistence/film/` | `film` |
-| `apps/frollz-api/src/domain/emulsion/` or similar | `emulsion` |
-| `apps/frollz-api/src/domain/camera/` or similar | `camera` |
-| `apps/frollz-api/src/domain/transition/` or similar | `transition` |
-| `apps/frollz-ui/src/services/api-client.ts` | `api-client` |
-| `apps/frollz-ui/src/` (other) | `ui` |
-| `apps/frollz-api/migrations/` | `db` |
-| `apps/frollz-api/src/app.module.ts` | `api` |
+| `apps/api/src/domain/film/` or `modules/film/` or `infrastructure/persistence/film/` | `film` |
+| `apps/api/src/domain/emulsion/` or similar | `emulsion` |
+| `apps/api/src/domain/camera/` or similar | `camera` |
+| `apps/api/src/domain/transition/` or similar | `transition` |
+| `packages/api-client/` | `api-client` |
+| `apps/web/src/` or `apps/web/app/` | `web` |
+| `apps/api/src/infrastructure/migrations/` | `db` |
+| `apps/api/src/app.module.ts` | `api` |
 | `.github/` or CI files | `ci` |
 | `turbo.json`, `pnpm-workspace.yaml`, config files | `tooling` |
 | `docs/` | `docs` |
 
-If multiple unrelated scopes are touched, consider whether this should be split into multiple commits. If they are tightly related (e.g., shared + api + ui for one feature), use the primary domain scope.
+If multiple unrelated scopes are touched, consider whether this should be split into multiple commits. If they are tightly related (e.g., shared + api + web for one feature), use the primary domain scope.
 
 ## Step 3 — Determine Type
 

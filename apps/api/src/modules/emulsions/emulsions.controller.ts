@@ -52,16 +52,36 @@ export class EmulsionsController {
   update(
     @CurrentUser() user: AuthenticatedUser,
     @Param('id', ParseIntPipe) id: number,
+    @Headers('idempotency-key') idempotencyKey: string | undefined,
     @Body(new ZodSchemaPipe(updateEmulsionRequestSchema)) body: typeof updateEmulsionRequestSchema['_output']
   ) {
-    return this.emulsionsService.update(user.userId, id, body);
+    return this.idempotencyService.execute({
+      userId: user.userId,
+      key: idempotencyKey,
+      scope: 'emulsions.update',
+      requestPayload: { id, body },
+      handler: () => this.emulsionsService.update(user.userId, id, body)
+    });
   }
 
   @Delete(':id')
   @HttpCode(204)
   @ApiOperation({ summary: 'Delete an emulsion' })
   @ApiResponse({ status: 204, description: 'Emulsion deleted' })
-  async delete(@Param('id', ParseIntPipe) id: number): Promise<void> {
-    await this.emulsionsService.delete(id);
+  delete(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('id', ParseIntPipe) id: number,
+    @Headers('idempotency-key') idempotencyKey: string | undefined
+  ) {
+    return this.idempotencyService.execute({
+      userId: user.userId,
+      key: idempotencyKey,
+      scope: 'emulsions.delete',
+      requestPayload: { id },
+      handler: async () => {
+        await this.emulsionsService.delete(id);
+        return null;
+      }
+    });
   }
 }

@@ -6,7 +6,7 @@ import type { FrameSizeCode } from './film.js';
 // large-format sheets, and Instax instant packs.
 export const filmTypeCodeSchema = z.enum(['135', '120', 'sheet', 'instax']);
 // Physical packaging channel used to sell and load stock.
-// This drives both UI labels and business rules like "spools cannot be loaded directly."
+// This drives both client labels and business rules like "spools cannot be loaded directly."
 export const distributionTypeCodeSchema = z.enum(['roll', 'sheet_box', 'instant_pack', 'spool']);
 
 // Runtime type for supported film families.
@@ -47,7 +47,7 @@ export type StockVariantDefinition = {
   supportsDirectLoad: boolean;
 };
 
-// Full definition of a format entry that powers UI selection and frame-count math.
+// Full definition of a format entry that powers client selection and frame-count math.
 // This is the source-of-truth for each format's valid frame sizes and stock variants.
 export type FilmFormatDefinition = {
   filmType: FilmTypeCode;
@@ -63,7 +63,7 @@ const distributionTypeLabels: Readonly<Record<DistributionTypeCode, string>> = {
   spool: 'Spool'
 };
 
-// Exported lookup list used by API/UI when showing package/distribution choices.
+// Exported lookup list used by API/web clients when showing package/distribution choices.
 export const distributionTypeDefinitions: readonly DistributionTypeDefinition[] = distributionTypeCodeSchema.options.map((code) => ({
   code,
   label: distributionTypeLabels[code]
@@ -179,7 +179,7 @@ const sheetFormatDefinitions = Object.fromEntries(
   ])
 ) as Readonly<Record<(typeof SHEET_FORMAT_CODES)[number], FilmFormatDefinition>>;
 
-// Instax product families with UI format code, internal frame-size code, and user-facing name.
+// Instax product families with client format code, internal frame-size code, and user-facing name.
 const INSTAX_FORMATS = [
   { formatCode: 'InstaxMini', frameSizeCode: 'instax_mini', name: 'Instax Mini' },
   { formatCode: 'InstaxWide', frameSizeCode: 'instax_wide', name: 'Instax Wide' },
@@ -249,7 +249,7 @@ export function getStockVariantDefinitionsForFormatCode(formatCode: string): rea
   return getFilmFormatDefinition(formatCode)?.stockVariants ?? [];
 }
 
-// Compatibility alias for existing API/UI paths.
+// Compatibility alias for existing API/web paths.
 export function getPackageTypeDefinitionsForFormatCode(formatCode: string): readonly StockVariantDefinition[] {
   return getStockVariantDefinitionsForFormatCode(formatCode);
 }

@@ -34,15 +34,15 @@ node_modules/
 *.d.ts
 *.tsbuildinfo
 
-# (Exception: allow schema dist if needed by UI alias)
+# (Exception: allow schema dist if needed by web aliases)
 !packages/schema/dist/
 
 # =========================
-# Quasar / Vite build artifacts
+# Next.js build artifacts
 # =========================
-apps/ui/.quasar/
-apps/ui/dist/
-apps/ui/node_modules/
+apps/web/.next/
+apps/web/node_modules/
+apps/web/test-results/
 
 # =========================
 # Playwright artifacts

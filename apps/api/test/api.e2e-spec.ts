@@ -724,21 +724,23 @@ describe('API integration', () => {
       dateAcquired: null
     };
 
-    const first = await harness.app.inject({
-      method: 'POST',
-      url: '/api/v1/devices',
-      headers: { ...authHeaders, 'content-type': 'application/json', 'idempotency-key': idempotencyKey },
-      payload
-    });
+    const [first, second] = await Promise.all([
+      harness.app.inject({
+        method: 'POST',
+        url: '/api/v1/devices',
+        headers: { ...authHeaders, 'content-type': 'application/json', 'idempotency-key': idempotencyKey },
+        payload
+      }),
+      harness.app.inject({
+        method: 'POST',
+        url: '/api/v1/devices',
+        headers: { ...authHeaders, 'content-type': 'application/json', 'idempotency-key': idempotencyKey },
+        payload
+      })
+    ]);
     expect(first.statusCode).toBe(201);
     const firstDevice = filmDeviceSchema.parse(first.json());
 
-    const second = await harness.app.inject({
-      method: 'POST',
-      url: '/api/v1/devices',
-      headers: { ...authHeaders, 'content-type': 'application/json', 'idempotency-key': idempotencyKey },
-      payload
-    });
     expect(second.statusCode).toBe(201);
     const secondDevice = filmDeviceSchema.parse(second.json());
 

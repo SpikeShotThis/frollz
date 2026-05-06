@@ -44,6 +44,26 @@ import { FilmLabRepository } from '../../infrastructure/repositories/film-lab.re
 import { FilmSupplierRepository } from '../../infrastructure/repositories/film-supplier.repository.js';
 
 type NormalizedLoadedFrameEventData = NormalizedLoadedEventData & { filmFrameId: number };
+type LoadedDeviceTypeCode = 'camera' | 'interchangeable_back' | 'film_holder';
+type LoadedDeviceContext = {
+  deviceId: number;
+  slotSideNumber: number | null;
+  deviceTypeCode: LoadedDeviceTypeCode;
+  cameraCanUnload: boolean | null;
+};
+
+const LOAD_TARGET_DEVICE_POPULATE = [
+  'user',
+  'deviceType',
+  'filmFormat',
+  'camera',
+  'interchangeableBack',
+  'filmHolder',
+  'filmHolder.holderType',
+  'filmHolder.slots',
+  'filmHolder.slots.slotState',
+  'filmHolder.slots.loadedFilm'
+] as const;
 
 @Injectable()
 export class FilmService {
@@ -436,100 +456,10 @@ export class FilmService {
       throw new DomainError('CONFLICT', 'This film has already been loaded and cannot be reloaded');
     }
 
-    const device = await entityManager.findOne(
-      FilmDeviceEntity,
-      { id: loadTarget.deviceId, user: userId },
-      {
-        populate: [
-          'user',
-          'deviceType',
-          'filmFormat',
-          'camera',
-          'interchangeableBack',
-          'filmHolder',
-          'filmHolder.holderType',
-          'filmHolder.slots',
-          'filmHolder.slots.slotState',
-          'filmHolder.slots.loadedFilm'
-        ]
-      }
-    );
-
-    if (!device) {
-      throw new DomainError('NOT_FOUND', 'Device not found');
-    }
-
-    if (device.filmFormat.id !== film.filmFormat.id) {
-      throw new DomainError('DOMAIN_ERROR', 'Device format does not match the film format');
-    }
-
-    if (device.camera) {
-      if (loadTarget.loadTargetType === 'film_holder_slot') {
-        throw new DomainError('DOMAIN_ERROR', 'Use camera_direct load target for direct camera loads');
-      }
-      if (device.camera.loadMode !== 'direct') {
-        throw new DomainError('DOMAIN_ERROR', 'This camera cannot be loaded directly');
-      }
-      const occupiedFilmId = await this.filmRepository.findOccupiedFilmForDeviceId(userId, device.id);
-      if (occupiedFilmId !== null) {
-        throw new DomainError('CONFLICT', 'Device already has an active loaded film');
-      }
-
-      if (!device.frameSize) {
-        throw new DomainError('DOMAIN_ERROR', 'Device is missing a frame size');
-      }
-      await this.ensureFramesCreated(entityManager, user, film, device.frameSize);
-      film.currentDevice = device;
-      return eventData;
-    }
-
-    if (device.interchangeableBack) {
-      if (loadTarget.loadTargetType === 'film_holder_slot') {
-        throw new DomainError('DOMAIN_ERROR', 'Use interchangeable_back load target for back loads');
-      }
-      const occupiedFilmId = await this.filmRepository.findOccupiedFilmForDeviceId(userId, device.id);
-      if (occupiedFilmId !== null) {
-        throw new DomainError('CONFLICT', 'Device already has an active loaded film');
-      }
-
-      if (!device.frameSize) {
-        throw new DomainError('DOMAIN_ERROR', 'Device is missing a frame size');
-      }
-      await this.ensureFramesCreated(entityManager, user, film, device.frameSize);
-      film.currentDevice = device;
-      return eventData;
-    }
-
-    if (!device.filmHolder) {
-      throw new DomainError('DOMAIN_ERROR', 'Loaded events require a compatible device');
-    }
-
-    if (loadTarget.loadTargetType !== 'film_holder_slot' || loadTarget.slotSideNumber === null) {
-      throw new DomainError('DOMAIN_ERROR', 'A holder load requires film_holder_slot target with slotNumber');
-    }
-    const slotSideNumber = loadTarget.slotSideNumber;
-    if (slotSideNumber < 1 || slotSideNumber > device.filmHolder.slotCount) {
-      throw new DomainError('DOMAIN_ERROR', 'That holder slot does not exist for this holder');
-    }
-
-    const latestSlot = await this.findLatestSlot(entityManager, userId, device.id, slotSideNumber);
-    if (latestSlot && latestSlot.slotStateCode !== 'removed') {
-      throw new DomainError('CONFLICT', 'That holder slot is already occupied');
-    }
-
-    const loadedSlotState = await entityManager.findOneOrFail(SlotStateEntity, { code: 'loaded' });
-    const slot = entityManager.create(FilmHolderSlotEntity, {
-      user,
-      filmHolder: device.filmHolder,
-      sideNumber: slotSideNumber,
-      slotState: loadedSlotState,
-      slotStateCode: loadedSlotState.code,
-      loadedFilm: film,
-      createdAt: nowIso()
+    await this.applyLoadedTargetSideEffects(entityManager, userId, film, loadTarget, user, {
+      createFramesForDirectDevice: true,
+      assignCurrentDevice: true
     });
-
-    entityManager.persist(slot);
-    film.currentDevice = device;
     return eventData;
   }
 
@@ -557,60 +487,120 @@ export class FilmService {
       throw new DomainError('CONFLICT', 'That frame has already been loaded and cannot be reused');
     }
 
+    await this.applyLoadedTargetSideEffects(entityManager, userId, film, loadTarget, user, {
+      createFramesForDirectDevice: false,
+      assignCurrentDevice: false
+    });
+    return eventData;
+  }
+
+  private async applyLoadedTargetSideEffects(
+    entityManager: EntityManager,
+    userId: number,
+    film: FilmEntity,
+    loadTarget: NormalizedLoadedEventData,
+    user: UserEntity,
+    options: { createFramesForDirectDevice: boolean; assignCurrentDevice: boolean }
+  ): Promise<void> {
+    const device = await this.findLoadTargetDevice(entityManager, userId, loadTarget.deviceId);
+    this.assertDeviceMatchesFilm(device, film);
+
+    if (device.camera) {
+      await this.assertDirectLoadTargetAvailable(userId, device, loadTarget, 'camera_direct');
+      if (device.camera.loadMode !== 'direct') {
+        throw new DomainError('DOMAIN_ERROR', 'This camera cannot be loaded directly');
+      }
+      await this.ensureFramesForDirectLoad(entityManager, user, film, device, options.createFramesForDirectDevice);
+      this.assignCurrentDeviceIfNeeded(film, device, options.assignCurrentDevice);
+      return;
+    }
+
+    if (device.interchangeableBack) {
+      await this.assertDirectLoadTargetAvailable(userId, device, loadTarget, 'interchangeable_back');
+      await this.ensureFramesForDirectLoad(entityManager, user, film, device, options.createFramesForDirectDevice);
+      this.assignCurrentDeviceIfNeeded(film, device, options.assignCurrentDevice);
+      return;
+    }
+
+    if (!device.filmHolder) {
+      throw new DomainError('DOMAIN_ERROR', 'Loaded events require a compatible device');
+    }
+
+    await this.createLoadedHolderSlot(entityManager, userId, user, film, device, loadTarget);
+    this.assignCurrentDeviceIfNeeded(film, device, options.assignCurrentDevice);
+  }
+
+  private async findLoadTargetDevice(entityManager: EntityManager, userId: number, deviceId: number): Promise<FilmDeviceEntity> {
     const device = await entityManager.findOne(
       FilmDeviceEntity,
-      { id: loadTarget.deviceId, user: userId },
-      {
-        populate: [
-          'user',
-          'deviceType',
-          'filmFormat',
-          'camera',
-          'interchangeableBack',
-          'filmHolder',
-          'filmHolder.holderType',
-          'filmHolder.slots',
-          'filmHolder.slots.slotState',
-          'filmHolder.slots.loadedFilm'
-        ]
-      }
+      { id: deviceId, user: userId },
+      { populate: LOAD_TARGET_DEVICE_POPULATE }
     );
 
     if (!device) {
       throw new DomainError('NOT_FOUND', 'Device not found');
     }
 
+    return device;
+  }
+
+  private assertDeviceMatchesFilm(device: FilmDeviceEntity, film: FilmEntity): void {
     if (device.filmFormat.id !== film.filmFormat.id) {
       throw new DomainError('DOMAIN_ERROR', 'Device format does not match the film format');
     }
+  }
 
-    if (device.camera) {
-      if (loadTarget.loadTargetType === 'film_holder_slot') {
-        throw new DomainError('DOMAIN_ERROR', 'Use camera_direct load target for direct camera loads');
-      }
-      if (device.camera.loadMode !== 'direct') {
-        throw new DomainError('DOMAIN_ERROR', 'This camera cannot be loaded directly');
-      }
-      const occupiedFilmId = await this.filmRepository.findOccupiedFilmForDeviceId(userId, device.id);
-      if (occupiedFilmId !== null) {
-        throw new DomainError('CONFLICT', 'Device already has an active loaded film');
-      }
-
-      return eventData;
+  private async assertDirectLoadTargetAvailable(
+    userId: number,
+    device: FilmDeviceEntity,
+    loadTarget: NormalizedLoadedEventData,
+    expectedTargetType: 'camera_direct' | 'interchangeable_back'
+  ): Promise<void> {
+    if (loadTarget.loadTargetType !== expectedTargetType) {
+      const message = expectedTargetType === 'camera_direct'
+        ? 'Use camera_direct load target for direct camera loads'
+        : 'Use interchangeable_back load target for back loads';
+      throw new DomainError('DOMAIN_ERROR', message);
     }
 
-    if (device.interchangeableBack) {
-      if (loadTarget.loadTargetType === 'film_holder_slot') {
-        throw new DomainError('DOMAIN_ERROR', 'Use interchangeable_back load target for back loads');
-      }
-      const occupiedFilmId = await this.filmRepository.findOccupiedFilmForDeviceId(userId, device.id);
-      if (occupiedFilmId !== null) {
-        throw new DomainError('CONFLICT', 'Device already has an active loaded film');
-      }
+    const occupiedFilmId = await this.filmRepository.findOccupiedFilmForDeviceId(userId, device.id);
+    if (occupiedFilmId !== null) {
+      throw new DomainError('CONFLICT', 'Device already has an active loaded film');
+    }
+  }
 
-      return eventData;
+  private async ensureFramesForDirectLoad(
+    entityManager: EntityManager,
+    user: UserEntity,
+    film: FilmEntity,
+    device: FilmDeviceEntity,
+    shouldCreateFrames: boolean
+  ): Promise<void> {
+    if (!shouldCreateFrames) {
+      return;
     }
 
+    if (!device.frameSize) {
+      throw new DomainError('DOMAIN_ERROR', 'Device is missing a frame size');
+    }
+
+    await this.ensureFramesCreated(entityManager, user, film, device.frameSize);
+  }
+
+  private assignCurrentDeviceIfNeeded(film: FilmEntity, device: FilmDeviceEntity, shouldAssign: boolean): void {
+    if (shouldAssign) {
+      film.currentDevice = device;
+    }
+  }
+
+  private async createLoadedHolderSlot(
+    entityManager: EntityManager,
+    userId: number,
+    user: UserEntity,
+    film: FilmEntity,
+    device: FilmDeviceEntity,
+    loadTarget: NormalizedLoadedEventData
+  ): Promise<void> {
     if (!device.filmHolder) {
       throw new DomainError('DOMAIN_ERROR', 'Loaded events require a compatible device');
     }
@@ -618,6 +608,7 @@ export class FilmService {
     if (loadTarget.loadTargetType !== 'film_holder_slot' || loadTarget.slotSideNumber === null) {
       throw new DomainError('DOMAIN_ERROR', 'A holder load requires film_holder_slot target with slotNumber');
     }
+
     const slotSideNumber = loadTarget.slotSideNumber;
     if (slotSideNumber < 1 || slotSideNumber > device.filmHolder.slotCount) {
       throw new DomainError('DOMAIN_ERROR', 'That holder slot does not exist for this holder');
@@ -640,7 +631,6 @@ export class FilmService {
     });
 
     entityManager.persist(slot);
-    return eventData;
   }
 
   private async applyExposedEventSideEffects(
@@ -785,13 +775,7 @@ export class FilmService {
     entityManager: EntityManager,
     userId: number,
     latestEvent: FilmJourneyEventEntity | null
-  ):
-    Promise<{
-      deviceId: number;
-      slotSideNumber: number | null;
-      deviceTypeCode: 'camera' | 'interchangeable_back' | 'film_holder';
-      cameraCanUnload: boolean | null;
-    } | null> {
+  ): Promise<LoadedDeviceContext | null> {
     if (!latestEvent) {
       return null;
     }

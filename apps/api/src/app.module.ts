@@ -16,12 +16,17 @@ import { FilmSuppliersModule } from './modules/film-suppliers/film-suppliers.mod
 import { HealthController } from './presentation/controllers/health.controller.js';
 
 const conditionalModules = process.env['NODE_ENV'] === 'test' ? [TestModule] : [];
+const isDevelopment = process.env['NODE_ENV'] === 'development';
+const devThrottleEnabled = process.env['API_DEV_THROTTLE_ENABLED'] === 'true';
+const configuredDevLimit = Number.parseInt(process.env['API_DEV_THROTTLE_LIMIT'] ?? '1000', 10);
+const resolvedDevLimit = Number.isFinite(configuredDevLimit) && configuredDevLimit > 0 ? configuredDevLimit : 1000;
+const defaultThrottleLimit = isDevelopment && devThrottleEnabled ? resolvedDevLimit : 100;
 
 @Module({
   imports: [
     EnvModule,
     DatabaseModule,
-    ThrottlerModule.forRoot([{ ttl: 60_000, limit: 100, skipIf: () => process.env['NODE_ENV'] === 'test' }]),
+    ThrottlerModule.forRoot([{ ttl: 60_000, limit: defaultThrottleLimit, skipIf: () => process.env['NODE_ENV'] === 'test' }]),
     AuthModule,
     ReferenceModule,
     EmulsionsModule,

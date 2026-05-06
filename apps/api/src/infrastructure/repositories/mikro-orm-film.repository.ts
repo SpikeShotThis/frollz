@@ -5,6 +5,32 @@ import { FilmRepository } from './film.repository.js';
 import { FilmEntity, FilmFrameEntity, FilmJourneyEventEntity } from '../entities/index.js';
 import { mapFilmDetailEntity, mapFilmFrameEntity, mapFilmJourneyEventEntity, mapFilmSummaryEntity, parseDevelopmentCost, parseLoadedEventData, formatEmulsionName } from '../mappers/index.js';
 
+const FILM_DETAIL_POPULATE = [
+  'user',
+  'filmLot',
+  'filmLot.supplier',
+  'emulsion',
+  'emulsion.developmentProcess',
+  'emulsion.filmFormats',
+  'packageType',
+  'packageType.filmFormat',
+  'filmFormat',
+  'currentState'
+] as const;
+
+const FILM_EVENT_POPULATE = ['film', 'user', 'filmState'] as const;
+const FILM_FRAME_POPULATE = ['user', 'film', 'currentState'] as const;
+const DEVICE_LOAD_EVENT_POPULATE = [
+  'film',
+  'film.user',
+  'film.emulsion',
+  'film.emulsion.developmentProcess',
+  'film.packageType',
+  'film.filmFormat',
+  'filmState',
+  'user'
+] as const;
+
 function toStockLabel(film: FilmEntity): string | null {
   const formatCode = film.filmFormat.code;
 
@@ -60,7 +86,7 @@ export class MikroOrmFilmRepository extends FilmRepository {
       {
         orderBy: { id: 'asc' },
         limit: limit + 1,
-        populate: ['user', 'filmLot', 'filmLot.supplier', 'emulsion', 'emulsion.developmentProcess', 'emulsion.filmFormats', 'packageType', 'packageType.filmFormat', 'filmFormat', 'currentState']
+        populate: FILM_DETAIL_POPULATE
       }
     );
 
@@ -71,7 +97,7 @@ export class MikroOrmFilmRepository extends FilmRepository {
       const sentEvents = await this.entityManager.find(
         FilmJourneyEventEntity,
         { user: userId, film: { id: { $in: items.map((film) => film.id) } }, filmState: { code: 'sent_for_dev' } },
-        { orderBy: { film: { id: 'asc' }, occurredAt: 'desc', id: 'desc' }, populate: ['film', 'filmState', 'user'] }
+        { orderBy: { film: { id: 'asc' }, occurredAt: 'desc', id: 'desc' }, populate: FILM_EVENT_POPULATE }
       );
       for (const event of sentEvents) {
         if (!developmentCostByFilmId.has(event.film.id)) {
@@ -90,7 +116,7 @@ export class MikroOrmFilmRepository extends FilmRepository {
     const film = await this.entityManager.findOne(
       FilmEntity,
       { id: filmId, user: userId },
-      { populate: ['user', 'filmLot', 'filmLot.supplier', 'emulsion', 'emulsion.developmentProcess', 'emulsion.filmFormats', 'packageType', 'packageType.filmFormat', 'filmFormat', 'currentState'] }
+      { populate: FILM_DETAIL_POPULATE }
     );
 
     if (!film) {
@@ -100,13 +126,13 @@ export class MikroOrmFilmRepository extends FilmRepository {
     const latestEvent = await this.entityManager.findOne(
       FilmJourneyEventEntity,
       { film: film.id, user: userId },
-      { orderBy: { occurredAt: 'desc', id: 'desc' }, populate: ['film', 'user', 'filmState'] }
+      { orderBy: { occurredAt: 'desc', id: 'desc' }, populate: FILM_EVENT_POPULATE }
     );
 
     const latestSentForDevEvent = await this.entityManager.findOne(
       FilmJourneyEventEntity,
       { film: film.id, user: userId, filmState: { code: 'sent_for_dev' } },
-      { orderBy: { occurredAt: 'desc', id: 'desc' }, populate: ['film', 'user', 'filmState'] }
+      { orderBy: { occurredAt: 'desc', id: 'desc' }, populate: FILM_EVENT_POPULATE }
     );
 
     return mapFilmDetailEntity(film, latestEvent ?? null, latestSentForDevEvent ? parseDevelopmentCost(latestSentForDevEvent.eventData) : null);
@@ -116,7 +142,7 @@ export class MikroOrmFilmRepository extends FilmRepository {
     const film = await this.entityManager.findOne(
       FilmEntity,
       { id: filmId, user: userId },
-      { populate: ['user', 'filmLot', 'filmLot.supplier', 'emulsion', 'emulsion.developmentProcess', 'emulsion.filmFormats', 'packageType', 'packageType.filmFormat', 'filmFormat', 'currentState'] }
+      { populate: FILM_DETAIL_POPULATE }
     );
 
     return film ? mapFilmSummaryEntity(film) : null;
@@ -143,7 +169,7 @@ export class MikroOrmFilmRepository extends FilmRepository {
     const persisted = await this.entityManager.findOneOrFail(
       FilmEntity,
       { id: filmId, user: userId },
-      { populate: ['user', 'filmLot', 'filmLot.supplier', 'emulsion', 'emulsion.developmentProcess', 'emulsion.filmFormats', 'packageType', 'packageType.filmFormat', 'filmFormat', 'currentState'] }
+      { populate: FILM_DETAIL_POPULATE }
     );
 
     return mapFilmSummaryEntity(persisted);
@@ -153,7 +179,7 @@ export class MikroOrmFilmRepository extends FilmRepository {
     const events = await this.entityManager.find(
       FilmJourneyEventEntity,
       { film: filmId, user: userId },
-      { orderBy: { occurredAt: 'asc', id: 'asc' }, populate: ['film', 'user', 'filmState'] }
+      { orderBy: { occurredAt: 'asc', id: 'asc' }, populate: FILM_EVENT_POPULATE }
     );
 
     return events.map(mapFilmJourneyEventEntity);
@@ -165,7 +191,7 @@ export class MikroOrmFilmRepository extends FilmRepository {
       { user: userId, film: filmId },
       {
         orderBy: { frameNumber: 'asc', id: 'asc' },
-        populate: ['user', 'film', 'currentState']
+        populate: FILM_FRAME_POPULATE
       }
     );
 
@@ -176,7 +202,7 @@ export class MikroOrmFilmRepository extends FilmRepository {
     const frame = await this.entityManager.findOne(
       FilmFrameEntity,
       { id: frameId, user: userId, film: filmId },
-      { populate: ['user', 'film', 'currentState'] }
+      { populate: FILM_FRAME_POPULATE }
     );
 
     if (!frame) {
@@ -203,16 +229,7 @@ export class MikroOrmFilmRepository extends FilmRepository {
       { user: userId, filmState: { code: 'loaded' } },
       {
         orderBy: { occurredAt: 'desc', id: 'desc' },
-        populate: [
-          'film',
-          'film.user',
-          'film.emulsion',
-          'film.emulsion.developmentProcess',
-          'film.packageType',
-          'film.filmFormat',
-          'filmState',
-          'user'
-        ]
+        populate: DEVICE_LOAD_EVENT_POPULATE
       }
     );
 
@@ -243,7 +260,7 @@ export class MikroOrmFilmRepository extends FilmRepository {
       { user: userId, filmState: { code: 'removed' } },
       {
         orderBy: { film: { id: 'asc' }, occurredAt: 'asc', id: 'asc' },
-        populate: ['film', 'filmState', 'user']
+        populate: FILM_EVENT_POPULATE
       }
     );
 
