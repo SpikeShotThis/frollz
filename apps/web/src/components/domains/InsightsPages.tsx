@@ -6,21 +6,12 @@ import type {
   DashboardInsights,
   DeviceUsageInsights,
   FilmWorkflowInsights,
-  InsightRange,
-  LabPerformanceInsights,
-  SupplierPerformanceInsights
+  InsightRange
 } from '@frollz2/schema';
 import { useSession } from '../../auth/session';
+import { emulsionLabel, formatDate, formatMoney } from '../../utils/format';
+import { RANGE_OPTIONS, RangeToolbar } from '../RangeToolbar';
 import { PageHeader } from '../PageHeader';
-
-type RangeState = InsightRange;
-
-const RANGE_OPTIONS: Array<{ value: RangeState; label: string }> = [
-  { value: '30d', label: '30 days' },
-  { value: '90d', label: '90 days' },
-  { value: '365d', label: '365 days' },
-  { value: 'all', label: 'All time' }
-];
 
 function StatTile({ label, value, helper }: { label: string; value: string | number; helper: string }) {
   return (
@@ -30,34 +21,6 @@ function StatTile({ label, value, helper }: { label: string; value: string | num
       <p style={{ margin: 0, color: 'var(--muted-ink)', fontSize: 13 }}>{helper}</p>
     </section>
   );
-}
-
-function RangeToolbar({ range, onRangeChange }: { range: RangeState; onRangeChange: (range: RangeState) => void }) {
-  return (
-    <section className="card">
-      <div className="form-field" style={{ marginBottom: 0, maxWidth: 220 }}>
-        <label htmlFor="insights-range">Range</label>
-        <select id="insights-range" value={range} onChange={(event) => onRangeChange(event.target.value as RangeState)}>
-          {RANGE_OPTIONS.map((option) => (
-            <option key={option.value} value={option.value}>{option.label}</option>
-          ))}
-        </select>
-      </div>
-    </section>
-  );
-}
-
-function formatDate(value: string | null): string {
-  if (!value) return '—';
-  return new Intl.DateTimeFormat(undefined, { dateStyle: 'medium' }).format(new Date(value));
-}
-
-function formatMoney(amount: number, currencyCode: string): string {
-  return new Intl.NumberFormat(undefined, { style: 'currency', currency: currencyCode }).format(amount);
-}
-
-function emulsionLabel(row: { manufacturer: string; brand: string; isoSpeed: number }) {
-  return `${row.manufacturer} ${row.brand} ${row.isoSpeed}`;
 }
 
 function EmptyState({ message }: { message: string }) {
@@ -70,7 +33,7 @@ function resolveStatsError(err: unknown, fallback: string): string {
 
 export function FilmStatsPage() {
   const { api } = useSession();
-  const [range, setRange] = useState<RangeState>('365d');
+  const [range, setRange] = useState<InsightRange>('365d');
   const [data, setData] = useState<FilmWorkflowInsights | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setLoading] = useState(true);
@@ -147,126 +110,9 @@ function InsightList({ title, rows }: { title: string; rows: Array<{ key: string
   );
 }
 
-export function LabStatsPage() {
-  const { api } = useSession();
-  const [range, setRange] = useState<RangeState>('365d');
-  const [data, setData] = useState<LabPerformanceInsights | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [isLoading, setLoading] = useState(true);
-
-  useEffect(() => {
-    setLoading(true);
-    setError(null);
-    api.getLabInsights({ range, limit: 50 })
-      .then(setData)
-      .catch((err) => setError(resolveStatsError(err, 'Failed to load lab stats')))
-      .finally(() => setLoading(false));
-  }, [api, range]);
-
-  return (
-    <main>
-      <PageHeader heading="Lab Stats" subtitle="Turnaround and cost grouped by lab and development process." />
-      {error ? <div className="error-banner" role="alert">{error}</div> : null}
-      <RangeToolbar range={range} onRangeChange={setRange} />
-      <section className="card">
-        {isLoading || !data ? <div className="skeleton skeleton-row" /> : data.rows.length === 0 ? <EmptyState message="No lab history yet." /> : (
-          <div className="table-scroll">
-            <table>
-              <thead>
-                <tr>
-                  <th>Lab</th>
-                  <th>Process</th>
-                  <th>Completed</th>
-                  <th>Active</th>
-                  <th>Median TAT</th>
-                  <th>Cost</th>
-                  <th>Last used</th>
-                </tr>
-              </thead>
-              <tbody>
-                {data.rows.map((row) => (
-                  <tr key={`${row.labId}-${row.developmentProcess.id}`}>
-                    <td>{row.labName}</td>
-                    <td>{row.developmentProcess.label}</td>
-                    <td>{row.completedCount}</td>
-                    <td>{row.activeQueueCount}</td>
-                    <td>{row.medianTurnaroundDays == null ? '—' : `${row.medianTurnaroundDays}d`}</td>
-                    <td>{row.developmentCostByCurrency.map((cost) => `${formatMoney(cost.medianAmount, cost.currencyCode)} med`).join(', ') || '—'}</td>
-                    <td>{formatDate(row.lastUsedAt)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </section>
-    </main>
-  );
-}
-
-export function SupplierStatsPage() {
-  const { api } = useSession();
-  const [range, setRange] = useState<RangeState>('365d');
-  const [data, setData] = useState<SupplierPerformanceInsights | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [isLoading, setLoading] = useState(true);
-
-  useEffect(() => {
-    setLoading(true);
-    setError(null);
-    api.getSupplierInsights({ range, limit: 50 })
-      .then(setData)
-      .catch((err) => setError(resolveStatsError(err, 'Failed to load supplier stats')))
-      .finally(() => setLoading(false));
-  }, [api, range]);
-
-  return (
-    <main>
-      <PageHeader heading="Supplier Stats" subtitle="Film prices grouped by emulsion, package, format, and currency." />
-      {error ? <div className="error-banner" role="alert">{error}</div> : null}
-      <RangeToolbar range={range} onRangeChange={setRange} />
-      <section className="card">
-        {isLoading || !data ? <div className="skeleton skeleton-row" /> : data.rows.length === 0 ? <EmptyState message="No priced purchase history yet." /> : (
-          <div className="table-scroll">
-            <table>
-              <thead>
-                <tr>
-                  <th>Film</th>
-                  <th>Lowest package</th>
-                  <th>Median package</th>
-                  <th>Lowest unit</th>
-                  <th>Best supplier</th>
-                  <th>Purchases</th>
-                  <th>Last purchase</th>
-                </tr>
-              </thead>
-              <tbody>
-                {data.rows.map((row) => (
-                  <tr key={`${row.emulsion.id}-${row.packageType.id}-${row.filmFormat.id}-${row.currencyCode}`}>
-                    <td>
-                      <strong>{emulsionLabel(row.emulsion)}</strong>
-                      <div style={{ color: 'var(--muted-ink)', fontSize: 13 }}>{row.filmFormat.label} · {row.packageType.label}</div>
-                    </td>
-                    <td>{formatMoney(row.lowestPackagePrice, row.currencyCode)}</td>
-                    <td>{formatMoney(row.medianPackagePrice, row.currencyCode)}</td>
-                    <td>{formatMoney(row.lowestUnitPrice, row.currencyCode)}</td>
-                    <td>{row.bestSupplier?.supplierName ?? '—'}</td>
-                    <td>{row.purchaseCount} / {row.totalUnitsPurchased} units</td>
-                    <td>{formatDate(row.lastPurchaseDate)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </section>
-    </main>
-  );
-}
-
 export function DeviceStatsPage() {
   const { api } = useSession();
-  const [range, setRange] = useState<RangeState>('365d');
+  const [range, setRange] = useState<InsightRange>('365d');
   const [data, setData] = useState<DeviceUsageInsights | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setLoading] = useState(true);
@@ -331,19 +177,21 @@ export function DashboardInsightCards({ insights }: { insights: DashboardInsight
       title: 'Slowest lab queue',
       value: insights.slowestLabQueue ? `${insights.slowestLabQueue.daysWaiting}d` : '—',
       helper: insights.slowestLabQueue ? `${insights.slowestLabQueue.labName ?? 'Unknown lab'} · ${insights.slowestLabQueue.developmentProcess.label}` : 'No active lab queue',
-      href: '/admin/film-labs/stats'
+      href: insights.slowestLabQueue?.labId ? `/admin/film-labs/${insights.slowestLabQueue.labId}` : '/admin/film-labs'
     },
     {
       title: 'Best recent film price',
       value: insights.bestRecentPrice ? formatMoney(insights.bestRecentPrice.lowestUnitPrice, insights.bestRecentPrice.currencyCode) : '—',
       helper: insights.bestRecentPrice ? `${emulsionLabel(insights.bestRecentPrice.emulsion)} · ${insights.bestRecentPrice.packageType.label}` : 'No priced purchases',
-      href: '/admin/film-suppliers/stats'
+      href: insights.bestRecentPrice?.bestSupplier
+        ? `/admin/film-suppliers/${insights.bestRecentPrice.bestSupplier.supplierId}`
+        : '/admin/film-suppliers'
     },
     {
       title: 'Workflow bottleneck',
       value: insights.workflowBottleneck?.count ?? '—',
       helper: insights.workflowBottleneck?.label ?? 'No current bottleneck',
-      href: insights.workflowBottleneck?.href ?? '/film/stats'
+      href: insights.workflowBottleneck?.href ?? '/film'
     }
   ];
 

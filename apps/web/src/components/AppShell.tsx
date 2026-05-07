@@ -22,11 +22,10 @@ const NAV: NavEntry[] = [
     baseHref: '/film',
     children: [
       { href: '/film', labelKey: 'navigation.allFilm' },
-      { href: '/film/stats', labelKey: 'navigation.filmStats' },
-      { href: '/film?format=35mm', labelKey: 'navigation.film35mm' },
-      { href: '/film?format=medium-format', labelKey: 'navigation.filmMediumFormat' },
-      { href: '/film?format=large-format', labelKey: 'navigation.filmLargeFormat' },
-      { href: '/film?format=instant', labelKey: 'navigation.filmInstant' }
+      { href: '/film/35mm', labelKey: 'navigation.film35mm' },
+      { href: '/film/medium-format', labelKey: 'navigation.filmMediumFormat' },
+      { href: '/film/large-format', labelKey: 'navigation.filmLargeFormat' },
+      { href: '/film/instant', labelKey: 'navigation.filmInstant' }
     ]
   },
   {
@@ -36,7 +35,6 @@ const NAV: NavEntry[] = [
     baseHref: '/devices',
     children: [
       { href: '/devices', labelKey: 'navigation.allDevices' },
-      { href: '/devices/stats', labelKey: 'navigation.deviceStats' },
       { href: '/devices/cameras', labelKey: 'navigation.cameras' },
       { href: '/devices/interchangeable-backs', labelKey: 'navigation.backs' },
       { href: '/devices/film-holders', labelKey: 'navigation.holders' }
@@ -65,9 +63,7 @@ const NAV: NavEntry[] = [
     children: [
       { href: '/admin', labelKey: 'navigation.adminOverview' },
       { href: '/admin/film-labs', labelKey: 'navigation.filmLabs' },
-      { href: '/admin/film-labs/stats', labelKey: 'navigation.labStats' },
       { href: '/admin/film-suppliers', labelKey: 'navigation.filmSuppliers' },
-      { href: '/admin/film-suppliers/stats', labelKey: 'navigation.supplierStats' },
       { href: '/admin/data-export', labelKey: 'navigation.dataExport' }
     ]
   }

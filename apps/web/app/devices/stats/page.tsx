@@ -1,10 +1,5 @@
-import { AuthGate } from '../../../src/components/AuthGate';
-import { DeviceStatsPage } from '../../../src/components/domains/InsightsPages';
+import { redirect } from 'next/navigation';
 
 export default function DeviceStatsRoute() {
-  return (
-    <AuthGate>
-      <DeviceStatsPage />
-    </AuthGate>
-  );
+  redirect('/devices');
 }

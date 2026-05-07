@@ -22,11 +22,12 @@ When('I create a camera with make {string} and model {string} for format {string
   await page.getByLabel('Model').fill(model);
   await page.getByRole('button', { name: /create/i }).click();
 
+  await page.goto('/devices/cameras');
   await expect(page.getByText(deviceLabel, { exact: false }).first()).toBeVisible();
 });
 
 When('I open the device detail for {string}', async ({ page }, label: string) => {
-  await page.goto('/devices');
+  await page.goto('/devices/cameras');
   await page.getByRole('link', { name: label, exact: false }).first().click();
 });
 
@@ -79,6 +80,7 @@ When('I create a film holder named {string} with brand {string}, holder type {st
   await selectOptionByText(page.getByLabel('Holder type'), holderType);
   await selectOptionByText(page.getByLabel('Slot count'), slotCount);
   await page.getByRole('button', { name: /create/i }).click();
+  await page.goto('/devices/film-holders');
   await expect(page.getByRole('link', { name, exact: false }).first()).toBeVisible();
 });
 

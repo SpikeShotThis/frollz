@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { UniqueConstraintViolationException } from '@mikro-orm/core';
-import type { CreateFilmSupplierRequest, FilmSupplier, ListFilmSuppliersQuery, UpdateFilmSupplierRequest } from '@frollz2/schema';
+import type { CreateFilmSupplierRequest, FilmSupplier, FilmSupplierActivity, ListFilmSuppliersQuery, UpdateFilmSupplierRequest } from '@frollz2/schema';
 import { DomainError } from '../../domain/errors.js';
 import { FilmSupplierRepository } from '../../infrastructure/repositories/film-supplier.repository.js';
 
@@ -18,6 +18,14 @@ export class FilmSuppliersService {
       throw new DomainError('NOT_FOUND', 'Film supplier not found', { label: 'errors.filmSuppliers.notFound' });
     }
     return supplier;
+  }
+
+  async activity(userId: number, supplierId: number): Promise<FilmSupplierActivity> {
+    const activity = await this.filmSupplierRepository.activity(userId, supplierId);
+    if (!activity) {
+      throw new DomainError('NOT_FOUND', 'Film supplier not found', { label: 'errors.filmSuppliers.notFound' });
+    }
+    return activity;
   }
 
   async create(userId: number, input: CreateFilmSupplierRequest): Promise<FilmSupplier> {

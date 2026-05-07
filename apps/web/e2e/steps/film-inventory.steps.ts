@@ -20,6 +20,23 @@ type ExportData = {
   }>;
 };
 
+const DEFAULT_FILM_INVENTORY_ROUTE = '/film';
+
+function filmInventoryRouteForFormat(formatCode: string): string {
+  const routes: Record<string, string> = {
+    '35mm': '/film/35mm',
+    '120': '/film/medium-format',
+    'medium-format': '/film/medium-format',
+    '4x5': '/film/large-format',
+    '5x7': '/film/large-format',
+    '8x10': '/film/large-format',
+    '11x14': '/film/large-format',
+    instant: '/film/instant'
+  };
+
+  return routes[formatCode] ?? DEFAULT_FILM_INVENTORY_ROUTE;
+}
+
 Given('a camera exists for loading named {string}', async ({}, label: string) => {
   const parts = label.split(' ');
   const make = parts[0] ?? label;
@@ -53,7 +70,7 @@ Given('a film supplier exists named {string}', async ({}, supplierName: string) 
 });
 
 Given('I have opened the add film form from the unfiltered inventory', async ({ page }) => {
-  await page.goto('/film');
+  await page.goto(DEFAULT_FILM_INVENTORY_ROUTE);
   await page.getByRole('button', { name: /add film/i }).click();
 });
 
@@ -68,11 +85,16 @@ async function fillRequiredFilmFields(page: Page, filmName: string): Promise<voi
     throw new Error('Missing reference values required for film creation scenario');
   }
 
-  await page.goto('/film');
+  await page.goto('/film/35mm');
   await page.getByRole('button', { name: /add film/i }).click();
 
   await page.getByLabel('Name').fill(filmName);
-  await page.getByLabel('Film format').selectOption({ label: format.label });
+  const filmFormatControl = page.getByLabel('Film format');
+  if (await filmFormatControl.isEnabled()) {
+    await filmFormatControl.selectOption({ label: format.label });
+  } else {
+    await expect(filmFormatControl).toHaveValue(String(format.id));
+  }
   await expect(page.getByLabel('Package type')).toBeEnabled();
   await selectOptionByText(page.getByLabel('Package type'), packageType.label);
   await selectOptionByText(page.getByLabel('Emulsion'), `${emulsion.manufacturer} ${emulsion.brand}`);
@@ -90,7 +112,7 @@ When('I add a film named {string}', async ({ page }, filmName: string) => {
       emulsionMatcher: (name) => name.toLowerCase().includes('kodak portra'),
     });
     testState.filmIdsByName.set(filmName, id);
-    await page.goto('/film');
+    await page.goto('/film/35mm');
   }
 });
 
@@ -104,12 +126,12 @@ When('I add a film named {string} purchased from {string} for {string} with orde
 });
 
 When('I open the add film form from the inventory filtered to {string}', async ({ page }, formatCode: string) => {
-  await page.goto(`/film?format=${formatCode}`);
+  await page.goto(filmInventoryRouteForFormat(formatCode));
   await page.getByRole('button', { name: /add film/i }).click();
 });
 
 When('I try to submit film with missing required fields', async ({ page }) => {
-  await page.goto('/film');
+  await page.goto(DEFAULT_FILM_INVENTORY_ROUTE);
   await page.getByRole('button', { name: /add film/i }).click();
   await page.getByRole('button', { name: /create film/i }).click();
 });
@@ -120,7 +142,7 @@ When('I open film detail for {string}', async ({ page }, filmName: string) => {
     await page.goto(`/film/${storedId}`);
     return;
   }
-  await page.goto('/film');
+  await page.goto('/film/35mm');
   await page.getByRole('link', { name: filmName, exact: false }).first().click();
 });
 

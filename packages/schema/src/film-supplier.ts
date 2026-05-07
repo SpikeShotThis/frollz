@@ -1,5 +1,7 @@
 import { z } from 'zod';
-import { idSchema, LIST_DEFAULT_LIMIT, LIST_MAX_LIMIT, queryBooleanSchema } from './common.js';
+import { currencyCodeSchema, idSchema, isoDateTimeSchema, LIST_DEFAULT_LIMIT, LIST_MAX_LIMIT, queryBooleanSchema } from './common.js';
+import { emulsionSchema, filmFormatSchema, packageTypeSchema } from './reference.js';
+import { insightMoneyStatsSchema } from './insights.js';
 
 // Expresses "omit the field entirely" vs "explicitly clear it to null"
 const nullableOptional = <T extends z.ZodTypeAny>(schema: T) => schema.nullable().optional();
@@ -44,7 +46,44 @@ export const listFilmSuppliersQuerySchema = z.object({
   limit: z.coerce.number().int().min(1).max(LIST_MAX_LIMIT).optional().default(LIST_DEFAULT_LIMIT)
 });
 
+export const filmSupplierPurchaseSchema = z.object({
+  filmLotId: idSchema,
+  quantity: z.number().int().positive(),
+  purchasedAt: isoDateTimeSchema,
+  price: z.object({
+    amount: z.number().nonnegative(),
+    currencyCode: currencyCodeSchema
+  }).nullable(),
+  unitPrice: z.object({
+    amount: z.number().nonnegative(),
+    currencyCode: currencyCodeSchema
+  }).nullable(),
+  channel: z.string().nullable(),
+  orderRef: z.string().nullable(),
+  emulsion: emulsionSchema,
+  packageType: packageTypeSchema,
+  filmFormat: filmFormatSchema
+});
+
+export const filmSupplierFormatStatsSchema = z.object({
+  filmFormat: filmFormatSchema,
+  purchaseCount: z.number().int().nonnegative(),
+  totalUnitsPurchased: z.number().int().nonnegative(),
+  packagePriceByCurrency: z.array(insightMoneyStatsSchema),
+  unitPriceByCurrency: z.array(insightMoneyStatsSchema),
+  lastPurchaseDate: isoDateTimeSchema.nullable()
+});
+
+export const filmSupplierActivitySchema = z.object({
+  supplier: filmSupplierSchema,
+  purchases: z.array(filmSupplierPurchaseSchema),
+  formatStats: z.array(filmSupplierFormatStatsSchema)
+});
+
 export type FilmSupplier = z.infer<typeof filmSupplierSchema>;
 export type CreateFilmSupplierRequest = z.infer<typeof createFilmSupplierRequestSchema>;
 export type UpdateFilmSupplierRequest = z.infer<typeof updateFilmSupplierRequestSchema>;
 export type ListFilmSuppliersQuery = z.infer<typeof listFilmSuppliersQuerySchema>;
+export type FilmSupplierPurchase = z.infer<typeof filmSupplierPurchaseSchema>;
+export type FilmSupplierFormatStats = z.infer<typeof filmSupplierFormatStatsSchema>;
+export type FilmSupplierActivity = z.infer<typeof filmSupplierActivitySchema>;

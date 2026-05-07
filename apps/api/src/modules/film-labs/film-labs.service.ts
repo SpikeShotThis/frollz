@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { UniqueConstraintViolationException } from '@mikro-orm/core';
-import type { CreateFilmLabRequest, FilmLab, ListFilmLabsQuery, UpdateFilmLabRequest } from '@frollz2/schema';
+import type { CreateFilmLabRequest, FilmLab, FilmLabActivity, ListFilmLabsQuery, UpdateFilmLabRequest } from '@frollz2/schema';
 import { DomainError } from '../../domain/errors.js';
 import { FilmLabRepository } from '../../infrastructure/repositories/film-lab.repository.js';
 import { ReferenceService } from '../reference/reference.service.js';
@@ -22,6 +22,14 @@ export class FilmLabsService {
       throw new DomainError('NOT_FOUND', 'Film lab not found', { label: 'errors.filmLabs.notFound' });
     }
     return lab;
+  }
+
+  async activity(userId: number, filmLabId: number): Promise<FilmLabActivity> {
+    const activity = await this.filmLabRepository.activity(userId, filmLabId);
+    if (!activity) {
+      throw new DomainError('NOT_FOUND', 'Film lab not found', { label: 'errors.filmLabs.notFound' });
+    }
+    return activity;
   }
 
   async create(userId: number, input: CreateFilmLabRequest): Promise<FilmLab> {

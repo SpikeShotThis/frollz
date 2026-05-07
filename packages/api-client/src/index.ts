@@ -13,11 +13,13 @@ import {
   filmDeviceSchema,
   filmFrameSchema,
   filmJourneyEventSchema,
+  filmLabActivitySchema,
   filmListQuerySchema,
   filmLotCreateRequestSchema,
   filmLabSchema,
   filmListResponseSchema,
   filmSummarySchema,
+  filmSupplierActivitySchema,
   filmSupplierSchema,
   importDataRequestSchema,
   importDataResponseSchema,
@@ -57,9 +59,11 @@ import {
   type FilmFrame,
   type FilmJourneyEvent,
   type FilmLab,
+  type FilmLabActivity,
   type FilmListResponse,
   type FilmSummary,
   type FilmSupplier,
+  type FilmSupplierActivity,
   type ImportDataResponse,
   type ImportDataRequest,
   type DashboardInsights,
@@ -340,6 +344,14 @@ export class ApiClient {
     return this.request(`/film-labs${toQuery(payload)}`, {}, z.array(filmLabSchema));
   }
 
+  async getFilmLab(id: number): Promise<FilmLab> {
+    return this.request(`/film-labs/${id}`, {}, filmLabSchema);
+  }
+
+  async getFilmLabActivity(id: number): Promise<FilmLabActivity> {
+    return this.request(`/film-labs/${id}/activity`, {}, filmLabActivitySchema);
+  }
+
   async createFilmLab(input: CreateFilmLabRequest, idempotencyKey?: string): Promise<FilmLab> {
     const payload = createFilmLabRequestSchema.parse(input);
     return this.request('/film-labs', {
@@ -361,6 +373,14 @@ export class ApiClient {
   async getFilmSuppliers(query: ListFilmSuppliersQuery = {}): Promise<FilmSupplier[]> {
     const payload = listFilmSuppliersQuerySchema.parse(query);
     return this.request(`/film-suppliers${toQuery(payload)}`, {}, z.array(filmSupplierSchema));
+  }
+
+  async getFilmSupplier(id: number): Promise<FilmSupplier> {
+    return this.request(`/film-suppliers/${id}`, {}, filmSupplierSchema);
+  }
+
+  async getFilmSupplierActivity(id: number): Promise<FilmSupplierActivity> {
+    return this.request(`/film-suppliers/${id}/activity`, {}, filmSupplierActivitySchema);
   }
 
   async createFilmSupplier(input: CreateFilmSupplierRequest, idempotencyKey?: string): Promise<FilmSupplier> {

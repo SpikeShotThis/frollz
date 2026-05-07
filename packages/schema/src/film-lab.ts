@@ -1,5 +1,8 @@
 import { z } from 'zod';
 import { idSchema, LIST_DEFAULT_LIMIT, LIST_MAX_LIMIT, queryBooleanSchema } from './common.js';
+import { costAmountSchema } from './film.js';
+import { developmentProcessSchema, emulsionSchema, filmFormatSchema, packageTypeSchema } from './reference.js';
+import { insightMoneyStatsSchema } from './insights.js';
 
 export const filmLabRatingSchema = z.number().int().min(1).max(5);
 
@@ -44,7 +47,36 @@ export const listFilmLabsQuerySchema = z.object({
   limit: z.coerce.number().int().min(1).max(LIST_MAX_LIMIT).optional().default(LIST_DEFAULT_LIMIT)
 });
 
+export const filmLabActiveFilmSchema = z.object({
+  filmId: idSchema,
+  filmName: z.string().min(1),
+  sentAt: z.string().min(1),
+  daysWaiting: z.number().nonnegative(),
+  cost: costAmountSchema.nullable(),
+  emulsion: emulsionSchema,
+  packageType: packageTypeSchema,
+  filmFormat: filmFormatSchema,
+  developmentProcess: developmentProcessSchema
+});
+
+export const filmLabFormatStatsSchema = z.object({
+  filmFormat: filmFormatSchema,
+  activeQueueCount: z.number().int().nonnegative(),
+  completedCount: z.number().int().nonnegative(),
+  averageTurnaroundDays: z.number().nonnegative().nullable(),
+  typicalCostByCurrency: z.array(insightMoneyStatsSchema)
+});
+
+export const filmLabActivitySchema = z.object({
+  lab: filmLabSchema,
+  activeFilms: z.array(filmLabActiveFilmSchema),
+  formatStats: z.array(filmLabFormatStatsSchema)
+});
+
 export type FilmLab = z.infer<typeof filmLabSchema>;
 export type CreateFilmLabRequest = z.infer<typeof createFilmLabRequestSchema>;
 export type UpdateFilmLabRequest = z.infer<typeof updateFilmLabRequestSchema>;
 export type ListFilmLabsQuery = z.infer<typeof listFilmLabsQuerySchema>;
+export type FilmLabActiveFilm = z.infer<typeof filmLabActiveFilmSchema>;
+export type FilmLabFormatStats = z.infer<typeof filmLabFormatStatsSchema>;
+export type FilmLabActivity = z.infer<typeof filmLabActivitySchema>;

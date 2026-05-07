@@ -212,7 +212,7 @@ export function buildFilmDashboardOverview(
       title: t('dashboard.kpi.loaded.title'),
       value: loadedFilms.length,
       helper: t('dashboard.kpi.loaded.helper', { loadedIdleCount, loadedIdleDays }),
-      actionHref: '/film?stateCode=loaded',
+      actionHref: '/film',
       actionLabel: t('dashboard.kpi.loaded.actionLabel'),
       segments: [
         { key: 'loaded-idle', label: t('dashboard.kpi.loaded.segments.idle', { days: loadedIdleDays }), value: loadedIdleCount, ratio: ratio(loadedIdleCount, loadedFilms.length) },
@@ -229,7 +229,7 @@ export function buildFilmDashboardOverview(
       title: t('dashboard.kpi.removed.title'),
       value: removedFilms.length,
       helper: t('dashboard.kpi.removed.helper', { days: removedOldestDays }),
-      actionHref: '/film?stateCode=removed',
+      actionHref: '/film',
       actionLabel: t('dashboard.kpi.removed.actionLabel'),
       segments: [
         { key: 'removed-total', label: t('dashboard.kpi.removed.segments.awaitingLab'), value: removedFilms.length, ratio: ratio(removedFilms.length, safeTotal) },
@@ -241,7 +241,7 @@ export function buildFilmDashboardOverview(
       title: t('dashboard.kpi.sentForDev.title'),
       value: sentForDevFilms.length,
       helper: t('dashboard.kpi.sentForDev.helper', { days: sentForDevOldestDays }),
-      actionHref: '/film?stateCode=sent_for_dev',
+      actionHref: '/film',
       actionLabel: t('dashboard.kpi.sentForDev.actionLabel'),
       segments: [
         { key: 'dev-at-lab', label: t('dashboard.kpi.sentForDev.segments.inLabQueue'), value: sentForDevFilms.length, ratio: ratio(sentForDevFilms.length, safeTotal) },
@@ -265,7 +265,7 @@ export function buildFilmDashboardOverview(
       title: t('dashboard.kpi.archived.title'),
       value: archivedFilms.length,
       helper: t('dashboard.kpi.archived.helper'),
-      actionHref: '/film?stateCode=archived',
+      actionHref: '/film',
       actionLabel: t('dashboard.kpi.archived.actionLabel'),
       segments: [
         { key: 'archived-done', label: t('dashboard.kpi.archived.segments.completed'), value: archivedFilms.length, ratio: ratio(archivedFilms.length, safeTotal) },

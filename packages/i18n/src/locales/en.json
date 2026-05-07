@@ -37,9 +37,7 @@
     "admin": "Admin",
     "adminOverview": "Overview",
     "filmLabs": "Film Labs",
-    "labStats": "Lab Stats",
     "filmSuppliers": "Film Suppliers",
-    "supplierStats": "Supplier Stats",
     "dataExport": "Data Export"
   },
   "theme": {
@@ -158,6 +156,19 @@
   "film": {
     "inventory": "Film Inventory",
     "inventorySubtitle": "Track film stock and move rolls through state transitions.",
+    "dashboardSubtitle": "Review film workflow health, stock mix, and range-based stats in one place.",
+    "dashboardFormatsHeading": "Formats",
+    "dashboardWorkflowHeading": "Workflow",
+    "dashboardStats": {
+      "removedNotSent": "Removed, not sent",
+      "atLab": "At lab",
+      "recentCompletions": "Recent completions",
+      "oldestRemoved": "Oldest removed item",
+      "oldestLabQueue": "Oldest lab queue item",
+      "byProcess": "By process",
+      "noProcessData": "No process data yet.",
+      "generatedAt": "Generated {{date}}"
+    },
     "filteredSubtitle": "Filtered view for {{format}}.",
     "addFilm": "Add film",
     "edit": "Edit",
@@ -353,6 +364,23 @@
   "devices": {
     "heading": "Devices",
     "subtitle": "Cameras, backs, and film holders.",
+    "dashboardSubtitle": "Review device mix by format and range-based usage in one place.",
+    "dashboardFormatsHeading": "Formats",
+    "dashboardUsageHeading": "Usage",
+    "dashboardStats": {
+      "totalDevices": "Tracked bodies, backs, and holders",
+      "activeLoads": "Currently loaded or exposed",
+      "noUsageData": "No device usage yet.",
+      "generatedAt": "Generated {{date}}",
+      "columns": {
+        "device": "Device",
+        "type": "Type",
+        "format": "Format",
+        "loads": "Loads",
+        "active": "Active",
+        "lastLoaded": "Last loaded"
+      }
+    },
     "filteredSubtitle": "Filtered view for {{type}}.",
     "newDevice": "New device",
     "backToDevices": "Back to devices",

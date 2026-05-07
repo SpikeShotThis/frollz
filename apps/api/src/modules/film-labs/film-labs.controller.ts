@@ -25,6 +25,13 @@ export class FilmLabsController {
     return this.filmLabsService.list(user.userId, query);
   }
 
+  @Get(':id/activity')
+  @ApiOperation({ summary: 'Get film lab activity and per-format metrics' })
+  @ApiResponse({ status: 200, description: 'Film lab activity detail' })
+  activity(@CurrentUser() user: AuthenticatedUser, @Param('id', ParseIntPipe) id: number) {
+    return this.filmLabsService.activity(user.userId, id);
+  }
+
   @Get(':id')
   @ApiOperation({ summary: 'Get a film lab by id' })
   @ApiResponse({ status: 200, description: 'Film lab detail' })

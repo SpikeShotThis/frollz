@@ -18,6 +18,7 @@ import {
   FilmLotEntity
 } from '../../infrastructure/entities/index.js';
 import type { EmulsionEntity, FilmFormatEntity, PackageTypeEntity, DevelopmentProcessEntity } from '../../infrastructure/entities/reference.entities.js';
+import { average, daysBetween, daysSince, median } from '../../common/utils/stats.js';
 
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
 const ACTIVE_FILM_STATES = new Set(['purchased', 'stored', 'loaded', 'exposed', 'removed', 'sent_for_dev', 'developed', 'scanned']);
@@ -60,41 +61,6 @@ const LOT_POPULATE = [
 ] as const;
 
 const DEVICE_POPULATE = ['deviceType', 'filmFormat', 'camera', 'interchangeableBack', 'filmHolder'] as const;
-
-function round(value: number, places = 1): number {
-  const factor = 10 ** places;
-  return Math.round(value * factor) / factor;
-}
-
-function daysBetween(startIso: string, endIso: string): number | null {
-  const start = Date.parse(startIso);
-  const end = Date.parse(endIso);
-  if (Number.isNaN(start) || Number.isNaN(end) || end < start) {
-    return null;
-  }
-  return round((end - start) / MS_PER_DAY);
-}
-
-function daysSince(startIso: string, now: Date): number {
-  return Math.max(0, round((now.getTime() - Date.parse(startIso)) / MS_PER_DAY));
-}
-
-function median(values: number[]): number | null {
-  if (values.length === 0) return null;
-  const sorted = [...values].sort((a, b) => a - b);
-  const mid = Math.floor(sorted.length / 2);
-  if (sorted.length % 2 === 1) {
-    return sorted[mid] ?? null;
-  }
-  const left = sorted[mid - 1];
-  const right = sorted[mid];
-  return left === undefined || right === undefined ? null : round((left + right) / 2, 2);
-}
-
-function average(values: number[]): number | null {
-  if (values.length === 0) return null;
-  return round(values.reduce((sum, value) => sum + value, 0) / values.length, 2);
-}
 
 function rangeStart(range: InsightRange, now: Date): number | null {
   if (range === 'all') return null;
@@ -474,8 +440,8 @@ export class InsightsService {
       this.suppliers(userId, query)
     ]);
     const bottlenecks = [
-      { key: 'removed', label: 'Removed, not sent', count: film.totals.removedNotSent, href: '/film?stateCode=removed' },
-      { key: 'at-lab', label: 'At lab', count: film.totals.atLab, href: '/film?stateCode=sent_for_dev' }
+      { key: 'removed', label: 'Removed, not sent', count: film.totals.removedNotSent, href: '/film' },
+      { key: 'at-lab', label: 'At lab', count: film.totals.atLab, href: '/film' }
     ].sort((a, b) => b.count - a.count);
 
     return {
