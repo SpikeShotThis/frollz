@@ -163,6 +163,7 @@ function AdminListPage({
   const { t } = useTranslation();
   const [rows, setRows] = useState<AdminRow[]>([]);
   const [q, setQ] = useState('');
+  const [debouncedQ, setDebouncedQ] = useState('');
   const [includeInactive, setIncludeInactive] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -182,7 +183,7 @@ function AdminListPage({
   async function load() {
     setIsLoading(true);
     try {
-      const data = await fetchRows({ q, includeInactive });
+      const data = await fetchRows({ q: debouncedQ, includeInactive });
       setRows(data);
     } catch (err) {
       setError(resolveApiError(err, t, t('admin.failedToLoad', { entity: entityName })));
@@ -191,7 +192,12 @@ function AdminListPage({
     }
   }
 
-  useEffect(() => { void load(); }, [q, includeInactive]);
+  useEffect(() => {
+    const timeout = setTimeout(() => setDebouncedQ(q), 300);
+    return () => clearTimeout(timeout);
+  }, [q]);
+
+  useEffect(() => { void load(); }, [debouncedQ, includeInactive]);
 
   function openCreate() {
     resetFormSubmit();

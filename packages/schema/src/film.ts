@@ -119,7 +119,8 @@ export const filmSummarySchema = z.object({
   emulsion: emulsionSchema,
   packageType: packageTypeSchema,
   filmFormat: filmFormatSchema,
-  currentState: filmStateSchema
+  currentState: filmStateSchema,
+  latestEvent: z.lazy(() => filmJourneyEventSchema).nullable().optional().default(null)
 });
 
 export const filmLotDetailSchema = filmLotSummarySchema.extend({

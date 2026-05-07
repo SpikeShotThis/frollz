@@ -87,16 +87,9 @@ export function DashboardView() {
       try {
         const films = await api.getFilms();
         const now = Date.now();
-        const detailResults = await Promise.allSettled(films.items.map(async (film) => {
-          const detail = await api.getFilm(film.id);
-          return [film.id, detail.latestEvent ? { occurredAt: detail.latestEvent.occurredAt } : null] as const;
-        }));
         const latestEventsByFilmId: Record<number, { occurredAt: string } | null> = {};
-        detailResults.forEach((result) => {
-          if (result.status === 'fulfilled') {
-            const [filmId, latestEvent] = result.value;
-            latestEventsByFilmId[filmId] = latestEvent;
-          }
+        films.items.forEach((film) => {
+          latestEventsByFilmId[film.id] = film.latestEvent ? { occurredAt: film.latestEvent.occurredAt } : null;
         });
         setCards(buildFilmDashboardOverview(films.items, latestEventsByFilmId, now, { t: (key, opts) => t(key, opts ?? {}) }));
       } catch (err) {

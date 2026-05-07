@@ -93,10 +93,12 @@ export class MikroOrmFilmRepository extends FilmRepository {
     const hasMore = films.length > limit;
     const items = hasMore ? films.slice(0, limit) : films;
     const developmentCostByFilmId = new Map<number, { amount: number; currencyCode: string } | null>();
+    const latestEventByFilmId = new Map<number, FilmJourneyEventEntity>();
     if (items.length > 0) {
+      const itemIds = items.map((film) => film.id);
       const sentEvents = await this.entityManager.find(
         FilmJourneyEventEntity,
-        { user: userId, film: { id: { $in: items.map((film) => film.id) } }, filmState: { code: 'sent_for_dev' } },
+        { user: userId, film: { id: { $in: itemIds } }, filmState: { code: 'sent_for_dev' } },
         { orderBy: { film: { id: 'asc' }, occurredAt: 'desc', id: 'desc' }, populate: FILM_EVENT_POPULATE }
       );
       for (const event of sentEvents) {
@@ -104,10 +106,21 @@ export class MikroOrmFilmRepository extends FilmRepository {
           developmentCostByFilmId.set(event.film.id, parseDevelopmentCost(event.eventData));
         }
       }
+
+      const latestEvents = await this.entityManager.find(
+        FilmJourneyEventEntity,
+        { user: userId, film: { id: { $in: itemIds } } },
+        { orderBy: { film: { id: 'asc' }, occurredAt: 'desc', id: 'desc' }, populate: FILM_EVENT_POPULATE }
+      );
+      for (const event of latestEvents) {
+        if (!latestEventByFilmId.has(event.film.id)) {
+          latestEventByFilmId.set(event.film.id, event);
+        }
+      }
     }
 
     return {
-      items: items.map((item) => mapFilmSummaryEntity(item, developmentCostByFilmId.get(item.id) ?? null)),
+      items: items.map((item) => mapFilmSummaryEntity(item, developmentCostByFilmId.get(item.id) ?? null, latestEventByFilmId.get(item.id) ?? null)),
       nextCursor: hasMore ? (items[items.length - 1]?.id ?? null) : null
     };
   }

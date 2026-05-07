@@ -33,27 +33,34 @@ export function ReferenceTypeaheadInput({
   const [suggestions, setSuggestions] = useState<string[]>([]);
 
   useEffect(() => {
-    if (disabled || !value.trim()) {
+    const query = value.trim();
+    if (disabled || query.length < 2) {
       setSuggestions([]);
       return;
     }
 
+    let cancelled = false;
     const timeout = setTimeout(() => {
       void (async () => {
         try {
           const values = await api.getReferenceValues({
             kind,
-            q: value,
+            q: query,
             limit: 10
           });
+          if (cancelled) return;
           setSuggestions(values.map((entry) => entry.value));
         } catch {
+          if (cancelled) return;
           setSuggestions([]);
         }
       })();
-    }, 150);
+    }, 300);
 
-    return () => clearTimeout(timeout);
+    return () => {
+      cancelled = true;
+      clearTimeout(timeout);
+    };
   }, [api, disabled, kind, value]);
 
   return (

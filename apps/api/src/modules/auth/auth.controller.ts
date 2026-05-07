@@ -65,6 +65,7 @@ export class AuthController {
   }
 
   @Get('me')
+  @Throttle({ default: { ttl: 60_000, limit: isDevelopment && devThrottleEnabled ? resolvedDevLimit : 30 } })
   @ApiOperation({ summary: 'Get the current user' })
   @ApiResponse({ status: 200, description: 'Current user payload' })
   async me(@CurrentUser() user: AuthenticatedUser) {

@@ -86,7 +86,7 @@ export function mapFilmLotDetailEntity(entity: FilmLotEntity, films: FilmEntity[
   };
 }
 
-export function mapFilmSummaryEntity(entity: FilmEntity, developmentCost: CostProjection = null): FilmSummary {
+export function mapFilmSummaryEntity(entity: FilmEntity, developmentCost: CostProjection = null, latestEvent: FilmJourneyEventEntity | null = null): FilmSummary {
   return {
     id: entity.id,
     userId: entity.user.id,
@@ -104,7 +104,8 @@ export function mapFilmSummaryEntity(entity: FilmEntity, developmentCost: CostPr
     emulsion: mapEmulsionEntity(entity.emulsion),
     packageType: mapPackageTypeEntity(entity.packageType),
     filmFormat: mapFilmFormatEntity(entity.filmFormat),
-    currentState: mapFilmStateEntity(entity.currentState)
+    currentState: mapFilmStateEntity(entity.currentState),
+    latestEvent: latestEvent ? mapFilmJourneyEventEntity(latestEvent) : null
   };
 }
 
@@ -124,7 +125,7 @@ export function mapFilmJourneyEventEntity(entity: FilmJourneyEventEntity): FilmJ
 
 export function mapFilmDetailEntity(entity: FilmEntity, latestEvent: FilmJourneyEventEntity | null, developmentCost: CostProjection = null): FilmDetail {
   return {
-    ...mapFilmSummaryEntity(entity, developmentCost),
+    ...mapFilmSummaryEntity(entity, developmentCost, latestEvent),
     latestEvent: latestEvent ? mapFilmJourneyEventEntity(latestEvent) : null
   };
 }

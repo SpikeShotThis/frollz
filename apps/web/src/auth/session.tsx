@@ -62,6 +62,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   const accessTokenRef = useRef<string | null>(null);
   const refreshTokenRef = useRef<string | null>(null);
   const refreshInFlightRef = useRef<Promise<string | null> | null>(null);
+  const sessionRestoreInFlightRef = useRef(false);
 
   function setTokens(tokenPair: TokenPair): void {
     accessTokenRef.current = tokenPair.accessToken;
@@ -162,10 +163,15 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     if (isSessionInitialized) {
       return;
     }
+    if (sessionRestoreInFlightRef.current) {
+      return;
+    }
 
     const init = async () => {
+      sessionRestoreInFlightRef.current = true;
       if (!refreshToken) {
         setIsSessionInitialized(true);
+        sessionRestoreInFlightRef.current = false;
         return;
       }
 
@@ -180,6 +186,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
         clearSession();
       } finally {
         setIsSessionInitialized(true);
+        sessionRestoreInFlightRef.current = false;
       }
     };
 
