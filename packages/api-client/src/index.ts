@@ -24,11 +24,17 @@ import {
   listFilmLabsQuerySchema,
   listReferenceValuesQuerySchema,
   listFilmSuppliersQuerySchema,
+  dashboardInsightsSchema,
+  deviceUsageInsightsSchema,
+  filmWorkflowInsightsSchema,
+  insightsQuerySchema,
+  labPerformanceInsightsSchema,
   loginRequestSchema,
   refreshRequestSchema,
   referenceValueSchema,
   referenceTablesSchema,
   registerRequestSchema,
+  supplierPerformanceInsightsSchema,
   tokenPairSchema,
   updateEmulsionRequestSchema,
   updateFilmDeviceRequestSchema,
@@ -56,11 +62,16 @@ import {
   type FilmSupplier,
   type ImportDataResponse,
   type ImportDataRequest,
+  type DashboardInsights,
+  type DeviceUsageInsights,
+  type FilmWorkflowInsights,
+  type LabPerformanceInsights,
   type LoginRequest,
   type ReferenceTables,
   type ReferenceValue,
   type RefreshRequest,
   type RegisterRequest,
+  type SupplierPerformanceInsights,
   type TokenPair,
   type UpdateEmulsionRequest,
   type UpdateFilmDeviceRequest,
@@ -75,6 +86,7 @@ export type FilmListQuery = z.input<typeof filmListQuerySchema>;
 export type ListFilmLabsQuery = z.input<typeof listFilmLabsQuerySchema>;
 export type ListFilmSuppliersQuery = z.input<typeof listFilmSuppliersQuerySchema>;
 export type ListReferenceValuesQuery = z.input<typeof listReferenceValuesQuerySchema>;
+export type InsightsQuery = z.input<typeof insightsQuerySchema>;
 
 export type ApiErrorMsg = {
   en: string;
@@ -367,6 +379,31 @@ export class ApiClient {
       ...(idempotencyKey ? { headers: { 'idempotency-key': idempotencyKey } } : {}),
       body: JSON.stringify(payload)
     }, filmSupplierSchema);
+  }
+
+  async getFilmInsights(query: InsightsQuery = {}): Promise<FilmWorkflowInsights> {
+    const payload = insightsQuerySchema.parse(query);
+    return this.request(`/insights/film${toQuery(payload)}`, {}, filmWorkflowInsightsSchema);
+  }
+
+  async getLabInsights(query: InsightsQuery = {}): Promise<LabPerformanceInsights> {
+    const payload = insightsQuerySchema.parse(query);
+    return this.request(`/insights/admin/labs${toQuery(payload)}`, {}, labPerformanceInsightsSchema);
+  }
+
+  async getSupplierInsights(query: InsightsQuery = {}): Promise<SupplierPerformanceInsights> {
+    const payload = insightsQuerySchema.parse(query);
+    return this.request(`/insights/admin/suppliers${toQuery(payload)}`, {}, supplierPerformanceInsightsSchema);
+  }
+
+  async getDeviceInsights(query: InsightsQuery = {}): Promise<DeviceUsageInsights> {
+    const payload = insightsQuerySchema.parse(query);
+    return this.request(`/insights/devices/summary${toQuery(payload)}`, {}, deviceUsageInsightsSchema);
+  }
+
+  async getDashboardInsights(query: InsightsQuery = {}): Promise<DashboardInsights> {
+    const payload = insightsQuerySchema.parse(query);
+    return this.request(`/insights/dashboard${toQuery(payload)}`, {}, dashboardInsightsSchema);
   }
 
   async exportData(): Promise<ExportData> {

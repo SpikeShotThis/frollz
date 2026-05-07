@@ -125,4 +125,31 @@ describe('ApiClient', () => {
     expect(events).toHaveLength(1);
     expect(events[0]?.filmName).toBe('Roll 1');
   });
+
+  it('fetches typed dashboard insights with query defaults', async () => {
+    const client = new ApiClient({
+      baseUrl: 'http://localhost:3000',
+      fetchImpl: async (input) => {
+        expect(String(input)).toBe('http://localhost:3000/insights/dashboard?range=365d&limit=5');
+
+        return new Response(
+          JSON.stringify({
+            data: {
+              range: '365d',
+              generatedAt: '2026-05-05T00:00:00.000Z',
+              slowestLabQueue: null,
+              bestRecentPrice: null,
+              workflowBottleneck: null
+            }
+          }),
+          { status: 200, headers: { 'content-type': 'application/json' } }
+        );
+      }
+    });
+
+    await expect(client.getDashboardInsights()).resolves.toMatchObject({
+      range: '365d',
+      workflowBottleneck: null
+    });
+  });
 });

@@ -108,9 +108,19 @@ export function AdminOverviewPage() {
       description: t('admin.sections.filmLabs.description')
     },
     {
+      href: '/admin/film-labs/stats',
+      title: 'Lab Stats',
+      description: 'Review turnaround and development cost by lab and process.'
+    },
+    {
       href: '/admin/film-suppliers',
       title: t('admin.sections.filmSuppliers.title'),
       description: t('admin.sections.filmSuppliers.description')
+    },
+    {
+      href: '/admin/film-suppliers/stats',
+      title: 'Supplier Stats',
+      description: 'Compare film prices by emulsion, package, format, and currency.'
     }
   ];
 
