@@ -54,7 +54,7 @@ export class IdempotencyService {
     }
 
     if (normalizedKey.length > 255) {
-      throw new DomainError('VALIDATION_ERROR', 'Idempotency key must be 255 characters or fewer');
+      throw new DomainError('VALIDATION_ERROR', 'Idempotency key must be 255 characters or fewer', { label: 'errors.idempotency.keyTooLong' });
     }
 
     const hashedPayload = requestHash(params.requestPayload);
@@ -70,7 +70,7 @@ export class IdempotencyService {
 
       if (existing) {
         if (existing.requestHash !== hashedPayload) {
-          throw new DomainError('CONFLICT', 'Idempotency key was already used with a different payload');
+          throw new DomainError('CONFLICT', 'Idempotency key was already used with a different payload', { label: 'errors.idempotency.keyConflict' });
         }
 
         return unwrapResponseBody<T>(existing.responseBody);
@@ -102,7 +102,7 @@ export class IdempotencyService {
         });
 
         if (concurrent.requestHash !== hashedPayload) {
-          throw new DomainError('CONFLICT', 'Idempotency key was already used with a different payload');
+          throw new DomainError('CONFLICT', 'Idempotency key was already used with a different payload', { label: 'errors.idempotency.keyConflict' });
         }
 
         return unwrapResponseBody<T>(concurrent.responseBody);

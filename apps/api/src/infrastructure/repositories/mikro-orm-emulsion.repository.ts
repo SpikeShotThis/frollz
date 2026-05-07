@@ -26,12 +26,12 @@ export class MikroOrmEmulsionRepository extends EmulsionRepository {
   async create(input: CreateEmulsionRequest) {
     const developmentProcess = await this.entityManager.findOne(DevelopmentProcessEntity, { id: input.developmentProcessId });
     if (!developmentProcess) {
-      throw new DomainError('NOT_FOUND', 'Development process not found');
+      throw new DomainError('NOT_FOUND', 'Development process not found', { label: 'errors.emulsions.developmentProcessNotFound' });
     }
 
     const formats = await this.entityManager.find(FilmFormatEntity, { id: { $in: input.filmFormatIds } }, { orderBy: { id: 'asc' } });
     if (formats.length !== new Set(input.filmFormatIds).size) {
-      throw new DomainError('NOT_FOUND', 'One or more film formats were not found');
+      throw new DomainError('NOT_FOUND', 'One or more film formats were not found', { label: 'errors.emulsions.formatsNotFound' });
     }
 
     try {
@@ -58,7 +58,7 @@ export class MikroOrmEmulsionRepository extends EmulsionRepository {
       return mapEmulsionEntity(persisted);
     } catch (error) {
       if (error instanceof UniqueConstraintViolationException) {
-        throw new DomainError('CONFLICT', 'An emulsion with that brand, manufacturer, and ISO already exists');
+        throw new DomainError('CONFLICT', 'An emulsion with that brand, manufacturer, and ISO already exists', { label: 'errors.emulsions.duplicate' });
       }
       throw error;
     }
@@ -72,12 +72,12 @@ export class MikroOrmEmulsionRepository extends EmulsionRepository {
 
     const developmentProcess = await this.entityManager.findOne(DevelopmentProcessEntity, { id: input.developmentProcessId });
     if (!developmentProcess) {
-      throw new DomainError('NOT_FOUND', 'Development process not found');
+      throw new DomainError('NOT_FOUND', 'Development process not found', { label: 'errors.emulsions.developmentProcessNotFound' });
     }
 
     const formats = await this.entityManager.find(FilmFormatEntity, { id: { $in: input.filmFormatIds } }, { orderBy: { id: 'asc' } });
     if (formats.length !== new Set(input.filmFormatIds).size) {
-      throw new DomainError('NOT_FOUND', 'One or more film formats were not found');
+      throw new DomainError('NOT_FOUND', 'One or more film formats were not found', { label: 'errors.emulsions.formatsNotFound' });
     }
 
     entity.brand = input.brand.trim();
@@ -98,7 +98,7 @@ export class MikroOrmEmulsionRepository extends EmulsionRepository {
       return mapEmulsionEntity(persisted);
     } catch (error) {
       if (error instanceof UniqueConstraintViolationException) {
-        throw new DomainError('CONFLICT', 'An emulsion with that brand, manufacturer, and ISO already exists');
+        throw new DomainError('CONFLICT', 'An emulsion with that brand, manufacturer, and ISO already exists', { label: 'errors.emulsions.duplicate' });
       }
       throw error;
     }
@@ -116,7 +116,7 @@ export class MikroOrmEmulsionRepository extends EmulsionRepository {
       return true;
     } catch (error) {
       if (error instanceof ForeignKeyConstraintViolationException) {
-        throw new DomainError('CONFLICT', 'Emulsion cannot be deleted because it is in use by existing films');
+        throw new DomainError('CONFLICT', 'Emulsion cannot be deleted because it is in use by existing films', { label: 'errors.emulsions.inUse' });
       }
       throw error;
     }

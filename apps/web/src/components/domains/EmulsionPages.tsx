@@ -3,13 +3,16 @@
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
 import { useParams } from 'next/navigation';
+import { useTranslation } from '@frollz2/i18n';
 import { createEmulsionRequestSchema, updateEmulsionRequestSchema } from '@frollz2/schema';
 import type { DevelopmentProcess, Emulsion, FilmFormat } from '@frollz2/schema';
 import { useSession } from '../../auth/session';
+import { DeleteConfirmationName } from '../DeleteConfirmationName';
 import { FormDrawer } from '../FormDrawer';
 import { PageHeader } from '../PageHeader';
 import { ReferenceTypeaheadInput } from '../ReferenceTypeaheadInput';
 import { useIdempotentSubmit } from '../../hooks/useIdempotentSubmit';
+import { resolveApiError } from '../../utils/resolve-api-error';
 
 export function EmulsionListPage({
   processFilterCode,
@@ -18,6 +21,7 @@ export function EmulsionListPage({
   processFilterCode?: string;
   processFilterLabel?: string;
 } = {}) {
+  const { t } = useTranslation();
   const { api } = useSession();
   const [emulsions, setEmulsions] = useState<Emulsion[]>([]);
   const [formats, setFormats] = useState<FilmFormat[]>([]);
@@ -49,7 +53,7 @@ export function EmulsionListPage({
       setFormats(refs.filmFormats);
       setProcesses(refs.developmentProcesses);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load emulsions');
+      setError(resolveApiError(err, t, t('emulsions.failedToLoad')));
     } finally {
       setIsLoading(false);
     }
@@ -72,23 +76,23 @@ export function EmulsionListPage({
   }, [emulsions, processFilterCode, search]);
 
   const subtitle = processFilterLabel
-    ? `Shared catalog filtered by ${processFilterLabel} process and search.`
-    : 'Manage film emulsions and their format compatibility.';
+    ? t('emulsions.filteredSubtitle', { process: processFilterLabel })
+    : t('emulsions.subtitle');
 
   return (
     <main>
       <PageHeader
-        heading="Emulsions"
+        heading={t('emulsions.heading')}
         subtitle={subtitle}
-        action={<button type="button" onClick={() => setCreateOpen(true)}>New emulsion</button>}
+        action={<button type="button" onClick={() => setCreateOpen(true)}>{t('emulsions.newEmulsion')}</button>}
       />
 
       {error ? <div className="error-banner" role="alert">{error}</div> : null}
 
       <section className="card">
         <div className="form-field" style={{ marginBottom: 0 }}>
-          <label htmlFor="emulsion-search">Search emulsions</label>
-          <input id="emulsion-search" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Manufacturer, brand, ISO…" />
+          <label htmlFor="emulsion-search">{t('emulsions.searchLabel')}</label>
+          <input id="emulsion-search" value={search} onChange={(e) => setSearch(e.target.value)} placeholder={t('emulsions.searchPlaceholder')} />
         </div>
       </section>
 
@@ -96,17 +100,17 @@ export function EmulsionListPage({
         {isLoading ? (
           <div>{[...Array(4)].map((_, i) => <div key={i} className="skeleton skeleton-row" />)}</div>
         ) : visible.length === 0 ? (
-          <div className="empty-state"><p>No emulsions found.</p></div>
+          <div className="empty-state"><p>{t('emulsions.noEmulsionsFound')}</p></div>
         ) : (
           <div className="table-scroll">
             <table>
-              <caption className="sr-only">Emulsions matching the current filters</caption>
+              <caption className="sr-only">{t('emulsions.tableCaption')}</caption>
               <thead>
                 <tr>
-                  <th scope="col">Emulsion</th>
-                  <th scope="col">ISO</th>
-                  <th scope="col">Process</th>
-                  <th scope="col">Formats</th>
+                  <th scope="col">{t('emulsions.columns.emulsion')}</th>
+                  <th scope="col">{t('emulsions.columns.iso')}</th>
+                  <th scope="col">{t('emulsions.columns.process')}</th>
+                  <th scope="col">{t('emulsions.columns.formats')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -130,12 +134,12 @@ export function EmulsionListPage({
         )}
         {!isLoading ? (
           <p style={{ fontSize: 13, color: 'var(--muted-ink)', margin: '10px 0 0' }}>
-            {visible.length} emulsion{visible.length !== 1 ? 's' : ''}
+            {t('emulsions.count', { count: visible.length })}
           </p>
         ) : null}
       </section>
 
-      <FormDrawer open={isCreateOpen} onClose={() => setCreateOpen(false)} title="New emulsion">
+      <FormDrawer open={isCreateOpen} onClose={() => setCreateOpen(false)} title={t('emulsions.newEmulsion')}>
         <form onSubmit={async (e) => {
           e.preventDefault();
           if (!beginCreateSubmit()) return;
@@ -153,16 +157,16 @@ export function EmulsionListPage({
             await load();
             setCreateOpen(false);
           } catch (err) {
-            setError(err instanceof Error ? err.message : 'Failed to create emulsion');
+            setError(resolveApiError(err, t, t('emulsions.failedToCreate')));
           } finally {
             endCreateSubmit();
           }
         }}>
           <fieldset disabled={isCreating} style={{ margin: 0, padding: 0, border: 'none' }}>
-          <legend className="sr-only">New emulsion details</legend>
+          <legend className="sr-only">{t('emulsions.form.newLegend')}</legend>
           <ReferenceTypeaheadInput
             id="new-em-manufacturer"
-            label="Manufacturer"
+            label={t('emulsions.form.manufacturer')}
             kind="manufacturer"
             value={form.manufacturer}
             onChange={(manufacturer) => setForm((p) => ({ ...p, manufacturer }))}
@@ -170,26 +174,26 @@ export function EmulsionListPage({
           />
           <ReferenceTypeaheadInput
             id="new-em-brand"
-            label="Brand / name"
+            label={t('emulsions.form.brand')}
             kind="brand"
             value={form.brand}
             onChange={(brand) => setForm((p) => ({ ...p, brand }))}
             required
           />
           <div className="form-field">
-            <label htmlFor="new-em-iso">ISO speed</label>
+            <label htmlFor="new-em-iso">{t('emulsions.form.isoSpeed')}</label>
             <input id="new-em-iso" type="number" value={form.isoSpeed} onChange={(e) => setForm((p) => ({ ...p, isoSpeed: e.target.value }))} required min={1} />
           </div>
           <div className="form-field">
-            <label htmlFor="new-em-process">Development process</label>
+            <label htmlFor="new-em-process">{t('emulsions.form.process')}</label>
             <select id="new-em-process" value={form.developmentProcessId} onChange={(e) => setForm((p) => ({ ...p, developmentProcessId: e.target.value }))} required>
-              <option value="">Select process</option>
+              <option value="">{t('emulsions.form.selectProcess')}</option>
               {processes.map((proc) => <option key={proc.id} value={proc.id}>{proc.label}</option>)}
             </select>
           </div>
           <div className="form-field">
             <fieldset style={{ margin: 0, padding: 0, border: 'none' }}>
-            <legend style={{ fontSize: 13, fontWeight: 600, color: 'var(--muted-ink)' }}>Film formats</legend>
+            <legend style={{ fontSize: 13, fontWeight: 600, color: 'var(--muted-ink)' }}>{t('emulsions.form.filmFormats')}</legend>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px 16px', paddingTop: 4 }}>
               {formats.map((format) => (
                 <label key={format.id} style={{ display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer', fontSize: 14 }}>
@@ -213,8 +217,8 @@ export function EmulsionListPage({
             </fieldset>
           </div>
           <div className="form-actions">
-            <button type="submit" disabled={isCreating}>{isCreating ? 'Creating…' : 'Create'}</button>
-            <button type="button" className="secondary" onClick={() => setCreateOpen(false)}>Cancel</button>
+            <button type="submit" disabled={isCreating}>{isCreating ? t('emulsions.form.creating') : t('emulsions.form.create')}</button>
+            <button type="button" className="secondary" onClick={() => setCreateOpen(false)}>{t('emulsions.form.cancel')}</button>
           </div>
           </fieldset>
         </form>
@@ -255,6 +259,8 @@ export function EmulsionDetailPage() {
     resetSubmit: resetDeleteSubmit
   } = useIdempotentSubmit();
 
+  const { t } = useTranslation();
+
   async function load() {
     try {
       const [detail, refs] = await Promise.all([api.getEmulsion(id), api.getReferenceTables()]);
@@ -269,7 +275,7 @@ export function EmulsionDetailPage() {
         filmFormatIds: detail.filmFormats.map((format) => String(format.id))
       });
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load emulsion detail');
+      setError(resolveApiError(err, t, t('emulsions.failedToLoad')));
     }
   }
 
@@ -287,15 +293,15 @@ export function EmulsionDetailPage() {
     <main>
       <Link href="/emulsions" className="back-link">
         <i className="bi bi-arrow-left" aria-hidden="true" />
-        Back to emulsions
+        {t('emulsions.backToEmulsions')}
       </Link>
 
       <PageHeader
-        heading={emulsionName || 'Emulsion Details'}
+        heading={emulsionName || t('emulsions.emulsionDetails')}
         subtitle={emulsion ? `ISO ${emulsion.isoSpeed} · ${emulsion.developmentProcess.label}` : undefined}
         action={
           emulsion ? (
-            <button type="button" className="secondary" onClick={() => setEditOpen(true)}>Edit</button>
+            <button type="button" className="secondary" onClick={() => setEditOpen(true)}>{t('emulsions.editButton')}</button>
           ) : null
         }
       />
@@ -307,27 +313,27 @@ export function EmulsionDetailPage() {
           <section className="card">
             <div className="detail-grid">
               <div className="detail-field">
-                <span className="detail-label">Manufacturer</span>
+                <span className="detail-label">{t('emulsions.detail.manufacturer')}</span>
                 <span className="detail-value">{emulsion.manufacturer}</span>
               </div>
               <div className="detail-field">
-                <span className="detail-label">Brand</span>
+                <span className="detail-label">{t('emulsions.detail.brand')}</span>
                 <span className="detail-value">{emulsion.brand}</span>
               </div>
               <div className="detail-field">
-                <span className="detail-label">ISO</span>
+                <span className="detail-label">{t('emulsions.detail.iso')}</span>
                 <span className="detail-value">{emulsion.isoSpeed}</span>
               </div>
               <div className="detail-field">
-                <span className="detail-label">Balance</span>
+                <span className="detail-label">{t('emulsions.detail.balance')}</span>
                 <span className="detail-value">{emulsion.balance ?? '—'}</span>
               </div>
               <div className="detail-field">
-                <span className="detail-label">Development process</span>
+                <span className="detail-label">{t('emulsions.detail.process')}</span>
                 <span className="detail-value">{emulsion.developmentProcess.label}</span>
               </div>
               <div className="detail-field">
-                <span className="detail-label">Compatible formats</span>
+                <span className="detail-label">{t('emulsions.detail.formats')}</span>
                 <span className="detail-value">
                   {emulsion.filmFormats.map((format) => format.label).join(', ') || '—'}
                 </span>
@@ -335,7 +341,7 @@ export function EmulsionDetailPage() {
             </div>
           </section>
 
-          <FormDrawer open={isEditOpen} onClose={() => setEditOpen(false)} title="Edit emulsion">
+          <FormDrawer open={isEditOpen} onClose={() => setEditOpen(false)} title={t('emulsions.editButton') + ' ' + t('emulsions.heading').toLowerCase()}>
             <form onSubmit={async (e) => {
               e.preventDefault();
               if (!beginSaveSubmit()) return;
@@ -352,16 +358,16 @@ export function EmulsionDetailPage() {
                 await load();
                 setEditOpen(false);
               } catch (err) {
-                setError(err instanceof Error ? err.message : 'Failed to update emulsion');
+                setError(resolveApiError(err, t, t('emulsions.failedToUpdate')));
               } finally {
                 endSaveSubmit();
               }
             }}>
               <fieldset disabled={isSaving} style={{ margin: 0, padding: 0, border: 'none' }}>
-              <legend className="sr-only">Edit emulsion details</legend>
+              <legend className="sr-only">{t('emulsions.form.editLegend')}</legend>
               <ReferenceTypeaheadInput
                 id="edit-em-manufacturer"
-                label="Manufacturer"
+                label={t('emulsions.form.manufacturer')}
                 kind="manufacturer"
                 value={form.manufacturer}
                 onChange={(manufacturer) => setForm((p) => ({ ...p, manufacturer }))}
@@ -369,25 +375,25 @@ export function EmulsionDetailPage() {
               />
               <ReferenceTypeaheadInput
                 id="edit-em-brand"
-                label="Brand / name"
+                label={t('emulsions.form.brand')}
                 kind="brand"
                 value={form.brand}
                 onChange={(brand) => setForm((p) => ({ ...p, brand }))}
                 required
               />
               <div className="form-field">
-                <label htmlFor="edit-em-iso">ISO speed</label>
+                <label htmlFor="edit-em-iso">{t('emulsions.form.isoSpeed')}</label>
                 <input id="edit-em-iso" type="number" value={form.isoSpeed} onChange={(e) => setForm((p) => ({ ...p, isoSpeed: e.target.value }))} required min={1} />
               </div>
               <div className="form-field">
-                <label htmlFor="edit-em-process">Development process</label>
+                <label htmlFor="edit-em-process">{t('emulsions.form.process')}</label>
                 <select id="edit-em-process" value={form.developmentProcessId} onChange={(e) => setForm((p) => ({ ...p, developmentProcessId: e.target.value }))} required>
                   {processes.map((proc) => <option key={proc.id} value={proc.id}>{proc.label}</option>)}
                 </select>
               </div>
               <div className="form-field">
                 <fieldset style={{ margin: 0, padding: 0, border: 'none' }}>
-                <legend style={{ fontSize: 13, fontWeight: 600, color: 'var(--muted-ink)' }}>Film formats</legend>
+                <legend style={{ fontSize: 13, fontWeight: 600, color: 'var(--muted-ink)' }}>{t('emulsions.form.filmFormats')}</legend>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px 16px', paddingTop: 4 }}>
                   {formats.map((format) => (
                     <label key={format.id} style={{ display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer', fontSize: 14 }}>
@@ -411,15 +417,16 @@ export function EmulsionDetailPage() {
                 </fieldset>
               </div>
               <div className="form-actions">
-                <button type="submit" disabled={isSaving}>{isSaving ? 'Saving…' : 'Save'}</button>
-                <button type="button" className="secondary" onClick={() => setEditOpen(false)}>Cancel</button>
+                <button type="submit" disabled={isSaving}>{isSaving ? t('emulsions.form.saving') : t('emulsions.form.save')}</button>
+                <button type="button" className="secondary" onClick={() => setEditOpen(false)}>{t('emulsions.form.cancel')}</button>
               </div>
 
               <div className="danger-zone">
-                <h3>Delete emulsion</h3>
-                <p>Type <strong>{emulsionName}</strong> to confirm deletion.</p>
+                <h3>{t('emulsions.delete.heading')}</h3>
+                <p>{t('emulsions.delete.confirmationPrompt')}</p>
+                <DeleteConfirmationName name={emulsionName} />
                 <div className="form-field">
-                  <label htmlFor="delete-em-confirm">Confirmation</label>
+                  <label htmlFor="delete-em-confirm">{t('emulsions.delete.confirmLabel')}</label>
                   <input id="delete-em-confirm" value={deleteConfirmation} onChange={(e) => setDeleteConfirmation(e.target.value)} />
                 </div>
                 <button
@@ -432,13 +439,13 @@ export function EmulsionDetailPage() {
                       await api.deleteEmulsion(id, deleteIdempotencyKeyRef.current);
                       window.location.href = '/emulsions';
                     } catch (err) {
-                      setError(err instanceof Error ? err.message : 'Failed to delete emulsion');
+                      setError(resolveApiError(err, t, t('emulsions.failedToDelete')));
                     } finally {
                       endDeleteSubmit();
                     }
                   }}
                 >
-                  {isDeleting ? 'Deleting…' : 'Delete emulsion'}
+                  {isDeleting ? t('emulsions.delete.deleting') : t('emulsions.delete.delete')}
                 </button>
               </div>
               </fieldset>

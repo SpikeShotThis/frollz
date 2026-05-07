@@ -1,6 +1,8 @@
 import { Text, View } from 'react-native';
 import { buildFilmKpis, type FilmListItem } from '@frollz2/contracts';
 import { tokens } from '@frollz2/design-tokens';
+import '@frollz2/i18n';
+import { useTranslation } from '@frollz2/i18n';
 
 const sampleFilms: FilmListItem[] = [
   {
@@ -26,10 +28,11 @@ const sampleFilms: FilmListItem[] = [
 const kpis = buildFilmKpis(sampleFilms, Date.now());
 
 export default function MobileHomePage() {
+  const { t } = useTranslation();
   return (
     <View style={{ flex: 1, backgroundColor: tokens.colors.background, padding: tokens.spacing.xl, gap: tokens.spacing.md }}>
-      <Text style={{ color: tokens.colors.accent, fontSize: 12, letterSpacing: 1.2 }}>MIGRATION BASELINE</Text>
-      <Text style={{ color: tokens.colors.ink, fontSize: 32, fontWeight: '700' }}>Frollz Mobile (Expo)</Text>
+      <Text style={{ color: tokens.colors.accent, fontSize: 12, letterSpacing: 1.2 }}>{t('mobile.migrationBaseline')}</Text>
+      <Text style={{ color: tokens.colors.ink, fontSize: 32, fontWeight: '700' }}>{t('mobile.appName')}</Text>
       {kpis.map((kpi) => (
         <View
           key={kpi.label}

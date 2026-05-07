@@ -16,18 +16,19 @@
   "dependencies": {
     "@frollz2/api-client": "workspace:*",
     "@frollz2/contracts": "workspace:*",
-    "@frollz2/schema": "workspace:*",
     "@frollz2/design-tokens": "workspace:*",
+    "@frollz2/i18n": "workspace:*",
+    "@frollz2/schema": "workspace:*",
     "bootstrap-icons": "^1.13.1",
-    "next": "^15.3.0",
-    "react": "^19.1.0",
-    "react-dom": "^19.1.0"
+    "next": "^16.2.5",
+    "react": "^19.2.6",
+    "react-dom": "^19.2.6"
   },
   "devDependencies": {
-    "@playwright/test": "^1.56.1",
+    "@playwright/test": "^1.59.1",
     "@types/node": "^25.6.0",
-    "@types/react": "^19.1.1",
-    "@types/react-dom": "^19.1.1",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
     "playwright-bdd": "^8.5.0",
     "typescript": "^6.0.3"
   }

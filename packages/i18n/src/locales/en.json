@@ -1,0 +1,652 @@
+{
+  "app": {
+    "name": "frōllz",
+    "skipToContent": "Skip to content"
+  },
+  "navigation": {
+    "title": "Navigation",
+    "primaryLabel": "Primary navigation",
+    "closeNav": "Close navigation",
+    "openNav": "Open navigation",
+    "expandSidebar": "Expand sidebar",
+    "collapseSidebar": "Collapse sidebar",
+    "signOut": "Sign out",
+    "signingOut": "Signing out",
+    "dashboard": "Dashboard",
+    "film": "Film",
+    "allFilm": "All Film",
+    "film35mm": "35mm",
+    "filmMediumFormat": "Medium Format",
+    "filmLargeFormat": "Large Format",
+    "filmInstant": "Instant",
+    "devices": "Devices",
+    "allDevices": "All Devices",
+    "cameras": "Cameras",
+    "backs": "Backs",
+    "holders": "Holders",
+    "emulsions": "Emulsions",
+    "allEmulsions": "All Emulsions",
+    "blackAndWhite": "Black & White",
+    "bwReversal": "B&W Reversal",
+    "cineEcn2": "Cine (ECN-2)",
+    "colorNegativeC41": "Color Negative (C-41)",
+    "colorPositiveE6": "Color Positive (E-6)",
+    "instant": "Instant",
+    "admin": "Admin",
+    "adminOverview": "Overview",
+    "filmLabs": "Film Labs",
+    "filmSuppliers": "Film Suppliers",
+    "dataExport": "Data Export"
+  },
+  "theme": {
+    "switchToLight": "Switch to light mode",
+    "switchToDark": "Switch to dark mode"
+  },
+  "locale": {
+    "selectLabel": "Language"
+  },
+  "clipboard": {
+    "copyName": "Copy {{name}} to clipboard"
+  },
+  "auth": {
+    "signIn": "Sign in",
+    "signInWelcome": "Welcome back to frollz.",
+    "signingIn": "Signing in…",
+    "signInLegend": "Sign in credentials",
+    "noAccount": "Don’t have an account?",
+    "register": "Register",
+    "createAccount": "Create account",
+    "createAccountTagline": "Start tracking your film workflow.",
+    "creatingAccount": "Creating account…",
+    "createAccountLegend": "Create account details",
+    "alreadyHaveAccount": "Already have an account?",
+    "email": "Email address",
+    "password": "Password",
+    "fullName": "Full name",
+    "passwordHelp": "Minimum 8 characters.",
+    "loginFailed": "Login failed",
+    "registrationFailed": "Registration failed"
+  },
+  "dashboard": {
+    "heading": "Dashboard",
+    "subtitle": "Overview of film workflow, stock mix, and activity risk signals.",
+    "loadingLabel": "Loading dashboard",
+    "failedToLoad": "Failed to load dashboard",
+    "photographerFallback": "Photographer",
+    "kpi": {
+      "total": {
+        "title": "Total Films",
+        "helper": "All tracked rolls and sheets",
+        "actionLabel": "Open film",
+        "segments": {
+          "loaded": "Loaded",
+          "removed": "Removed",
+          "atLab": "At Lab",
+          "archived": "Archived"
+        }
+      },
+      "format": {
+        "title": "By Format",
+        "helper": "35mm {{count35mm}} · 120 {{count120}} · Sheet {{countSheet}}",
+        "actionLabel": "Open formats",
+        "segments": {
+          "mm35": "35mm",
+          "mm120": "120",
+          "sheet": "Sheet"
+        }
+      },
+      "loaded": {
+        "title": "Loaded (Idle Risk)",
+        "helper": "{{loadedIdleCount}} idle > {{loadedIdleDays}} days",
+        "actionLabel": "View loaded",
+        "segments": {
+          "idle": "Idle > {{days}}d",
+          "active": "Active ≤ {{days}}d"
+        }
+      },
+      "removed": {
+        "title": "Removed (Not Sent)",
+        "helper": "Oldest waiting: {{days}} days",
+        "actionLabel": "View removed",
+        "segments": {
+          "awaitingLab": "Awaiting lab",
+          "otherStates": "Other states"
+        }
+      },
+      "sentForDev": {
+        "title": "Sent for Dev",
+        "helper": "Oldest at lab: {{days}} days",
+        "actionLabel": "View lab queue",
+        "segments": {
+          "inLabQueue": "In lab queue",
+          "notInLab": "Not in lab"
+        }
+      },
+      "expiring": {
+        "title": "Expiring Soon",
+        "helper": "Expires in next {{days}} days",
+        "actionLabel": "Review stock",
+        "segments": {
+          "expiringSoon": "Expires ≤ {{days}}d",
+          "stableHorizon": "Stable horizon"
+        }
+      },
+      "archived": {
+        "title": "Archived",
+        "helper": "Completed rolls and sheets",
+        "actionLabel": "View archived",
+        "segments": {
+          "completed": "Completed",
+          "stillActive": "Still active"
+        }
+      },
+      "recent": {
+        "title": "Recent Activity ({{days}}d)",
+        "helper": "Films with new state changes",
+        "actionLabel": "Open film",
+        "segments": {
+          "changed": "Changed ≤ {{days}}d",
+          "noRecentChange": "No recent change"
+        }
+      }
+    }
+  },
+  "film": {
+    "inventory": "Film Inventory",
+    "inventorySubtitle": "Track film stock and move rolls through state transitions.",
+    "filteredSubtitle": "Filtered view for {{format}}.",
+    "addFilm": "Add film",
+    "edit": "Edit",
+    "addEvent": "Add event",
+    "backToInventory": "Back to film inventory",
+    "filmDetails": "Film Details",
+    "detailSubtitle": "View film details, frame metadata, and transition history.",
+    "failedToLoad": "Failed to load films",
+    "failedToCreate": "Failed to create film",
+    "failedToUpdate": "Failed to update film",
+    "failedToLoadDetail": "Failed to load film detail",
+    "noFilmFound": "No film found for your current filters.",
+    "tableCaption": "Film inventory matching the current filters",
+    "searchLabel": "Search films",
+    "searchPlaceholder": "Name, emulsion, brand…",
+    "stateFilter": "Film state",
+    "allStates": "All states",
+    "supplierFilter": "Supplier",
+    "allSuppliers": "All suppliers",
+    "columns": {
+      "film": "Film",
+      "emulsion": "Emulsion",
+      "format": "Format",
+      "iso": "ISO",
+      "state": "State",
+      "knownCost": "Known cost"
+    },
+    "detail": {
+      "currentState": "Current state",
+      "format": "Format",
+      "iso": "ISO",
+      "expiration": "Expiration",
+      "purchaseCost": "Purchase cost",
+      "developmentCost": "Development cost",
+      "knownTotal": "Known total"
+    },
+    "form": {
+      "newLegend": "New film details",
+      "editLegend": "Edit film details",
+      "name": "Name",
+      "format": "Film format",
+      "selectFormat": "Select film format",
+      "packageType": "Package type",
+      "selectPackageType": "Select package type",
+      "emulsion": "Emulsion",
+      "selectEmulsion": "Select emulsion",
+      "expiration": "Expiration date (optional)",
+      "supplier": "Supplier (optional)",
+      "supplierPlaceholder": "Select existing or type new",
+      "purchaseChannel": "Purchase channel (optional)",
+      "purchasePrice": "Purchase price (optional)",
+      "currency": "Currency",
+      "orderRef": "Order reference (optional)",
+      "obtainedDate": "Obtained date (optional)",
+      "rating": "Rating (optional)",
+      "noRating": "No rating",
+      "create": "Create film",
+      "creating": "Creating…",
+      "save": "Save",
+      "saving": "Saving…",
+      "cancel": "Cancel"
+    },
+    "addFilmDrawerTitle": "Add film",
+    "editFilmDrawerTitle": "Edit film",
+    "addEventDrawerTitle": "Add event",
+    "frames": {
+      "heading": "Frames ({{count}})",
+      "metadataEditableHint": "metadata editable when loaded",
+      "tableCaption": "Frames for {{filmName}}",
+      "clickToExpand": "Click a row to expand and edit frame metadata.",
+      "columns": {
+        "number": "#",
+        "state": "State",
+        "aperture": "Aperture",
+        "shutter": "Shutter",
+        "filter": "Filter"
+      },
+      "filterYes": "Yes",
+      "filterNo": "No"
+    },
+    "journey": {
+      "heading": "Journey events",
+      "noEvents": "No events recorded yet."
+    },
+    "count_one": "{{count}} film",
+    "count_other": "{{count}} films"
+  },
+  "frameEditor": {
+    "aperture": "Aperture",
+    "notRecorded": "Not recorded",
+    "otherAperture": "Other…",
+    "customAperture": "Custom aperture",
+    "customAperturePlaceholder": "e.g. 3.5",
+    "shutterSpeed": "Shutter speed",
+    "shutterSpeedPlaceholder": "e.g. 1/500 or 2.5",
+    "invalidFormat": "Invalid format",
+    "filterUsed": "Filter used",
+    "clickToCycle": "click to cycle",
+    "filterAriaLabel": "Filter used: {{value}}. Activate to cycle value.",
+    "filterYes": "Yes",
+    "filterNo": "No",
+    "filterUnknown": "Unknown",
+    "waitingToSave": "Waiting to save…",
+    "saving": "Saving…",
+    "saved": "✓ Saved",
+    "saveFailed": "Save failed",
+    "saveError": "Error: {{message}}"
+  },
+  "filmEvent": {
+    "legend": "Add film event",
+    "nextState": "Next state",
+    "selectTransition": "Select transition",
+    "occurredAt": "Occurred at",
+    "notes": "Notes (optional)",
+    "addEvent": "Add event",
+    "adding": "Adding…",
+    "noTransitions": "No further transitions available for this film.",
+    "failedToAdd": "Failed to add event",
+    "device": "Device",
+    "selectDevice": "Select a device",
+    "noCompatibleDevices": "No devices with matching film format. Add a device first.",
+    "slotNumber": "Slot number",
+    "slot1": "Slot 1",
+    "slot2": "Slot 2",
+    "intendedPushPull": "Intended push/pull (optional)",
+    "pushPullHelp": "Positive = push, negative = pull. Leave blank for none.",
+    "storageLocation": "Storage location",
+    "selectLocation": "Select a location",
+    "labName": "Lab name",
+    "labContact": "Lab contact (optional)",
+    "actualPushPull": "Actual push/pull (optional)",
+    "devCost": "Development cost (optional)",
+    "currency": "Currency",
+    "scanner": "Scanner/software (optional)",
+    "scannerPlaceholder": "Scanner or scan software",
+    "scanLink": "Scan link (optional)"
+  },
+  "emulsions": {
+    "heading": "Emulsions",
+    "subtitle": "Manage film emulsions and their format compatibility.",
+    "filteredSubtitle": "Shared catalog filtered by {{process}} process and search.",
+    "newEmulsion": "New emulsion",
+    "backToEmulsions": "Back to emulsions",
+    "emulsionDetails": "Emulsion Details",
+    "failedToLoad": "Failed to load emulsions",
+    "failedToCreate": "Failed to create emulsion",
+    "failedToUpdate": "Failed to update emulsion",
+    "failedToDelete": "Failed to delete emulsion",
+    "noEmulsionsFound": "No emulsions found.",
+    "tableCaption": "Emulsions matching the current filters",
+    "searchLabel": "Search emulsions",
+    "searchPlaceholder": "Manufacturer, brand, ISO…",
+    "columns": {
+      "emulsion": "Emulsion",
+      "iso": "ISO",
+      "process": "Process",
+      "formats": "Formats"
+    },
+    "detail": {
+      "manufacturer": "Manufacturer",
+      "brand": "Brand",
+      "iso": "ISO",
+      "balance": "Balance",
+      "process": "Development process",
+      "formats": "Compatible formats"
+    },
+    "editButton": "Edit",
+    "form": {
+      "newLegend": "New emulsion details",
+      "editLegend": "Edit emulsion details",
+      "manufacturer": "Manufacturer",
+      "brand": "Brand / name",
+      "isoSpeed": "ISO speed",
+      "process": "Development process",
+      "selectProcess": "Select process",
+      "filmFormats": "Film formats",
+      "create": "Create",
+      "creating": "Creating…",
+      "save": "Save",
+      "saving": "Saving…",
+      "cancel": "Cancel"
+    },
+    "delete": {
+      "heading": "Delete emulsion",
+      "confirmationPrompt": "Type this name to confirm deletion:",
+      "confirmLabel": "Confirmation",
+      "delete": "Delete emulsion",
+      "deleting": "Deleting…"
+    },
+    "count_one": "{{count}} emulsion",
+    "count_other": "{{count}} emulsions"
+  },
+  "devices": {
+    "heading": "Devices",
+    "subtitle": "Cameras, backs, and film holders.",
+    "filteredSubtitle": "Filtered view for {{type}}.",
+    "newDevice": "New device",
+    "backToDevices": "Back to devices",
+    "deviceDetails": "Device Details",
+    "failedToLoad": "Failed to load devices",
+    "failedToCreate": "Failed to create device",
+    "failedToUpdate": "Failed to update device",
+    "failedToDelete": "Failed to delete device",
+    "noDevicesFound": "No devices match your filters.",
+    "tableCaption": "Devices matching the current filters",
+    "searchLabel": "Search devices",
+    "searchPlaceholder": "Make, model, name…",
+    "typeFilter": "Device type",
+    "allTypes": "All types",
+    "columns": {
+      "device": "Device",
+      "type": "Type",
+      "format": "Format",
+      "frameSize": "Frame size"
+    },
+    "detail": {
+      "make": "Make",
+      "model": "Model",
+      "name": "Name",
+      "type": "Type",
+      "frameSize": "Frame size",
+      "system": "System",
+      "brand": "Brand"
+    },
+    "form": {
+      "newLegend": "New device details",
+      "editLegend": "Edit device details",
+      "deviceType": "Device type",
+      "filmFormat": "Film format",
+      "selectFilmFormat": "Select film format",
+      "frameSize": "Frame size",
+      "selectFrameSize": "Select frame size",
+      "directLoadable": "Is this camera directly loadable?",
+      "make": "Make",
+      "model": "Model",
+      "name": "Name",
+      "system": "System",
+      "brand": "Brand",
+      "holderType": "Holder type",
+      "selectHolderType": "Select holder type",
+      "slotCount": "Slot count",
+      "slot1": "1 slot",
+      "slot2": "2 slots",
+      "create": "Create {{type}}",
+      "creating": "Creating…",
+      "save": "Save",
+      "saving": "Saving…",
+      "cancel": "Cancel"
+    },
+    "slots": {
+      "heading": "Film holder slots",
+      "noSlots": "No slot information available.",
+      "tableCaption": "Film holder slots for {{name}}",
+      "columns": {
+        "side": "Side",
+        "state": "State",
+        "loadedFilm": "Loaded film"
+      },
+      "none": "None"
+    },
+    "timeline": {
+      "heading": "Load timeline",
+      "noEvents": "No load timeline events available.",
+      "tableCaption": "Load timeline for {{name}}",
+      "columns": {
+        "film": "Film",
+        "emulsion": "Emulsion",
+        "loadedAt": "Loaded at",
+        "removedAt": "Removed at"
+      },
+      "active": "Active"
+    },
+    "delete": {
+      "heading": "Delete device",
+      "confirmationPrompt": "Type this name to confirm deletion:",
+      "confirmLabel": "Confirmation",
+      "delete": "Delete device",
+      "deleting": "Deleting…"
+    },
+    "count_one": "{{count}} device",
+    "count_other": "{{count}} devices"
+  },
+  "admin": {
+    "heading": "Admin",
+    "subtitle": "System administration and data management.",
+    "sections": {
+      "dataExport": {
+        "title": "Data Export & Import",
+        "description": "Export or import your film tracking data."
+      },
+      "filmLabs": {
+        "title": "Film Labs",
+        "description": "Manage film labs and ratings."
+      },
+      "filmSuppliers": {
+        "title": "Film Suppliers",
+        "description": "Manage film suppliers and ratings."
+      }
+    },
+    "filmLabs": {
+      "heading": "Film Labs",
+      "subtitle": "Manage development labs for sent-for-dev tracking.",
+      "entity": "lab"
+    },
+    "filmSuppliers": {
+      "heading": "Film Suppliers",
+      "subtitle": "Manage film suppliers for purchase tracking.",
+      "entity": "supplier"
+    },
+    "search": "Search {{entity}}s",
+    "searchPlaceholder": "Search by name…",
+    "includeInactive": "Include inactive",
+    "newEntity": "New {{entity}}",
+    "noEntitiesFound": "No {{entity}}s found.",
+    "tableCaption": "{{title}} matching the current filters",
+    "failedToLoad": "Failed to load {{entity}}s",
+    "failedToSave": "Failed to save {{entity}}",
+    "failedToUpdate": "Failed to update {{entity}}",
+    "columns": {
+      "name": "Name",
+      "status": "Status",
+      "rating": "Rating",
+      "actions": "Actions"
+    },
+    "status": {
+      "active": "Active",
+      "inactive": "Inactive"
+    },
+    "rating": {
+      "groupLabel": "Rating from 1 to 5 stars",
+      "starLabel_one": "{{count}} star",
+      "starLabel_other": "{{count}} stars",
+      "ariaFull": "{{count}} out of 5 stars",
+      "ariaNone": "No rating",
+      "clear": "Clear",
+      "label": "Rating (1-5)"
+    },
+    "actions": {
+      "edit": "Edit",
+      "archive": "Archive",
+      "restore": "Restore",
+      "saving": "Saving…"
+    },
+    "form": {
+      "name": "Name",
+      "contact": "Contact person",
+      "email": "Email",
+      "website": "Website",
+      "defaultProcesses": "Default processes",
+      "defaultProcessesPlaceholder": "C-41, E-6, B&W",
+      "notes": "Notes",
+      "newLegend": "New {{entity}}",
+      "editLegend": "Edit {{entity}}",
+      "newTitle": "New {{entity}}",
+      "editTitle": "Edit {{entity}}",
+      "create": "Create",
+      "update": "Update",
+      "saving": "Saving…",
+      "cancel": "Cancel"
+    },
+    "dataExport": {
+      "heading": "Data Export / Import",
+      "subtitle": "Export your data as JSON or restore from a previous export.",
+      "export": {
+        "heading": "Export data",
+        "description": "Download all your data as a JSON file.",
+        "button": "Export JSON",
+        "exporting": "Exporting…",
+        "success": "Export complete.",
+        "failed": "Failed to export data"
+      },
+      "import": {
+        "heading": "Import data",
+        "description": "Restore from a previously exported JSON file. This will merge with existing data.",
+        "label": "Import JSON file",
+        "success": "Import complete.",
+        "failed": "Failed to import data"
+      }
+    },
+    "count_one": "{{count}} {{entity}}",
+    "count_other": "{{count}} {{entity}}s"
+  },
+  "formDrawer": {
+    "close": "Close"
+  },
+  "mobile": {
+    "migrationBaseline": "MIGRATION BASELINE",
+    "appName": "Frollz Mobile (Expo)",
+    "headerTitle": "frōllz Mobile"
+  },
+  "errors": {
+    "validation": {
+      "failed": "Validation failed"
+    },
+    "idempotency": {
+      "keyTooLong": "Idempotency key must be 255 characters or fewer",
+      "keyConflict": "Idempotency key was already used with a different payload"
+    },
+    "auth": {
+      "emailConflict": "A user with that email already exists",
+      "invalidCredentials": "Invalid email or password",
+      "refreshTokenReuse": "Refresh token reuse detected",
+      "invalidRefreshToken": "Invalid refresh token",
+      "refreshTokenExpired": "Refresh token has expired",
+      "userNotFound": "User not found"
+    },
+    "film": {
+      "notFound": "Film not found",
+      "stateNotFound": "Film state not found",
+      "lotNotFoundAfterCreation": "Film lot not found after creation",
+      "frameNotFound": "Frame not found",
+      "packageTypeNotFound": "Package type not found",
+      "formatNotFound": "Film format not found",
+      "formatPackageMismatch": "Film format must match the selected package type",
+      "nameConflict": "You already have a film with that name",
+      "nameConflictCollection": "A film with that name already exists in your collection",
+      "frameMetadataRequiresLoaded": "Frame metadata can only be updated while the film is loaded",
+      "labIdRequired": "labId is required for lab events",
+      "loadEventRequiresTarget": "A loaded event requires a valid load target",
+      "bulkRequiresConversion": "35mm 100ft bulk must be converted to a supported roll before loading",
+      "alreadyLoaded": "This film has already been loaded and cannot be reloaded",
+      "loadFrameEventRequiresTarget": "A loaded frame event requires a valid load target",
+      "loadFrameTargetMismatch": "Loaded frame target does not match selected frame",
+      "frameAlreadyLoaded": "That frame has already been loaded and cannot be reused",
+      "cameraNotDirectLoad": "This camera cannot be loaded directly",
+      "loadRequiresCompatibleDevice": "Loaded events require a compatible device",
+      "deviceFormatMismatch": "Device format does not match the film format",
+      "useCameraDirectTarget": "Use camera_direct load target for direct camera loads",
+      "useInterchangeableBackTarget": "Use interchangeable_back load target for back loads",
+      "holderLoadRequiresSlotTarget": "A holder load requires film_holder_slot target with slotNumber",
+      "holderSlotNotExists": "That holder slot does not exist for this holder",
+      "holderSlotOccupied": "That holder slot is already occupied",
+      "holderSlotNotLoaded": "That holder slot is not loaded",
+      "holderSlotNotExposed": "That holder slot is not exposed",
+      "exposedRequiresLoaded": "An exposed event requires a previously loaded device context",
+      "holderExposedRequiresSlot": "A holder exposed event requires a slotSideNumber",
+      "exposedFrameRequiresLoaded": "An exposed frame event requires a previous loaded frame event",
+      "removedRequiresLoaded": "A removed event requires a previously loaded device context",
+      "cameraNoUnload": "This camera does not support unloading; continue directly to sent_for_dev",
+      "holderRemovedRequiresSlot": "A holder removed event requires a slotSideNumber",
+      "removedFrameRequiresLoaded": "A removed frame event requires a previous loaded frame event",
+      "unknownState": "Unknown film state: {{state}}",
+      "invalidTransition": "Invalid film transition from {{from}} to {{to}}"
+    },
+    "devices": {
+      "notFound": "Device not found",
+      "cameraNotFound": "Camera not found",
+      "mountedDeviceNotFound": "Mounted device not found",
+      "formatNotFound": "Film format not found",
+      "activeMountNotFound": "Active mount not found",
+      "directLoadRequiresFrameSize": "Directly loadable cameras require a frame size",
+      "invalidFrameSize": "Frame size {{frameSize}} is not valid for {{format}}",
+      "hasActiveFilm": "Device still has an active loaded film",
+      "duplicate": "A device with those details already exists",
+      "alreadyLoaded": "Device already has an active loaded film",
+      "missingFrameSize": "Device is missing a frame size",
+      "onlyBacksOrHolders": "Only interchangeable backs or film holders can be mounted",
+      "cameraNoMounted": "This camera does not support mounted devices",
+      "cameraOnlyBacks": "This camera can only mount interchangeable backs",
+      "cameraRequiresSystem": "This camera requires a system to mount interchangeable backs",
+      "backSystemIncompatible": "Interchangeable back system is not compatible with this camera",
+      "cameraOnlyHolders": "This camera can only mount film holders",
+      "cameraAlreadyMounted": "Camera already has an active mounted device",
+      "alreadyMounted": "This device is already mounted to another camera"
+    },
+    "emulsions": {
+      "notFound": "Emulsion not found",
+      "inUse": "Emulsion cannot be deleted because it is in use by existing films",
+      "duplicate": "An emulsion with that brand, manufacturer, and ISO already exists",
+      "developmentProcessNotFound": "Development process not found",
+      "formatsNotFound": "One or more film formats were not found"
+    },
+    "filmLabs": {
+      "notFound": "Film lab not found",
+      "nameConflict": "A film lab with that name already exists",
+      "inactive": "Film lab is inactive"
+    },
+    "filmSuppliers": {
+      "notFound": "Film supplier not found",
+      "nameConflict": "A film supplier with that name already exists"
+    },
+    "admin": {
+      "importOwnAccountOnly": "You can only import data for your own user account"
+    },
+    "frameGeneration": {
+      "unsupportedFormat": "Unsupported film format for non-large frame generation",
+      "unsupported35mmFrameSize": "Unsupported 35mm frame size for frame generation",
+      "unsupportedMediumFrameSize": "Unsupported medium format frame size for frame generation",
+      "unsupportedInstaxFrameSize": "Unsupported Instax frame size for frame generation",
+      "spoolRequiresConversion": "35mm spool must be converted to a supported roll before loading",
+      "unsupported35mmPackageType": "Unsupported 35mm package type for frame generation",
+      "unsupportedMediumPackageType": "Unsupported medium format package type for frame generation",
+      "unsupportedInstaxPackageType": "Unsupported Instax package type for frame generation"
+    }
+  }
+}

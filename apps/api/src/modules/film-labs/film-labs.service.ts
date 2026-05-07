@@ -19,7 +19,7 @@ export class FilmLabsService {
   async getById(userId: number, filmLabId: number): Promise<FilmLab> {
     const lab = await this.filmLabRepository.findById(userId, filmLabId);
     if (!lab) {
-      throw new DomainError('NOT_FOUND', 'Film lab not found');
+      throw new DomainError('NOT_FOUND', 'Film lab not found', { label: 'errors.filmLabs.notFound' });
     }
     return lab;
   }
@@ -31,7 +31,7 @@ export class FilmLabsService {
       return lab;
     } catch (error) {
       if (error instanceof UniqueConstraintViolationException) {
-        throw new DomainError('CONFLICT', 'A film lab with that name already exists');
+        throw new DomainError('CONFLICT', 'A film lab with that name already exists', { label: 'errors.filmLabs.nameConflict' });
       }
       throw error;
     }
@@ -41,13 +41,13 @@ export class FilmLabsService {
     try {
       const updated = await this.filmLabRepository.update(userId, filmLabId, input);
       if (!updated) {
-        throw new DomainError('NOT_FOUND', 'Film lab not found');
+        throw new DomainError('NOT_FOUND', 'Film lab not found', { label: 'errors.filmLabs.notFound' });
       }
       await this.upsertReferenceValues(userId, updated);
       return updated;
     } catch (error) {
       if (error instanceof UniqueConstraintViolationException) {
-        throw new DomainError('CONFLICT', 'A film lab with that name already exists');
+        throw new DomainError('CONFLICT', 'A film lab with that name already exists', { label: 'errors.filmLabs.nameConflict' });
       }
       throw error;
     }

@@ -76,6 +76,26 @@ export type ListFilmLabsQuery = z.input<typeof listFilmLabsQuerySchema>;
 export type ListFilmSuppliersQuery = z.input<typeof listFilmSuppliersQuerySchema>;
 export type ListReferenceValuesQuery = z.input<typeof listReferenceValuesQuerySchema>;
 
+export type ApiErrorMsg = {
+  en: string;
+  label: string;
+  params?: Record<string, string | number>;
+};
+
+export class ApiError extends Error {
+  public readonly code: string;
+  public readonly msg: ApiErrorMsg;
+  public readonly details: readonly unknown[];
+
+  constructor(code: string, msg: ApiErrorMsg, details: readonly unknown[] = []) {
+    super(msg.en);
+    this.name = 'ApiError';
+    this.code = code;
+    this.msg = msg;
+    this.details = details;
+  }
+}
+
 export type ApiClientOptions = {
   baseUrl: string;
   getAccessToken?: () => string | null;
@@ -387,9 +407,19 @@ export class ApiClient {
     if (!response.ok) {
       const rawPayload = await response.json().catch(() => null) as Record<string, unknown> | null;
       const errorObj = rawPayload?.['error'];
-      const message = (errorObj && typeof errorObj === 'object' && 'message' in errorObj && String(errorObj['message']))
+      if (errorObj && typeof errorObj === 'object' && 'msg' in errorObj) {
+        const e = errorObj as Record<string, unknown>;
+        const raw = e['msg'] as Record<string, unknown>;
+        const code = typeof e['code'] === 'string' ? e['code'] : 'UNKNOWN';
+        const en = typeof raw['en'] === 'string' ? raw['en'] : response.statusText;
+        const label = typeof raw['label'] === 'string' ? raw['label'] : 'errors.unknown';
+        const params = raw['params'] && typeof raw['params'] === 'object' ? raw['params'] as Record<string, string | number> : undefined;
+        const details = Array.isArray(e['details']) ? e['details'] as unknown[] : [];
+        throw new ApiError(code, { en, label, ...(params ? { params } : {}) }, details);
+      }
+      const fallbackMessage = (errorObj && typeof errorObj === 'object' && 'message' in errorObj && String(errorObj['message']))
         || response.statusText;
-      throw new Error(`API ${response.status} ${path}: ${message}`);
+      throw new Error(`API ${response.status} ${path}: ${fallbackMessage}`);
     }
 
     return response;

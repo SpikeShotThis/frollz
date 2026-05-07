@@ -36,7 +36,7 @@ export class DevicesService {
     const device = await this.deviceRepository.findById(userId, deviceId);
 
     if (!device) {
-      throw new DomainError('NOT_FOUND', 'Device not found');
+      throw new DomainError('NOT_FOUND', 'Device not found', { label: 'errors.devices.notFound' });
     }
 
     return device;
@@ -46,7 +46,7 @@ export class DevicesService {
 
     if (this.requiresFrameSize(input.deviceTypeCode, this.readLoadMode(input))) {
       if (input.frameSize == null) {
-        throw new DomainError('DOMAIN_ERROR', 'Directly loadable cameras require a frame size');
+        throw new DomainError('DOMAIN_ERROR', 'Directly loadable cameras require a frame size', { label: 'errors.devices.directLoadRequiresFrameSize' });
       }
       await this.assertFrameSizeMatchesFormat(input.filmFormatId, input.frameSize);
     }
@@ -60,7 +60,7 @@ export class DevicesService {
     if (input.frameSize !== undefined || input.filmFormatId !== undefined) {
       const current = await this.deviceRepository.findById(userId, deviceId);
       if (!current) {
-        throw new DomainError('NOT_FOUND', 'Device not found');
+        throw new DomainError('NOT_FOUND', 'Device not found', { label: 'errors.devices.notFound' });
       }
       const requestedLoadMode = 'loadMode' in input ? input.loadMode : undefined;
       const effectiveLoadMode = requestedLoadMode ?? this.readLoadMode(current);
@@ -75,7 +75,7 @@ export class DevicesService {
     const device = await this.deviceRepository.update(userId, deviceId, input);
 
     if (!device) {
-      throw new DomainError('NOT_FOUND', 'Device not found');
+      throw new DomainError('NOT_FOUND', 'Device not found', { label: 'errors.devices.notFound' });
     }
 
     await this.upsertReferenceValues(userId, input);
@@ -87,12 +87,12 @@ export class DevicesService {
     const device = await this.deviceRepository.findById(userId, deviceId);
 
     if (!device) {
-      throw new DomainError('NOT_FOUND', 'Device not found');
+      throw new DomainError('NOT_FOUND', 'Device not found', { label: 'errors.devices.notFound' });
     }
 
     const occupiedFilmId = await this.filmRepository.findOccupiedFilmForDeviceId(userId, device.id);
     if (occupiedFilmId !== null) {
-      throw new DomainError('CONFLICT', 'Device still has an active loaded film');
+      throw new DomainError('CONFLICT', 'Device still has an active loaded film', { label: 'errors.devices.hasActiveFilm' });
     }
 
     await this.deviceRepository.delete(userId, deviceId);
@@ -106,7 +106,7 @@ export class DevicesService {
     const device = await this.deviceRepository.findById(userId, deviceId);
 
     if (!device) {
-      throw new DomainError('NOT_FOUND', 'Device not found');
+      throw new DomainError('NOT_FOUND', 'Device not found', { label: 'errors.devices.notFound' });
     }
 
     return this.filmRepository.listDeviceLoadEvents(userId, deviceId);
@@ -115,7 +115,7 @@ export class DevicesService {
   async listMounts(userId: number, cameraDeviceId: number): Promise<DeviceMount[]> {
     const camera = await this.deviceRepository.findById(userId, cameraDeviceId);
     if (!camera || camera.deviceTypeCode !== 'camera') {
-      throw new DomainError('NOT_FOUND', 'Camera not found');
+      throw new DomainError('NOT_FOUND', 'Camera not found', { label: 'errors.devices.cameraNotFound' });
     }
 
     return this.deviceRepository.listMountsForCamera(userId, cameraDeviceId);
@@ -124,45 +124,45 @@ export class DevicesService {
   async mount(userId: number, cameraDeviceId: number, input: CreateDeviceMountRequest): Promise<DeviceMount> {
     const camera = await this.deviceRepository.findById(userId, cameraDeviceId);
     if (!camera || camera.deviceTypeCode !== 'camera') {
-      throw new DomainError('NOT_FOUND', 'Camera not found');
+      throw new DomainError('NOT_FOUND', 'Camera not found', { label: 'errors.devices.cameraNotFound' });
     }
 
     const mounted = await this.deviceRepository.findById(userId, input.mountedDeviceId);
     if (!mounted) {
-      throw new DomainError('NOT_FOUND', 'Mounted device not found');
+      throw new DomainError('NOT_FOUND', 'Mounted device not found', { label: 'errors.devices.mountedDeviceNotFound' });
     }
     if (mounted.deviceTypeCode === 'camera') {
-      throw new DomainError('DOMAIN_ERROR', 'Only interchangeable backs or film holders can be mounted');
+      throw new DomainError('DOMAIN_ERROR', 'Only interchangeable backs or film holders can be mounted', { label: 'errors.devices.onlyBacksOrHolders' });
     }
 
     if (camera.loadMode === 'direct') {
-      throw new DomainError('DOMAIN_ERROR', 'This camera does not support mounted devices');
+      throw new DomainError('DOMAIN_ERROR', 'This camera does not support mounted devices', { label: 'errors.devices.cameraNoMounted' });
     }
 
     if (camera.loadMode === 'interchangeable_back') {
       if (mounted.deviceTypeCode !== 'interchangeable_back') {
-        throw new DomainError('DOMAIN_ERROR', 'This camera can only mount interchangeable backs');
+        throw new DomainError('DOMAIN_ERROR', 'This camera can only mount interchangeable backs', { label: 'errors.devices.cameraOnlyBacks' });
       }
       if (!camera.cameraSystem) {
-        throw new DomainError('DOMAIN_ERROR', 'This camera requires a system to mount interchangeable backs');
+        throw new DomainError('DOMAIN_ERROR', 'This camera requires a system to mount interchangeable backs', { label: 'errors.devices.cameraRequiresSystem' });
       }
       if (mounted.system !== camera.cameraSystem) {
-        throw new DomainError('DOMAIN_ERROR', 'Interchangeable back system is not compatible with this camera');
+        throw new DomainError('DOMAIN_ERROR', 'Interchangeable back system is not compatible with this camera', { label: 'errors.devices.backSystemIncompatible' });
       }
     }
 
     if (camera.loadMode === 'film_holder' && mounted.deviceTypeCode !== 'film_holder') {
-      throw new DomainError('DOMAIN_ERROR', 'This camera can only mount film holders');
+      throw new DomainError('DOMAIN_ERROR', 'This camera can only mount film holders', { label: 'errors.devices.cameraOnlyHolders' });
     }
 
     const activeMountForCamera = await this.deviceRepository.findActiveMountForCamera(userId, cameraDeviceId);
     if (activeMountForCamera) {
-      throw new DomainError('CONFLICT', 'Camera already has an active mounted device');
+      throw new DomainError('CONFLICT', 'Camera already has an active mounted device', { label: 'errors.devices.cameraAlreadyMounted' });
     }
 
     const activeMountForMounted = await this.deviceRepository.findActiveMountForMountedDevice(userId, input.mountedDeviceId);
     if (activeMountForMounted) {
-      throw new DomainError('CONFLICT', 'This device is already mounted to another camera');
+      throw new DomainError('CONFLICT', 'This device is already mounted to another camera', { label: 'errors.devices.alreadyMounted' });
     }
 
     return this.deviceRepository.createMount(userId, cameraDeviceId, input);
@@ -171,12 +171,12 @@ export class DevicesService {
   async unmount(userId: number, cameraDeviceId: number, input: UnmountDeviceRequest): Promise<DeviceMount> {
     const camera = await this.deviceRepository.findById(userId, cameraDeviceId);
     if (!camera || camera.deviceTypeCode !== 'camera') {
-      throw new DomainError('NOT_FOUND', 'Camera not found');
+      throw new DomainError('NOT_FOUND', 'Camera not found', { label: 'errors.devices.cameraNotFound' });
     }
 
     const unmounted = await this.deviceRepository.unmount(userId, cameraDeviceId, input);
     if (!unmounted) {
-      throw new DomainError('NOT_FOUND', 'Active mount not found');
+      throw new DomainError('NOT_FOUND', 'Active mount not found', { label: 'errors.devices.activeMountNotFound' });
     }
 
     return unmounted;
@@ -185,11 +185,14 @@ export class DevicesService {
   private async assertFrameSizeMatchesFormat(filmFormatId: number, frameSize: string): Promise<void> {
     const format = await this.entityManager.findOne(FilmFormatEntity, { id: filmFormatId });
     if (!format) {
-      throw new DomainError('NOT_FOUND', 'Film format not found');
+      throw new DomainError('NOT_FOUND', 'Film format not found', { label: 'errors.devices.formatNotFound' });
     }
 
     if (!isFrameSizeValidForFormatCode(format.code, frameSize)) {
-      throw new DomainError('DOMAIN_ERROR', `Frame size ${frameSize} is not valid for ${format.code}`);
+      throw new DomainError('DOMAIN_ERROR', `Frame size ${frameSize} is not valid for ${format.code}`, {
+        label: 'errors.devices.invalidFrameSize',
+        params: { frameSize, format: format.code }
+      });
     }
   }
 
@@ -257,7 +260,7 @@ export class DevicesService {
     });
 
     if (hasDuplicate) {
-      throw new DomainError('CONFLICT', 'A device with those details already exists');
+      throw new DomainError('CONFLICT', 'A device with those details already exists', { label: 'errors.devices.duplicate' });
     }
   }
 }

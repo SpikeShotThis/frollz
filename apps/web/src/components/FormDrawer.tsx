@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useId, useRef, type KeyboardEvent, type ReactNode } from 'react';
+import { useTranslation } from '@frollz2/i18n';
 
 export function FormDrawer({
   open,
@@ -13,6 +14,7 @@ export function FormDrawer({
   onClose: () => void;
   children: ReactNode;
 }) {
+  const { t } = useTranslation();
   const titleId = useId();
   const drawerRef = useRef<HTMLElement | null>(null);
   const previousFocusRef = useRef<HTMLElement | null>(null);
@@ -70,7 +72,7 @@ export function FormDrawer({
       >
         <div className="form-drawer-header">
           <h2 id={titleId} className="text-lg font-semibold tracking-tight">{title}</h2>
-          <button className="secondary" type="button" onClick={onClose} aria-label={`Close ${title}`}>Close</button>
+          <button className="secondary" type="button" onClick={onClose} aria-label={`Close ${title}`}>{t('formDrawer.close')}</button>
         </div>
         <div className="form-drawer-body space-y-3">{children}</div>
       </aside>

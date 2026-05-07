@@ -21,7 +21,11 @@ export class DomainErrorFilter implements ExceptionFilter<DomainError> {
     void response.code(status).send({
       error: {
         code: exception.code,
-        message: exception.message,
+        msg: {
+          en: exception.message,
+          label: exception.label,
+          ...(exception.params ? { params: exception.params } : {})
+        },
         details: exception.details
       }
     });

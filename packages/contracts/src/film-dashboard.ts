@@ -132,6 +132,8 @@ function ratio(value: number, total: number): number {
   return total <= 0 ? 0 : value / total;
 }
 
+type CardTranslator = (key: string, options?: Record<string, string | number>) => string;
+
 export function buildFilmDashboardOverview(
   films: FilmListItem[],
   latestEventsByFilmId: Record<number, FilmLatestEvent>,
@@ -140,11 +142,13 @@ export function buildFilmDashboardOverview(
     expiringSoonDays?: number;
     loadedIdleDays?: number;
     recentActivityDays?: number;
+    t?: CardTranslator;
   } = {}
 ): FilmDashboardOverviewCard[] {
   const expiringSoonDays = options.expiringSoonDays ?? FILM_EXPIRING_SOON_DAYS;
   const loadedIdleDays = options.loadedIdleDays ?? FILM_LOADED_IDLE_DAYS;
   const recentActivityDays = options.recentActivityDays ?? FILM_RECENT_ACTIVITY_DAYS;
+  const t: CardTranslator = options.t ?? ((key) => key);
   const totalFilms = films.length;
   const safeTotal = Math.max(1, totalFilms);
   const count35mm = countByFormats(films, ['35mm']);
@@ -178,43 +182,43 @@ export function buildFilmDashboardOverview(
   return [
     {
       key: 'total',
-      title: 'Total Films',
+      title: t('dashboard.kpi.total.title'),
       value: totalFilms,
-      helper: 'All tracked rolls and sheets',
+      helper: t('dashboard.kpi.total.helper'),
       actionHref: '/film',
-      actionLabel: 'Open film',
+      actionLabel: t('dashboard.kpi.total.actionLabel'),
       segments: [
-        { key: 'loaded', label: 'Loaded', value: loadedFilms.length, ratio: ratio(loadedFilms.length, safeTotal) },
-        { key: 'removed', label: 'Removed', value: removedFilms.length, ratio: ratio(removedFilms.length, safeTotal) },
-        { key: 'at-lab', label: 'At Lab', value: sentForDevFilms.length, ratio: ratio(sentForDevFilms.length, safeTotal) },
-        { key: 'archived', label: 'Archived', value: archivedFilms.length, ratio: ratio(archivedFilms.length, safeTotal) }
+        { key: 'loaded', label: t('dashboard.kpi.total.segments.loaded'), value: loadedFilms.length, ratio: ratio(loadedFilms.length, safeTotal) },
+        { key: 'removed', label: t('dashboard.kpi.total.segments.removed'), value: removedFilms.length, ratio: ratio(removedFilms.length, safeTotal) },
+        { key: 'at-lab', label: t('dashboard.kpi.total.segments.atLab'), value: sentForDevFilms.length, ratio: ratio(sentForDevFilms.length, safeTotal) },
+        { key: 'archived', label: t('dashboard.kpi.total.segments.archived'), value: archivedFilms.length, ratio: ratio(archivedFilms.length, safeTotal) }
       ]
     },
     {
       key: 'format',
-      title: 'By Format',
+      title: t('dashboard.kpi.format.title'),
       value: totalFilms,
-      helper: `35mm ${count35mm} · 120 ${count120} · Sheet ${countSheet}`,
+      helper: t('dashboard.kpi.format.helper', { count35mm, count120, countSheet }),
       actionHref: '/film',
-      actionLabel: 'Open formats',
+      actionLabel: t('dashboard.kpi.format.actionLabel'),
       segments: [
-        { key: '35mm', label: '35mm', value: count35mm, ratio: ratio(count35mm, safeTotal) },
-        { key: '120', label: '120', value: count120, ratio: ratio(count120, safeTotal) },
-        { key: 'sheet', label: 'Sheet', value: countSheet, ratio: ratio(countSheet, safeTotal) }
+        { key: '35mm', label: t('dashboard.kpi.format.segments.mm35'), value: count35mm, ratio: ratio(count35mm, safeTotal) },
+        { key: '120', label: t('dashboard.kpi.format.segments.mm120'), value: count120, ratio: ratio(count120, safeTotal) },
+        { key: 'sheet', label: t('dashboard.kpi.format.segments.sheet'), value: countSheet, ratio: ratio(countSheet, safeTotal) }
       ]
     },
     {
       key: 'loaded',
-      title: 'Loaded (Idle Risk)',
+      title: t('dashboard.kpi.loaded.title'),
       value: loadedFilms.length,
-      helper: `${loadedIdleCount} idle > ${loadedIdleDays} days`,
+      helper: t('dashboard.kpi.loaded.helper', { loadedIdleCount, loadedIdleDays }),
       actionHref: '/film?stateCode=loaded',
-      actionLabel: 'View loaded',
+      actionLabel: t('dashboard.kpi.loaded.actionLabel'),
       segments: [
-        { key: 'loaded-idle', label: `Idle > ${loadedIdleDays}d`, value: loadedIdleCount, ratio: ratio(loadedIdleCount, loadedFilms.length) },
+        { key: 'loaded-idle', label: t('dashboard.kpi.loaded.segments.idle', { days: loadedIdleDays }), value: loadedIdleCount, ratio: ratio(loadedIdleCount, loadedFilms.length) },
         {
           key: 'loaded-active',
-          label: `Active <= ${loadedIdleDays}d`,
+          label: t('dashboard.kpi.loaded.segments.active', { days: loadedIdleDays }),
           value: Math.max(0, loadedFilms.length - loadedIdleCount),
           ratio: ratio(Math.max(0, loadedFilms.length - loadedIdleCount), loadedFilms.length)
         }
@@ -222,62 +226,62 @@ export function buildFilmDashboardOverview(
     },
     {
       key: 'removed',
-      title: 'Removed (Not Sent)',
+      title: t('dashboard.kpi.removed.title'),
       value: removedFilms.length,
-      helper: `Oldest waiting: ${removedOldestDays} days`,
+      helper: t('dashboard.kpi.removed.helper', { days: removedOldestDays }),
       actionHref: '/film?stateCode=removed',
-      actionLabel: 'View removed',
+      actionLabel: t('dashboard.kpi.removed.actionLabel'),
       segments: [
-        { key: 'removed-total', label: 'Awaiting lab', value: removedFilms.length, ratio: ratio(removedFilms.length, safeTotal) },
-        { key: 'removed-other', label: 'Other states', value: Math.max(0, totalFilms - removedFilms.length), ratio: ratio(Math.max(0, totalFilms - removedFilms.length), safeTotal) }
+        { key: 'removed-total', label: t('dashboard.kpi.removed.segments.awaitingLab'), value: removedFilms.length, ratio: ratio(removedFilms.length, safeTotal) },
+        { key: 'removed-other', label: t('dashboard.kpi.removed.segments.otherStates'), value: Math.max(0, totalFilms - removedFilms.length), ratio: ratio(Math.max(0, totalFilms - removedFilms.length), safeTotal) }
       ]
     },
     {
       key: 'sent-for-dev',
-      title: 'Sent for Dev',
+      title: t('dashboard.kpi.sentForDev.title'),
       value: sentForDevFilms.length,
-      helper: `Oldest at lab: ${sentForDevOldestDays} days`,
+      helper: t('dashboard.kpi.sentForDev.helper', { days: sentForDevOldestDays }),
       actionHref: '/film?stateCode=sent_for_dev',
-      actionLabel: 'View lab queue',
+      actionLabel: t('dashboard.kpi.sentForDev.actionLabel'),
       segments: [
-        { key: 'dev-at-lab', label: 'In lab queue', value: sentForDevFilms.length, ratio: ratio(sentForDevFilms.length, safeTotal) },
-        { key: 'dev-not-lab', label: 'Not in lab', value: Math.max(0, totalFilms - sentForDevFilms.length), ratio: ratio(Math.max(0, totalFilms - sentForDevFilms.length), safeTotal) }
+        { key: 'dev-at-lab', label: t('dashboard.kpi.sentForDev.segments.inLabQueue'), value: sentForDevFilms.length, ratio: ratio(sentForDevFilms.length, safeTotal) },
+        { key: 'dev-not-lab', label: t('dashboard.kpi.sentForDev.segments.notInLab'), value: Math.max(0, totalFilms - sentForDevFilms.length), ratio: ratio(Math.max(0, totalFilms - sentForDevFilms.length), safeTotal) }
       ]
     },
     {
       key: 'expiring',
-      title: 'Expiring Soon',
+      title: t('dashboard.kpi.expiring.title'),
       value: expiringSoonCount,
-      helper: `Expires in next ${expiringSoonDays} days`,
+      helper: t('dashboard.kpi.expiring.helper', { days: expiringSoonDays }),
       actionHref: '/film',
-      actionLabel: 'Review stock',
+      actionLabel: t('dashboard.kpi.expiring.actionLabel'),
       segments: [
-        { key: 'expiring-soon', label: `Expires <= ${expiringSoonDays}d`, value: expiringSoonCount, ratio: ratio(expiringSoonCount, safeTotal) },
-        { key: 'expiring-later', label: 'Stable horizon', value: Math.max(0, totalFilms - expiringSoonCount), ratio: ratio(Math.max(0, totalFilms - expiringSoonCount), safeTotal) }
+        { key: 'expiring-soon', label: t('dashboard.kpi.expiring.segments.expiringSoon', { days: expiringSoonDays }), value: expiringSoonCount, ratio: ratio(expiringSoonCount, safeTotal) },
+        { key: 'expiring-later', label: t('dashboard.kpi.expiring.segments.stableHorizon'), value: Math.max(0, totalFilms - expiringSoonCount), ratio: ratio(Math.max(0, totalFilms - expiringSoonCount), safeTotal) }
       ]
     },
     {
       key: 'archived',
-      title: 'Archived',
+      title: t('dashboard.kpi.archived.title'),
       value: archivedFilms.length,
-      helper: 'Completed rolls and sheets',
+      helper: t('dashboard.kpi.archived.helper'),
       actionHref: '/film?stateCode=archived',
-      actionLabel: 'View archived',
+      actionLabel: t('dashboard.kpi.archived.actionLabel'),
       segments: [
-        { key: 'archived-done', label: 'Completed', value: archivedFilms.length, ratio: ratio(archivedFilms.length, safeTotal) },
-        { key: 'archived-open', label: 'Still active', value: Math.max(0, totalFilms - archivedFilms.length), ratio: ratio(Math.max(0, totalFilms - archivedFilms.length), safeTotal) }
+        { key: 'archived-done', label: t('dashboard.kpi.archived.segments.completed'), value: archivedFilms.length, ratio: ratio(archivedFilms.length, safeTotal) },
+        { key: 'archived-open', label: t('dashboard.kpi.archived.segments.stillActive'), value: Math.max(0, totalFilms - archivedFilms.length), ratio: ratio(Math.max(0, totalFilms - archivedFilms.length), safeTotal) }
       ]
     },
     {
       key: 'recent',
-      title: `Recent Activity (${recentActivityDays}d)`,
+      title: t('dashboard.kpi.recent.title', { days: recentActivityDays }),
       value: recentActivityCount,
-      helper: 'Films with new state changes',
+      helper: t('dashboard.kpi.recent.helper'),
       actionHref: '/film',
-      actionLabel: 'Open film',
+      actionLabel: t('dashboard.kpi.recent.actionLabel'),
       segments: [
-        { key: 'recent-active', label: `Changed <= ${recentActivityDays}d`, value: recentActivityCount, ratio: ratio(recentActivityCount, safeTotal) },
-        { key: 'recent-quiet', label: 'No recent change', value: Math.max(0, totalFilms - recentActivityCount), ratio: ratio(Math.max(0, totalFilms - recentActivityCount), safeTotal) }
+        { key: 'recent-active', label: t('dashboard.kpi.recent.segments.changed', { days: recentActivityDays }), value: recentActivityCount, ratio: ratio(recentActivityCount, safeTotal) },
+        { key: 'recent-quiet', label: t('dashboard.kpi.recent.segments.noRecentChange'), value: Math.max(0, totalFilms - recentActivityCount), ratio: ratio(Math.max(0, totalFilms - recentActivityCount), safeTotal) }
       ]
     }
   ];

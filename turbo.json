@@ -27,6 +27,9 @@
     "@frollz2/design-tokens#build": {
       "outputs": ["dist/**"]
     },
+    "@frollz2/i18n#build": {
+      "outputs": ["dist/**"]
+    },
     "dev": {
       "cache": false,
       "persistent": true

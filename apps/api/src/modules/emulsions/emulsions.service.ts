@@ -18,7 +18,7 @@ export class EmulsionsService {
   async findById(id: number): Promise<Emulsion> {
     const emulsion = await this.emulsionRepository.findById(id);
     if (!emulsion) {
-      throw new DomainError('NOT_FOUND', 'Emulsion not found');
+      throw new DomainError('NOT_FOUND', 'Emulsion not found', { label: 'errors.emulsions.notFound' });
     }
     return emulsion;
   }
@@ -35,7 +35,7 @@ export class EmulsionsService {
   async update(userId: number, id: number, input: UpdateEmulsionRequest): Promise<Emulsion> {
     const emulsion = await this.emulsionRepository.update(id, input);
     if (!emulsion) {
-      throw new DomainError('NOT_FOUND', 'Emulsion not found');
+      throw new DomainError('NOT_FOUND', 'Emulsion not found', { label: 'errors.emulsions.notFound' });
     }
     await this.referenceService.upsertReferenceValues(userId, [
       { kind: 'manufacturer', value: input.manufacturer },
@@ -47,12 +47,12 @@ export class EmulsionsService {
   async delete(id: number): Promise<void> {
     const existing = await this.emulsionRepository.findById(id);
     if (!existing) {
-      throw new DomainError('NOT_FOUND', 'Emulsion not found');
+      throw new DomainError('NOT_FOUND', 'Emulsion not found', { label: 'errors.emulsions.notFound' });
     }
 
     const inUse = await this.emulsionRepository.isInUse(id);
     if (inUse) {
-      throw new DomainError('CONFLICT', 'Emulsion cannot be deleted because it is in use by existing films');
+      throw new DomainError('CONFLICT', 'Emulsion cannot be deleted because it is in use by existing films', { label: 'errors.emulsions.inUse' });
     }
 
     await this.emulsionRepository.delete(id);

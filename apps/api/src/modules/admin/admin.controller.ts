@@ -36,7 +36,7 @@ export class AdminController {
     @Body(new ZodSchemaPipe(importDataRequestSchema)) body: typeof importDataRequestSchema['_output']
   ) {
     if (user.email !== body.user.email) {
-      throw new DomainError('FORBIDDEN', 'You can only import data for your own user account');
+      throw new DomainError('FORBIDDEN', 'You can only import data for your own user account', { label: 'errors.admin.importOwnAccountOnly' });
     }
     return this.idempotencyService.execute({
       userId: user.userId,

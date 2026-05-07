@@ -15,7 +15,7 @@ export class FilmSuppliersService {
   async getById(userId: number, supplierId: number): Promise<FilmSupplier> {
     const supplier = await this.filmSupplierRepository.findById(userId, supplierId);
     if (!supplier) {
-      throw new DomainError('NOT_FOUND', 'Film supplier not found');
+      throw new DomainError('NOT_FOUND', 'Film supplier not found', { label: 'errors.filmSuppliers.notFound' });
     }
     return supplier;
   }
@@ -25,7 +25,7 @@ export class FilmSuppliersService {
       return await this.filmSupplierRepository.create(userId, input);
     } catch (error) {
       if (error instanceof UniqueConstraintViolationException) {
-        throw new DomainError('CONFLICT', 'A film supplier with that name already exists');
+        throw new DomainError('CONFLICT', 'A film supplier with that name already exists', { label: 'errors.filmSuppliers.nameConflict' });
       }
       throw error;
     }
@@ -35,12 +35,12 @@ export class FilmSuppliersService {
     try {
       const updated = await this.filmSupplierRepository.update(userId, supplierId, input);
       if (!updated) {
-        throw new DomainError('NOT_FOUND', 'Film supplier not found');
+        throw new DomainError('NOT_FOUND', 'Film supplier not found', { label: 'errors.filmSuppliers.notFound' });
       }
       return updated;
     } catch (error) {
       if (error instanceof UniqueConstraintViolationException) {
-        throw new DomainError('CONFLICT', 'A film supplier with that name already exists');
+        throw new DomainError('CONFLICT', 'A film supplier with that name already exists', { label: 'errors.filmSuppliers.nameConflict' });
       }
       throw error;
     }

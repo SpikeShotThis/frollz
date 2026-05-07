@@ -3,67 +3,68 @@
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { useTranslation } from '@frollz2/i18n';
 import { useSession } from '../auth/session';
 
-type NavChild = { href: string; label: string };
+type NavChild = { href: string; labelKey: string };
 type NavEntry =
-  | { kind: 'link'; href: string; label: string; icon: NavIconKey }
-  | { kind: 'group'; label: string; icon: NavIconKey; baseHref: string; children: NavChild[] };
+  | { kind: 'link'; href: string; labelKey: string; icon: NavIconKey }
+  | { kind: 'group'; labelKey: string; icon: NavIconKey; baseHref: string; children: NavChild[] };
 
 type NavIconKey = 'home' | 'film' | 'camera' | 'spark' | 'admin' | 'flask' | 'store' | 'archive';
 
 const NAV: NavEntry[] = [
-  { kind: 'link', href: '/dashboard', label: 'Dashboard', icon: 'home' },
+  { kind: 'link', href: '/dashboard', labelKey: 'navigation.dashboard', icon: 'home' },
   {
     kind: 'group',
-    label: 'Film',
+    labelKey: 'navigation.film',
     icon: 'film',
     baseHref: '/film',
     children: [
-      { href: '/film', label: 'All Film' },
-      { href: '/film?format=35mm', label: '35mm' },
-      { href: '/film?format=medium-format', label: 'Medium Format' },
-      { href: '/film?format=large-format', label: 'Large Format' },
-      { href: '/film?format=instant', label: 'Instant' }
+      { href: '/film', labelKey: 'navigation.allFilm' },
+      { href: '/film?format=35mm', labelKey: 'navigation.film35mm' },
+      { href: '/film?format=medium-format', labelKey: 'navigation.filmMediumFormat' },
+      { href: '/film?format=large-format', labelKey: 'navigation.filmLargeFormat' },
+      { href: '/film?format=instant', labelKey: 'navigation.filmInstant' }
     ]
   },
   {
     kind: 'group',
-    label: 'Devices',
+    labelKey: 'navigation.devices',
     icon: 'camera',
     baseHref: '/devices',
     children: [
-      { href: '/devices', label: 'All Devices' },
-      { href: '/devices/cameras', label: 'Cameras' },
-      { href: '/devices/interchangeable-backs', label: 'Backs' },
-      { href: '/devices/film-holders', label: 'Holders' }
+      { href: '/devices', labelKey: 'navigation.allDevices' },
+      { href: '/devices/cameras', labelKey: 'navigation.cameras' },
+      { href: '/devices/interchangeable-backs', labelKey: 'navigation.backs' },
+      { href: '/devices/film-holders', labelKey: 'navigation.holders' }
     ]
   },
   {
     kind: 'group',
-    label: 'Emulsions',
+    labelKey: 'navigation.emulsions',
     icon: 'spark',
     baseHref: '/emulsions',
     children: [
-      { href: '/emulsions', label: 'All Emulsions' },
-      { href: '/emulsions/black-and-white', label: 'Black & White' },
-      { href: '/emulsions/black-and-white-reversal', label: 'B&W Reversal' },
-      { href: '/emulsions/cine-ecn2', label: 'Cine (ECN-2)' },
-      { href: '/emulsions/color-negative-c41', label: 'Color Negative (C-41)' },
-      { href: '/emulsions/color-positive-e6', label: 'Color Positive (E-6)' },
-      { href: '/emulsions/instant', label: 'Instant' }
+      { href: '/emulsions', labelKey: 'navigation.allEmulsions' },
+      { href: '/emulsions/black-and-white', labelKey: 'navigation.blackAndWhite' },
+      { href: '/emulsions/black-and-white-reversal', labelKey: 'navigation.bwReversal' },
+      { href: '/emulsions/cine-ecn2', labelKey: 'navigation.cineEcn2' },
+      { href: '/emulsions/color-negative-c41', labelKey: 'navigation.colorNegativeC41' },
+      { href: '/emulsions/color-positive-e6', labelKey: 'navigation.colorPositiveE6' },
+      { href: '/emulsions/instant', labelKey: 'navigation.instant' }
     ]
   },
   {
     kind: 'group',
-    label: 'Admin',
+    labelKey: 'navigation.admin',
     icon: 'admin',
     baseHref: '/admin',
     children: [
-      { href: '/admin', label: 'Overview' },
-      { href: '/admin/film-labs', label: 'Film Labs' },
-      { href: '/admin/film-suppliers', label: 'Film Suppliers' },
-      { href: '/admin/data-export', label: 'Data Export' }
+      { href: '/admin', labelKey: 'navigation.adminOverview' },
+      { href: '/admin/film-labs', labelKey: 'navigation.filmLabs' },
+      { href: '/admin/film-suppliers', labelKey: 'navigation.filmSuppliers' },
+      { href: '/admin/data-export', labelKey: 'navigation.dataExport' }
     ]
   }
 ];
@@ -117,6 +118,7 @@ function useDarkMode() {
 }
 
 function NavPanel({ onClose, collapsed }: { onClose: () => void; collapsed: boolean }) {
+  const { t } = useTranslation();
   const pathname = usePathname();
   const { user, logout } = useSession();
   const router = useRouter();
@@ -141,13 +143,14 @@ function NavPanel({ onClose, collapsed }: { onClose: () => void; collapsed: bool
   return (
     <div className="app-nav-panel">
       <div className="app-nav-header">
-        <strong>Navigation</strong>
-        <button type="button" className="app-nav-close" onClick={onClose} aria-label="Close navigation">
+        <strong>{t('navigation.title')}</strong>
+        <button type="button" className="app-nav-close" onClick={onClose} aria-label={t('navigation.closeNav')}>
           <i className="bi bi-x-lg" aria-hidden="true" />
         </button>
       </div>
-      <nav className="app-nav-list" aria-label="Primary navigation">
+      <nav className="app-nav-list" aria-label={t('navigation.primaryLabel')}>
         {NAV.map((entry) => {
+          const label = t(entry.labelKey);
           if (entry.kind === 'link') {
             const active = pathname === entry.href;
             return (
@@ -156,11 +159,11 @@ function NavPanel({ onClose, collapsed }: { onClose: () => void; collapsed: bool
                 href={entry.href}
                 className={`nav-item${active ? ' is-active' : ''}`}
                 aria-current={active ? 'page' : undefined}
-                aria-label={collapsed ? entry.label : undefined}
+                aria-label={collapsed ? label : undefined}
                 onClick={onClose}
               >
                 <NavIcon icon={entry.icon} />
-                <span className="nav-item-label">{entry.label}</span>
+                <span className="nav-item-label">{label}</span>
               </Link>
             );
           }
@@ -173,20 +176,18 @@ function NavPanel({ onClose, collapsed }: { onClose: () => void; collapsed: bool
                 className={`nav-group-toggle${open ? ' is-expanded' : ''}`}
                 aria-expanded={open}
                 aria-controls={groupId}
-                aria-label={collapsed ? entry.label : undefined}
+                aria-label={collapsed ? label : undefined}
                 onClick={() => toggleGroup(entry.baseHref)}
               >
                 <NavIcon icon={entry.icon} />
-                <span className="nav-item-label">{entry.label}</span>
+                <span className="nav-item-label">{label}</span>
                 <ChevronIcon />
               </button>
               {open ? (
                 <div id={groupId} className="nav-children">
                   {entry.children.map((child) => {
                     const childPath = child.href.split('?')[0];
-                    const active = child.href.includes('?')
-                      ? false
-                      : pathname === childPath;
+                    const active = child.href.includes('?') ? false : pathname === childPath;
                     return (
                       <Link
                         key={child.href}
@@ -195,7 +196,7 @@ function NavPanel({ onClose, collapsed }: { onClose: () => void; collapsed: bool
                         aria-current={active ? 'page' : undefined}
                         onClick={onClose}
                       >
-                        {child.label}
+                        {t(child.labelKey)}
                       </Link>
                     );
                   })}
@@ -211,7 +212,7 @@ function NavPanel({ onClose, collapsed }: { onClose: () => void; collapsed: bool
           type="button"
           className="nav-item nav-signout-button"
           disabled={isLoggingOut}
-          aria-label={isLoggingOut ? 'Signing out' : 'Sign out'}
+          aria-label={isLoggingOut ? t('navigation.signingOut') : t('navigation.signOut')}
           onClick={() => {
             if (logoutLockRef.current || isLoggingOut) return;
             logoutLockRef.current = true;
@@ -225,7 +226,7 @@ function NavPanel({ onClose, collapsed }: { onClose: () => void; collapsed: bool
           }}
         >
           <i className="bi bi-box-arrow-right" aria-hidden="true" />
-          {collapsed ? null : <span>{isLoggingOut ? 'Signing out…' : 'Sign out'}</span>}
+          {collapsed ? null : <span>{isLoggingOut ? t('navigation.signingOut') : t('navigation.signOut')}</span>}
         </button>
       </div>
     </div>
@@ -233,13 +234,12 @@ function NavPanel({ onClose, collapsed }: { onClose: () => void; collapsed: bool
 }
 
 export function AppShell({ children }: { children: ReactNode }) {
+  const { t } = useTranslation();
   const pathname = usePathname();
   const { dark, toggle } = useDarkMode();
   const [collapsed, setCollapsed] = useState(false);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
-  const pageTitle = 'frōllz';
 
-  // Close mobile nav on route change
   const prevPathname = useRef(pathname);
   useEffect(() => {
     if (prevPathname.current !== pathname) {
@@ -259,12 +259,12 @@ export function AppShell({ children }: { children: ReactNode }) {
 
   return (
     <div className={`app-shell${collapsed ? ' is-nav-collapsed' : ''}${mobileNavOpen ? ' is-nav-open' : ''}`}>
-      <a className="skip-link" href="#main-content">Skip to content</a>
+      <a className="skip-link" href="#main-content">{t('app.skipToContent')}</a>
       <header className="app-topbar">
         <button
-          className={`topbar-icon-button topbar-hamburger`}
+          className="topbar-icon-button topbar-hamburger"
           type="button"
-          aria-label="Open navigation"
+          aria-label={t('navigation.openNav')}
           aria-expanded={mobileNavOpen}
           aria-controls="app-navigation"
           onClick={() => setMobileNavOpen(true)}
@@ -275,18 +275,18 @@ export function AppShell({ children }: { children: ReactNode }) {
         <button
           className="topbar-icon-button topbar-collapse"
           type="button"
-          aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+          aria-label={collapsed ? t('navigation.expandSidebar') : t('navigation.collapseSidebar')}
           onClick={() => setCollapsed((v) => !v)}
         >
           <i className={`bi ${collapsed ? 'bi-chevron-right' : 'bi-chevron-left'}`} aria-hidden="true" />
         </button>
 
-        <div className="app-topbar-title">{pageTitle}</div>
+        <div className="app-topbar-title">{t('app.name')}</div>
 
         <button
           className="topbar-icon-button"
           type="button"
-          aria-label={dark ? 'Switch to light mode' : 'Switch to dark mode'}
+          aria-label={dark ? t('theme.switchToLight') : t('theme.switchToDark')}
           onClick={toggle}
         >
           <i className={`bi ${dark ? 'bi-sun' : 'bi-moon'}`} aria-hidden="true" />
@@ -294,7 +294,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       </header>
 
       <div className="app-shell-body">
-        <aside id="app-navigation" className="app-nav" aria-label="Primary navigation">
+        <aside id="app-navigation" className="app-nav" aria-label={t('navigation.primaryLabel')}>
           <div className="app-nav-backdrop" onClick={() => setMobileNavOpen(false)} aria-hidden="true" />
           <NavPanel onClose={() => setMobileNavOpen(false)} collapsed={collapsed} />
         </aside>

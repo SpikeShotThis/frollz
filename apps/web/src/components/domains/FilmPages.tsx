@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useParams, useSearchParams } from 'next/navigation';
+import { useTranslation } from '@frollz2/i18n';
 import { LIST_MAX_LIMIT, filmCreateRequestSchema, filmUpdateRequestSchema } from '@frollz2/schema';
 import type { Emulsion, FilmDetail, FilmFormat, FilmFrame, FilmJourneyEvent, FilmState, FilmSummary, FilmSupplier, PackageType, ReferenceTables } from '@frollz2/schema';
 import type { FilmListQuery } from '@frollz2/api-client';
@@ -14,6 +15,7 @@ import { FilmEventForm } from '../FilmEventForm';
 import { FrameEditor } from '../FrameEditor';
 import { formatCost, formatKnownCost } from '../../utils/filmCost';
 import { useIdempotentSubmit } from '../../hooks/useIdempotentSubmit';
+import { resolveApiError } from '../../utils/resolve-api-error';
 
 function toIsoFromDateInput(value: string): string | null {
   if (!value) return null;
@@ -40,6 +42,7 @@ function toTitleCase(value: string): string {
 }
 
 export function FilmListPage() {
+  const { t } = useTranslation();
   const { api } = useSession();
   const searchParams = useSearchParams();
   const formatFilter = searchParams?.get('format') ?? '';
@@ -111,7 +114,7 @@ export function FilmListPage() {
       setEmulsions(ems);
       setSuppliers(sups);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load films');
+      setError(resolveApiError(err, t, t('film.failedToLoad')));
     } finally {
       setIsLoading(false);
     }
@@ -180,17 +183,22 @@ export function FilmListPage() {
     });
   }, [formatOptions, isCreateOpen, isFormatLocked]);
 
+  const FORMAT_FILTER_LABELS: Record<string, string> = {
+    '35mm': t('navigation.film35mm'),
+    'medium-format': t('navigation.filmMediumFormat'),
+    'large-format': t('navigation.filmLargeFormat'),
+    'instant': t('navigation.filmInstant')
+  };
+
   const formatLabel = formatFilter
-    ? (formatFilter === 'medium-format'
-      ? 'Medium Format'
-      : (formats.find((f) => f.code === formatFilter)?.label ?? toTitleCase(formatFilter.replace(/[-_]/g, ' '))))
+    ? (FORMAT_FILTER_LABELS[formatFilter] ?? formats.find((f) => f.code === formatFilter)?.label ?? toTitleCase(formatFilter.replace(/[-_]/g, ' ')))
     : null;
 
-  const formatHeading = formatLabel ?? 'Film Inventory';
+  const formatHeading = formatLabel ?? t('film.inventory');
 
   const formatSubtitle = formatLabel
-    ? `Filtered view for ${formatLabel}.`
-    : 'Track film stock and move rolls through state transitions.';
+    ? t('film.filteredSubtitle', { format: formatLabel })
+    : t('film.inventorySubtitle');
 
   return (
     <main>
@@ -198,7 +206,7 @@ export function FilmListPage() {
         heading={formatHeading}
         subtitle={formatSubtitle}
         action={
-          <button type="button" onClick={() => setCreateOpen(true)}>Add film</button>
+          <button type="button" onClick={() => setCreateOpen(true)}>{t('film.addFilm')}</button>
         }
       />
 
@@ -207,24 +215,24 @@ export function FilmListPage() {
       <section className="card">
         <div className="filter-bar">
           <div className="form-field" style={{ marginBottom: 0 }}>
-            <label htmlFor="film-search">Search films</label>
-            <input id="film-search" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Name, emulsion, brand…" />
+            <label htmlFor="film-search">{t('film.searchLabel')}</label>
+            <input id="film-search" value={search} onChange={(e) => setSearch(e.target.value)} placeholder={t('film.searchPlaceholder')} />
           </div>
           <div className="form-field" style={{ marginBottom: 0 }}>
-            <label htmlFor="film-state-filter">Film state</label>
+            <label htmlFor="film-state-filter">{t('film.stateFilter')}</label>
             <select id="film-state-filter" value={stateCode} onChange={(e) => {
               setStateCode(e.target.value);
             }}>
-              <option value="">All states</option>
+              <option value="">{t('film.allStates')}</option>
               {states.map((state) => <option key={state.id} value={state.code}>{state.label}</option>)}
             </select>
           </div>
           <div className="form-field" style={{ marginBottom: 0 }}>
-            <label htmlFor="film-supplier-filter">Supplier</label>
+            <label htmlFor="film-supplier-filter">{t('film.supplierFilter')}</label>
             <select id="film-supplier-filter" value={supplierId} onChange={(e) => {
               setSupplierId(e.target.value);
             }}>
-              <option value="">All suppliers</option>
+              <option value="">{t('film.allSuppliers')}</option>
               {suppliers.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
             </select>
           </div>
@@ -237,19 +245,19 @@ export function FilmListPage() {
             {[...Array(4)].map((_, i) => <div key={i} className="skeleton skeleton-row" />)}
           </div>
         ) : visibleFilms.length === 0 ? (
-          <div className="empty-state"><p>No film found for your current filters.</p></div>
+          <div className="empty-state"><p>{t('film.noFilmFound')}</p></div>
         ) : (
           <div className="table-scroll">
             <table>
-              <caption className="sr-only">Film inventory matching the current filters</caption>
+              <caption className="sr-only">{t('film.tableCaption')}</caption>
               <thead>
                 <tr>
-                  <th scope="col">Film</th>
-                  <th scope="col">Emulsion</th>
-                  <th scope="col">Format</th>
-                  <th scope="col">ISO</th>
-                  <th scope="col">State</th>
-                  <th scope="col">Known cost</th>
+                  <th scope="col">{t('film.columns.film')}</th>
+                  <th scope="col">{t('film.columns.emulsion')}</th>
+                  <th scope="col">{t('film.columns.format')}</th>
+                  <th scope="col">{t('film.columns.iso')}</th>
+                  <th scope="col">{t('film.columns.state')}</th>
+                  <th scope="col">{t('film.columns.knownCost')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -269,12 +277,12 @@ export function FilmListPage() {
         )}
         {!isLoading ? (
           <p style={{ fontSize: 13, color: 'var(--muted-ink)', margin: '10px 0 0' }}>
-            {visibleFilms.length} film{visibleFilms.length !== 1 ? 's' : ''}
+            {t('film.count', { count: visibleFilms.length })}
           </p>
         ) : null}
       </section>
 
-      <FormDrawer open={isCreateOpen} onClose={() => setCreateOpen(false)} title="Add film">
+      <FormDrawer open={isCreateOpen} onClose={() => setCreateOpen(false)} title={t('film.addFilmDrawerTitle')}>
         <form onSubmit={async (e) => {
           e.preventDefault();
           if (!beginCreateSubmit()) return;
@@ -334,19 +342,19 @@ export function FilmListPage() {
             await load(stateCode, supplierId);
             setCreateOpen(false);
           } catch (err) {
-            setError(err instanceof Error ? err.message : 'Failed to create film');
+            setError(resolveApiError(err, t, t('film.failedToCreate')));
           } finally {
             endCreateSubmit();
           }
         }}>
           <fieldset disabled={isCreatingFilm} style={{ margin: 0, padding: 0, border: 'none' }}>
-          <legend className="sr-only">New film details</legend>
+          <legend className="sr-only">{t('film.form.newLegend')}</legend>
           <div className="form-field">
-            <label htmlFor="new-film-name">Name</label>
+            <label htmlFor="new-film-name">{t('film.form.name')}</label>
             <input id="new-film-name" value={form.name} onChange={(e) => setForm((prev) => ({ ...prev, name: e.target.value }))} required />
           </div>
           <div className="form-field">
-            <label htmlFor="new-film-format">Film format</label>
+            <label htmlFor="new-film-format">{t('film.form.format')}</label>
             <select
               id="new-film-format"
               value={form.filmFormatId}
@@ -354,73 +362,73 @@ export function FilmListPage() {
               required
               disabled={isFormatLocked}
             >
-              <option value="">Select film format</option>
+              <option value="">{t('film.form.selectFormat')}</option>
               {formatOptions.map((fmt) => <option key={fmt.id} value={fmt.id}>{fmt.label}</option>)}
             </select>
           </div>
           <div className="form-field">
-            <label htmlFor="new-film-package-type">Package type</label>
+            <label htmlFor="new-film-package-type">{t('film.form.packageType')}</label>
             <select id="new-film-package-type" value={form.packageTypeId} onChange={(e) => setForm((prev) => ({ ...prev, packageTypeId: e.target.value }))} required disabled={!form.filmFormatId}>
-              <option value="">Select package type</option>
+              <option value="">{t('film.form.selectPackageType')}</option>
               {packageTypeOptions.map((pkg) => <option key={pkg.id} value={pkg.id}>{pkg.label}</option>)}
             </select>
           </div>
           <div className="form-field">
-            <label htmlFor="new-film-emulsion">Emulsion</label>
+            <label htmlFor="new-film-emulsion">{t('film.form.emulsion')}</label>
             <select id="new-film-emulsion" value={form.emulsionId} onChange={(e) => setForm((prev) => ({ ...prev, emulsionId: e.target.value }))} required disabled={!form.filmFormatId}>
-              <option value="">Select emulsion</option>
+              <option value="">{t('film.form.selectEmulsion')}</option>
               {emulsionOptions.map((emulsion) => <option key={emulsion.id} value={emulsion.id}>{emulsion.manufacturer} {emulsion.brand} ({emulsion.isoSpeed})</option>)}
             </select>
           </div>
           <div className="form-field">
-            <label htmlFor="new-film-expiration">Expiration date (optional)</label>
+            <label htmlFor="new-film-expiration">{t('film.form.expiration')}</label>
             <input id="new-film-expiration" type="date" value={form.expirationDate} onChange={(e) => setForm((prev) => ({ ...prev, expirationDate: e.target.value }))} />
           </div>
           <div className="form-field">
-            <label htmlFor="new-film-supplier">Supplier (optional)</label>
+            <label htmlFor="new-film-supplier">{t('film.form.supplier')}</label>
             <input
               id="new-film-supplier"
               list="film-supplier-options"
               value={form.supplierInput}
               onChange={(e) => setForm((prev) => ({ ...prev, supplierInput: e.target.value }))}
-              placeholder="Select existing or type new"
+              placeholder={t('film.form.supplierPlaceholder')}
             />
             <datalist id="film-supplier-options">
               {suppliers.map((supplier) => <option key={supplier.id} value={supplier.name} />)}
             </datalist>
           </div>
           <div className="form-field">
-            <label htmlFor="new-film-purchase-channel">Purchase channel (optional)</label>
+            <label htmlFor="new-film-purchase-channel">{t('film.form.purchaseChannel')}</label>
             <input id="new-film-purchase-channel" value={form.purchaseChannel} onChange={(e) => setForm((prev) => ({ ...prev, purchaseChannel: e.target.value }))} />
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 120px', gap: 8 }}>
             <div className="form-field">
-              <label htmlFor="new-film-purchase-price">Purchase price (optional)</label>
+              <label htmlFor="new-film-purchase-price">{t('film.form.purchasePrice')}</label>
               <input id="new-film-purchase-price" type="number" min="0" step="0.01" value={form.purchasePrice} onChange={(e) => setForm((prev) => ({ ...prev, purchasePrice: e.target.value }))} />
             </div>
             <div className="form-field">
-              <label htmlFor="new-film-purchase-currency">Currency</label>
+              <label htmlFor="new-film-purchase-currency">{t('film.form.currency')}</label>
               <input id="new-film-purchase-currency" value={form.purchaseCurrencyCode} onChange={(e) => setForm((prev) => ({ ...prev, purchaseCurrencyCode: e.target.value }))} maxLength={3} />
             </div>
           </div>
           <div className="form-field">
-            <label htmlFor="new-film-order-ref">Order reference (optional)</label>
+            <label htmlFor="new-film-order-ref">{t('film.form.orderRef')}</label>
             <input id="new-film-order-ref" value={form.purchaseOrderRef} onChange={(e) => setForm((prev) => ({ ...prev, purchaseOrderRef: e.target.value }))} />
           </div>
           <div className="form-field">
-            <label htmlFor="new-film-obtained-date">Obtained date (optional)</label>
+            <label htmlFor="new-film-obtained-date">{t('film.form.obtainedDate')}</label>
             <input id="new-film-obtained-date" type="date" value={form.purchaseObtainedDate} onChange={(e) => setForm((prev) => ({ ...prev, purchaseObtainedDate: e.target.value }))} />
           </div>
           <div className="form-field">
-            <label htmlFor="new-film-rating">Rating (optional)</label>
+            <label htmlFor="new-film-rating">{t('film.form.rating')}</label>
             <select id="new-film-rating" value={form.rating} onChange={(e) => setForm((prev) => ({ ...prev, rating: e.target.value }))}>
-              <option value="">No rating</option>
+              <option value="">{t('film.form.noRating')}</option>
               {[1, 2, 3, 4, 5].map((rating) => <option key={rating} value={rating}>{rating}</option>)}
             </select>
           </div>
           <div className="form-actions">
-            <button type="submit" disabled={isCreatingFilm}>{isCreatingFilm ? 'Creating…' : 'Create film'}</button>
-            <button type="button" className="secondary" onClick={() => setCreateOpen(false)}>Cancel</button>
+            <button type="submit" disabled={isCreatingFilm}>{isCreatingFilm ? t('film.form.creating') : t('film.form.create')}</button>
+            <button type="button" className="secondary" onClick={() => setCreateOpen(false)}>{t('film.form.cancel')}</button>
           </div>
           </fieldset>
         </form>
@@ -430,6 +438,7 @@ export function FilmListPage() {
 }
 
 export function FilmDetailPage() {
+  const { t } = useTranslation();
   const { api } = useSession();
   const params = useParams<{ id: string }>();
   const id = Number(params.id);
@@ -472,7 +481,7 @@ export function FilmDetailPage() {
       setName(detail.name);
       setExpirationDate(detail.expirationDate ? detail.expirationDate.slice(0, 10) : '');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load film detail');
+      setError(resolveApiError(err, t, t('film.failedToLoadDetail')));
     }
   }
 
@@ -495,19 +504,19 @@ export function FilmDetailPage() {
     <main>
       <Link href="/film" className="back-link">
         <i className="bi bi-arrow-left" aria-hidden="true" />
-        Back to film inventory
+        {t('film.backToInventory')}
       </Link>
 
       <PageHeader
-        heading={film?.name ?? 'Film Details'}
+        heading={film?.name ?? t('film.filmDetails')}
         subtitle={film
           ? `${film.emulsion.manufacturer} ${film.emulsion.brand} · ${film.filmFormat.label}`
-          : 'View film details, frame metadata, and transition history.'}
+          : t('film.detailSubtitle')}
         action={
           film ? (
             <div style={{ display: 'flex', gap: 8 }}>
-              <button type="button" className="secondary" onClick={() => setEditOpen(true)}>Edit</button>
-              <button type="button" onClick={() => setEventOpen(true)}>Add event</button>
+              <button type="button" className="secondary" onClick={() => setEditOpen(true)}>{t('film.edit')}</button>
+              <button type="button" onClick={() => setEventOpen(true)}>{t('film.addEvent')}</button>
             </div>
           ) : null
         }
@@ -521,35 +530,35 @@ export function FilmDetailPage() {
           <section className="card">
             <div className="detail-grid">
               <div className="detail-field">
-                <span className="detail-label">Current state</span>
+                <span className="detail-label">{t('film.detail.currentState')}</span>
                 <span className="detail-value">
                   <StateBadge code={film.currentState.code} label={film.currentState.label} />
                 </span>
               </div>
               <div className="detail-field">
-                <span className="detail-label">Format</span>
+                <span className="detail-label">{t('film.detail.format')}</span>
                 <span className="detail-value">{film.filmFormat.label}</span>
               </div>
               <div className="detail-field">
-                <span className="detail-label">ISO</span>
+                <span className="detail-label">{t('film.detail.iso')}</span>
                 <span className="detail-value">{film.emulsion.isoSpeed}</span>
               </div>
               <div className="detail-field">
-                <span className="detail-label">Expiration</span>
+                <span className="detail-label">{t('film.detail.expiration')}</span>
                 <span className="detail-value">
                   {film.expirationDate ? new Date(film.expirationDate).toLocaleDateString() : '—'}
                 </span>
               </div>
               <div className="detail-field">
-                <span className="detail-label">Purchase cost</span>
+                <span className="detail-label">{t('film.detail.purchaseCost')}</span>
                 <span className="detail-value">{formatCost(film.purchaseCostAllocated)}</span>
               </div>
               <div className="detail-field">
-                <span className="detail-label">Development cost</span>
+                <span className="detail-label">{t('film.detail.developmentCost')}</span>
                 <span className="detail-value">{formatCost(film.developmentCost)}</span>
               </div>
               <div className="detail-field">
-                <span className="detail-label">Known total</span>
+                <span className="detail-label">{t('film.detail.knownTotal')}</span>
                 <span className="detail-value">{formatKnownCost(film)}</span>
               </div>
             </div>
@@ -560,19 +569,19 @@ export function FilmDetailPage() {
             {frames.length > 0 ? (
               <section className="card" style={{ margin: 0 }}>
                 <h2 style={{ margin: '0 0 12px', fontSize: 16, fontWeight: 600 }}>
-                  Frames ({frames.length})
-                  {!isFrameEditable ? <span style={{ fontSize: 12, fontWeight: 400, color: 'var(--muted-ink)', marginLeft: 8 }}>metadata editable when loaded</span> : null}
+                  {t('film.frames.heading', { count: frames.length })}
+                  {!isFrameEditable ? <span style={{ fontSize: 12, fontWeight: 400, color: 'var(--muted-ink)', marginLeft: 8 }}>{t('film.frames.metadataEditableHint')}</span> : null}
                 </h2>
                 <div className="table-scroll">
                 <table>
-                  <caption className="sr-only">Frames for {film.name}</caption>
+                  <caption className="sr-only">{t('film.frames.tableCaption', { filmName: film.name })}</caption>
                   <thead>
                     <tr>
-                      <th scope="col">#</th>
-                      <th scope="col">State</th>
-                      <th scope="col">Aperture</th>
-                      <th scope="col">Shutter</th>
-                      <th scope="col">Filter</th>
+                      <th scope="col">{t('film.frames.columns.number')}</th>
+                      <th scope="col">{t('film.frames.columns.state')}</th>
+                      <th scope="col">{t('film.frames.columns.aperture')}</th>
+                      <th scope="col">{t('film.frames.columns.shutter')}</th>
+                      <th scope="col">{t('film.frames.columns.filter')}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -602,7 +611,7 @@ export function FilmDetailPage() {
                                   : `${frame.shutterSpeedSeconds}s`)
                               : '—'}
                           </td>
-                          <td>{frame.filterUsed === true ? 'Yes' : frame.filterUsed === false ? 'No' : '—'}</td>
+                          <td>{frame.filterUsed === true ? t('film.frames.filterYes') : frame.filterUsed === false ? t('film.frames.filterNo') : '—'}</td>
                         </tr>
                         {expandedFrameIds.has(frame.id) ? (
                           <tr id={`frame-editor-${frame.id}`}>
@@ -617,7 +626,7 @@ export function FilmDetailPage() {
                 </table>
                 </div>
                 {isFrameEditable ? (
-                  <p className="field-help" style={{ marginTop: 8 }}>Click a row to expand and edit frame metadata.</p>
+                  <p className="field-help" style={{ marginTop: 8 }}>{t('film.frames.clickToExpand')}</p>
                 ) : null}
               </section>
             ) : null}
@@ -626,9 +635,9 @@ export function FilmDetailPage() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
               {frames.length === 0 ? null : null}
               <section className="card" style={{ margin: 0 }}>
-                <h2 style={{ margin: '0 0 12px', fontSize: 16, fontWeight: 600 }}>Journey events</h2>
+                <h2 style={{ margin: '0 0 12px', fontSize: 16, fontWeight: 600 }}>{t('film.journey.heading')}</h2>
                 {events.length === 0 ? (
-                  <p className="field-help">No events recorded yet.</p>
+                  <p className="field-help">{t('film.journey.noEvents')}</p>
                 ) : (
                   <ul className="timeline">
                     {events.map((event) => {
@@ -651,7 +660,7 @@ export function FilmDetailPage() {
           </div>
 
           {/* Edit drawer */}
-          <FormDrawer open={isEditOpen} onClose={() => setEditOpen(false)} title="Edit film">
+          <FormDrawer open={isEditOpen} onClose={() => setEditOpen(false)} title={t('film.editFilmDrawerTitle')}>
             <form onSubmit={async (e) => {
               e.preventDefault();
               if (!beginEditSubmit()) return;
@@ -665,31 +674,30 @@ export function FilmDetailPage() {
                 await load();
                 setEditOpen(false);
               } catch (err) {
-                setError(err instanceof Error ? err.message : 'Failed to update film');
+                setError(resolveApiError(err, t, t('film.failedToUpdate')));
               } finally {
                 endEditSubmit();
               }
             }}>
               <fieldset disabled={isSavingFilm} style={{ margin: 0, padding: 0, border: 'none' }}>
-              <legend className="sr-only">Edit film details</legend>
+              <legend className="sr-only">{t('film.form.editLegend')}</legend>
               <div className="form-field">
-                <label htmlFor="edit-film-name">Name</label>
+                <label htmlFor="edit-film-name">{t('film.form.name')}</label>
                 <input id="edit-film-name" value={name} onChange={(e) => setName(e.target.value)} required />
               </div>
               <div className="form-field">
-                <label htmlFor="edit-film-expiration">Expiration date</label>
+                <label htmlFor="edit-film-expiration">{t('film.form.expiration')}</label>
                 <input id="edit-film-expiration" type="date" value={expirationDate} onChange={(e) => setExpirationDate(e.target.value)} />
               </div>
               <div className="form-actions">
-                <button type="submit" disabled={isSavingFilm}>{isSavingFilm ? 'Saving…' : 'Save'}</button>
-                <button type="button" className="secondary" onClick={() => setEditOpen(false)}>Cancel</button>
+                <button type="submit" disabled={isSavingFilm}>{isSavingFilm ? t('film.form.saving') : t('film.form.save')}</button>
+                <button type="button" className="secondary" onClick={() => setEditOpen(false)}>{t('film.form.cancel')}</button>
               </div>
               </fieldset>
             </form>
           </FormDrawer>
 
-          {/* Add event drawer (alternative full-page drawer for mobile) */}
-          <FormDrawer open={isEventOpen} onClose={() => setEventOpen(false)} title="Add event">
+          <FormDrawer open={isEventOpen} onClose={() => setEventOpen(false)} title={t('film.addEventDrawerTitle')}>
             {refTables ? (
               <FilmEventForm
                 filmId={id}

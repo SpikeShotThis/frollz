@@ -55,7 +55,7 @@ export class AuthService {
     const existingUser = await this.authRepository.findUserByEmail(input.email);
 
     if (existingUser) {
-      throw new DomainError('CONFLICT', 'A user with that email already exists');
+      throw new DomainError('CONFLICT', 'A user with that email already exists', { label: 'errors.auth.emailConflict' });
     }
 
     const passwordHash = await bcrypt.hash(input.password, 12);
@@ -84,7 +84,7 @@ export class AuthService {
         return this.issueTokenPair(concurrentUser.id, concurrentUser.email);
       }
 
-      throw new DomainError('CONFLICT', 'A user with that email already exists');
+      throw new DomainError('CONFLICT', 'A user with that email already exists', { label: 'errors.auth.emailConflict' });
     }
 
     return this.issueTokenPair(user.id, user.email);
@@ -94,13 +94,13 @@ export class AuthService {
     const user = await this.authRepository.findUserByEmail(input.email);
 
     if (!user) {
-      throw new DomainError('UNAUTHORIZED', 'Invalid email or password');
+      throw new DomainError('UNAUTHORIZED', 'Invalid email or password', { label: 'errors.auth.invalidCredentials' });
     }
 
     const passwordMatches = await bcrypt.compare(input.password, user.passwordHash);
 
     if (!passwordMatches) {
-      throw new DomainError('UNAUTHORIZED', 'Invalid email or password');
+      throw new DomainError('UNAUTHORIZED', 'Invalid email or password', { label: 'errors.auth.invalidCredentials' });
     }
 
     return this.issueTokenPair(user.id, user.email);
@@ -151,18 +151,18 @@ export class AuthService {
         && (!session.previousTokenGraceUntil || new Date(session.previousTokenGraceUntil).getTime() <= Date.now())
       ) {
         await this.authRepository.revokeRefreshTokensForUser(session.userId, nowIso());
-        throw new DomainError('UNAUTHORIZED', 'Refresh token reuse detected');
+        throw new DomainError('UNAUTHORIZED', 'Refresh token reuse detected', { label: 'errors.auth.refreshTokenReuse' });
       }
     };
 
     let session = await this.authRepository.findRefreshTokenByHash(tokenHash);
 
     if (!session || session.revokedAt) {
-      throw new DomainError('UNAUTHORIZED', 'Invalid refresh token');
+      throw new DomainError('UNAUTHORIZED', 'Invalid refresh token', { label: 'errors.auth.invalidRefreshToken' });
     }
 
     if (new Date(session.expiresAt).getTime() <= Date.now()) {
-      throw new DomainError('UNAUTHORIZED', 'Refresh token has expired');
+      throw new DomainError('UNAUTHORIZED', 'Refresh token has expired', { label: 'errors.auth.refreshTokenExpired' });
     }
 
     await assertReplayWindow(session);
@@ -170,7 +170,7 @@ export class AuthService {
     const user = await this.authRepository.findUserById(session.userId);
 
     if (!user) {
-      throw new DomainError('UNAUTHORIZED', 'Invalid refresh token');
+      throw new DomainError('UNAUTHORIZED', 'Invalid refresh token', { label: 'errors.auth.invalidRefreshToken' });
     }
 
     let nextRefreshToken = await rotateToken(session);
@@ -179,11 +179,11 @@ export class AuthService {
       session = await this.authRepository.findRefreshTokenByHash(tokenHash);
 
       if (!session || session.revokedAt) {
-        throw new DomainError('UNAUTHORIZED', 'Invalid refresh token');
+        throw new DomainError('UNAUTHORIZED', 'Invalid refresh token', { label: 'errors.auth.invalidRefreshToken' });
       }
 
       if (new Date(session.expiresAt).getTime() <= Date.now()) {
-        throw new DomainError('UNAUTHORIZED', 'Refresh token has expired');
+        throw new DomainError('UNAUTHORIZED', 'Refresh token has expired', { label: 'errors.auth.refreshTokenExpired' });
       }
 
       await assertReplayWindow(session);
@@ -192,7 +192,7 @@ export class AuthService {
     }
 
     if (!nextRefreshToken) {
-      throw new DomainError('UNAUTHORIZED', 'Invalid refresh token');
+      throw new DomainError('UNAUTHORIZED', 'Invalid refresh token', { label: 'errors.auth.invalidRefreshToken' });
     }
 
     const accessToken = await this.jwtService.signAsync(
@@ -217,7 +217,7 @@ export class AuthService {
     const user = await this.authRepository.findCurrentUserById(userId);
 
     if (!user) {
-      throw new DomainError('NOT_FOUND', 'User not found');
+      throw new DomainError('NOT_FOUND', 'User not found', { label: 'errors.auth.userNotFound' });
     }
 
     return user;

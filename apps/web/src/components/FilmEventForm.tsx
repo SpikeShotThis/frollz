@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useTranslation } from '@frollz2/i18n';
 import {
   LIST_MAX_LIMIT,
   createFilmJourneyEventRequestSchema,
@@ -12,6 +13,7 @@ import type { FilmDevice, FilmState, ReferenceTables } from '@frollz2/schema';
 import { useSession } from '../auth/session';
 import { useIdempotencyKey, useIdempotentSubmit } from '../hooks/useIdempotentSubmit';
 import { ReferenceTypeaheadInput } from './ReferenceTypeaheadInput';
+import { resolveApiError } from '../utils/resolve-api-error';
 
 type EventData = Record<string, unknown>;
 
@@ -49,6 +51,7 @@ function LoadedSubForm({
   refTables?: ReferenceTables;
   onChange: (data: EventData) => void;
 }) {
+  const { t } = useTranslation();
   const { api } = useSession();
   const [devices, setDevices] = useState<FilmDevice[]>([]);
   const [deviceId, setDeviceId] = useState('');
@@ -79,9 +82,9 @@ function LoadedSubForm({
   return (
     <>
       <div className="form-field">
-        <label htmlFor="ef-device">Device</label>
+        <label htmlFor="ef-device">{t('filmEvent.device')}</label>
         <select id="ef-device" value={deviceId} onChange={(e) => setDeviceId(e.target.value)} required aria-describedby={compatibleDevices.length === 0 ? 'ef-device-help' : undefined}>
-          <option value="">Select a device</option>
+          <option value="">{t('filmEvent.selectDevice')}</option>
           {compatibleDevices.map((d) => (
             <option key={d.id} value={d.id}>
               {d.deviceTypeCode === 'camera' ? `${d.make} ${d.model}` : d.name}
@@ -90,28 +93,29 @@ function LoadedSubForm({
           ))}
         </select>
         {compatibleDevices.length === 0 ? (
-          <p id="ef-device-help" className="field-help">No devices with matching film format. Add a device first.</p>
+          <p id="ef-device-help" className="field-help">{t('filmEvent.noCompatibleDevices')}</p>
         ) : null}
       </div>
       {selectedDevice?.deviceTypeCode === 'film_holder' ? (
         <div className="form-field">
-          <label htmlFor="ef-slot">Slot number</label>
+          <label htmlFor="ef-slot">{t('filmEvent.slotNumber')}</label>
           <select id="ef-slot" value={slotNumber} onChange={(e) => setSlotNumber(e.target.value)}>
-            <option value="1">Slot 1</option>
-            <option value="2">Slot 2</option>
+            <option value="1">{t('filmEvent.slot1')}</option>
+            <option value="2">{t('filmEvent.slot2')}</option>
           </select>
         </div>
       ) : null}
       <div className="form-field">
-        <label htmlFor="ef-push-pull">Intended push/pull (optional)</label>
+        <label htmlFor="ef-push-pull">{t('filmEvent.intendedPushPull')}</label>
         <input id="ef-push-pull" type="number" value={intendedPushPull} onChange={(e) => setIntendedPushPull(e.target.value)} placeholder="0" aria-describedby="ef-push-pull-help" />
-        <p id="ef-push-pull-help" className="field-help">Positive = push, negative = pull. Leave blank for none.</p>
+        <p id="ef-push-pull-help" className="field-help">{t('filmEvent.pushPullHelp')}</p>
       </div>
     </>
   );
 }
 
 function StoredSubForm({ refTables, onChange }: { refTables: ReferenceTables; onChange: (data: EventData) => void }) {
+  const { t } = useTranslation();
   const [locationId, setLocationId] = useState('');
 
   useEffect(() => {
@@ -121,9 +125,9 @@ function StoredSubForm({ refTables, onChange }: { refTables: ReferenceTables; on
 
   return (
     <div className="form-field">
-      <label htmlFor="ef-location">Storage location</label>
+      <label htmlFor="ef-location">{t('filmEvent.storageLocation')}</label>
       <select id="ef-location" value={locationId} onChange={(e) => setLocationId(e.target.value)} required>
-        <option value="">Select a location</option>
+        <option value="">{t('filmEvent.selectLocation')}</option>
         {refTables.storageLocations.map((loc) => (
           <option key={loc.id} value={loc.id}>{loc.label}</option>
         ))}
@@ -139,6 +143,7 @@ function LabSubForm({
   stateCode: 'sent_for_dev' | 'developed';
   onChange: (data: EventData) => void;
 }) {
+  const { t } = useTranslation();
   const [labName, setLabName] = useState('');
   const [labContact, setLabContact] = useState('');
   const [actualPushPull, setActualPushPull] = useState('');
@@ -164,7 +169,7 @@ function LabSubForm({
     <>
       <ReferenceTypeaheadInput
         id="ef-lab-name"
-        label="Lab name"
+        label={t('filmEvent.labName')}
         kind="lab_name"
         value={labName}
         onChange={setLabName}
@@ -173,24 +178,24 @@ function LabSubForm({
       {stateCode === 'sent_for_dev' ? (
         <ReferenceTypeaheadInput
           id="ef-lab-contact"
-          label="Lab contact (optional)"
+          label={t('filmEvent.labContact')}
           kind="lab_contact"
           value={labContact}
           onChange={setLabContact}
         />
       ) : null}
       <div className="form-field">
-        <label htmlFor="ef-actual-push-pull">Actual push/pull (optional)</label>
+        <label htmlFor="ef-actual-push-pull">{t('filmEvent.actualPushPull')}</label>
         <input id="ef-actual-push-pull" type="number" value={actualPushPull} onChange={(e) => setActualPushPull(e.target.value)} placeholder="0" />
       </div>
       {stateCode === 'sent_for_dev' ? (
         <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: 8 }}>
           <div className="form-field" style={{ marginBottom: 0 }}>
-            <label htmlFor="ef-cost">Development cost (optional)</label>
+            <label htmlFor="ef-cost">{t('filmEvent.devCost')}</label>
             <input id="ef-cost" type="number" min="0" step="0.01" value={costAmount} onChange={(e) => setCostAmount(e.target.value)} placeholder="0.00" />
           </div>
           <div className="form-field" style={{ marginBottom: 0, width: 90 }}>
-            <label htmlFor="ef-currency">Currency</label>
+            <label htmlFor="ef-currency">{t('filmEvent.currency')}</label>
             <input id="ef-currency" value={costCurrency} onChange={(e) => setCostCurrency(e.target.value)} placeholder="USD" maxLength={3} />
           </div>
         </div>
@@ -200,6 +205,7 @@ function LabSubForm({
 }
 
 function ScannedSubForm({ onChange }: { onChange: (data: EventData) => void }) {
+  const { t } = useTranslation();
   const [scannerOrSoftware, setScannerOrSoftware] = useState('');
   const [scanLink, setScanLink] = useState('');
 
@@ -213,16 +219,16 @@ function ScannedSubForm({ onChange }: { onChange: (data: EventData) => void }) {
   return (
     <>
       <div className="form-field">
-        <label htmlFor="ef-scanner">Scanner/software (optional)</label>
+        <label htmlFor="ef-scanner">{t('filmEvent.scanner')}</label>
         <input
           id="ef-scanner"
           value={scannerOrSoftware}
           onChange={(e) => setScannerOrSoftware(e.target.value)}
-          placeholder="Scanner or scan software"
+          placeholder={t('filmEvent.scannerPlaceholder')}
         />
       </div>
       <div className="form-field">
-        <label htmlFor="ef-scan-link">Scan link (optional)</label>
+        <label htmlFor="ef-scan-link">{t('filmEvent.scanLink')}</label>
         <input
           id="ef-scan-link"
           value={scanLink}
@@ -235,6 +241,7 @@ function ScannedSubForm({ onChange }: { onChange: (data: EventData) => void }) {
 }
 
 export function FilmEventForm({ filmId, filmFormatId, currentStateCode, availableStates, refTables, onEventAdded }: FilmEventFormProps) {
+  const { t } = useTranslation();
   const { api } = useSession();
   const [selectedCode, setSelectedCode] = useState('');
   const [occurredAt, setOccurredAt] = useState(todayLocalDate());
@@ -329,26 +336,26 @@ export function FilmEventForm({ filmId, filmFormatId, currentStateCode, availabl
       resetLabCreateIdempotencyKey();
       onEventAdded();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to add event');
+      setError(resolveApiError(err, t, t('filmEvent.failedToAdd')));
     } finally {
       endSubmit();
     }
   }
 
   if (validNextStates.length === 0) {
-    return <p className="field-help">No further transitions available for this film.</p>;
+    return <p className="field-help">{t('filmEvent.noTransitions')}</p>;
   }
 
   return (
     <form onSubmit={(e) => void handleSubmit(e)}>
       <fieldset disabled={isSubmitting} style={{ margin: 0, padding: 0, border: 'none' }}>
-      <legend className="sr-only">Add film event</legend>
+      <legend className="sr-only">{t('filmEvent.legend')}</legend>
       {error ? <div className="error-banner" role="alert">{error}</div> : null}
 
       <div className="form-field">
-        <label htmlFor="ef-next-state">Next state</label>
+        <label htmlFor="ef-next-state">{t('filmEvent.nextState')}</label>
         <select id="ef-next-state" value={selectedCode} onChange={(e) => { setSelectedCode(e.target.value); setSubFormData({}); }} required>
-          <option value="">Select transition</option>
+          <option value="">{t('filmEvent.selectTransition')}</option>
           {validNextStates.map((s) => (
             <option key={s.id} value={s.code}>{s.label}</option>
           ))}
@@ -358,11 +365,11 @@ export function FilmEventForm({ filmId, filmFormatId, currentStateCode, availabl
       {selectedCode ? (
         <>
           <div className="form-field">
-            <label htmlFor="ef-occurred-at">Occurred at</label>
+            <label htmlFor="ef-occurred-at">{t('filmEvent.occurredAt')}</label>
             <input id="ef-occurred-at" type="date" value={occurredAt} onChange={(e) => setOccurredAt(e.target.value)} required />
           </div>
           <div className="form-field">
-            <label htmlFor="ef-notes">Notes (optional)</label>
+            <label htmlFor="ef-notes">{t('filmEvent.notes')}</label>
             <textarea id="ef-notes" value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} />
           </div>
 
@@ -380,7 +387,7 @@ export function FilmEventForm({ filmId, filmFormatId, currentStateCode, availabl
 
           <div className="form-actions">
             <button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? 'Adding…' : 'Add event'}
+              {isSubmitting ? t('filmEvent.adding') : t('filmEvent.addEvent')}
             </button>
           </div>
         </>

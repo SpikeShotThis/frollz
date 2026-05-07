@@ -3,13 +3,16 @@
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
 import { useParams, useSearchParams } from 'next/navigation';
+import { useTranslation } from '@frollz2/i18n';
 import { createFilmDeviceRequestSchema, filmFormatDefinitions, frameSizeCodeSchema, updateFilmDeviceRequestSchema } from '@frollz2/schema';
 import type { CreateFilmDeviceRequest, DeviceLoadTimelineEvent, DeviceType, FilmDevice, FilmFormat, FilmHolderSlot, FrameSizeCode, HolderType } from '@frollz2/schema';
 import { useSession } from '../../auth/session';
+import { DeleteConfirmationName } from '../DeleteConfirmationName';
 import { FormDrawer } from '../FormDrawer';
 import { PageHeader } from '../PageHeader';
 import { ReferenceTypeaheadInput } from '../ReferenceTypeaheadInput';
 import { useIdempotentSubmit } from '../../hooks/useIdempotentSubmit';
+import { resolveApiError } from '../../utils/resolve-api-error';
 
 type DeviceTypeCode = FilmDevice['deviceTypeCode'];
 
@@ -74,6 +77,7 @@ function parseFrameSize(value: string): FrameSizeCode {
 }
 
 export function DeviceListPage({ lockedDeviceTypeCode }: { lockedDeviceTypeCode?: DeviceTypeCode } = {}) {
+  const { t } = useTranslation();
   const { api } = useSession();
   const searchParams = useSearchParams();
   const typeFilterParam = searchParams?.get('type') ?? '';
@@ -126,7 +130,7 @@ export function DeviceListPage({ lockedDeviceTypeCode }: { lockedDeviceTypeCode?
         return { ...prev, deviceTypeId: selectedType ? String(selectedType.id) : '' };
       });
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load devices');
+      setError(resolveApiError(err, t, t('devices.failedToLoad')));
     } finally {
       setIsLoading(false);
     }
@@ -196,17 +200,17 @@ export function DeviceListPage({ lockedDeviceTypeCode }: { lockedDeviceTypeCode?
     ? deviceTypes.find((t) => t.code === typeFilter)?.label ?? deviceTypeCodeToLabel(typeFilter)
     : null;
 
-  const heading = typeLabel ?? 'Devices';
+  const heading = typeLabel ?? t('devices.heading');
   const subtitle = typeLabel
-    ? `Filtered view for ${typeLabel}.`
-    : 'Cameras, backs, and film holders.';
+    ? t('devices.filteredSubtitle', { type: typeLabel })
+    : t('devices.subtitle');
 
   return (
     <main>
       <PageHeader
         heading={heading}
         subtitle={subtitle}
-        action={<button type="button" onClick={() => setCreateOpen(true)}>New device</button>}
+        action={<button type="button" onClick={() => setCreateOpen(true)}>{t('devices.newDevice')}</button>}
       />
 
       {error ? <div className="error-banner" role="alert">{error}</div> : null}
@@ -214,13 +218,13 @@ export function DeviceListPage({ lockedDeviceTypeCode }: { lockedDeviceTypeCode?
       <section className="card">
         <div className="filter-bar">
           <div className="form-field" style={{ marginBottom: 0 }}>
-            <label htmlFor="device-search">Search devices</label>
-            <input id="device-search" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Make, model, name…" />
+            <label htmlFor="device-search">{t('devices.searchLabel')}</label>
+            <input id="device-search" value={search} onChange={(e) => setSearch(e.target.value)} placeholder={t('devices.searchPlaceholder')} />
           </div>
           <div className="form-field" style={{ marginBottom: 0 }}>
-            <label htmlFor="device-type-filter">Device type</label>
+            <label htmlFor="device-type-filter">{t('devices.typeFilter')}</label>
             <select id="device-type-filter" value={typeFilter} onChange={(e) => setTypeFilter(e.target.value)} disabled={Boolean(lockedDeviceTypeCode)}>
-              <option value="">All types</option>
+              <option value="">{t('devices.allTypes')}</option>
               {deviceTypes.map((type) => <option key={type.id} value={type.code}>{type.label}</option>)}
             </select>
           </div>
@@ -231,17 +235,17 @@ export function DeviceListPage({ lockedDeviceTypeCode }: { lockedDeviceTypeCode?
         {isLoading ? (
           <div>{[...Array(4)].map((_, i) => <div key={i} className="skeleton skeleton-row" />)}</div>
         ) : visible.length === 0 ? (
-          <div className="empty-state"><p>No devices match your filters.</p></div>
+          <div className="empty-state"><p>{t('devices.noDevicesFound')}</p></div>
         ) : (
           <div className="table-scroll">
             <table>
-              <caption className="sr-only">Devices matching the current filters</caption>
+              <caption className="sr-only">{t('devices.tableCaption')}</caption>
               <thead>
                 <tr>
-                  <th scope="col">Device</th>
-                  <th scope="col">Type</th>
-                  <th scope="col">Format</th>
-                  <th scope="col">Frame size</th>
+                  <th scope="col">{t('devices.columns.device')}</th>
+                  <th scope="col">{t('devices.columns.type')}</th>
+                  <th scope="col">{t('devices.columns.format')}</th>
+                  <th scope="col">{t('devices.columns.frameSize')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -265,12 +269,12 @@ export function DeviceListPage({ lockedDeviceTypeCode }: { lockedDeviceTypeCode?
         )}
         {!isLoading ? (
           <p style={{ fontSize: 13, color: 'var(--muted-ink)', margin: '10px 0 0' }}>
-            {visible.length} device{visible.length !== 1 ? 's' : ''}
+            {t('devices.count', { count: visible.length })}
           </p>
         ) : null}
       </section>
 
-      <FormDrawer open={isCreateOpen} onClose={() => setCreateOpen(false)} title="New device">
+      <FormDrawer open={isCreateOpen} onClose={() => setCreateOpen(false)} title={t('devices.newDevice')}>
         <form onSubmit={async (e) => {
           e.preventDefault();
           if (!beginCreateSubmit()) return;
@@ -317,15 +321,15 @@ export function DeviceListPage({ lockedDeviceTypeCode }: { lockedDeviceTypeCode?
             await load();
             setCreateOpen(false);
           } catch (err) {
-            setError(err instanceof Error ? err.message : 'Failed to create device');
+            setError(resolveApiError(err, t, t('devices.failedToCreate')));
           } finally {
             endCreateSubmit();
           }
         }}>
           <fieldset disabled={isCreating} style={{ margin: 0, padding: 0, border: 'none' }}>
-          <legend className="sr-only">New device details</legend>
+          <legend className="sr-only">{t('devices.form.newLegend')}</legend>
           <div className="form-field">
-            <label htmlFor="new-device-type">Device type</label>
+            <label htmlFor="new-device-type">{t('devices.form.deviceType')}</label>
             <select id="new-device-type" value={form.deviceTypeCode} onChange={(e) => {
               const nextCode = toDeviceTypeCode(e.target.value);
               const type = deviceTypes.find((entry) => entry.code === nextCode);
@@ -335,21 +339,21 @@ export function DeviceListPage({ lockedDeviceTypeCode }: { lockedDeviceTypeCode?
             </select>
           </div>
           <div className="form-field">
-            <label htmlFor="new-device-format">Film format</label>
+            <label htmlFor="new-device-format">{t('devices.form.filmFormat')}</label>
             <select id="new-device-format" value={form.filmFormatId} onChange={(e) => setForm((prev) => ({ ...prev, filmFormatId: e.target.value }))} required>
-              <option value="">Select film format</option>
+              <option value="">{t('devices.form.selectFilmFormat')}</option>
               {filmFormats.map((fmt) => <option key={fmt.id} value={fmt.id}>{fmt.label}</option>)}
             </select>
           </div>
           <div className="form-field">
-            <label htmlFor="new-device-frame-size">Frame size</label>
+            <label htmlFor="new-device-frame-size">{t('devices.form.frameSize')}</label>
             <select
               id="new-device-frame-size"
               value={form.frameSize}
               onChange={(e) => setForm((prev) => ({ ...prev, frameSize: e.target.value }))}
               disabled={!isFrameSizeEnabled}
             >
-              <option value="">Select frame size</option>
+              <option value="">{t('devices.form.selectFrameSize')}</option>
               {availableFrameSizes.map((frameSize) => (
                 <option key={frameSize.code} value={frameSize.code}>{frameSize.label}</option>
               ))}
@@ -360,7 +364,7 @@ export function DeviceListPage({ lockedDeviceTypeCode }: { lockedDeviceTypeCode?
             <>
               <div className="form-field form-field-toggle">
                 <label htmlFor="new-device-direct-loadable" className="toggle-control">
-                  <span>Is this camera directly loadable?</span>
+                  <span>{t('devices.form.directLoadable')}</span>
                   <span className="switch">
                     <input
                       id="new-device-direct-loadable"
@@ -374,7 +378,7 @@ export function DeviceListPage({ lockedDeviceTypeCode }: { lockedDeviceTypeCode?
               </div>
               <ReferenceTypeaheadInput
                 id="new-device-make"
-                label="Make"
+                label={t('devices.form.make')}
                 kind="device_make"
                 value={form.make}
                 onChange={(make) => setForm((prev) => ({ ...prev, make }))}
@@ -383,7 +387,7 @@ export function DeviceListPage({ lockedDeviceTypeCode }: { lockedDeviceTypeCode?
               />
               <ReferenceTypeaheadInput
                 id="new-device-model"
-                label="Model"
+                label={t('devices.form.model')}
                 kind="device_model"
                 value={form.model}
                 onChange={(model) => setForm((prev) => ({ ...prev, model }))}
@@ -395,12 +399,12 @@ export function DeviceListPage({ lockedDeviceTypeCode }: { lockedDeviceTypeCode?
           {form.deviceTypeCode === 'interchangeable_back' ? (
             <>
               <div className="form-field">
-                <label htmlFor="new-device-name">Name</label>
+                <label htmlFor="new-device-name">{t('devices.form.name')}</label>
                 <input id="new-device-name" value={form.name} onChange={(e) => setForm((prev) => ({ ...prev, name: e.target.value }))} required />
               </div>
               <ReferenceTypeaheadInput
                 id="new-device-system"
-                label="System"
+                label={t('devices.form.system')}
                 kind="device_system"
                 value={form.system}
                 onChange={(system) => setForm((prev) => ({ ...prev, system }))}
@@ -412,42 +416,42 @@ export function DeviceListPage({ lockedDeviceTypeCode }: { lockedDeviceTypeCode?
           {form.deviceTypeCode === 'film_holder' ? (
             <>
               <div className="form-field">
-                <label htmlFor="new-holder-name">Name</label>
+                <label htmlFor="new-holder-name">{t('devices.form.name')}</label>
                 <input id="new-holder-name" value={form.name} onChange={(e) => setForm((prev) => ({ ...prev, name: e.target.value }))} required />
               </div>
               <ReferenceTypeaheadInput
                 id="new-holder-brand"
-                label="Brand"
+                label={t('devices.form.brand')}
                 kind="brand"
                 value={form.brand}
                 onChange={(brand) => setForm((prev) => ({ ...prev, brand }))}
                 required
               />
               <div className="form-field">
-                <label htmlFor="new-holder-type">Holder type</label>
+                <label htmlFor="new-holder-type">{t('devices.form.holderType')}</label>
                 <select id="new-holder-type" value={form.holderTypeId} onChange={(e) => setForm((prev) => ({ ...prev, holderTypeId: e.target.value }))} required>
-                  <option value="">Select holder type</option>
+                  <option value="">{t('devices.form.selectHolderType')}</option>
                   {holderTypes.map((ht) => <option key={ht.id} value={ht.id}>{ht.label}</option>)}
                 </select>
               </div>
               <div className="form-field">
-                <label htmlFor="new-holder-slot-count">Slot count</label>
+                <label htmlFor="new-holder-slot-count">{t('devices.form.slotCount')}</label>
                 <select
                   id="new-holder-slot-count"
                   value={form.slotCount}
                   onChange={(e) => setForm((prev) => ({ ...prev, slotCount: e.target.value }))}
                   required
                 >
-                  <option value="1">1 slot</option>
-                  <option value="2">2 slots</option>
+                  <option value="1">{t('devices.form.slot1')}</option>
+                  <option value="2">{t('devices.form.slot2')}</option>
                 </select>
               </div>
             </>
           ) : null}
 
           <div className="form-actions">
-            <button type="submit" disabled={isCreating}>{isCreating ? 'Creating…' : `Create ${selectedDeviceType?.label ?? 'device'}`}</button>
-            <button type="button" className="secondary" onClick={() => setCreateOpen(false)}>Cancel</button>
+            <button type="submit" disabled={isCreating}>{isCreating ? t('devices.form.creating') : t('devices.form.create', { type: selectedDeviceType?.label ?? '' })}</button>
+            <button type="button" className="secondary" onClick={() => setCreateOpen(false)}>{t('devices.form.cancel')}</button>
           </div>
           </fieldset>
         </form>
@@ -457,6 +461,7 @@ export function DeviceListPage({ lockedDeviceTypeCode }: { lockedDeviceTypeCode?
 }
 
 export function DeviceDetailPage() {
+  const { t } = useTranslation();
   const { api } = useSession();
   const params = useParams<{ id: string }>();
   const id = Number(params.id);
@@ -502,7 +507,7 @@ export function DeviceDetailPage() {
         setEditName(detail.name);
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load device detail');
+      setError(resolveApiError(err, t, t('devices.failedToLoad')));
       setDevice(null);
       setSlots([]);
       setLoadEvents([]);
@@ -526,17 +531,17 @@ export function DeviceDetailPage() {
     <main>
       <Link href="/devices" className="back-link">
         <i className="bi bi-arrow-left" aria-hidden="true" />
-        Back to devices
+        {t('devices.backToDevices')}
       </Link>
 
       <PageHeader
-        heading={displayName || 'Device Details'}
+        heading={displayName || t('devices.deviceDetails')}
         subtitle={device
           ? `${deviceTypeCodeToLabel(device.deviceTypeCode)}${device.frameSize ? ` · ${resolveFrameSizeLabel(device.frameSize)}` : ''}`
           : undefined}
         action={
           device ? (
-            <button type="button" className="secondary" onClick={() => setEditOpen(true)}>Edit</button>
+            <button type="button" className="secondary" onClick={() => setEditOpen(true)}>{t('devices.editButton')}</button>
           ) : null
         }
       />
@@ -550,39 +555,39 @@ export function DeviceDetailPage() {
               {isCamera ? (
                 <>
                   <div className="detail-field">
-                    <span className="detail-label">Make</span>
+                    <span className="detail-label">{t('devices.detail.make')}</span>
                     <span className="detail-value">{device.make}</span>
                   </div>
                   <div className="detail-field">
-                    <span className="detail-label">Model</span>
+                    <span className="detail-label">{t('devices.detail.model')}</span>
                     <span className="detail-value">{device.model}</span>
                   </div>
                 </>
               ) : (
                 <div className="detail-field">
-                  <span className="detail-label">Name</span>
+                  <span className="detail-label">{t('devices.detail.name')}</span>
                   <span className="detail-value">{device.name}</span>
                 </div>
               )}
               <div className="detail-field">
-                <span className="detail-label">Type</span>
+                <span className="detail-label">{t('devices.detail.type')}</span>
                 <span className="detail-value">{deviceTypeCodeToLabel(device.deviceTypeCode)}</span>
               </div>
               {device.frameSize ? (
                 <div className="detail-field">
-                  <span className="detail-label">Frame size</span>
+                  <span className="detail-label">{t('devices.detail.frameSize')}</span>
                   <span className="detail-value">{resolveFrameSizeLabel(device.frameSize)}</span>
                 </div>
               ) : null}
               {device.deviceTypeCode === 'interchangeable_back' ? (
                 <div className="detail-field">
-                  <span className="detail-label">System</span>
+                  <span className="detail-label">{t('devices.detail.system')}</span>
                   <span className="detail-value">{device.system}</span>
                 </div>
               ) : null}
               {device.deviceTypeCode === 'film_holder' ? (
                 <div className="detail-field">
-                  <span className="detail-label">Brand</span>
+                  <span className="detail-label">{t('devices.detail.brand')}</span>
                   <span className="detail-value">{device.brand}</span>
                 </div>
               ) : null}
@@ -591,18 +596,18 @@ export function DeviceDetailPage() {
 
           {device.deviceTypeCode === 'film_holder' ? (
             <section className="card">
-              <h2 style={{ margin: '0 0 12px', fontSize: 16, fontWeight: 600 }}>Film holder slots</h2>
+              <h2 style={{ margin: '0 0 12px', fontSize: 16, fontWeight: 600 }}>{t('devices.slots.heading')}</h2>
               {slots.length === 0 ? (
-                <p className="field-help">No slot information available.</p>
+                <p className="field-help">{t('devices.slots.noSlots')}</p>
               ) : (
                 <div className="table-scroll">
                 <table>
-                  <caption className="sr-only">Film holder slots for {displayName}</caption>
+                  <caption className="sr-only">{t('devices.slots.tableCaption', { name: displayName })}</caption>
                   <thead>
                     <tr>
-                      <th scope="col">Side</th>
-                      <th scope="col">State</th>
-                      <th scope="col">Loaded film</th>
+                      <th scope="col">{t('devices.slots.columns.side')}</th>
+                      <th scope="col">{t('devices.slots.columns.state')}</th>
+                      <th scope="col">{t('devices.slots.columns.loadedFilm')}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -610,7 +615,7 @@ export function DeviceDetailPage() {
                       <tr key={slot.id}>
                         <td>{slot.sideNumber}</td>
                         <td>{slot.slotStateCode}</td>
-                        <td>{slot.loadedFilmId ?? 'None'}</td>
+                        <td>{slot.loadedFilmId ?? t('devices.slots.none')}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -621,19 +626,19 @@ export function DeviceDetailPage() {
           ) : null}
 
           <section className="card">
-            <h2 style={{ margin: '0 0 12px', fontSize: 16, fontWeight: 600 }}>Load timeline</h2>
+            <h2 style={{ margin: '0 0 12px', fontSize: 16, fontWeight: 600 }}>{t('devices.timeline.heading')}</h2>
             {loadEvents.length === 0 ? (
-              <p className="field-help">No load timeline events available.</p>
+              <p className="field-help">{t('devices.timeline.noEvents')}</p>
             ) : (
               <div className="table-scroll">
               <table>
-                <caption className="sr-only">Load timeline for {displayName}</caption>
+                <caption className="sr-only">{t('devices.timeline.tableCaption', { name: displayName })}</caption>
                 <thead>
                   <tr>
-                    <th scope="col">Film</th>
-                    <th scope="col">Emulsion</th>
-                    <th scope="col">Loaded at</th>
-                    <th scope="col">Removed at</th>
+                    <th scope="col">{t('devices.timeline.columns.film')}</th>
+                    <th scope="col">{t('devices.timeline.columns.emulsion')}</th>
+                    <th scope="col">{t('devices.timeline.columns.loadedAt')}</th>
+                    <th scope="col">{t('devices.timeline.columns.removedAt')}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -642,7 +647,7 @@ export function DeviceDetailPage() {
                       <td>{event.filmName}</td>
                       <td>{event.emulsionName}</td>
                       <td>{new Date(event.occurredAt).toLocaleString()}</td>
-                      <td>{event.removedAt ? new Date(event.removedAt).toLocaleString() : 'Active'}</td>
+                      <td>{event.removedAt ? new Date(event.removedAt).toLocaleString() : t('devices.timeline.active')}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -651,7 +656,7 @@ export function DeviceDetailPage() {
             )}
           </section>
 
-          <FormDrawer open={isEditOpen} onClose={() => setEditOpen(false)} title="Edit device">
+          <FormDrawer open={isEditOpen} onClose={() => setEditOpen(false)} title={t('devices.form.editLegend')}>
             <form onSubmit={async (e) => {
               e.preventDefault();
               if (!beginEditSubmit()) return;
@@ -664,18 +669,18 @@ export function DeviceDetailPage() {
                 await load();
                 setEditOpen(false);
               } catch (err) {
-                setError(err instanceof Error ? err.message : 'Failed to update device');
+                setError(resolveApiError(err, t, t('devices.failedToUpdate')));
               } finally {
                 endEditSubmit();
               }
             }}>
               <fieldset disabled={isSaving} style={{ margin: 0, padding: 0, border: 'none' }}>
-              <legend className="sr-only">Edit device details</legend>
+              <legend className="sr-only">{t('devices.form.editLegend')}</legend>
               {isCamera ? (
                 <>
                   <ReferenceTypeaheadInput
                     id="edit-device-make"
-                    label="Make"
+                    label={t('devices.form.make')}
                     kind="device_make"
                     value={editMake}
                     onChange={setEditMake}
@@ -683,7 +688,7 @@ export function DeviceDetailPage() {
                   />
                   <ReferenceTypeaheadInput
                     id="edit-device-model"
-                    label="Model"
+                    label={t('devices.form.model')}
                     kind="device_model"
                     value={editModel}
                     onChange={setEditModel}
@@ -692,20 +697,21 @@ export function DeviceDetailPage() {
                 </>
               ) : (
                 <div className="form-field">
-                  <label htmlFor="edit-device-name">Name</label>
+                  <label htmlFor="edit-device-name">{t('devices.form.name')}</label>
                   <input id="edit-device-name" value={editName} onChange={(e) => setEditName(e.target.value)} required />
                 </div>
               )}
               <div className="form-actions">
-                <button type="submit" disabled={isSaving}>{isSaving ? 'Saving…' : 'Save'}</button>
-                <button type="button" className="secondary" onClick={() => setEditOpen(false)}>Cancel</button>
+                <button type="submit" disabled={isSaving}>{isSaving ? t('devices.form.saving') : t('devices.form.save')}</button>
+                <button type="button" className="secondary" onClick={() => setEditOpen(false)}>{t('devices.form.cancel')}</button>
               </div>
 
               <div className="danger-zone">
-                <h3>Delete device</h3>
-                <p>Type <strong>{displayName}</strong> to confirm deletion.</p>
+                <h3>{t('devices.delete.heading')}</h3>
+                <p>{t('devices.delete.confirmationPrompt')}</p>
+                <DeleteConfirmationName name={displayName} />
                 <div className="form-field">
-                  <label htmlFor="delete-device-confirm">Confirmation</label>
+                  <label htmlFor="delete-device-confirm">{t('devices.delete.confirmLabel')}</label>
                   <input id="delete-device-confirm" value={deleteConfirmation} onChange={(e) => setDeleteConfirmation(e.target.value)} />
                 </div>
                 <button
@@ -718,13 +724,13 @@ export function DeviceDetailPage() {
                       await api.deleteDevice(id, deleteIdempotencyKeyRef.current);
                       window.location.href = '/devices';
                     } catch (err) {
-                      setError(err instanceof Error ? err.message : 'Failed to delete device');
+                      setError(resolveApiError(err, t, t('devices.failedToDelete')));
                     } finally {
                       endDeleteSubmit();
                     }
                   }}
                 >
-                  {isDeleting ? 'Deleting…' : 'Delete device'}
+                  {isDeleting ? t('devices.delete.deleting') : t('devices.delete.delete')}
                 </button>
               </div>
               </fieldset>

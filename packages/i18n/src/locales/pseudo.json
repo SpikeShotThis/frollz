@@ -1,0 +1,652 @@
+{
+  "app": {
+    "name": "zllōrf",
+    "skipToContent": "tnetnoc ot pikS"
+  },
+  "navigation": {
+    "title": "noitagivaN",
+    "primaryLabel": "noitagivan yramirP",
+    "closeNav": "noitagivan esolC",
+    "openNav": "noitagivan nepO",
+    "expandSidebar": "rabedis dnapxE",
+    "collapseSidebar": "rabedis espalloC",
+    "signOut": "tuo ngiS",
+    "signingOut": "tuo gningiS",
+    "dashboard": "draobhsaD",
+    "film": "mliF",
+    "allFilm": "mliF llA",
+    "film35mm": "mm53",
+    "filmMediumFormat": "tamroF muideM",
+    "filmLargeFormat": "tamroF egraL",
+    "filmInstant": "tnatsnI",
+    "devices": "seciveD",
+    "allDevices": "seciveD llA",
+    "cameras": "saremaC",
+    "backs": "skcaB",
+    "holders": "sredloH",
+    "emulsions": "snoislumE",
+    "allEmulsions": "snoislumE llA",
+    "blackAndWhite": "etihW & kcalB",
+    "bwReversal": "lasreveR W&B",
+    "cineEcn2": ")2-NCE( eniC",
+    "colorNegativeC41": ")14-C( evitageN roloC",
+    "colorPositiveE6": ")6-E( evitisoP roloC",
+    "instant": "tnatsnI",
+    "admin": "nimdA",
+    "adminOverview": "weivrevO",
+    "filmLabs": "sbaL mliF",
+    "filmSuppliers": "sreilppuS mliF",
+    "dataExport": "tropxE ataD"
+  },
+  "theme": {
+    "switchToLight": "edom thgil ot hctiwS",
+    "switchToDark": "edom krad ot hctiwS"
+  },
+  "locale": {
+    "selectLabel": "egaugnaL"
+  },
+  "clipboard": {
+    "copyName": " ypoC{{name}}draobpilc ot "
+  },
+  "auth": {
+    "signIn": "ni ngiS",
+    "signInWelcome": ".zllorf ot kcab emocleW",
+    "signingIn": "…ni gningiS",
+    "signInLegend": "slaitnederc ni ngiS",
+    "noAccount": "?tnuocca na evah t’noD",
+    "register": "retsigeR",
+    "createAccount": "tnuocca etaerC",
+    "createAccountTagline": ".wolfkrow mlif ruoy gnikcart tratS",
+    "creatingAccount": "…tnuocca gnitaerC",
+    "createAccountLegend": "sliated tnuocca etaerC",
+    "alreadyHaveAccount": "?tnuocca na evah ydaerlA",
+    "email": "sserdda liamE",
+    "password": "drowssaP",
+    "fullName": "eman lluF",
+    "passwordHelp": ".sretcarahc 8 muminiM",
+    "loginFailed": "deliaf nigoL",
+    "registrationFailed": "deliaf noitartsigeR"
+  },
+  "dashboard": {
+    "heading": "draobhsaD",
+    "subtitle": ".slangis ksir ytivitca dna ,xim kcots ,wolfkrow mlif fo weivrevO",
+    "loadingLabel": "draobhsad gnidaoL",
+    "failedToLoad": "draobhsad daol ot deliaF",
+    "photographerFallback": "rehpargotohP",
+    "kpi": {
+      "total": {
+        "title": "smliF latoT",
+        "helper": "steehs dna sllor dekcart llA",
+        "actionLabel": "mlif nepO",
+        "segments": {
+          "loaded": "dedaoL",
+          "removed": "devomeR",
+          "atLab": "baL tA",
+          "archived": "devihcrA"
+        }
+      },
+      "format": {
+        "title": "tamroF yB",
+        "helper": " mm53{{count35mm}} 021 · {{count120}} teehS · {{countSheet}}",
+        "actionLabel": "stamrof nepO",
+        "segments": {
+          "mm35": "mm53",
+          "mm120": "021",
+          "sheet": "teehS"
+        }
+      },
+      "loaded": {
+        "title": ")ksiR eldI( dedaoL",
+        "helper": "{{loadedIdleCount}} > eldi {{loadedIdleDays}}syad ",
+        "actionLabel": "dedaol weiV",
+        "segments": {
+          "idle": " > eldI{{days}}d",
+          "active": " ≤ evitcA{{days}}d"
+        }
+      },
+      "removed": {
+        "title": ")tneS toN( devomeR",
+        "helper": " :gnitiaw tsedlO{{days}}syad ",
+        "actionLabel": "devomer weiV",
+        "segments": {
+          "awaitingLab": "bal gnitiawA",
+          "otherStates": "setats rehtO"
+        }
+      },
+      "sentForDev": {
+        "title": "veD rof tneS",
+        "helper": " :bal ta tsedlO{{days}}syad ",
+        "actionLabel": "eueuq bal weiV",
+        "segments": {
+          "inLabQueue": "eueuq bal nI",
+          "notInLab": "bal ni toN"
+        }
+      },
+      "expiring": {
+        "title": "nooS gniripxE",
+        "helper": " txen ni seripxE{{days}}syad ",
+        "actionLabel": "kcots weiveR",
+        "segments": {
+          "expiringSoon": " ≤ seripxE{{days}}d",
+          "stableHorizon": "noziroh elbatS"
+        }
+      },
+      "archived": {
+        "title": "devihcrA",
+        "helper": "steehs dna sllor detelpmoC",
+        "actionLabel": "devihcra weiV",
+        "segments": {
+          "completed": "detelpmoC",
+          "stillActive": "evitca llitS"
+        }
+      },
+      "recent": {
+        "title": "( ytivitcA tneceR{{days}})d",
+        "helper": "segnahc etats wen htiw smliF",
+        "actionLabel": "mlif nepO",
+        "segments": {
+          "changed": " ≤ degnahC{{days}}d",
+          "noRecentChange": "egnahc tnecer oN"
+        }
+      }
+    }
+  },
+  "film": {
+    "inventory": "yrotnevnI mliF",
+    "inventorySubtitle": ".snoitisnart etats hguorht sllor evom dna kcots mlif kcarT",
+    "filteredSubtitle": " rof weiv deretliF{{format}}.",
+    "addFilm": "mlif ddA",
+    "edit": "tidE",
+    "addEvent": "tneve ddA",
+    "backToInventory": "yrotnevni mlif ot kcaB",
+    "filmDetails": "sliateD mliF",
+    "detailSubtitle": ".yrotsih noitisnart dna ,atadatem emarf ,sliated mlif weiV",
+    "failedToLoad": "smlif daol ot deliaF",
+    "failedToCreate": "mlif etaerc ot deliaF",
+    "failedToUpdate": "mlif etadpu ot deliaF",
+    "failedToLoadDetail": "liated mlif daol ot deliaF",
+    "noFilmFound": ".sretlif tnerruc ruoy rof dnuof mlif oN",
+    "tableCaption": "sretlif tnerruc eht gnihctam yrotnevni mliF",
+    "searchLabel": "smlif hcraeS",
+    "searchPlaceholder": "…dnarb ,noislume ,emaN",
+    "stateFilter": "etats mliF",
+    "allStates": "setats llA",
+    "supplierFilter": "reilppuS",
+    "allSuppliers": "sreilppus llA",
+    "columns": {
+      "film": "mliF",
+      "emulsion": "noislumE",
+      "format": "tamroF",
+      "iso": "OSI",
+      "state": "etatS",
+      "knownCost": "tsoc nwonK"
+    },
+    "detail": {
+      "currentState": "etats tnerruC",
+      "format": "tamroF",
+      "iso": "OSI",
+      "expiration": "noitaripxE",
+      "purchaseCost": "tsoc esahcruP",
+      "developmentCost": "tsoc tnempoleveD",
+      "knownTotal": "latot nwonK"
+    },
+    "form": {
+      "newLegend": "sliated mlif weN",
+      "editLegend": "sliated mlif tidE",
+      "name": "emaN",
+      "format": "tamrof mliF",
+      "selectFormat": "tamrof mlif tceleS",
+      "packageType": "epyt egakcaP",
+      "selectPackageType": "epyt egakcap tceleS",
+      "emulsion": "noislumE",
+      "selectEmulsion": "noislume tceleS",
+      "expiration": ")lanoitpo( etad noitaripxE",
+      "supplier": ")lanoitpo( reilppuS",
+      "supplierPlaceholder": "wen epyt ro gnitsixe tceleS",
+      "purchaseChannel": ")lanoitpo( lennahc esahcruP",
+      "purchasePrice": ")lanoitpo( ecirp esahcruP",
+      "currency": "ycnerruC",
+      "orderRef": ")lanoitpo( ecnerefer redrO",
+      "obtainedDate": ")lanoitpo( etad deniatbO",
+      "rating": ")lanoitpo( gnitaR",
+      "noRating": "gnitar oN",
+      "create": "mlif etaerC",
+      "creating": "…gnitaerC",
+      "save": "evaS",
+      "saving": "…gnivaS",
+      "cancel": "lecnaC"
+    },
+    "addFilmDrawerTitle": "mlif ddA",
+    "editFilmDrawerTitle": "mlif tidE",
+    "addEventDrawerTitle": "tneve ddA",
+    "frames": {
+      "heading": "( semarF{{count}})",
+      "metadataEditableHint": "dedaol nehw elbatide atadatem",
+      "tableCaption": " rof semarF{{filmName}}",
+      "clickToExpand": ".atadatem emarf tide dna dnapxe ot wor a kcilC",
+      "columns": {
+        "number": "#",
+        "state": "etatS",
+        "aperture": "erutrepA",
+        "shutter": "rettuhS",
+        "filter": "retliF"
+      },
+      "filterYes": "seY",
+      "filterNo": "oN"
+    },
+    "journey": {
+      "heading": "stneve yenruoJ",
+      "noEvents": ".tey dedrocer stneve oN"
+    },
+    "count_one": "{{count}}mlif ",
+    "count_other": "{{count}}smlif "
+  },
+  "frameEditor": {
+    "aperture": "erutrepA",
+    "notRecorded": "dedrocer toN",
+    "otherAperture": "…rehtO",
+    "customAperture": "erutrepa motsuC",
+    "customAperturePlaceholder": "5.3 .g.e",
+    "shutterSpeed": "deeps rettuhS",
+    "shutterSpeedPlaceholder": "5.2 ro 005/1 .g.e",
+    "invalidFormat": "tamrof dilavnI",
+    "filterUsed": "desu retliF",
+    "clickToCycle": "elcyc ot kcilc",
+    "filterAriaLabel": " :desu retliF{{value}}.eulav elcyc ot etavitcA .",
+    "filterYes": "seY",
+    "filterNo": "oN",
+    "filterUnknown": "nwonknU",
+    "waitingToSave": "…evas ot gnitiaW",
+    "saving": "…gnivaS",
+    "saved": "devaS ✓",
+    "saveFailed": "deliaf evaS",
+    "saveError": " :rorrE{{message}}"
+  },
+  "filmEvent": {
+    "legend": "tneve mlif ddA",
+    "nextState": "etats txeN",
+    "selectTransition": "noitisnart tceleS",
+    "occurredAt": "ta derruccO",
+    "notes": ")lanoitpo( setoN",
+    "addEvent": "tneve ddA",
+    "adding": "…gniddA",
+    "noTransitions": ".mlif siht rof elbaliava snoitisnart rehtruf oN",
+    "failedToAdd": "tneve dda ot deliaF",
+    "device": "eciveD",
+    "selectDevice": "ecived a tceleS",
+    "noCompatibleDevices": ".tsrif ecived a ddA .tamrof mlif gnihctam htiw secived oN",
+    "slotNumber": "rebmun tolS",
+    "slot1": "1 tolS",
+    "slot2": "2 tolS",
+    "intendedPushPull": ")lanoitpo( llup/hsup dednetnI",
+    "pushPullHelp": ".enon rof knalb evaeL .llup = evitagen ,hsup = evitisoP",
+    "storageLocation": "noitacol egarotS",
+    "selectLocation": "noitacol a tceleS",
+    "labName": "eman baL",
+    "labContact": ")lanoitpo( tcatnoc baL",
+    "actualPushPull": ")lanoitpo( llup/hsup lautcA",
+    "devCost": ")lanoitpo( tsoc tnempoleveD",
+    "currency": "ycnerruC",
+    "scanner": ")lanoitpo( erawtfos/rennacS",
+    "scannerPlaceholder": "erawtfos nacs ro rennacS",
+    "scanLink": ")lanoitpo( knil nacS"
+  },
+  "emulsions": {
+    "heading": "snoislumE",
+    "subtitle": ".ytilibitapmoc tamrof rieht dna snoislume mlif eganaM",
+    "filteredSubtitle": " yb deretlif golatac derahS{{process}}.hcraes dna ssecorp ",
+    "newEmulsion": "noislume weN",
+    "backToEmulsions": "snoislume ot kcaB",
+    "emulsionDetails": "sliateD noislumE",
+    "failedToLoad": "snoislume daol ot deliaF",
+    "failedToCreate": "noislume etaerc ot deliaF",
+    "failedToUpdate": "noislume etadpu ot deliaF",
+    "failedToDelete": "noislume eteled ot deliaF",
+    "noEmulsionsFound": ".dnuof snoislume oN",
+    "tableCaption": "sretlif tnerruc eht gnihctam snoislumE",
+    "searchLabel": "snoislume hcraeS",
+    "searchPlaceholder": "…OSI ,dnarb ,rerutcafunaM",
+    "columns": {
+      "emulsion": "noislumE",
+      "iso": "OSI",
+      "process": "ssecorP",
+      "formats": "stamroF"
+    },
+    "detail": {
+      "manufacturer": "rerutcafunaM",
+      "brand": "dnarB",
+      "iso": "OSI",
+      "balance": "ecnalaB",
+      "process": "ssecorp tnempoleveD",
+      "formats": "stamrof elbitapmoC"
+    },
+    "editButton": "tidE",
+    "form": {
+      "newLegend": "sliated noislume weN",
+      "editLegend": "sliated noislume tidE",
+      "manufacturer": "rerutcafunaM",
+      "brand": "eman / dnarB",
+      "isoSpeed": "deeps OSI",
+      "process": "ssecorp tnempoleveD",
+      "selectProcess": "ssecorp tceleS",
+      "filmFormats": "stamrof mliF",
+      "create": "etaerC",
+      "creating": "…gnitaerC",
+      "save": "evaS",
+      "saving": "…gnivaS",
+      "cancel": "lecnaC"
+    },
+    "delete": {
+      "heading": "noislume eteleD",
+      "confirmationPrompt": ":noiteled mrifnoc ot eman siht epyT",
+      "confirmLabel": "noitamrifnoC",
+      "delete": "noislume eteleD",
+      "deleting": "…gniteleD"
+    },
+    "count_one": "{{count}}noislume ",
+    "count_other": "{{count}}snoislume "
+  },
+  "devices": {
+    "heading": "seciveD",
+    "subtitle": ".sredloh mlif dna ,skcab ,saremaC",
+    "filteredSubtitle": " rof weiv deretliF{{type}}.",
+    "newDevice": "ecived weN",
+    "backToDevices": "secived ot kcaB",
+    "deviceDetails": "sliateD eciveD",
+    "failedToLoad": "secived daol ot deliaF",
+    "failedToCreate": "ecived etaerc ot deliaF",
+    "failedToUpdate": "ecived etadpu ot deliaF",
+    "failedToDelete": "ecived eteled ot deliaF",
+    "noDevicesFound": ".sretlif ruoy hctam secived oN",
+    "tableCaption": "sretlif tnerruc eht gnihctam seciveD",
+    "searchLabel": "secived hcraeS",
+    "searchPlaceholder": "…eman ,ledom ,ekaM",
+    "typeFilter": "epyt eciveD",
+    "allTypes": "sepyt llA",
+    "columns": {
+      "device": "eciveD",
+      "type": "epyT",
+      "format": "tamroF",
+      "frameSize": "ezis emarF"
+    },
+    "detail": {
+      "make": "ekaM",
+      "model": "ledoM",
+      "name": "emaN",
+      "type": "epyT",
+      "frameSize": "ezis emarF",
+      "system": "metsyS",
+      "brand": "dnarB"
+    },
+    "form": {
+      "newLegend": "sliated ecived weN",
+      "editLegend": "sliated ecived tidE",
+      "deviceType": "epyt eciveD",
+      "filmFormat": "tamrof mliF",
+      "selectFilmFormat": "tamrof mlif tceleS",
+      "frameSize": "ezis emarF",
+      "selectFrameSize": "ezis emarf tceleS",
+      "directLoadable": "?elbadaol yltcerid aremac siht sI",
+      "make": "ekaM",
+      "model": "ledoM",
+      "name": "emaN",
+      "system": "metsyS",
+      "brand": "dnarB",
+      "holderType": "epyt redloH",
+      "selectHolderType": "epyt redloh tceleS",
+      "slotCount": "tnuoc tolS",
+      "slot1": "tols 1",
+      "slot2": "stols 2",
+      "create": " etaerC{{type}}",
+      "creating": "…gnitaerC",
+      "save": "evaS",
+      "saving": "…gnivaS",
+      "cancel": "lecnaC"
+    },
+    "slots": {
+      "heading": "stols redloh mliF",
+      "noSlots": ".elbaliava noitamrofni tols oN",
+      "tableCaption": " rof stols redloh mliF{{name}}",
+      "columns": {
+        "side": "ediS",
+        "state": "etatS",
+        "loadedFilm": "mlif dedaoL"
+      },
+      "none": "enoN"
+    },
+    "timeline": {
+      "heading": "enilemit daoL",
+      "noEvents": ".elbaliava stneve enilemit daol oN",
+      "tableCaption": " rof enilemit daoL{{name}}",
+      "columns": {
+        "film": "mliF",
+        "emulsion": "noislumE",
+        "loadedAt": "ta dedaoL",
+        "removedAt": "ta devomeR"
+      },
+      "active": "evitcA"
+    },
+    "delete": {
+      "heading": "ecived eteleD",
+      "confirmationPrompt": ":noiteled mrifnoc ot eman siht epyT",
+      "confirmLabel": "noitamrifnoC",
+      "delete": "ecived eteleD",
+      "deleting": "…gniteleD"
+    },
+    "count_one": "{{count}}ecived ",
+    "count_other": "{{count}}secived "
+  },
+  "admin": {
+    "heading": "nimdA",
+    "subtitle": ".tnemeganam atad dna noitartsinimda metsyS",
+    "sections": {
+      "dataExport": {
+        "title": "tropmI & tropxE ataD",
+        "description": ".atad gnikcart mlif ruoy tropmi ro tropxE"
+      },
+      "filmLabs": {
+        "title": "sbaL mliF",
+        "description": ".sgnitar dna sbal mlif eganaM"
+      },
+      "filmSuppliers": {
+        "title": "sreilppuS mliF",
+        "description": ".sgnitar dna sreilppus mlif eganaM"
+      }
+    },
+    "filmLabs": {
+      "heading": "sbaL mliF",
+      "subtitle": ".gnikcart ved-rof-tnes rof sbal tnempoleved eganaM",
+      "entity": "bal"
+    },
+    "filmSuppliers": {
+      "heading": "sreilppuS mliF",
+      "subtitle": ".gnikcart esahcrup rof sreilppus mlif eganaM",
+      "entity": "reilppus"
+    },
+    "search": " hcraeS{{entity}}s",
+    "searchPlaceholder": "…eman yb hcraeS",
+    "includeInactive": "evitcani edulcnI",
+    "newEntity": " weN{{entity}}",
+    "noEntitiesFound": " oN{{entity}}.dnuof s",
+    "tableCaption": "{{title}}sretlif tnerruc eht gnihctam ",
+    "failedToLoad": " daol ot deliaF{{entity}}s",
+    "failedToSave": " evas ot deliaF{{entity}}",
+    "failedToUpdate": " etadpu ot deliaF{{entity}}",
+    "columns": {
+      "name": "emaN",
+      "status": "sutatS",
+      "rating": "gnitaR",
+      "actions": "snoitcA"
+    },
+    "status": {
+      "active": "evitcA",
+      "inactive": "evitcanI"
+    },
+    "rating": {
+      "groupLabel": "srats 5 ot 1 morf gnitaR",
+      "starLabel_one": "{{count}}rats ",
+      "starLabel_other": "{{count}}srats ",
+      "ariaFull": "{{count}}srats 5 fo tuo ",
+      "ariaNone": "gnitar oN",
+      "clear": "raelC",
+      "label": ")5-1( gnitaR"
+    },
+    "actions": {
+      "edit": "tidE",
+      "archive": "evihcrA",
+      "restore": "erotseR",
+      "saving": "…gnivaS"
+    },
+    "form": {
+      "name": "emaN",
+      "contact": "nosrep tcatnoC",
+      "email": "liamE",
+      "website": "etisbeW",
+      "defaultProcesses": "sessecorp tluafeD",
+      "defaultProcessesPlaceholder": "W&B ,6-E ,14-C",
+      "notes": "setoN",
+      "newLegend": " weN{{entity}}",
+      "editLegend": " tidE{{entity}}",
+      "newTitle": " weN{{entity}}",
+      "editTitle": " tidE{{entity}}",
+      "create": "etaerC",
+      "update": "etadpU",
+      "saving": "…gnivaS",
+      "cancel": "lecnaC"
+    },
+    "dataExport": {
+      "heading": "tropmI / tropxE ataD",
+      "subtitle": ".tropxe suoiverp a morf erotser ro NOSJ sa atad ruoy tropxE",
+      "export": {
+        "heading": "atad tropxE",
+        "description": ".elif NOSJ a sa atad ruoy lla daolnwoD",
+        "button": "NOSJ tropxE",
+        "exporting": "…gnitropxE",
+        "success": ".etelpmoc tropxE",
+        "failed": "atad tropxe ot deliaF"
+      },
+      "import": {
+        "heading": "atad tropmI",
+        "description": ".atad gnitsixe htiw egrem lliw sihT .elif NOSJ detropxe ylsuoiverp a morf erotseR",
+        "label": "elif NOSJ tropmI",
+        "success": ".etelpmoc tropmI",
+        "failed": "atad tropmi ot deliaF"
+      }
+    },
+    "count_one": "{{count}} {{entity}}",
+    "count_other": "{{count}} {{entity}}s"
+  },
+  "formDrawer": {
+    "close": "esolC"
+  },
+  "mobile": {
+    "migrationBaseline": "ENILESAB NOITARGIM",
+    "appName": ")opxE( eliboM zllorF",
+    "headerTitle": "eliboM zllōrf"
+  },
+  "errors": {
+    "validation": {
+      "failed": "deliaf noitadilaV"
+    },
+    "idempotency": {
+      "keyTooLong": "rewef ro sretcarahc 552 eb tsum yek ycnetopmedI",
+      "keyConflict": "daolyap tnereffid a htiw desu ydaerla saw yek ycnetopmedI"
+    },
+    "auth": {
+      "emailConflict": "stsixe ydaerla liame taht htiw resu A",
+      "invalidCredentials": "drowssap ro liame dilavnI",
+      "refreshTokenReuse": "detceted esuer nekot hserfeR",
+      "invalidRefreshToken": "nekot hserfer dilavnI",
+      "refreshTokenExpired": "deripxe sah nekot hserfeR",
+      "userNotFound": "dnuof ton resU"
+    },
+    "film": {
+      "notFound": "dnuof ton mliF",
+      "stateNotFound": "dnuof ton etats mliF",
+      "lotNotFoundAfterCreation": "noitaerc retfa dnuof ton tol mliF",
+      "frameNotFound": "dnuof ton emarF",
+      "packageTypeNotFound": "dnuof ton epyt egakcaP",
+      "formatNotFound": "dnuof ton tamrof mliF",
+      "formatPackageMismatch": "epyt egakcap detceles eht hctam tsum tamrof mliF",
+      "nameConflict": "eman taht htiw mlif a evah ydaerla uoY",
+      "nameConflictCollection": "noitcelloc ruoy ni stsixe ydaerla eman taht htiw mlif A",
+      "frameMetadataRequiresLoaded": "dedaol si mlif eht elihw detadpu eb ylno nac atadatem emarF",
+      "labIdRequired": "stneve bal rof deriuqer si dIbal",
+      "loadEventRequiresTarget": "tegrat daol dilav a seriuqer tneve dedaol A",
+      "bulkRequiresConversion": "gnidaol erofeb llor detroppus a ot detrevnoc eb tsum klub tf001 mm53",
+      "alreadyLoaded": "dedaoler eb tonnac dna dedaol neeb ydaerla sah mlif sihT",
+      "loadFrameEventRequiresTarget": "tegrat daol dilav a seriuqer tneve emarf dedaol A",
+      "loadFrameTargetMismatch": "emarf detceles hctam ton seod tegrat emarf dedaoL",
+      "frameAlreadyLoaded": "desuer eb tonnac dna dedaol neeb ydaerla sah emarf tahT",
+      "cameraNotDirectLoad": "yltcerid dedaol eb tonnac aremac sihT",
+      "loadRequiresCompatibleDevice": "ecived elbitapmoc a eriuqer stneve dedaoL",
+      "deviceFormatMismatch": "tamrof mlif eht hctam ton seod tamrof eciveD",
+      "useCameraDirectTarget": "sdaol aremac tcerid rof tegrat daol tcerid_aremac esU",
+      "useInterchangeableBackTarget": "sdaol kcab rof tegrat daol kcab_elbaegnahcretni esU",
+      "holderLoadRequiresSlotTarget": "rebmuNtols htiw tegrat tols_redloh_mlif seriuqer daol redloh A",
+      "holderSlotNotExists": "redloh siht rof tsixe ton seod tols redloh tahT",
+      "holderSlotOccupied": "deipucco ydaerla si tols redloh tahT",
+      "holderSlotNotLoaded": "dedaol ton si tols redloh tahT",
+      "holderSlotNotExposed": "desopxe ton si tols redloh tahT",
+      "exposedRequiresLoaded": "txetnoc ecived dedaol ylsuoiverp a seriuqer tneve desopxe nA",
+      "holderExposedRequiresSlot": "rebmuNediStols a seriuqer tneve desopxe redloh A",
+      "exposedFrameRequiresLoaded": "tneve emarf dedaol suoiverp a seriuqer tneve emarf desopxe nA",
+      "removedRequiresLoaded": "txetnoc ecived dedaol ylsuoiverp a seriuqer tneve devomer A",
+      "cameraNoUnload": "ved_rof_tnes ot yltcerid eunitnoc ;gnidaolnu troppus ton seod aremac sihT",
+      "holderRemovedRequiresSlot": "rebmuNediStols a seriuqer tneve devomer redloh A",
+      "removedFrameRequiresLoaded": "tneve emarf dedaol suoiverp a seriuqer tneve emarf devomer A",
+      "unknownState": " :etats mlif nwonknU{{state}}",
+      "invalidTransition": " morf noitisnart mlif dilavnI{{from}} ot {{to}}"
+    },
+    "devices": {
+      "notFound": "dnuof ton eciveD",
+      "cameraNotFound": "dnuof ton aremaC",
+      "mountedDeviceNotFound": "dnuof ton ecived detnuoM",
+      "formatNotFound": "dnuof ton tamrof mliF",
+      "activeMountNotFound": "dnuof ton tnuom evitcA",
+      "directLoadRequiresFrameSize": "ezis emarf a eriuqer saremac elbadaol yltceriD",
+      "invalidFrameSize": " ezis emarF{{frameSize}} rof dilav ton si {{format}}",
+      "hasActiveFilm": "mlif dedaol evitca na sah llits eciveD",
+      "duplicate": "stsixe ydaerla sliated esoht htiw ecived A",
+      "alreadyLoaded": "mlif dedaol evitca na sah ydaerla eciveD",
+      "missingFrameSize": "ezis emarf a gnissim si eciveD",
+      "onlyBacksOrHolders": "detnuom eb nac sredloh mlif ro skcab elbaegnahcretni ylnO",
+      "cameraNoMounted": "secived detnuom troppus ton seod aremac sihT",
+      "cameraOnlyBacks": "skcab elbaegnahcretni tnuom ylno nac aremac sihT",
+      "cameraRequiresSystem": "skcab elbaegnahcretni tnuom ot metsys a seriuqer aremac sihT",
+      "backSystemIncompatible": "aremac siht htiw elbitapmoc ton si metsys kcab elbaegnahcretnI",
+      "cameraOnlyHolders": "sredloh mlif tnuom ylno nac aremac sihT",
+      "cameraAlreadyMounted": "ecived detnuom evitca na sah ydaerla aremaC",
+      "alreadyMounted": "aremac rehtona ot detnuom ydaerla si ecived sihT"
+    },
+    "emulsions": {
+      "notFound": "dnuof ton noislumE",
+      "inUse": "smlif gnitsixe yb esu ni si ti esuaceb deteled eb tonnac noislumE",
+      "duplicate": "stsixe ydaerla OSI dna ,rerutcafunam ,dnarb taht htiw noislume nA",
+      "developmentProcessNotFound": "dnuof ton ssecorp tnempoleveD",
+      "formatsNotFound": "dnuof ton erew stamrof mlif erom ro enO"
+    },
+    "filmLabs": {
+      "notFound": "dnuof ton bal mliF",
+      "nameConflict": "stsixe ydaerla eman taht htiw bal mlif A",
+      "inactive": "evitcani si bal mliF"
+    },
+    "filmSuppliers": {
+      "notFound": "dnuof ton reilppus mliF",
+      "nameConflict": "stsixe ydaerla eman taht htiw reilppus mlif A"
+    },
+    "admin": {
+      "importOwnAccountOnly": "tnuocca resu nwo ruoy rof atad tropmi ylno nac uoY"
+    },
+    "frameGeneration": {
+      "unsupportedFormat": "noitareneg emarf egral-non rof tamrof mlif detroppusnU",
+      "unsupported35mmFrameSize": "noitareneg emarf rof ezis emarf mm53 detroppusnU",
+      "unsupportedMediumFrameSize": "noitareneg emarf rof ezis emarf tamrof muidem detroppusnU",
+      "unsupportedInstaxFrameSize": "noitareneg emarf rof ezis emarf xatsnI detroppusnU",
+      "spoolRequiresConversion": "gnidaol erofeb llor detroppus a ot detrevnoc eb tsum loops mm53",
+      "unsupported35mmPackageType": "noitareneg emarf rof epyt egakcap mm53 detroppusnU",
+      "unsupportedMediumPackageType": "noitareneg emarf rof epyt egakcap tamrof muidem detroppusnU",
+      "unsupportedInstaxPackageType": "noitareneg emarf rof epyt egakcap xatsnI detroppusnU"
+    }
+  }
+}

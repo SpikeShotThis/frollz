@@ -7,7 +7,10 @@ export function applyFilmTransition(currentStateCode: string, incomingStateCode:
   const allowedTransitions = filmTransitionMap.get(currentStateCode);
 
   if (!allowedTransitions) {
-    return new DomainError('DOMAIN_ERROR', `Unknown film state: ${currentStateCode}`);
+    return new DomainError('DOMAIN_ERROR', `Unknown film state: ${currentStateCode}`, {
+      label: 'errors.film.unknownState',
+      params: { state: currentStateCode }
+    });
   }
 
   if (allowedTransitions.includes(incomingStateCode)) {
@@ -16,6 +19,7 @@ export function applyFilmTransition(currentStateCode: string, incomingStateCode:
 
   return new DomainError(
     'DOMAIN_ERROR',
-    `Invalid film transition from ${currentStateCode} to ${incomingStateCode}`
+    `Invalid film transition from ${currentStateCode} to ${incomingStateCode}`,
+    { label: 'errors.film.invalidTransition', params: { from: currentStateCode, to: incomingStateCode } }
   );
 }

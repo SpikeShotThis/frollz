@@ -21,7 +21,7 @@ export const TEST_USER_NAME = process.env['PLAYWRIGHT_TEST_USER_NAME'] ?? proces
 
 interface ApiEnvelope<T> {
   data?: T;
-  error?: { code?: string; message?: string };
+  error?: { code?: string; message?: string; msg?: { en?: string; label?: string } };
 }
 
 interface ApiCallOptions {
@@ -70,7 +70,7 @@ export async function apiCall<T = unknown>(method: string, path: string, options
   const payload = await response.json().catch(() => null) as ApiEnvelope<T> | null;
 
   if (!response.ok && !options.allowError) {
-    const message = payload?.error?.message ?? `API ${method} /api/v1/${path} failed with ${response.status}`;
+    const message = payload?.error?.message ?? payload?.error?.msg?.en ?? `API ${method} /api/v1/${path} failed with ${response.status}`;
     throw new Error(message);
   }
 
@@ -91,7 +91,7 @@ export async function apiCallWithError(method: string, path: string, options: Ap
   const response = await fetch(`${API_URL}/api/v1/${path}`, fetchInit);
 
   const payload = await response.json().catch(() => null) as ApiEnvelope<unknown> | null;
-  return { status: response.status, message: payload?.error?.message ?? null };
+  return { status: response.status, message: payload?.error?.message ?? payload?.error?.msg?.en ?? null };
 }
 
 export async function testCall<T = unknown>(path: string, body?: unknown): Promise<T> {

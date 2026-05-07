@@ -271,7 +271,7 @@ export function isFrameSizeValidForFormatCode(formatCode: string, frameSize: str
 // Frame-count resolver result: either a computed count or a domain-specific validation error.
 export type ResolveFrameCountResult =
   | { ok: true; frameCount: number }
-  | { ok: false; message: string };
+  | { ok: false; message: string; label: string };
 
 // Resolves total frames for non-sheet formats by multiplying independent capacity factors:
 // package base frames, frame-size contribution, units per package, and variant/size multipliers.
@@ -285,32 +285,32 @@ export function resolveNonLargeFrameCount(params: {
   const definition = getFilmFormatDefinition(formatCode);
 
   if (!definition || definition.filmType === 'sheet') {
-    return { ok: false, message: 'Unsupported film format for non-large frame generation' };
+    return { ok: false, message: 'Unsupported film format for non-large frame generation', label: 'errors.frameGeneration.unsupportedFormat' };
   }
 
   const frameSizeDefinition = definition.frameSizes.find((candidate) => candidate.code === frameSize);
   if (!frameSizeDefinition) {
     const formatKey = formatCode === '35mm' ? '35mm' : definition.filmType;
-    const frameSizeErrors: Record<string, string> = {
-      '35mm': 'Unsupported 35mm frame size for frame generation',
-      '120': 'Unsupported medium format frame size for frame generation',
-      instax: 'Unsupported Instax frame size for frame generation'
+    const frameSizeErrors: Record<string, { message: string; label: string }> = {
+      '35mm': { message: 'Unsupported 35mm frame size for frame generation', label: 'errors.frameGeneration.unsupported35mmFrameSize' },
+      '120': { message: 'Unsupported medium format frame size for frame generation', label: 'errors.frameGeneration.unsupportedMediumFrameSize' },
+      instax: { message: 'Unsupported Instax frame size for frame generation', label: 'errors.frameGeneration.unsupportedInstaxFrameSize' }
     };
-    return { ok: false, message: frameSizeErrors[formatKey] ?? 'Unsupported film format for non-large frame generation' };
+    return frameSizeErrors[formatKey] ? { ok: false, ...frameSizeErrors[formatKey] } : { ok: false, message: 'Unsupported film format for non-large frame generation', label: 'errors.frameGeneration.unsupportedFormat' };
   }
 
   const stockVariant = definition.stockVariants.find((candidate) => candidate.code === packageTypeCode);
   if (!stockVariant || !stockVariant.supportsDirectLoad) {
     if (formatCode === '35mm' && (packageTypeCode === '100ft_bulk' || packageTypeCode === '400ft_bulk')) {
-      return { ok: false, message: '35mm spool must be converted to a supported roll before loading' };
+      return { ok: false, message: '35mm spool must be converted to a supported roll before loading', label: 'errors.frameGeneration.spoolRequiresConversion' };
     }
     const formatKey = formatCode === '35mm' ? '35mm' : definition.filmType;
-    const packageTypeErrors: Record<string, string> = {
-      '35mm': 'Unsupported 35mm package type for frame generation',
-      '120': 'Unsupported medium format package type for frame generation',
-      instax: 'Unsupported Instax package type for frame generation'
+    const packageTypeErrors: Record<string, { message: string; label: string }> = {
+      '35mm': { message: 'Unsupported 35mm package type for frame generation', label: 'errors.frameGeneration.unsupported35mmPackageType' },
+      '120': { message: 'Unsupported medium format package type for frame generation', label: 'errors.frameGeneration.unsupportedMediumPackageType' },
+      instax: { message: 'Unsupported Instax package type for frame generation', label: 'errors.frameGeneration.unsupportedInstaxPackageType' }
     };
-    return { ok: false, message: packageTypeErrors[formatKey] ?? 'Unsupported film format for non-large frame generation' };
+    return packageTypeErrors[formatKey] ? { ok: false, ...packageTypeErrors[formatKey] } : { ok: false, message: 'Unsupported film format for non-large frame generation', label: 'errors.frameGeneration.unsupportedFormat' };
   }
 
   return {

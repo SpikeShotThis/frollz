@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
+import { useTranslation } from '@frollz2/i18n';
 import {
   LIST_MAX_LIMIT,
   createFilmLabRequestSchema,
@@ -12,6 +13,7 @@ import {
 } from '@frollz2/schema';
 import type { ReferenceValueKind } from '@frollz2/schema';
 import { useSession } from '../../auth/session';
+import { resolveApiError } from '../../utils/resolve-api-error';
 import { FormDrawer } from '../FormDrawer';
 import { PageHeader } from '../PageHeader';
 import { ReferenceTypeaheadInput } from '../ReferenceTypeaheadInput';
@@ -54,6 +56,7 @@ function StarRatingInput({
   id?: string;
   labelledBy?: string;
 }) {
+  const { t } = useTranslation();
   const selected = value ? Number(value) : 0;
 
   function StarIcon({ filled }: { filled: boolean }) {
@@ -61,7 +64,7 @@ function StarRatingInput({
   }
 
   return (
-    <div id={id} role="group" aria-label={labelledBy ? undefined : 'Rating from 1 to 5 stars'} aria-labelledby={labelledBy} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+    <div id={id} role="group" aria-label={labelledBy ? undefined : t('admin.rating.groupLabel')} aria-labelledby={labelledBy} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
       {[1, 2, 3, 4, 5].map((star) => {
         const active = selected >= star;
         return (
@@ -71,7 +74,7 @@ function StarRatingInput({
             className={active ? '' : 'secondary'}
             style={{ padding: '6px 8px', minWidth: 0, lineHeight: 0 }}
             onClick={() => onChange(String(star))}
-            aria-label={`${star} star${star === 1 ? '' : 's'}`}
+            aria-label={t('admin.rating.starLabel', { count: star })}
             aria-pressed={selected === star}
           >
             <StarIcon filled={active} />
@@ -83,38 +86,39 @@ function StarRatingInput({
         className="secondary"
         style={{ padding: '6px 8px', fontSize: 12 }}
         onClick={() => onChange('')}
-        aria-label="Clear rating"
+        aria-label={t('admin.rating.clear')}
       >
-        Clear
+        {t('admin.rating.clear')}
       </button>
     </div>
   );
 }
 
 export function AdminOverviewPage() {
+  const { t } = useTranslation();
   const sections = [
     {
       href: '/admin/data-export',
-      title: 'Data Export & Import',
-      description: 'Export or import your film tracking data.'
+      title: t('admin.sections.dataExport.title'),
+      description: t('admin.sections.dataExport.description')
     },
     {
       href: '/admin/film-labs',
-      title: 'Film Labs',
-      description: 'Manage film labs and ratings.'
+      title: t('admin.sections.filmLabs.title'),
+      description: t('admin.sections.filmLabs.description')
     },
     {
       href: '/admin/film-suppliers',
-      title: 'Film Suppliers',
-      description: 'Manage film suppliers and ratings.'
+      title: t('admin.sections.filmSuppliers.title'),
+      description: t('admin.sections.filmSuppliers.description')
     }
   ];
 
   return (
     <main>
       <PageHeader
-        heading="Admin"
-        subtitle="System administration and data management."
+        heading={t('admin.heading')}
+        subtitle={t('admin.subtitle')}
       />
       <section className="card">
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 12 }}>
@@ -156,6 +160,7 @@ function AdminListPage({
   contactReferenceKind?: ReferenceValueKind;
   showDefaultProcesses?: boolean;
 }) {
+  const { t } = useTranslation();
   const [rows, setRows] = useState<AdminRow[]>([]);
   const [q, setQ] = useState('');
   const [includeInactive, setIncludeInactive] = useState(false);
@@ -180,7 +185,7 @@ function AdminListPage({
       const data = await fetchRows({ q, includeInactive });
       setRows(data);
     } catch (err) {
-      setError(err instanceof Error ? err.message : `Failed to load ${entityName}s`);
+      setError(resolveApiError(err, t, t('admin.failedToLoad', { entity: entityName })));
     } finally {
       setIsLoading(false);
     }
@@ -214,7 +219,7 @@ function AdminListPage({
       <PageHeader
         heading={title}
         subtitle={subtitle}
-        action={<button type="button" onClick={openCreate}>New {entityName}</button>}
+        action={<button type="button" onClick={openCreate}>{t('admin.newEntity', { entity: entityName })}</button>}
       />
 
       {error ? <div className="error-banner" role="alert">{error}</div> : null}
@@ -222,8 +227,8 @@ function AdminListPage({
       <section className="card">
         <div className="filter-bar">
           <div className="form-field" style={{ marginBottom: 0 }}>
-            <label htmlFor="admin-search">Search {entityName}s</label>
-            <input id="admin-search" value={q} onChange={(e) => setQ(e.target.value)} placeholder={`Search by name…`} />
+            <label htmlFor="admin-search">{t('admin.search', { entity: entityName })}</label>
+            <input id="admin-search" value={q} onChange={(e) => setQ(e.target.value)} placeholder={t('admin.searchPlaceholder')} />
           </div>
           <div className="form-field" style={{ marginBottom: 0 }}>
             <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
@@ -233,7 +238,7 @@ function AdminListPage({
                 checked={includeInactive}
                 onChange={(e) => setIncludeInactive(e.target.checked)}
               />
-              Include inactive
+              {t('admin.includeInactive')}
             </label>
           </div>
         </div>
@@ -243,17 +248,17 @@ function AdminListPage({
         {isLoading ? (
           <div>{[...Array(4)].map((_, i) => <div key={i} className="skeleton skeleton-row" />)}</div>
         ) : rows.length === 0 ? (
-          <div className="empty-state"><p>No {entityName}s found.</p></div>
+          <div className="empty-state"><p>{t('admin.noEntitiesFound', { entity: entityName })}</p></div>
         ) : (
           <div className="table-scroll">
             <table>
-              <caption className="sr-only">{title} matching the current filters</caption>
+              <caption className="sr-only">{t('admin.tableCaption', { title })}</caption>
               <thead>
                 <tr>
-                  <th scope="col">Name</th>
-                  <th scope="col">Status</th>
-                  <th scope="col">Rating</th>
-                  <th scope="col">Actions</th>
+                  <th scope="col">{t('admin.columns.name')}</th>
+                  <th scope="col">{t('admin.columns.status')}</th>
+                  <th scope="col">{t('admin.columns.rating')}</th>
+                  <th scope="col">{t('admin.columns.actions')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -262,15 +267,15 @@ function AdminListPage({
                     <td style={{ fontWeight: 500 }}>{row.name}</td>
                     <td>
                       <span className={row.active ? 'status-active' : 'status-inactive'} style={{ fontSize: 13 }}>
-                        {row.active ? 'Active' : 'Inactive'}
+                        {row.active ? t('admin.status.active') : t('admin.status.inactive')}
                       </span>
                     </td>
-                    <td style={{ color: 'var(--muted-ink)', fontSize: 13 }} aria-label={row.rating != null ? `${row.rating} out of 5 stars` : 'No rating'}>
+                    <td style={{ color: 'var(--muted-ink)', fontSize: 13 }} aria-label={row.rating != null ? t('admin.rating.ariaFull', { count: row.rating }) : t('admin.rating.ariaNone')}>
                       {row.rating != null ? `${'★'.repeat(row.rating)}${'☆'.repeat(5 - row.rating)}` : '—'}
                     </td>
                     <td>
                       <span className="row-actions">
-                        <button style={{ fontSize: 13, padding: '6px 10px' }} onClick={() => openEdit(row)}>Edit</button>
+                        <button style={{ fontSize: 13, padding: '6px 10px' }} onClick={() => openEdit(row)}>{t('admin.actions.edit')}</button>
                         <button
                           className={row.active ? 'danger' : 'secondary'}
                           style={{ fontSize: 13, padding: '6px 10px' }}
@@ -283,14 +288,14 @@ function AdminListPage({
                               await updateRow(row.id, { active: !row.active }, createIdempotencyKey());
                               await load();
                             } catch (err) {
-                              setError(err instanceof Error ? err.message : `Failed to update ${entityName}`);
+                              setError(resolveApiError(err, t, t('admin.failedToUpdate', { entity: entityName })));
                             } finally {
                               rowToggleLockRef.current = false;
                               setIsTogglingRow(null);
                             }
                           }}
                         >
-                          {isTogglingRow === row.id ? 'Saving…' : (row.active ? 'Archive' : 'Restore')}
+                          {isTogglingRow === row.id ? t('admin.actions.saving') : (row.active ? t('admin.actions.archive') : t('admin.actions.restore'))}
                         </button>
                       </span>
                     </td>
@@ -302,7 +307,7 @@ function AdminListPage({
         )}
         {!isLoading ? (
           <p style={{ fontSize: 13, color: 'var(--muted-ink)', margin: '10px 0 0' }}>
-            {rows.length} {entityName}{rows.length !== 1 ? 's' : ''}
+            {t('admin.count', { count: rows.length, entity: entityName })}
           </p>
         ) : null}
       </section>
@@ -310,7 +315,7 @@ function AdminListPage({
       <FormDrawer
         open={isFormOpen}
         onClose={() => setFormOpen(false)}
-        title={form.id ? `Edit ${entityName}` : `New ${entityName}`}
+        title={form.id ? t('admin.form.editTitle', { entity: entityName }) : t('admin.form.newTitle', { entity: entityName })}
       >
         <form onSubmit={async (e) => {
           e.preventDefault();
@@ -343,17 +348,17 @@ function AdminListPage({
             setFormOpen(false);
             await load();
           } catch (err) {
-            setError(err instanceof Error ? err.message : `Failed to save ${entityName}`);
+            setError(resolveApiError(err, t, t('admin.failedToSave', { entity: entityName })));
           } finally {
             endFormSubmit();
           }
         }}>
           <fieldset disabled={isSubmittingForm} style={{ margin: 0, padding: 0, border: 'none' }}>
-          <legend className="sr-only">{form.id ? `Edit ${entityName}` : `New ${entityName}`}</legend>
+          <legend className="sr-only">{form.id ? t('admin.form.editLegend', { entity: entityName }) : t('admin.form.newLegend', { entity: entityName })}</legend>
           {nameReferenceKind ? (
             <ReferenceTypeaheadInput
               id="admin-name"
-              label="Name"
+              label={t('admin.form.name')}
               kind={nameReferenceKind}
               value={form.name}
               onChange={(name) => setForm((p) => ({ ...p, name }))}
@@ -361,45 +366,45 @@ function AdminListPage({
             />
           ) : (
             <div className="form-field">
-              <label htmlFor="admin-name">Name</label>
+              <label htmlFor="admin-name">{t('admin.form.name')}</label>
               <input id="admin-name" value={form.name} onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))} required />
             </div>
           )}
           {contactReferenceKind ? (
             <ReferenceTypeaheadInput
               id="admin-contact"
-              label="Contact person"
+              label={t('admin.form.contact')}
               kind={contactReferenceKind}
               value={form.contact}
               onChange={(contact) => setForm((p) => ({ ...p, contact }))}
             />
           ) : (
             <div className="form-field">
-              <label htmlFor="admin-contact">Contact person</label>
+              <label htmlFor="admin-contact">{t('admin.form.contact')}</label>
               <input id="admin-contact" value={form.contact} onChange={(e) => setForm((p) => ({ ...p, contact: e.target.value }))} />
             </div>
           )}
           <div className="form-field">
-            <label htmlFor="admin-email">Email</label>
+            <label htmlFor="admin-email">{t('admin.form.email')}</label>
             <input id="admin-email" type="email" value={form.email} onChange={(e) => setForm((p) => ({ ...p, email: e.target.value }))} />
           </div>
           <div className="form-field">
-            <label htmlFor="admin-website">Website</label>
+            <label htmlFor="admin-website">{t('admin.form.website')}</label>
             <input id="admin-website" value={form.website} onChange={(e) => setForm((p) => ({ ...p, website: e.target.value }))} />
           </div>
           {showDefaultProcesses ? (
             <div className="form-field">
-              <label htmlFor="admin-default-processes">Default processes</label>
+              <label htmlFor="admin-default-processes">{t('admin.form.defaultProcesses')}</label>
               <input
                 id="admin-default-processes"
                 value={form.defaultProcesses}
                 onChange={(e) => setForm((p) => ({ ...p, defaultProcesses: e.target.value }))}
-                placeholder="C-41, E-6, B&W"
+                placeholder={t('admin.form.defaultProcessesPlaceholder')}
               />
             </div>
           ) : null}
           <div className="form-field">
-            <span id="admin-rating-label" style={{ fontSize: 13, fontWeight: 600, color: 'var(--muted-ink)' }}>Rating (1-5)</span>
+            <span id="admin-rating-label" style={{ fontSize: 13, fontWeight: 600, color: 'var(--muted-ink)' }}>{t('admin.rating.label')}</span>
             <StarRatingInput
               id="admin-rating"
               labelledBy="admin-rating-label"
@@ -408,14 +413,14 @@ function AdminListPage({
             />
           </div>
           <div className="form-field">
-            <label htmlFor="admin-notes">Notes</label>
+            <label htmlFor="admin-notes">{t('admin.form.notes')}</label>
             <textarea id="admin-notes" value={form.notes} onChange={(e) => setForm((p) => ({ ...p, notes: e.target.value }))} rows={3} />
           </div>
           <div className="form-actions">
             <button type="submit" disabled={isSubmittingForm}>
-              {isSubmittingForm ? 'Saving…' : (form.id ? 'Update' : 'Create')}
+              {isSubmittingForm ? t('admin.form.saving') : (form.id ? t('admin.form.update') : t('admin.form.create'))}
             </button>
-            <button type="button" className="secondary" onClick={() => setFormOpen(false)}>Cancel</button>
+            <button type="button" className="secondary" onClick={() => setFormOpen(false)}>{t('admin.form.cancel')}</button>
           </div>
           </fieldset>
         </form>
@@ -425,12 +430,13 @@ function AdminListPage({
 }
 
 export function FilmLabsAdminPage() {
+  const { t } = useTranslation();
   const { api } = useSession();
   return (
     <AdminListPage
-      title="Film Labs"
-      subtitle="Manage development labs for sent-for-dev tracking."
-      entityName="lab"
+      title={t('admin.filmLabs.heading')}
+      subtitle={t('admin.filmLabs.subtitle')}
+      entityName={t('admin.filmLabs.entity')}
       nameReferenceKind="lab_name"
       contactReferenceKind="lab_contact"
       showDefaultProcesses
@@ -450,12 +456,13 @@ export function FilmLabsAdminPage() {
 }
 
 export function FilmSuppliersAdminPage() {
+  const { t } = useTranslation();
   const { api } = useSession();
   return (
     <AdminListPage
-      title="Film Suppliers"
-      subtitle="Manage film suppliers for purchase tracking."
-      entityName="supplier"
+      title={t('admin.filmSuppliers.heading')}
+      subtitle={t('admin.filmSuppliers.subtitle')}
+      entityName={t('admin.filmSuppliers.entity')}
       fetchRows={({ q, includeInactive }) => api.getFilmSuppliers({ q, includeInactive, limit: LIST_MAX_LIMIT })}
       createRow={(data, idempotencyKey) => api.createFilmSupplier(createFilmSupplierRequestSchema.parse({
         name: data.name,
@@ -471,6 +478,7 @@ export function FilmSuppliersAdminPage() {
 }
 
 export function DataExportImportPage() {
+  const { t } = useTranslation();
   const { api } = useSession();
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
@@ -484,8 +492,8 @@ export function DataExportImportPage() {
   return (
     <main>
       <PageHeader
-        heading="Data Export / Import"
-        subtitle="Export your data as JSON or restore from a previous export."
+        heading={t('admin.dataExport.heading')}
+        subtitle={t('admin.dataExport.subtitle')}
       />
 
       {error ? <div className="error-banner" role="alert">{error}</div> : null}
@@ -494,8 +502,8 @@ export function DataExportImportPage() {
       <section className="card">
         <div className="card-toolbar">
           <div>
-            <h2 style={{ margin: '0 0 4px', fontSize: 16, fontWeight: 600 }}>Export data</h2>
-            <p style={{ margin: 0, fontSize: 14, color: 'var(--muted-ink)' }}>Download all your data as a JSON file.</p>
+            <h2 style={{ margin: '0 0 4px', fontSize: 16, fontWeight: 600 }}>{t('admin.dataExport.export.heading')}</h2>
+            <p style={{ margin: 0, fontSize: 14, color: 'var(--muted-ink)' }}>{t('admin.dataExport.export.description')}</p>
           </div>
           <button
             disabled={isExporting}
@@ -514,27 +522,27 @@ export function DataExportImportPage() {
                 link.click();
                 document.body.removeChild(link);
                 URL.revokeObjectURL(url);
-                setSuccess('Export complete.');
+                setSuccess(t('admin.dataExport.export.success'));
               } catch (err) {
-                setError(err instanceof Error ? err.message : 'Failed to export data');
+                setError(resolveApiError(err, t, t('admin.dataExport.export.failed')));
               } finally {
                 setIsExporting(false);
               }
             }}
           >
-            {isExporting ? 'Exporting…' : 'Export JSON'}
+            {isExporting ? t('admin.dataExport.export.exporting') : t('admin.dataExport.export.button')}
           </button>
         </div>
       </section>
 
       <section className="card">
         <div>
-          <h2 style={{ margin: '0 0 4px', fontSize: 16, fontWeight: 600 }}>Import data</h2>
+          <h2 style={{ margin: '0 0 4px', fontSize: 16, fontWeight: 600 }}>{t('admin.dataExport.import.heading')}</h2>
           <p style={{ margin: '0 0 12px', fontSize: 14, color: 'var(--muted-ink)' }}>
-            Restore from a previously exported JSON file. This will merge with existing data.
+            {t('admin.dataExport.import.description')}
           </p>
         </div>
-        <label htmlFor="data-import-file" className="sr-only">Import JSON file</label>
+        <label htmlFor="data-import-file" className="sr-only">{t('admin.dataExport.import.label')}</label>
         <input
           id="data-import-file"
           type="file"
@@ -552,9 +560,9 @@ export function DataExportImportPage() {
               const payload = importDataRequestSchema.parse(JSON.parse(text));
               await api.importData(payload, importIdempotencyKeyRef.current);
               resetImportIdempotencyKey();
-              setSuccess('Import complete.');
+              setSuccess(t('admin.dataExport.import.success'));
             } catch (err) {
-              setError(err instanceof Error ? err.message : 'Failed to import data');
+              setError(resolveApiError(err, t, t('admin.dataExport.import.failed')));
             } finally {
               setIsImporting(false);
             }

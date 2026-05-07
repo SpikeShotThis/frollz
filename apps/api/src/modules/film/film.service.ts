@@ -83,7 +83,7 @@ export class FilmService {
     const film = await this.filmRepository.findById(userId, filmId);
 
     if (!film) {
-      throw new DomainError('NOT_FOUND', 'Film not found');
+      throw new DomainError('NOT_FOUND', 'Film not found', { label: 'errors.film.notFound' });
     }
 
     return film;
@@ -94,21 +94,21 @@ export class FilmService {
       return await this.entityManager.transactional(async (em) => {
         const emulsion = await em.findOne(EmulsionEntity, { id: input.emulsionId }, { populate: ['developmentProcess', 'filmFormats'] });
         if (!emulsion) {
-          throw new DomainError('NOT_FOUND', 'Emulsion not found');
+          throw new DomainError('NOT_FOUND', 'Emulsion not found', { label: 'errors.emulsions.notFound' });
         }
 
         const packageType = await em.findOne(PackageTypeEntity, { id: input.packageTypeId }, { populate: ['filmFormat'] });
         if (!packageType) {
-          throw new DomainError('NOT_FOUND', 'Package type not found');
+          throw new DomainError('NOT_FOUND', 'Package type not found', { label: 'errors.film.packageTypeNotFound' });
         }
 
         if (packageType.filmFormat.id !== input.filmFormatId) {
-          throw new DomainError('DOMAIN_ERROR', 'Film format must match the selected package type');
+          throw new DomainError('DOMAIN_ERROR', 'Film format must match the selected package type', { label: 'errors.film.formatPackageMismatch' });
         }
 
         const filmFormat = await em.findOne(FilmFormatEntity, { id: input.filmFormatId });
         if (!filmFormat) {
-          throw new DomainError('NOT_FOUND', 'Film format not found');
+          throw new DomainError('NOT_FOUND', 'Film format not found', { label: 'errors.film.formatNotFound' });
         }
 
         const purchasedState = await em.findOneOrFail(FilmStateEntity, { code: 'purchased' });
@@ -140,13 +140,13 @@ export class FilmService {
 
         const lotDetail = await this.filmLotRepository.findById(userId, lot.id);
         if (!lotDetail) {
-          throw new DomainError('NOT_FOUND', 'Film lot not found after creation');
+          throw new DomainError('NOT_FOUND', 'Film lot not found after creation', { label: 'errors.film.lotNotFoundAfterCreation' });
         }
         return lotDetail;
       });
     } catch (err) {
       if (err instanceof UniqueConstraintViolationException) {
-        throw new DomainError('CONFLICT', 'A film with that name already exists in your collection');
+        throw new DomainError('CONFLICT', 'A film with that name already exists in your collection', { label: 'errors.film.nameConflictCollection' });
       }
       throw err;
     }
@@ -157,13 +157,13 @@ export class FilmService {
       const film = await this.filmRepository.update(userId, filmId, input);
 
       if (!film) {
-        throw new DomainError('NOT_FOUND', 'Film not found');
+        throw new DomainError('NOT_FOUND', 'Film not found', { label: 'errors.film.notFound' });
       }
 
       return film;
     } catch (err) {
       if (err instanceof UniqueConstraintViolationException) {
-        throw new DomainError('CONFLICT', 'You already have a film with that name');
+        throw new DomainError('CONFLICT', 'You already have a film with that name', { label: 'errors.film.nameConflict' });
       }
       throw err;
     }
@@ -173,7 +173,7 @@ export class FilmService {
     const film = await this.filmRepository.findByIdSummary(userId, filmId);
 
     if (!film) {
-      throw new DomainError('NOT_FOUND', 'Film not found');
+      throw new DomainError('NOT_FOUND', 'Film not found', { label: 'errors.film.notFound' });
     }
 
     return this.filmRepository.listEvents(userId, filmId);
@@ -183,7 +183,7 @@ export class FilmService {
     const film = await this.filmRepository.findByIdSummary(userId, filmId);
 
     if (!film) {
-      throw new DomainError('NOT_FOUND', 'Film not found');
+      throw new DomainError('NOT_FOUND', 'Film not found', { label: 'errors.film.notFound' });
     }
 
     return this.filmRepository.listFrames(userId, filmId);
@@ -192,15 +192,15 @@ export class FilmService {
   async updateFrame(userId: number, filmId: number, frameId: number, input: UpdateFilmFrameRequest): Promise<FilmFrame> {
     const film = await this.filmRepository.findByIdSummary(userId, filmId);
     if (!film) {
-      throw new DomainError('NOT_FOUND', 'Film not found');
+      throw new DomainError('NOT_FOUND', 'Film not found', { label: 'errors.film.notFound' });
     }
     if (film.currentStateCode !== 'loaded') {
-      throw new DomainError('DOMAIN_ERROR', 'Frame metadata can only be updated while the film is loaded');
+      throw new DomainError('DOMAIN_ERROR', 'Frame metadata can only be updated while the film is loaded', { label: 'errors.film.frameMetadataRequiresLoaded' });
     }
 
     const updated = await this.filmRepository.updateFrame(userId, filmId, frameId, input);
     if (!updated) {
-      throw new DomainError('NOT_FOUND', 'Frame not found');
+      throw new DomainError('NOT_FOUND', 'Frame not found', { label: 'errors.film.frameNotFound' });
     }
 
     return updated;
@@ -215,12 +215,12 @@ export class FilmService {
       );
 
       if (!film) {
-        throw new DomainError('NOT_FOUND', 'Film not found');
+        throw new DomainError('NOT_FOUND', 'Film not found', { label: 'errors.film.notFound' });
       }
 
       const targetState = await transactionalEntityManager.findOne(FilmStateEntity, { code: input.filmStateCode });
       if (!targetState) {
-        throw new DomainError('NOT_FOUND', 'Film state not found');
+        throw new DomainError('NOT_FOUND', 'Film state not found', { label: 'errors.film.stateNotFound' });
       }
 
       const transitionResult = applyFilmTransition(film.currentState.code, input.filmStateCode);
@@ -293,7 +293,7 @@ export class FilmService {
     return this.entityManager.transactional(async (transactionalEntityManager) => {
       const film = await transactionalEntityManager.findOne(FilmEntity, { id: filmId, user: userId }, { populate: ['filmFormat'] });
       if (!film) {
-        throw new DomainError('NOT_FOUND', 'Film not found');
+        throw new DomainError('NOT_FOUND', 'Film not found', { label: 'errors.film.notFound' });
       }
 
       const frame = await transactionalEntityManager.findOne(
@@ -302,7 +302,7 @@ export class FilmService {
         { populate: ['currentState'] }
       );
       if (!frame) {
-        throw new DomainError('NOT_FOUND', 'Frame not found');
+        throw new DomainError('NOT_FOUND', 'Frame not found', { label: 'errors.film.frameNotFound' });
       }
 
       const parsedPayload = frameJourneyEventPayloadSchema.parse({
@@ -312,7 +312,7 @@ export class FilmService {
 
       const targetState = await transactionalEntityManager.findOne(FilmStateEntity, { code: input.frameStateCode });
       if (!targetState) {
-        throw new DomainError('NOT_FOUND', 'Film state not found');
+        throw new DomainError('NOT_FOUND', 'Film state not found', { label: 'errors.film.stateNotFound' });
       }
 
       const transitionResult = applyFilmTransition(frame.currentState.code, input.frameStateCode);
@@ -423,15 +423,15 @@ export class FilmService {
   ): Promise<void> {
     const labId = eventData['labId'];
     if (typeof labId !== 'number') {
-      throw new DomainError('VALIDATION_ERROR', 'labId is required for lab events');
+      throw new DomainError('VALIDATION_ERROR', 'labId is required for lab events', { label: 'errors.film.labIdRequired' });
     }
 
     const lab = await this.filmLabRepository.findById(userId, labId);
     if (!lab) {
-      throw new DomainError('NOT_FOUND', 'Film lab not found');
+      throw new DomainError('NOT_FOUND', 'Film lab not found', { label: 'errors.filmLabs.notFound' });
     }
     if (!lab.active) {
-      throw new DomainError('DOMAIN_ERROR', 'Film lab is inactive');
+      throw new DomainError('DOMAIN_ERROR', 'Film lab is inactive', { label: 'errors.filmLabs.inactive' });
     }
   }
 
@@ -444,16 +444,16 @@ export class FilmService {
   ): Promise<Record<string, unknown>> {
     const loadTarget = parseLoadedEventData(eventData);
     if (!loadTarget) {
-      throw new DomainError('DOMAIN_ERROR', 'A loaded event requires a valid load target');
+      throw new DomainError('DOMAIN_ERROR', 'A loaded event requires a valid load target', { label: 'errors.film.loadEventRequiresTarget' });
     }
 
     if (film.filmFormat.code === '35mm' && film.packageType.code === '100ft_bulk') {
-      throw new DomainError('DOMAIN_ERROR', '35mm 100ft bulk must be converted to a supported roll before loading');
+      throw new DomainError('DOMAIN_ERROR', '35mm 100ft bulk must be converted to a supported roll before loading', { label: 'errors.film.bulkRequiresConversion' });
     }
 
     const previousLoadedEvent = await this.findLatestEventByState(entityManager, userId, film.id, 'loaded');
     if (previousLoadedEvent) {
-      throw new DomainError('CONFLICT', 'This film has already been loaded and cannot be reloaded');
+      throw new DomainError('CONFLICT', 'This film has already been loaded and cannot be reloaded', { label: 'errors.film.alreadyLoaded' });
     }
 
     await this.applyLoadedTargetSideEffects(entityManager, userId, film, loadTarget, user, {
@@ -473,10 +473,10 @@ export class FilmService {
   ): Promise<Record<string, unknown>> {
     const loadTarget = this.parseLoadedFrameEventData(eventData);
     if (!loadTarget) {
-      throw new DomainError('DOMAIN_ERROR', 'A loaded frame event requires a valid load target');
+      throw new DomainError('DOMAIN_ERROR', 'A loaded frame event requires a valid load target', { label: 'errors.film.loadFrameEventRequiresTarget' });
     }
     if (loadTarget.filmFrameId !== frame.id) {
-      throw new DomainError('DOMAIN_ERROR', 'Loaded frame target does not match selected frame');
+      throw new DomainError('DOMAIN_ERROR', 'Loaded frame target does not match selected frame', { label: 'errors.film.loadFrameTargetMismatch' });
     }
 
     const previousLoadedFrameEvent = await entityManager.findOne(
@@ -484,7 +484,7 @@ export class FilmService {
       { user: userId, filmFrame: frame.id, filmState: { code: 'loaded' } }
     );
     if (previousLoadedFrameEvent) {
-      throw new DomainError('CONFLICT', 'That frame has already been loaded and cannot be reused');
+      throw new DomainError('CONFLICT', 'That frame has already been loaded and cannot be reused', { label: 'errors.film.frameAlreadyLoaded' });
     }
 
     await this.applyLoadedTargetSideEffects(entityManager, userId, film, loadTarget, user, {
@@ -508,7 +508,7 @@ export class FilmService {
     if (device.camera) {
       await this.assertDirectLoadTargetAvailable(userId, device, loadTarget, 'camera_direct');
       if (device.camera.loadMode !== 'direct') {
-        throw new DomainError('DOMAIN_ERROR', 'This camera cannot be loaded directly');
+        throw new DomainError('DOMAIN_ERROR', 'This camera cannot be loaded directly', { label: 'errors.film.cameraNotDirectLoad' });
       }
       await this.ensureFramesForDirectLoad(entityManager, user, film, device, options.createFramesForDirectDevice);
       this.assignCurrentDeviceIfNeeded(film, device, options.assignCurrentDevice);
@@ -523,7 +523,7 @@ export class FilmService {
     }
 
     if (!device.filmHolder) {
-      throw new DomainError('DOMAIN_ERROR', 'Loaded events require a compatible device');
+      throw new DomainError('DOMAIN_ERROR', 'Loaded events require a compatible device', { label: 'errors.film.loadRequiresCompatibleDevice' });
     }
 
     await this.createLoadedHolderSlot(entityManager, userId, user, film, device, loadTarget);
@@ -538,7 +538,7 @@ export class FilmService {
     );
 
     if (!device) {
-      throw new DomainError('NOT_FOUND', 'Device not found');
+      throw new DomainError('NOT_FOUND', 'Device not found', { label: 'errors.devices.notFound' });
     }
 
     return device;
@@ -546,7 +546,7 @@ export class FilmService {
 
   private assertDeviceMatchesFilm(device: FilmDeviceEntity, film: FilmEntity): void {
     if (device.filmFormat.id !== film.filmFormat.id) {
-      throw new DomainError('DOMAIN_ERROR', 'Device format does not match the film format');
+      throw new DomainError('DOMAIN_ERROR', 'Device format does not match the film format', { label: 'errors.film.deviceFormatMismatch' });
     }
   }
 
@@ -557,15 +557,15 @@ export class FilmService {
     expectedTargetType: 'camera_direct' | 'interchangeable_back'
   ): Promise<void> {
     if (loadTarget.loadTargetType !== expectedTargetType) {
-      const message = expectedTargetType === 'camera_direct'
-        ? 'Use camera_direct load target for direct camera loads'
-        : 'Use interchangeable_back load target for back loads';
-      throw new DomainError('DOMAIN_ERROR', message);
+      const [message, label] = expectedTargetType === 'camera_direct'
+        ? ['Use camera_direct load target for direct camera loads', 'errors.film.useCameraDirectTarget']
+        : ['Use interchangeable_back load target for back loads', 'errors.film.useInterchangeableBackTarget'];
+      throw new DomainError('DOMAIN_ERROR', message, { label });
     }
 
     const occupiedFilmId = await this.filmRepository.findOccupiedFilmForDeviceId(userId, device.id);
     if (occupiedFilmId !== null) {
-      throw new DomainError('CONFLICT', 'Device already has an active loaded film');
+      throw new DomainError('CONFLICT', 'Device already has an active loaded film', { label: 'errors.devices.alreadyLoaded' });
     }
   }
 
@@ -581,7 +581,7 @@ export class FilmService {
     }
 
     if (!device.frameSize) {
-      throw new DomainError('DOMAIN_ERROR', 'Device is missing a frame size');
+      throw new DomainError('DOMAIN_ERROR', 'Device is missing a frame size', { label: 'errors.devices.missingFrameSize' });
     }
 
     await this.ensureFramesCreated(entityManager, user, film, device.frameSize);
@@ -602,21 +602,21 @@ export class FilmService {
     loadTarget: NormalizedLoadedEventData
   ): Promise<void> {
     if (!device.filmHolder) {
-      throw new DomainError('DOMAIN_ERROR', 'Loaded events require a compatible device');
+      throw new DomainError('DOMAIN_ERROR', 'Loaded events require a compatible device', { label: 'errors.film.loadRequiresCompatibleDevice' });
     }
 
     if (loadTarget.loadTargetType !== 'film_holder_slot' || loadTarget.slotSideNumber === null) {
-      throw new DomainError('DOMAIN_ERROR', 'A holder load requires film_holder_slot target with slotNumber');
+      throw new DomainError('DOMAIN_ERROR', 'A holder load requires film_holder_slot target with slotNumber', { label: 'errors.film.holderLoadRequiresSlotTarget' });
     }
 
     const slotSideNumber = loadTarget.slotSideNumber;
     if (slotSideNumber < 1 || slotSideNumber > device.filmHolder.slotCount) {
-      throw new DomainError('DOMAIN_ERROR', 'That holder slot does not exist for this holder');
+      throw new DomainError('DOMAIN_ERROR', 'That holder slot does not exist for this holder', { label: 'errors.film.holderSlotNotExists' });
     }
 
     const latestSlot = await this.findLatestSlot(entityManager, userId, device.id, slotSideNumber);
     if (latestSlot && latestSlot.slotStateCode !== 'removed') {
-      throw new DomainError('CONFLICT', 'That holder slot is already occupied');
+      throw new DomainError('CONFLICT', 'That holder slot is already occupied', { label: 'errors.film.holderSlotOccupied' });
     }
 
     const loadedSlotState = await entityManager.findOneOrFail(SlotStateEntity, { code: 'loaded' });
@@ -641,7 +641,7 @@ export class FilmService {
     const deviceContext = await this.resolveLoadedDeviceContext(entityManager, userId, latestEvent);
 
     if (!deviceContext) {
-      throw new DomainError('DOMAIN_ERROR', 'An exposed event requires a previously loaded device context');
+      throw new DomainError('DOMAIN_ERROR', 'An exposed event requires a previously loaded device context', { label: 'errors.film.exposedRequiresLoaded' });
     }
 
     if (deviceContext.deviceTypeCode === 'camera' || deviceContext.deviceTypeCode === 'interchangeable_back') {
@@ -649,12 +649,12 @@ export class FilmService {
     }
 
     if (deviceContext.slotSideNumber === null) {
-      throw new DomainError('DOMAIN_ERROR', 'A holder exposed event requires a slotSideNumber');
+      throw new DomainError('DOMAIN_ERROR', 'A holder exposed event requires a slotSideNumber', { label: 'errors.film.holderExposedRequiresSlot' });
     }
 
     const slot = await this.findLatestSlot(entityManager, userId, deviceContext.deviceId, deviceContext.slotSideNumber);
     if (!slot || slot.slotStateCode !== 'loaded') {
-      throw new DomainError('DOMAIN_ERROR', 'That holder slot is not loaded');
+      throw new DomainError('DOMAIN_ERROR', 'That holder slot is not loaded', { label: 'errors.film.holderSlotNotLoaded' });
     }
 
     const exposedSlotState = await entityManager.findOneOrFail(SlotStateEntity, { code: 'exposed' });
@@ -671,7 +671,7 @@ export class FilmService {
       { orderBy: { occurredAt: 'desc', id: 'desc' }, populate: ['film', 'filmFrame', 'filmState'] }
     );
     if (!latestLoadedEvent) {
-      throw new DomainError('DOMAIN_ERROR', 'An exposed frame event requires a previous loaded frame event');
+      throw new DomainError('DOMAIN_ERROR', 'An exposed frame event requires a previous loaded frame event', { label: 'errors.film.exposedFrameRequiresLoaded' });
     }
 
     const loadedData = this.parseLoadedFrameEventData(latestLoadedEvent.eventData);
@@ -681,7 +681,7 @@ export class FilmService {
 
     const slot = await this.findLatestSlot(entityManager, userId, loadedData.deviceId, loadedData.slotSideNumber);
     if (!slot || slot.slotStateCode !== 'loaded') {
-      throw new DomainError('DOMAIN_ERROR', 'That holder slot is not loaded');
+      throw new DomainError('DOMAIN_ERROR', 'That holder slot is not loaded', { label: 'errors.film.holderSlotNotLoaded' });
     }
 
     const exposedSlotState = await entityManager.findOneOrFail(SlotStateEntity, { code: 'exposed' });
@@ -700,11 +700,11 @@ export class FilmService {
     const deviceContext = await this.resolveLoadedDeviceContext(entityManager, userId, loadedEvent);
 
     if (!deviceContext) {
-      throw new DomainError('DOMAIN_ERROR', 'A removed event requires a previously loaded device context');
+      throw new DomainError('DOMAIN_ERROR', 'A removed event requires a previously loaded device context', { label: 'errors.film.removedRequiresLoaded' });
     }
 
     if (deviceContext.deviceTypeCode === 'camera' && deviceContext.cameraCanUnload === false) {
-      throw new DomainError('DOMAIN_ERROR', 'This camera does not support unloading; continue directly to sent_for_dev');
+      throw new DomainError('DOMAIN_ERROR', 'This camera does not support unloading; continue directly to sent_for_dev', { label: 'errors.film.cameraNoUnload' });
     }
 
     film.currentDevice = null;
@@ -714,12 +714,12 @@ export class FilmService {
     }
 
     if (deviceContext.slotSideNumber === null) {
-      throw new DomainError('DOMAIN_ERROR', 'A holder removed event requires a slotSideNumber');
+      throw new DomainError('DOMAIN_ERROR', 'A holder removed event requires a slotSideNumber', { label: 'errors.film.holderRemovedRequiresSlot' });
     }
 
     const slot = await this.findLatestSlot(entityManager, userId, deviceContext.deviceId, deviceContext.slotSideNumber);
     if (!slot || slot.slotStateCode !== 'exposed') {
-      throw new DomainError('DOMAIN_ERROR', 'That holder slot is not exposed');
+      throw new DomainError('DOMAIN_ERROR', 'That holder slot is not exposed', { label: 'errors.film.holderSlotNotExposed' });
     }
 
     const removedSlotState = await entityManager.findOneOrFail(SlotStateEntity, { code: 'removed' });
@@ -737,7 +737,7 @@ export class FilmService {
       { orderBy: { occurredAt: 'desc', id: 'desc' }, populate: ['film', 'filmFrame', 'filmState'] }
     );
     if (!latestLoadedEvent) {
-      throw new DomainError('DOMAIN_ERROR', 'A removed frame event requires a previous loaded frame event');
+      throw new DomainError('DOMAIN_ERROR', 'A removed frame event requires a previous loaded frame event', { label: 'errors.film.removedFrameRequiresLoaded' });
     }
 
     const loadedData = this.parseLoadedFrameEventData(latestLoadedEvent.eventData);
@@ -747,7 +747,7 @@ export class FilmService {
 
     const slot = await this.findLatestSlot(entityManager, userId, loadedData.deviceId, loadedData.slotSideNumber);
     if (!slot || slot.slotStateCode !== 'exposed') {
-      throw new DomainError('DOMAIN_ERROR', 'That holder slot is not exposed');
+      throw new DomainError('DOMAIN_ERROR', 'That holder slot is not exposed', { label: 'errors.film.holderSlotNotExposed' });
     }
 
     const removedSlotState = await entityManager.findOneOrFail(SlotStateEntity, { code: 'removed' });
@@ -913,7 +913,7 @@ export class FilmService {
     if (supplierId) {
       const supplier = await this.filmSupplierRepository.findById(userId, supplierId);
       if (!supplier) {
-        throw new DomainError('NOT_FOUND', 'Film supplier not found');
+        throw new DomainError('NOT_FOUND', 'Film supplier not found', { label: 'errors.filmSuppliers.notFound' });
       }
       return supplier;
     }
@@ -990,7 +990,7 @@ export class FilmService {
     });
 
     if (!resolved.ok) {
-      throw new DomainError('DOMAIN_ERROR', resolved.message);
+      throw new DomainError('DOMAIN_ERROR', resolved.message, { label: resolved.label });
     }
 
     return resolved.frameCount;

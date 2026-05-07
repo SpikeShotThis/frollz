@@ -1,18 +1,17 @@
 'use client';
 
 import { useCallback, useEffect, useId, useRef, useState } from 'react';
+import { useTranslation } from '@frollz2/i18n';
 import { APERTURE_PRESETS, updateFilmFrameRequestSchema } from '@frollz2/schema';
 import type { FilmFrame } from '@frollz2/schema';
 import { useSession } from '../auth/session';
 import { parseShutterSpeedInput, formatShutterSpeed } from '../utils/shutterSpeed';
+import { resolveApiError } from '../utils/resolve-api-error';
 
 type SaveStatus = 'idle' | 'pending' | 'saving' | 'saved' | 'error';
 
 const APERTURE_PRESET_VALUES: readonly number[] = APERTURE_PRESETS;
-const APERTURE_OPTIONS = [
-  ...APERTURE_PRESETS.map((v: number) => ({ label: `f/${v}`, value: String(v) })),
-  { label: 'Other…', value: '__custom__' }
-];
+const APERTURE_PRESET_OPTIONS = APERTURE_PRESETS.map((v: number) => ({ label: `f/${v}`, value: String(v) }));
 
 export function FrameEditor({
   frame,
@@ -23,6 +22,7 @@ export function FrameEditor({
   filmId: number;
   readonly?: boolean;
 }) {
+  const { t } = useTranslation();
   const { api } = useSession();
   const idPrefix = useId();
   const [aperturePreset, setAperturePreset] = useState<string>('');
@@ -69,7 +69,7 @@ export function FrameEditor({
       setSaveStatus('saved');
     } catch (err) {
       setSaveStatus('error');
-      setSaveError(err instanceof Error ? err.message : 'Save failed');
+      setSaveError(resolveApiError(err, t, t('frameEditor.saveFailed')));
     } finally {
       saveLockRef.current = false;
     }
@@ -95,7 +95,7 @@ export function FrameEditor({
   const shutterHint = shutterInput.trim()
     ? (parseShutterSpeedInput(shutterInput) !== null
         ? formatShutterSpeed(parseShutterSpeedInput(shutterInput)!)
-        : 'Invalid format')
+        : t('frameEditor.invalidFormat'))
     : '';
 
   function handleAperturePresetChange(val: string) {
@@ -125,20 +125,25 @@ export function FrameEditor({
     scheduleSave(resolvedAperture, shutter, next);
   }
 
-  const filterLabel = filterUsed === true ? 'Yes' : filterUsed === false ? 'No' : 'Unknown';
+  const filterLabel = filterUsed === true ? t('frameEditor.filterYes') : filterUsed === false ? t('frameEditor.filterNo') : t('frameEditor.filterUnknown');
   const apertureId = `${idPrefix}-aperture`;
   const apertureCustomId = `${idPrefix}-aperture-custom`;
   const shutterId = `${idPrefix}-shutter`;
   const shutterHelpId = `${idPrefix}-shutter-help`;
 
+  const apertureOptions = [
+    ...APERTURE_PRESET_OPTIONS,
+    { label: t('frameEditor.otherAperture'), value: '__custom__' }
+  ];
+
   return (
     <div className="frame-editor">
       <div className="frame-editor-grid">
         <div className="form-field" style={{ marginBottom: 0 }}>
-          <label htmlFor={apertureId}>Aperture</label>
+          <label htmlFor={apertureId}>{t('frameEditor.aperture')}</label>
           <select id={apertureId} value={aperturePreset} onChange={(e) => handleAperturePresetChange(e.target.value)} disabled={readonly}>
-            <option value="">Not recorded</option>
-            {APERTURE_OPTIONS.map((opt) => (
+            <option value="">{t('frameEditor.notRecorded')}</option>
+            {apertureOptions.map((opt) => (
               <option key={opt.value} value={opt.value}>{opt.label}</option>
             ))}
           </select>
@@ -148,8 +153,8 @@ export function FrameEditor({
               type="number"
               value={apertureCustom}
               onChange={(e) => handleApertureCustomChange(e.target.value)}
-              placeholder="e.g. 3.5"
-              aria-label="Custom aperture"
+              placeholder={t('frameEditor.customAperturePlaceholder')}
+              aria-label={t('frameEditor.customAperture')}
               disabled={readonly}
               style={{ marginTop: 6 }}
             />
@@ -157,12 +162,12 @@ export function FrameEditor({
         </div>
 
         <div className="form-field" style={{ marginBottom: 0 }}>
-          <label htmlFor={shutterId}>Shutter speed</label>
+          <label htmlFor={shutterId}>{t('frameEditor.shutterSpeed')}</label>
           <input
             id={shutterId}
             value={shutterInput}
             onChange={(e) => handleShutterChange(e.target.value)}
-            placeholder="e.g. 1/500 or 2.5"
+            placeholder={t('frameEditor.shutterSpeedPlaceholder')}
             aria-describedby={shutterHint ? shutterHelpId : undefined}
             disabled={readonly}
           />
@@ -170,27 +175,27 @@ export function FrameEditor({
         </div>
 
         <div className="form-field" style={{ marginBottom: 0 }}>
-          <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--muted-ink)' }}>Filter used</span>
+          <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--muted-ink)' }}>{t('frameEditor.filterUsed')}</span>
           <button
             type="button"
             className="secondary"
             onClick={cycleFilter}
             disabled={readonly}
-            aria-label={`Filter used: ${filterLabel}. Activate to cycle value.`}
+            aria-label={t('frameEditor.filterAriaLabel', { value: filterLabel })}
             style={{ textAlign: 'left', padding: '10px 12px' }}
           >
             {filterLabel}
-            {!readonly ? <span style={{ marginLeft: 8, opacity: 0.5, fontSize: 11 }}>click to cycle</span> : null}
+            {!readonly ? <span style={{ marginLeft: 8, opacity: 0.5, fontSize: 11 }}>{t('frameEditor.clickToCycle')}</span> : null}
           </button>
         </div>
       </div>
 
       {saveStatus !== 'idle' ? (
         <p className={`save-indicator ${saveStatus}`} role={saveStatus === 'error' ? 'alert' : 'status'} aria-live="polite">
-          {saveStatus === 'pending' && 'Waiting to save…'}
-          {saveStatus === 'saving' && 'Saving…'}
-          {saveStatus === 'saved' && '✓ Saved'}
-          {saveStatus === 'error' && `Error: ${saveError}`}
+          {saveStatus === 'pending' && t('frameEditor.waitingToSave')}
+          {saveStatus === 'saving' && t('frameEditor.saving')}
+          {saveStatus === 'saved' && t('frameEditor.saved')}
+          {saveStatus === 'error' && t('frameEditor.saveError', { message: saveError })}
         </p>
       ) : null}
     </div>

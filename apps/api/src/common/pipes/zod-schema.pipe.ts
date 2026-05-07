@@ -11,7 +11,7 @@ export class ZodSchemaPipe<TSchema extends ZodTypeAny> implements PipeTransform<
     const result = this.schema.safeParse(value);
 
     if (!result.success) {
-      throw new DomainError('VALIDATION_ERROR', 'Validation failed', [result.error.flatten()]);
+      throw new DomainError('VALIDATION_ERROR', 'Validation failed', { label: 'errors.validation.failed', details: [result.error.flatten()] });
     }
 
     return result.data;

@@ -189,7 +189,7 @@ describe('API integration', () => {
     expect(replayResponse.json()).toMatchObject({
       error: {
         code: 'UNAUTHORIZED',
-        message: 'Refresh token reuse detected'
+        msg: { en: 'Refresh token reuse detected', label: 'errors.auth.refreshTokenReuse' }
       }
     });
 

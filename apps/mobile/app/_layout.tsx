@@ -1,5 +1,7 @@
 import { Stack } from 'expo-router';
+import { useTranslation } from '@frollz2/i18n';
 
 export default function RootLayout() {
-  return <Stack screenOptions={{ headerTitle: 'Frollz Mobile' }} />;
+  const { t } = useTranslation();
+  return <Stack screenOptions={{ headerTitle: t('mobile.headerTitle') }} />;
 }

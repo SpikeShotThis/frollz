@@ -1,4 +1,62 @@
 import { describe, expect, it } from 'vitest';
+
+function makeT(translations: Record<string, string>) {
+  return (key: string, opts?: Record<string, string | number>) => {
+    let str = translations[key] ?? key;
+    if (opts) {
+      for (const [k, v] of Object.entries(opts)) {
+        str = str.replace(new RegExp(`\\{\\{${k}\\}\\}`, 'g'), String(v));
+      }
+    }
+    return str;
+  };
+}
+
+const t = makeT({
+  'dashboard.kpi.total.title': 'Total Films',
+  'dashboard.kpi.total.helper': 'All tracked rolls and sheets',
+  'dashboard.kpi.total.actionLabel': 'Open film',
+  'dashboard.kpi.total.segments.loaded': 'Loaded',
+  'dashboard.kpi.total.segments.removed': 'Removed',
+  'dashboard.kpi.total.segments.atLab': 'At Lab',
+  'dashboard.kpi.total.segments.archived': 'Archived',
+  'dashboard.kpi.format.title': 'By Format',
+  'dashboard.kpi.format.helper': '35mm {{count35mm}} · 120 {{count120}} · Sheet {{countSheet}}',
+  'dashboard.kpi.format.actionLabel': 'Open formats',
+  'dashboard.kpi.format.segments.mm35': '35mm',
+  'dashboard.kpi.format.segments.mm120': '120',
+  'dashboard.kpi.format.segments.sheet': 'Sheet',
+  'dashboard.kpi.loaded.title': 'Loaded (Idle Risk)',
+  'dashboard.kpi.loaded.helper': '{{loadedIdleCount}} idle > {{loadedIdleDays}} days',
+  'dashboard.kpi.loaded.actionLabel': 'View loaded',
+  'dashboard.kpi.loaded.segments.idle': 'Idle > {{days}}d',
+  'dashboard.kpi.loaded.segments.active': 'Active ≤ {{days}}d',
+  'dashboard.kpi.removed.title': 'Removed (Not Sent)',
+  'dashboard.kpi.removed.helper': 'Oldest waiting: {{days}} days',
+  'dashboard.kpi.removed.actionLabel': 'View removed',
+  'dashboard.kpi.removed.segments.awaitingLab': 'Awaiting lab',
+  'dashboard.kpi.removed.segments.otherStates': 'Other states',
+  'dashboard.kpi.sentForDev.title': 'Sent for Dev',
+  'dashboard.kpi.sentForDev.helper': 'Oldest at lab: {{days}} days',
+  'dashboard.kpi.sentForDev.actionLabel': 'View lab queue',
+  'dashboard.kpi.sentForDev.segments.inLabQueue': 'In lab queue',
+  'dashboard.kpi.sentForDev.segments.notInLab': 'Not in lab',
+  'dashboard.kpi.expiring.title': 'Expiring Soon',
+  'dashboard.kpi.expiring.helper': 'Expires in next {{days}} days',
+  'dashboard.kpi.expiring.actionLabel': 'Review stock',
+  'dashboard.kpi.expiring.segments.expiringSoon': 'Expires ≤ {{days}}d',
+  'dashboard.kpi.expiring.segments.stableHorizon': 'Stable horizon',
+  'dashboard.kpi.archived.title': 'Archived',
+  'dashboard.kpi.archived.helper': 'Completed rolls and sheets',
+  'dashboard.kpi.archived.actionLabel': 'View archived',
+  'dashboard.kpi.archived.segments.completed': 'Completed',
+  'dashboard.kpi.archived.segments.stillActive': 'Still active',
+  'dashboard.kpi.recent.title': 'Recent Activity ({{days}}d)',
+  'dashboard.kpi.recent.helper': 'Films with new state changes',
+  'dashboard.kpi.recent.actionLabel': 'Open film',
+  'dashboard.kpi.recent.segments.changed': 'Changed ≤ {{days}}d',
+  'dashboard.kpi.recent.segments.noRecentChange': 'No recent change'
+});
 import {
   FILM_EXPIRING_SOON_DAYS,
   buildFilmDashboardOverview,
@@ -117,7 +175,8 @@ describe('film-dashboard helpers', () => {
         4: { occurredAt: '2026-04-02T00:00:00.000Z' },
         5: { occurredAt: '2026-04-21T00:00:00.000Z' }
       },
-      now
+      now,
+      { t }
     );
 
     expect(cards.map((card) => [card.key, card.value, card.helper])).toEqual([
