@@ -3,6 +3,7 @@ import { EntityManager } from '@mikro-orm/core';
 import type {
   DashboardInsights,
   DeviceUsageInsights,
+  FilmDashboardStats,
   FilmQueueInsightItem,
   FilmWorkflowInsights,
   InsightRange,
@@ -18,10 +19,14 @@ import {
   FilmLotEntity
 } from '../../infrastructure/entities/index.js';
 import type { EmulsionEntity, FilmFormatEntity, PackageTypeEntity, DevelopmentProcessEntity } from '../../infrastructure/entities/reference.entities.js';
-import { average, daysBetween, daysSince, median } from '../../common/utils/stats.js';
+import { average, daysBetween, daysSince, median, round } from '../../common/utils/stats.js';
 
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
 const ACTIVE_FILM_STATES = new Set(['purchased', 'stored', 'loaded', 'exposed', 'removed', 'sent_for_dev', 'developed', 'scanned']);
+const LARGE_FORMAT_CODES = new Set(['4x5', '5x7', '8x10', '11x14']);
+const FILM_EXPIRING_SOON_DAYS = 90;
+const FILM_LOADED_IDLE_DAYS = 14;
+const FILM_RECENT_ACTIVITY_DAYS = 7;
 
 const FILM_POPULATE = [
   'filmLot',
@@ -216,6 +221,88 @@ export class InsightsService {
         key: String(film.emulsion.developmentProcess.id),
         label: film.emulsion.developmentProcess.label
       }))
+    };
+  }
+
+  async filmOverviewStats(userId: number): Promise<FilmDashboardStats> {
+    const now = new Date();
+    const nowMs = now.getTime();
+    const [films, events] = await Promise.all([
+      this.entityManager.find(FilmEntity, { user: userId }, { populate: FILM_POPULATE }),
+      this.entityManager.find(FilmJourneyEventEntity, { user: userId }, { populate: EVENT_POPULATE, orderBy: { occurredAt: 'asc', id: 'asc' } })
+    ]);
+
+    const latestEventByFilmId = new Map<number, FilmJourneyEventEntity>();
+    for (const event of events) {
+      const existing = latestEventByFilmId.get(event.film.id);
+      if (!existing || eventOrderValue(event) > eventOrderValue(existing)) {
+        latestEventByFilmId.set(event.film.id, event);
+      }
+    }
+    const latestEventByFilmAndState = this.latestEventByFilmAndState(events);
+
+    const loadedFilms = films.filter((f) => f.currentState.code === 'loaded');
+    const removedFilms = films.filter((f) => f.currentState.code === 'removed');
+    const sentForDevFilms = films.filter((f) => f.currentState.code === 'sent_for_dev');
+    const archivedFilms = films.filter((f) => f.currentState.code === 'archived');
+
+    const loadedIdle = loadedFilms.filter((film) => {
+      const event = latestEventByFilmId.get(film.id);
+      if (!event) return true;
+      const ts = Date.parse(event.occurredAt);
+      return !Number.isNaN(ts) && (nowMs - ts) / MS_PER_DAY > FILM_LOADED_IDLE_DAYS;
+    }).length;
+
+    const removedAges = removedFilms.map((film) => {
+      const event = latestEventByFilmAndState.get(`${film.id}:removed`);
+      if (!event) return 0;
+      const ts = Date.parse(event.occurredAt);
+      return Number.isNaN(ts) ? 0 : Math.max(0, (nowMs - ts) / MS_PER_DAY);
+    });
+    const sentForDevAges = sentForDevFilms.map((film) => {
+      const event = latestEventByFilmAndState.get(`${film.id}:sent_for_dev`);
+      if (!event) return 0;
+      const ts = Date.parse(event.occurredAt);
+      return Number.isNaN(ts) ? 0 : Math.max(0, (nowMs - ts) / MS_PER_DAY);
+    });
+
+    const expiringCutoff = nowMs + FILM_EXPIRING_SOON_DAYS * MS_PER_DAY;
+    const expiringSoon = films.filter((film) => {
+      if (!film.expirationDate) return false;
+      const ts = Date.parse(film.expirationDate);
+      return !Number.isNaN(ts) && ts >= nowMs && ts <= expiringCutoff;
+    }).length;
+
+    const recentActivityCutoff = nowMs - FILM_RECENT_ACTIVITY_DAYS * MS_PER_DAY;
+    const recentlyActive = films.filter((film) => {
+      const event = latestEventByFilmId.get(film.id);
+      if (!event) return false;
+      const ts = Date.parse(event.occurredAt);
+      return !Number.isNaN(ts) && ts >= recentActivityCutoff;
+    }).length;
+
+    return {
+      generatedAt: now.toISOString(),
+      total: films.length,
+      byState: {
+        loaded: loadedFilms.length,
+        removed: removedFilms.length,
+        sentForDev: sentForDevFilms.length,
+        archived: archivedFilms.length
+      },
+      byFormat: {
+        mm35: films.filter((f) => f.filmFormat.code === '35mm').length,
+        mm120: films.filter((f) => f.filmFormat.code === '120').length,
+        sheet: films.filter((f) => LARGE_FORMAT_CODES.has(f.filmFormat.code)).length
+      },
+      loadedIdleDays: FILM_LOADED_IDLE_DAYS,
+      loadedIdle,
+      removedOldestDays: round(Math.max(0, ...removedAges, 0)),
+      sentForDevOldestDays: round(Math.max(0, ...sentForDevAges, 0)),
+      expiringSoonDays: FILM_EXPIRING_SOON_DAYS,
+      expiringSoon,
+      recentActivityDays: FILM_RECENT_ACTIVITY_DAYS,
+      recentlyActive
     };
   }
 

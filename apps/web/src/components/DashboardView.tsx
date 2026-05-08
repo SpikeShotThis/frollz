@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import { buildFilmDashboardOverview, type FilmDashboardOverviewCard } from '@frollz2/contracts';
+import { buildDashboardCards, type FilmDashboardOverviewCard } from '@frollz2/contracts';
 import type { DashboardInsights } from '@frollz2/schema';
 import { useTranslation } from '@frollz2/i18n';
 import { useSession } from '../auth/session';
@@ -88,16 +88,11 @@ export function DashboardView() {
   useEffect(() => {
     const load = async () => {
       try {
-        const [films, dashboardInsights] = await Promise.all([
-          api.getFilms(),
+        const [stats, dashboardInsights] = await Promise.all([
+          api.getFilmOverviewStats(),
           api.getDashboardInsights({ limit: 3 })
         ]);
-        const now = Date.now();
-        const latestEventsByFilmId: Record<number, { occurredAt: string } | null> = {};
-        films.items.forEach((film) => {
-          latestEventsByFilmId[film.id] = film.latestEvent ? { occurredAt: film.latestEvent.occurredAt } : null;
-        });
-        setCards(buildFilmDashboardOverview(films.items, latestEventsByFilmId, now, { t: (key, opts) => t(key, opts ?? {}) }));
+        setCards(buildDashboardCards(stats, (key, opts) => t(key, opts ?? {})));
         setInsights(dashboardInsights);
       } catch (err) {
         setError(resolveApiError(err, t, t('dashboard.failedToLoad')));

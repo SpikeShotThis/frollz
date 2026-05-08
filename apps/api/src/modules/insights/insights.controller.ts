@@ -21,6 +21,15 @@ export class InsightsController {
     return this.insightsService.film(user.userId, query);
   }
 
+  @Get('film/overview')
+  @ApiOperation({ summary: 'Get film dashboard overview stats' })
+  @ApiResponse({ status: 200, description: 'Film dashboard KPI counts' })
+  filmOverview(
+    @CurrentUser() user: AuthenticatedUser
+  ) {
+    return this.insightsService.filmOverviewStats(user.userId);
+  }
+
   @Get('admin/labs')
   @ApiOperation({ summary: 'Get lab performance insights' })
   @ApiResponse({ status: 200, description: 'Lab performance insights' })

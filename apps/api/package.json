@@ -11,7 +11,9 @@
     "lint": "eslint --max-warnings 0 \"src/**/*.ts\" \"test/**/*.ts\"",
     "test": "pnpm --filter @frollz2/schema build && vitest run",
     "db:migrate": "pnpm --filter @frollz2/schema build && tsx src/infrastructure/migrate.ts",
-    "db:seed": "pnpm --filter @frollz2/schema build && tsx src/infrastructure/seed.ts"
+    "db:seed": "pnpm --filter @frollz2/schema build && tsx src/infrastructure/seed.ts",
+    "db:seed-demo": "pnpm --filter @frollz2/schema build && tsx src/infrastructure/seed-demo.ts",
+    "db:seed-demo-ext": "pnpm --filter @frollz2/schema build && tsx src/infrastructure/seed-demo-ext.ts"
   },
   "dependencies": {
     "@fastify/swagger": "^9.7.0",

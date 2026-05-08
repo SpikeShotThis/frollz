@@ -1,3 +1,5 @@
+import type { FilmDashboardStats } from '@frollz2/schema';
+
 export const FILM_EXPIRING_SOON_DAYS = 90;
 export const FILM_LOADED_IDLE_DAYS = 14;
 export const FILM_RECENT_ACTIVITY_DAYS = 7;
@@ -26,10 +28,6 @@ export type FilmDashboardCard = {
   value: number;
   helper: string;
 };
-
-export type FilmLatestEvent = {
-  occurredAt: string;
-} | null;
 
 export type FilmDashboardSegment = {
   key: string;
@@ -106,182 +104,118 @@ export function countExpiringSoonFilms(films: FilmListItem[], now: number, days 
   }).length;
 }
 
-function eventAgeInDays(event: FilmLatestEvent, now: number): number | null {
-  if (!event) return null;
-  const occurredAt = Date.parse(event.occurredAt);
-  if (Number.isNaN(occurredAt)) return null;
-  return Math.floor((now - occurredAt) / MS_PER_DAY);
-}
-
-function eventIsWithinDays(event: FilmLatestEvent, now: number, days: number): boolean {
-  if (!event) return false;
-  const occurredAt = Date.parse(event.occurredAt);
-  if (Number.isNaN(occurredAt)) return false;
-  return occurredAt >= now - days * MS_PER_DAY;
-}
-
-function byState<T extends FilmListItem>(films: T[], stateCode: string): T[] {
-  return films.filter((film) => film.currentStateCode === stateCode);
-}
-
-function countByFormats(films: FilmListItem[], formatCodes: readonly string[]): number {
-  return films.filter((film) => formatCodes.includes(film.filmFormat.code)).length;
-}
-
 function ratio(value: number, total: number): number {
   return total <= 0 ? 0 : value / total;
 }
 
 type CardTranslator = (key: string, options?: Record<string, string | number>) => string;
 
-export function buildFilmDashboardOverview(
-  films: FilmListItem[],
-  latestEventsByFilmId: Record<number, FilmLatestEvent>,
-  now: number,
-  options: {
-    expiringSoonDays?: number;
-    loadedIdleDays?: number;
-    recentActivityDays?: number;
-    t?: CardTranslator;
-  } = {}
+export function buildDashboardCards(
+  stats: FilmDashboardStats,
+  t: CardTranslator = (key) => key
 ): FilmDashboardOverviewCard[] {
-  const expiringSoonDays = options.expiringSoonDays ?? FILM_EXPIRING_SOON_DAYS;
-  const loadedIdleDays = options.loadedIdleDays ?? FILM_LOADED_IDLE_DAYS;
-  const recentActivityDays = options.recentActivityDays ?? FILM_RECENT_ACTIVITY_DAYS;
-  const t: CardTranslator = options.t ?? ((key) => key);
-  const totalFilms = films.length;
-  const safeTotal = Math.max(1, totalFilms);
-  const count35mm = countByFormats(films, ['35mm']);
-  const count120 = countByFormats(films, ['120']);
-  const countSheet = countByFormats(films, LARGE_FORMAT_CODES);
-  const loadedFilms = byState(films, 'loaded');
-  const removedFilms = byState(films, 'removed');
-  const sentForDevFilms = byState(films, 'sent_for_dev');
-  const archivedFilms = byState(films, 'archived');
-  const expiringSoonCount = countExpiringSoonFilms(films, now, expiringSoonDays);
-  const loadedIdleCount = loadedFilms.filter((film) => {
-    const age = eventAgeInDays(latestEventsByFilmId[film.id] ?? null, now);
-    return age !== null && age > loadedIdleDays;
-  }).length;
-  const removedOldestDays = Math.max(
-    0,
-    ...removedFilms
-      .map((film) => eventAgeInDays(latestEventsByFilmId[film.id] ?? null, now))
-      .filter((value): value is number => value !== null)
-  );
-  const sentForDevOldestDays = Math.max(
-    0,
-    ...sentForDevFilms
-      .map((film) => eventAgeInDays(latestEventsByFilmId[film.id] ?? null, now))
-      .filter((value): value is number => value !== null)
-  );
-  const recentActivityCount = films.filter((film) =>
-    eventIsWithinDays(latestEventsByFilmId[film.id] ?? null, now, recentActivityDays)
-  ).length;
+  const { total, byState, byFormat, loadedIdleDays, loadedIdle, removedOldestDays, sentForDevOldestDays, expiringSoonDays, expiringSoon, recentActivityDays, recentlyActive } = stats;
+  const safeTotal = Math.max(1, total);
+  const loadedActive = Math.max(0, byState.loaded - loadedIdle);
 
   return [
     {
       key: 'total',
       title: t('dashboard.kpi.total.title'),
-      value: totalFilms,
+      value: total,
       helper: t('dashboard.kpi.total.helper'),
       actionHref: '/film',
       actionLabel: t('dashboard.kpi.total.actionLabel'),
       segments: [
-        { key: 'loaded', label: t('dashboard.kpi.total.segments.loaded'), value: loadedFilms.length, ratio: ratio(loadedFilms.length, safeTotal) },
-        { key: 'removed', label: t('dashboard.kpi.total.segments.removed'), value: removedFilms.length, ratio: ratio(removedFilms.length, safeTotal) },
-        { key: 'at-lab', label: t('dashboard.kpi.total.segments.atLab'), value: sentForDevFilms.length, ratio: ratio(sentForDevFilms.length, safeTotal) },
-        { key: 'archived', label: t('dashboard.kpi.total.segments.archived'), value: archivedFilms.length, ratio: ratio(archivedFilms.length, safeTotal) }
+        { key: 'loaded', label: t('dashboard.kpi.total.segments.loaded'), value: byState.loaded, ratio: ratio(byState.loaded, safeTotal) },
+        { key: 'removed', label: t('dashboard.kpi.total.segments.removed'), value: byState.removed, ratio: ratio(byState.removed, safeTotal) },
+        { key: 'at-lab', label: t('dashboard.kpi.total.segments.atLab'), value: byState.sentForDev, ratio: ratio(byState.sentForDev, safeTotal) },
+        { key: 'archived', label: t('dashboard.kpi.total.segments.archived'), value: byState.archived, ratio: ratio(byState.archived, safeTotal) }
       ]
     },
     {
       key: 'format',
       title: t('dashboard.kpi.format.title'),
-      value: totalFilms,
-      helper: t('dashboard.kpi.format.helper', { count35mm, count120, countSheet }),
+      value: total,
+      helper: t('dashboard.kpi.format.helper', { count35mm: byFormat.mm35, count120: byFormat.mm120, countSheet: byFormat.sheet }),
       actionHref: '/film',
       actionLabel: t('dashboard.kpi.format.actionLabel'),
       segments: [
-        { key: '35mm', label: t('dashboard.kpi.format.segments.mm35'), value: count35mm, ratio: ratio(count35mm, safeTotal) },
-        { key: '120', label: t('dashboard.kpi.format.segments.mm120'), value: count120, ratio: ratio(count120, safeTotal) },
-        { key: 'sheet', label: t('dashboard.kpi.format.segments.sheet'), value: countSheet, ratio: ratio(countSheet, safeTotal) }
+        { key: '35mm', label: t('dashboard.kpi.format.segments.mm35'), value: byFormat.mm35, ratio: ratio(byFormat.mm35, safeTotal) },
+        { key: '120', label: t('dashboard.kpi.format.segments.mm120'), value: byFormat.mm120, ratio: ratio(byFormat.mm120, safeTotal) },
+        { key: 'sheet', label: t('dashboard.kpi.format.segments.sheet'), value: byFormat.sheet, ratio: ratio(byFormat.sheet, safeTotal) }
       ]
     },
     {
       key: 'loaded',
       title: t('dashboard.kpi.loaded.title'),
-      value: loadedFilms.length,
-      helper: t('dashboard.kpi.loaded.helper', { loadedIdleCount, loadedIdleDays }),
+      value: byState.loaded,
+      helper: t('dashboard.kpi.loaded.helper', { loadedIdleCount: loadedIdle, loadedIdleDays }),
       actionHref: '/film',
       actionLabel: t('dashboard.kpi.loaded.actionLabel'),
       segments: [
-        { key: 'loaded-idle', label: t('dashboard.kpi.loaded.segments.idle', { days: loadedIdleDays }), value: loadedIdleCount, ratio: ratio(loadedIdleCount, loadedFilms.length) },
-        {
-          key: 'loaded-active',
-          label: t('dashboard.kpi.loaded.segments.active', { days: loadedIdleDays }),
-          value: Math.max(0, loadedFilms.length - loadedIdleCount),
-          ratio: ratio(Math.max(0, loadedFilms.length - loadedIdleCount), loadedFilms.length)
-        }
+        { key: 'loaded-idle', label: t('dashboard.kpi.loaded.segments.idle', { days: loadedIdleDays }), value: loadedIdle, ratio: ratio(loadedIdle, byState.loaded) },
+        { key: 'loaded-active', label: t('dashboard.kpi.loaded.segments.active', { days: loadedIdleDays }), value: loadedActive, ratio: ratio(loadedActive, byState.loaded) }
       ]
     },
     {
       key: 'removed',
       title: t('dashboard.kpi.removed.title'),
-      value: removedFilms.length,
+      value: byState.removed,
       helper: t('dashboard.kpi.removed.helper', { days: removedOldestDays }),
       actionHref: '/film',
       actionLabel: t('dashboard.kpi.removed.actionLabel'),
       segments: [
-        { key: 'removed-total', label: t('dashboard.kpi.removed.segments.awaitingLab'), value: removedFilms.length, ratio: ratio(removedFilms.length, safeTotal) },
-        { key: 'removed-other', label: t('dashboard.kpi.removed.segments.otherStates'), value: Math.max(0, totalFilms - removedFilms.length), ratio: ratio(Math.max(0, totalFilms - removedFilms.length), safeTotal) }
+        { key: 'removed-total', label: t('dashboard.kpi.removed.segments.awaitingLab'), value: byState.removed, ratio: ratio(byState.removed, safeTotal) },
+        { key: 'removed-other', label: t('dashboard.kpi.removed.segments.otherStates'), value: Math.max(0, total - byState.removed), ratio: ratio(Math.max(0, total - byState.removed), safeTotal) }
       ]
     },
     {
       key: 'sent-for-dev',
       title: t('dashboard.kpi.sentForDev.title'),
-      value: sentForDevFilms.length,
+      value: byState.sentForDev,
       helper: t('dashboard.kpi.sentForDev.helper', { days: sentForDevOldestDays }),
       actionHref: '/film',
       actionLabel: t('dashboard.kpi.sentForDev.actionLabel'),
       segments: [
-        { key: 'dev-at-lab', label: t('dashboard.kpi.sentForDev.segments.inLabQueue'), value: sentForDevFilms.length, ratio: ratio(sentForDevFilms.length, safeTotal) },
-        { key: 'dev-not-lab', label: t('dashboard.kpi.sentForDev.segments.notInLab'), value: Math.max(0, totalFilms - sentForDevFilms.length), ratio: ratio(Math.max(0, totalFilms - sentForDevFilms.length), safeTotal) }
+        { key: 'dev-at-lab', label: t('dashboard.kpi.sentForDev.segments.inLabQueue'), value: byState.sentForDev, ratio: ratio(byState.sentForDev, safeTotal) },
+        { key: 'dev-not-lab', label: t('dashboard.kpi.sentForDev.segments.notInLab'), value: Math.max(0, total - byState.sentForDev), ratio: ratio(Math.max(0, total - byState.sentForDev), safeTotal) }
       ]
     },
     {
       key: 'expiring',
       title: t('dashboard.kpi.expiring.title'),
-      value: expiringSoonCount,
+      value: expiringSoon,
       helper: t('dashboard.kpi.expiring.helper', { days: expiringSoonDays }),
       actionHref: '/film',
       actionLabel: t('dashboard.kpi.expiring.actionLabel'),
       segments: [
-        { key: 'expiring-soon', label: t('dashboard.kpi.expiring.segments.expiringSoon', { days: expiringSoonDays }), value: expiringSoonCount, ratio: ratio(expiringSoonCount, safeTotal) },
-        { key: 'expiring-later', label: t('dashboard.kpi.expiring.segments.stableHorizon'), value: Math.max(0, totalFilms - expiringSoonCount), ratio: ratio(Math.max(0, totalFilms - expiringSoonCount), safeTotal) }
+        { key: 'expiring-soon', label: t('dashboard.kpi.expiring.segments.expiringSoon', { days: expiringSoonDays }), value: expiringSoon, ratio: ratio(expiringSoon, safeTotal) },
+        { key: 'expiring-later', label: t('dashboard.kpi.expiring.segments.stableHorizon'), value: Math.max(0, total - expiringSoon), ratio: ratio(Math.max(0, total - expiringSoon), safeTotal) }
       ]
     },
     {
       key: 'archived',
       title: t('dashboard.kpi.archived.title'),
-      value: archivedFilms.length,
+      value: byState.archived,
       helper: t('dashboard.kpi.archived.helper'),
       actionHref: '/film',
       actionLabel: t('dashboard.kpi.archived.actionLabel'),
       segments: [
-        { key: 'archived-done', label: t('dashboard.kpi.archived.segments.completed'), value: archivedFilms.length, ratio: ratio(archivedFilms.length, safeTotal) },
-        { key: 'archived-open', label: t('dashboard.kpi.archived.segments.stillActive'), value: Math.max(0, totalFilms - archivedFilms.length), ratio: ratio(Math.max(0, totalFilms - archivedFilms.length), safeTotal) }
+        { key: 'archived-done', label: t('dashboard.kpi.archived.segments.completed'), value: byState.archived, ratio: ratio(byState.archived, safeTotal) },
+        { key: 'archived-open', label: t('dashboard.kpi.archived.segments.stillActive'), value: Math.max(0, total - byState.archived), ratio: ratio(Math.max(0, total - byState.archived), safeTotal) }
       ]
     },
     {
       key: 'recent',
       title: t('dashboard.kpi.recent.title', { days: recentActivityDays }),
-      value: recentActivityCount,
+      value: recentlyActive,
       helper: t('dashboard.kpi.recent.helper'),
       actionHref: '/film',
       actionLabel: t('dashboard.kpi.recent.actionLabel'),
       segments: [
-        { key: 'recent-active', label: t('dashboard.kpi.recent.segments.changed', { days: recentActivityDays }), value: recentActivityCount, ratio: ratio(recentActivityCount, safeTotal) },
-        { key: 'recent-quiet', label: t('dashboard.kpi.recent.segments.noRecentChange'), value: Math.max(0, totalFilms - recentActivityCount), ratio: ratio(Math.max(0, totalFilms - recentActivityCount), safeTotal) }
+        { key: 'recent-active', label: t('dashboard.kpi.recent.segments.changed', { days: recentActivityDays }), value: recentlyActive, ratio: ratio(recentlyActive, safeTotal) },
+        { key: 'recent-quiet', label: t('dashboard.kpi.recent.segments.noRecentChange'), value: Math.max(0, total - recentlyActive), ratio: ratio(Math.max(0, total - recentlyActive), safeTotal) }
       ]
     }
   ];

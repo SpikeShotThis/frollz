@@ -228,7 +228,7 @@ Then('only emulsions compatible with {string} should be available', async ({ pag
   await expect(emulsionSelect).toBeEnabled();
   await expect(emulsionSelect.locator('option:not([value=""])')).toHaveCount(compatible.length);
   for (const emulsion of compatible) {
-    await expect(emulsionSelect.locator('option', { hasText: `${emulsion.manufacturer} ${emulsion.brand}` })).toBeAttached();
+    await expect(emulsionSelect.locator('option', { hasText: `${emulsion.manufacturer} ${emulsion.brand} (${emulsion.isoSpeed})` })).toBeAttached();
   }
 });
 

@@ -59,7 +59,7 @@ const t = makeT({
 });
 import {
   FILM_EXPIRING_SOON_DAYS,
-  buildFilmDashboardOverview,
+  buildDashboardCards,
   buildFilmKpis,
   countExpiringSoonFilms,
   filterAndSortFilmsForChildTable,
@@ -67,6 +67,7 @@ import {
   paginateFilms,
   type FilmListItem
 } from './film-dashboard.js';
+import type { FilmDashboardStats } from '@frollz2/schema';
 
 function makeFilm(input: Partial<FilmListItem> & Pick<FilmListItem, 'id' | 'name'>): FilmListItem {
   return {
@@ -156,28 +157,23 @@ describe('film-dashboard helpers', () => {
     ]);
   });
 
-  it('builds the full film workflow dashboard overview', () => {
-    const now = Date.parse('2026-04-22T00:00:00.000Z');
-    const films = [
-      makeFilm({ id: 1, name: 'Loaded idle', currentStateCode: 'loaded', currentState: { label: 'Loaded' }, filmFormat: { code: '35mm' } }),
-      makeFilm({ id: 2, name: 'Loaded fresh', currentStateCode: 'loaded', currentState: { label: 'Loaded' }, filmFormat: { code: '120' } }),
-      makeFilm({ id: 3, name: 'Removed', currentStateCode: 'removed', currentState: { label: 'Removed' }, filmFormat: { code: '4x5' } }),
-      makeFilm({ id: 4, name: 'Lab', currentStateCode: 'sent_for_dev', currentState: { label: 'Sent for development' }, filmFormat: { code: '35mm' } }),
-      makeFilm({ id: 5, name: 'Archived', currentStateCode: 'archived', currentState: { label: 'Archived' }, expirationDate: '2026-05-10T00:00:00.000Z', filmFormat: { code: '120' } })
-    ];
+  it('builds the full film workflow dashboard overview from pre-computed stats', () => {
+    const stats: FilmDashboardStats = {
+      generatedAt: '2026-04-22T00:00:00.000Z',
+      total: 5,
+      byState: { loaded: 2, removed: 1, sentForDev: 1, archived: 1 },
+      byFormat: { mm35: 2, mm120: 2, sheet: 1 },
+      loadedIdleDays: 14,
+      loadedIdle: 1,
+      removedOldestDays: 10,
+      sentForDevOldestDays: 20,
+      expiringSoonDays: 90,
+      expiringSoon: 1,
+      recentActivityDays: 7,
+      recentlyActive: 2
+    };
 
-    const cards = buildFilmDashboardOverview(
-      films,
-      {
-        1: { occurredAt: '2026-04-01T00:00:00.000Z' },
-        2: { occurredAt: '2026-04-20T00:00:00.000Z' },
-        3: { occurredAt: '2026-04-12T00:00:00.000Z' },
-        4: { occurredAt: '2026-04-02T00:00:00.000Z' },
-        5: { occurredAt: '2026-04-21T00:00:00.000Z' }
-      },
-      now,
-      { t }
-    );
+    const cards = buildDashboardCards(stats, t);
 
     expect(cards.map((card) => [card.key, card.value, card.helper])).toEqual([
       ['total', 5, 'All tracked rolls and sheets'],
@@ -189,7 +185,7 @@ describe('film-dashboard helpers', () => {
       ['archived', 1, 'Completed rolls and sheets'],
       ['recent', 2, 'Films with new state changes']
     ]);
-    expect(cards.find((card) => card.key === 'loaded')?.segments.map((segment) => [segment.key, segment.value])).toEqual([
+    expect(cards.find((card) => card.key === 'loaded')?.segments.map((segment: { key: string; value: number }) => [segment.key, segment.value])).toEqual([
       ['loaded-idle', 1],
       ['loaded-active', 1]
     ]);

@@ -141,3 +141,29 @@ export type SupplierPerformanceInsights = z.infer<typeof supplierPerformanceInsi
 export type DeviceUsageInsightRow = z.infer<typeof deviceUsageInsightRowSchema>;
 export type DeviceUsageInsights = z.infer<typeof deviceUsageInsightsSchema>;
 export type DashboardInsights = z.infer<typeof dashboardInsightsSchema>;
+
+export const filmDashboardStatsSchema = z.object({
+  generatedAt: isoDateTimeSchema,
+  total: z.number().int().nonnegative(),
+  byState: z.object({
+    loaded: z.number().int().nonnegative(),
+    removed: z.number().int().nonnegative(),
+    sentForDev: z.number().int().nonnegative(),
+    archived: z.number().int().nonnegative()
+  }),
+  byFormat: z.object({
+    mm35: z.number().int().nonnegative(),
+    mm120: z.number().int().nonnegative(),
+    sheet: z.number().int().nonnegative()
+  }),
+  loadedIdleDays: z.number().int().nonnegative(),
+  loadedIdle: z.number().int().nonnegative(),
+  removedOldestDays: z.number().nonnegative(),
+  sentForDevOldestDays: z.number().nonnegative(),
+  expiringSoonDays: z.number().int().nonnegative(),
+  expiringSoon: z.number().int().nonnegative(),
+  recentActivityDays: z.number().int().nonnegative(),
+  recentlyActive: z.number().int().nonnegative()
+});
+
+export type FilmDashboardStats = z.infer<typeof filmDashboardStatsSchema>;

@@ -145,7 +145,7 @@ When('I try to delete emulsion {string} from the catalog', async ({ page }, name
 });
 
 Then('I see emulsion row {string}', async ({ page }, text: string) => {
-  await expect(page.getByRole('cell', { name: text, exact: false })).toBeVisible();
+  await expect(page.getByRole('cell', { name: text, exact: false }).first()).toBeVisible();
 });
 
 Then('I do not see emulsion row {string}', async ({ page }, text: string) => {

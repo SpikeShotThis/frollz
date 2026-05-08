@@ -28,6 +28,7 @@ import {
   listFilmSuppliersQuerySchema,
   dashboardInsightsSchema,
   deviceUsageInsightsSchema,
+  filmDashboardStatsSchema,
   filmWorkflowInsightsSchema,
   insightsQuerySchema,
   labPerformanceInsightsSchema,
@@ -68,6 +69,7 @@ import {
   type ImportDataRequest,
   type DashboardInsights,
   type DeviceUsageInsights,
+  type FilmDashboardStats,
   type FilmWorkflowInsights,
   type LabPerformanceInsights,
   type LoginRequest,
@@ -404,6 +406,10 @@ export class ApiClient {
   async getFilmInsights(query: InsightsQuery = {}): Promise<FilmWorkflowInsights> {
     const payload = insightsQuerySchema.parse(query);
     return this.request(`/insights/film${toQuery(payload)}`, {}, filmWorkflowInsightsSchema);
+  }
+
+  async getFilmOverviewStats(): Promise<FilmDashboardStats> {
+    return this.request('/insights/film/overview', {}, filmDashboardStatsSchema);
   }
 
   async getLabInsights(query: InsightsQuery = {}): Promise<LabPerformanceInsights> {
