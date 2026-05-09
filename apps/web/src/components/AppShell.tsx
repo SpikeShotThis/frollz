@@ -22,10 +22,10 @@ const NAV: NavEntry[] = [
     baseHref: '/film',
     children: [
       { href: '/film', labelKey: 'navigation.allFilm' },
-      { href: '/film?format=35mm', labelKey: 'navigation.film35mm' },
-      { href: '/film?format=medium-format', labelKey: 'navigation.filmMediumFormat' },
-      { href: '/film?format=large-format', labelKey: 'navigation.filmLargeFormat' },
-      { href: '/film?format=instant', labelKey: 'navigation.filmInstant' }
+      { href: '/film/35mm', labelKey: 'navigation.film35mm' },
+      { href: '/film/medium-format', labelKey: 'navigation.filmMediumFormat' },
+      { href: '/film/large-format', labelKey: 'navigation.filmLargeFormat' },
+      { href: '/film/instant', labelKey: 'navigation.filmInstant' }
     ]
   },
   {

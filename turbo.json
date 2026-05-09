@@ -1,10 +1,10 @@
 {
-  "$schema": "https://turbo.build/schema.json",
+  "$schema": "https://v2-9-10.turborepo.dev/schema.json",
   "globalDependencies": [".env"],
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
-      "outputs": ["dist/**", "coverage/**"]
+      "outputs": ["dist/**"]
     },
     "@frollz2/api#build": {
       "outputs": ["dist/**"]
@@ -16,7 +16,7 @@
       "outputs": ["dist/**"]
     },
     "@frollz2/schema#build": {
-      "outputs": []
+      "outputs": ["dist/**"]
     },
     "@frollz2/contracts#build": {
       "outputs": ["dist/**"]
@@ -44,19 +44,8 @@
       "dependsOn": ["^check-types"],
       "outputs": []
     },
-    "@frollz2/api#test": {
-      "outputs": []
-    },
-    "@frollz2/web#test": {
-      "outputs": []
-    },
-    "@frollz2/contracts#test": {
-      "outputs": []
-    },
-    "@frollz2/api-client#test": {
-      "outputs": []
-    },
     "lint": {
+      "dependsOn": ["^build"],
       "outputs": []
     },
     "db:migrate": {

@@ -25,6 +25,13 @@ export class FilmSuppliersController {
     return this.filmSuppliersService.list(user.userId, query);
   }
 
+  @Get(':id/activity')
+  @ApiOperation({ summary: 'Get film supplier purchase activity and per-format metrics' })
+  @ApiResponse({ status: 200, description: 'Film supplier activity detail' })
+  activity(@CurrentUser() user: AuthenticatedUser, @Param('id', ParseIntPipe) id: number) {
+    return this.filmSuppliersService.activity(user.userId, id);
+  }
+
   @Get(':id')
   @ApiOperation({ summary: 'Get a film supplier by id' })
   @ApiResponse({ status: 200, description: 'Film supplier detail' })

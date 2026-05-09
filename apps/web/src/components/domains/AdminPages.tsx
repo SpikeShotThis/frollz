@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
+import type { ReactNode } from 'react';
 import { useTranslation } from '@frollz2/i18n';
 import {
   LIST_MAX_LIMIT,
@@ -11,9 +12,11 @@ import {
   updateFilmLabRequestSchema,
   updateFilmSupplierRequestSchema
 } from '@frollz2/schema';
-import type { ReferenceValueKind } from '@frollz2/schema';
+import type { InsightRange, LabPerformanceInsights, ReferenceValueKind, SupplierPerformanceInsights } from '@frollz2/schema';
 import { useSession } from '../../auth/session';
 import { resolveApiError } from '../../utils/resolve-api-error';
+import { emulsionLabel, formatDate, formatMoney } from '../../utils/format';
+import { RANGE_OPTIONS } from '../RangeToolbar';
 import { FormDrawer } from '../FormDrawer';
 import { PageHeader } from '../PageHeader';
 import { ReferenceTypeaheadInput } from '../ReferenceTypeaheadInput';
@@ -111,7 +114,7 @@ export function AdminOverviewPage() {
       href: '/admin/film-suppliers',
       title: t('admin.sections.filmSuppliers.title'),
       description: t('admin.sections.filmSuppliers.description')
-    }
+    },
   ];
 
   return (
@@ -148,7 +151,9 @@ function AdminListPage({
   entityName,
   nameReferenceKind,
   contactReferenceKind,
-  showDefaultProcesses = false
+  showDefaultProcesses = false,
+  rowHref,
+  overview
 }: {
   title: string;
   subtitle: string;
@@ -159,6 +164,8 @@ function AdminListPage({
   nameReferenceKind?: ReferenceValueKind;
   contactReferenceKind?: ReferenceValueKind;
   showDefaultProcesses?: boolean;
+  rowHref?: (row: AdminRow) => string;
+  overview?: ReactNode;
 }) {
   const { t } = useTranslation();
   const [rows, setRows] = useState<AdminRow[]>([]);
@@ -250,6 +257,8 @@ function AdminListPage({
         </div>
       </section>
 
+      {overview}
+
       <section className="card">
         {isLoading ? (
           <div>{[...Array(4)].map((_, i) => <div key={i} className="skeleton skeleton-row" />)}</div>
@@ -270,7 +279,11 @@ function AdminListPage({
               <tbody>
                 {rows.map((row) => (
                   <tr key={row.id}>
-                    <td style={{ fontWeight: 500 }}>{row.name}</td>
+                    <td style={{ fontWeight: 500 }}>
+                      {rowHref ? (
+                        <Link href={rowHref(row)}>{row.name}</Link>
+                      ) : row.name}
+                    </td>
                     <td>
                       <span className={row.active ? 'status-active' : 'status-inactive'} style={{ fontSize: 13 }}>
                         {row.active ? t('admin.status.active') : t('admin.status.inactive')}
@@ -435,6 +448,158 @@ function AdminListPage({
   );
 }
 
+function FilmLabPerformanceOverview() {
+  const { t } = useTranslation();
+  const { api } = useSession();
+  const [range, setRange] = useState<InsightRange>('365d');
+  const [data, setData] = useState<LabPerformanceInsights | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [isLoading, setLoading] = useState(true);
+
+  useEffect(() => {
+    setLoading(true);
+    setError(null);
+    api.getLabInsights({ range, limit: 50 })
+      .then(setData)
+      .catch((err) => setError(resolveApiError(err, t, 'Failed to load lab performance')))
+      .finally(() => setLoading(false));
+  }, [api, range, t]);
+
+  return (
+    <section className="card">
+      <div className="card-toolbar">
+        <div>
+          <h2 style={{ margin: '0 0 4px', fontSize: 16, fontWeight: 600 }}>Lab performance</h2>
+          <p style={{ margin: 0, fontSize: 14, color: 'var(--muted-ink)' }}>Turnaround and cost grouped by lab and process.</p>
+        </div>
+        <div className="form-field" style={{ marginBottom: 0, minWidth: 160 }}>
+          <label htmlFor="lab-performance-range">Range</label>
+          <select id="lab-performance-range" value={range} onChange={(event) => setRange(event.target.value as InsightRange)}>
+            {RANGE_OPTIONS.map((option) => (
+              <option key={option.value} value={option.value}>{option.label}</option>
+            ))}
+          </select>
+        </div>
+      </div>
+      {error ? <div className="error-banner" role="alert">{error}</div> : null}
+      {isLoading || !data ? (
+        <div className="skeleton skeleton-row" />
+      ) : data.rows.length === 0 ? (
+        <div className="empty-state"><p>No lab history yet.</p></div>
+      ) : (
+        <div className="table-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th>Lab</th>
+                <th>Process</th>
+                <th>Completed</th>
+                <th>Active</th>
+                <th>Median TAT</th>
+                <th>Cost</th>
+                <th>Last used</th>
+              </tr>
+            </thead>
+            <tbody>
+              {data.rows.map((row) => (
+                <tr key={`${row.labId}-${row.developmentProcess.id}`}>
+                  <td><Link href={`/admin/film-labs/${row.labId}`}>{row.labName}</Link></td>
+                  <td>{row.developmentProcess.label}</td>
+                  <td>{row.completedCount}</td>
+                  <td>{row.activeQueueCount}</td>
+                  <td>{row.medianTurnaroundDays == null ? '—' : `${row.medianTurnaroundDays}d`}</td>
+                  <td>{row.developmentCostByCurrency.map((cost) => `${formatMoney(cost.medianAmount, cost.currencyCode)} med`).join(', ') || '—'}</td>
+                  <td>{formatDate(row.lastUsedAt)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </section>
+  );
+}
+
+function FilmSupplierPriceOverview() {
+  const { t } = useTranslation();
+  const { api } = useSession();
+  const [range, setRange] = useState<InsightRange>('365d');
+  const [data, setData] = useState<SupplierPerformanceInsights | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [isLoading, setLoading] = useState(true);
+
+  useEffect(() => {
+    setLoading(true);
+    setError(null);
+    api.getSupplierInsights({ range, limit: 50 })
+      .then(setData)
+      .catch((err) => setError(resolveApiError(err, t, 'Failed to load supplier prices')))
+      .finally(() => setLoading(false));
+  }, [api, range, t]);
+
+  return (
+    <section className="card">
+      <div className="card-toolbar">
+        <div>
+          <h2 style={{ margin: '0 0 4px', fontSize: 16, fontWeight: 600 }}>Supplier prices</h2>
+          <p style={{ margin: 0, fontSize: 14, color: 'var(--muted-ink)' }}>Film prices grouped by emulsion, package, format, and currency.</p>
+        </div>
+        <div className="form-field" style={{ marginBottom: 0, minWidth: 160 }}>
+          <label htmlFor="supplier-price-range">Range</label>
+          <select id="supplier-price-range" value={range} onChange={(event) => setRange(event.target.value as InsightRange)}>
+            {RANGE_OPTIONS.map((option) => (
+              <option key={option.value} value={option.value}>{option.label}</option>
+            ))}
+          </select>
+        </div>
+      </div>
+      {error ? <div className="error-banner" role="alert">{error}</div> : null}
+      {isLoading || !data ? (
+        <div className="skeleton skeleton-row" />
+      ) : data.rows.length === 0 ? (
+        <div className="empty-state"><p>No priced purchase history yet.</p></div>
+      ) : (
+        <div className="table-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th>Film</th>
+                <th>Format</th>
+                <th>Package</th>
+                <th>Lowest package</th>
+                <th>Median package</th>
+                <th>Lowest unit</th>
+                <th>Best supplier</th>
+                <th>Purchases</th>
+                <th>Last purchase</th>
+              </tr>
+            </thead>
+            <tbody>
+              {data.rows.map((row) => (
+                <tr key={`${row.emulsion.id}-${row.packageType.id}-${row.filmFormat.id}-${row.currencyCode}`}>
+                  <td>{emulsionLabel(row.emulsion)}</td>
+                  <td>{row.filmFormat.label}</td>
+                  <td>{row.packageType.label}</td>
+                  <td>{formatMoney(row.lowestPackagePrice, row.currencyCode)}</td>
+                  <td>{formatMoney(row.medianPackagePrice, row.currencyCode)}</td>
+                  <td>{formatMoney(row.lowestUnitPrice, row.currencyCode)}</td>
+                  <td>
+                    {row.bestSupplier ? (
+                      <Link href={`/admin/film-suppliers/${row.bestSupplier.supplierId}`}>{row.bestSupplier.supplierName}</Link>
+                    ) : '—'}
+                  </td>
+                  <td>{row.purchaseCount}</td>
+                  <td>{formatDate(row.lastPurchaseDate)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </section>
+  );
+}
+
 export function FilmLabsAdminPage() {
   const { t } = useTranslation();
   const { api } = useSession();
@@ -447,6 +612,8 @@ export function FilmLabsAdminPage() {
       contactReferenceKind="lab_contact"
       showDefaultProcesses
       fetchRows={({ q, includeInactive }) => api.getFilmLabs({ q, includeInactive, limit: LIST_MAX_LIMIT })}
+      rowHref={(row) => `/admin/film-labs/${row.id}`}
+      overview={<FilmLabPerformanceOverview />}
       createRow={(data, idempotencyKey) => api.createFilmLab(createFilmLabRequestSchema.parse({
         name: data.name,
         contact: data.contact || undefined,
@@ -470,6 +637,8 @@ export function FilmSuppliersAdminPage() {
       subtitle={t('admin.filmSuppliers.subtitle')}
       entityName={t('admin.filmSuppliers.entity')}
       fetchRows={({ q, includeInactive }) => api.getFilmSuppliers({ q, includeInactive, limit: LIST_MAX_LIMIT })}
+      rowHref={(row) => `/admin/film-suppliers/${row.id}`}
+      overview={<FilmSupplierPriceOverview />}
       createRow={(data, idempotencyKey) => api.createFilmSupplier(createFilmSupplierRequestSchema.parse({
         name: data.name,
         contact: data.contact || undefined,

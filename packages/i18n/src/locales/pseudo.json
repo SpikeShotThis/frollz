@@ -15,12 +15,14 @@
     "dashboard": "draobhsaD",
     "film": "mliF",
     "allFilm": "mliF llA",
+    "filmStats": "statS",
     "film35mm": "mm53",
     "filmMediumFormat": "tamroF muideM",
     "filmLargeFormat": "tamroF egraL",
     "filmInstant": "tnatsnI",
     "devices": "seciveD",
     "allDevices": "seciveD llA",
+    "deviceStats": "statS",
     "cameras": "saremaC",
     "backs": "skcaB",
     "holders": "sredloH",
@@ -154,6 +156,19 @@
   "film": {
     "inventory": "yrotnevnI mliF",
     "inventorySubtitle": ".snoitisnart etats hguorht sllor evom dna kcots mlif kcarT",
+    "dashboardSubtitle": ".ecalp eno ni stats desab-egnar dna ,xim kcots ,htlaeh wolfkrow mlif weiveR",
+    "dashboardFormatsHeading": "stamroF",
+    "dashboardWorkflowHeading": "wolfkroW",
+    "dashboardStats": {
+      "removedNotSent": "tnes ton ,devomeR",
+      "atLab": "bal tA",
+      "recentCompletions": "snoitelpmoc tneceR",
+      "oldestRemoved": "meti devomer tsedlO",
+      "oldestLabQueue": "meti eueuq bal tsedlO",
+      "byProcess": "ssecorp yB",
+      "noProcessData": ".tey atad ssecorp oN",
+      "generatedAt": " detareneG{{date}}"
+    },
     "filteredSubtitle": " rof weiv deretliF{{format}}.",
     "addFilm": "mlif ddA",
     "edit": "tidE",
@@ -349,6 +364,23 @@
   "devices": {
     "heading": "seciveD",
     "subtitle": ".sredloh mlif dna ,skcab ,saremaC",
+    "dashboardSubtitle": ".ecalp eno ni egasu desab-egnar dna tamrof yb xim ecived weiveR",
+    "dashboardFormatsHeading": "stamroF",
+    "dashboardUsageHeading": "egasU",
+    "dashboardStats": {
+      "totalDevices": "sredloh dna ,skcab ,seidob dekcarT",
+      "activeLoads": "desopxe ro dedaol yltnerruC",
+      "noUsageData": ".tey egasu ecived oN",
+      "generatedAt": " detareneG{{date}}",
+      "columns": {
+        "device": "eciveD",
+        "type": "epyT",
+        "format": "tamroF",
+        "loads": "sdaoL",
+        "active": "evitcA",
+        "lastLoaded": "dedaol tsaL"
+      }
+    },
     "filteredSubtitle": " rof weiv deretliF{{type}}.",
     "newDevice": "ecived weN",
     "backToDevices": "secived ot kcaB",

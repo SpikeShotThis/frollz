@@ -5,7 +5,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useParams, useSearchParams } from 'next/navigation';
 import { useTranslation } from '@frollz2/i18n';
 import { LIST_MAX_LIMIT, filmCreateRequestSchema, filmUpdateRequestSchema } from '@frollz2/schema';
-import type { Emulsion, FilmDetail, FilmFormat, FilmFrame, FilmJourneyEvent, FilmState, FilmSummary, FilmSupplier, PackageType, ReferenceTables } from '@frollz2/schema';
+import type { Emulsion, FilmDetail, FilmFormat, FilmFrame, FilmJourneyEvent, FilmState, FilmSummary, FilmSupplier, FilmWorkflowInsights, InsightRange, PackageType, ReferenceTables } from '@frollz2/schema';
 import type { FilmListQuery } from '@frollz2/api-client';
 import { useSession } from '../../auth/session';
 import { FormDrawer } from '../FormDrawer';
@@ -16,6 +16,8 @@ import { FrameEditor } from '../FrameEditor';
 import { formatCost, formatKnownCost } from '../../utils/filmCost';
 import { useIdempotentSubmit } from '../../hooks/useIdempotentSubmit';
 import { resolveApiError } from '../../utils/resolve-api-error';
+import { formatDate, toTitleCase } from '../../utils/format';
+import { RangeToolbar } from '../RangeToolbar';
 
 function toIsoFromDateInput(value: string): string | null {
   if (!value) return null;
@@ -27,25 +29,465 @@ function todayLocalDate(): string {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 }
 
-const FORMAT_FILTER_CODES: Record<string, string[]> = {
-  '35mm': ['35mm'],
-  'medium-format': ['120'],
-  'large-format': ['4x5', '5x7', '8x10', '11x14'],
-  instant: ['InstaxMini', 'InstaxWide', 'InstaxSquare']
+export const FILM_FORMAT_ROUTES = {
+  '35mm': { href: '/film/35mm', codes: ['35mm'], labelKey: 'navigation.film35mm' },
+  'medium-format': { href: '/film/medium-format', codes: ['120'], labelKey: 'navigation.filmMediumFormat' },
+  'large-format': { href: '/film/large-format', codes: ['4x5', '5x7', '8x10', '11x14'], labelKey: 'navigation.filmLargeFormat' },
+  instant: { href: '/film/instant', codes: ['InstaxMini', 'InstaxWide', 'InstaxSquare'], labelKey: 'navigation.filmInstant' }
+} as const;
+
+export type FilmFormatRouteKey = keyof typeof FILM_FORMAT_ROUTES;
+
+const FORMAT_FILTER_CODES: Record<FilmFormatRouteKey, string[]> = {
+  '35mm': [...FILM_FORMAT_ROUTES['35mm'].codes],
+  'medium-format': [...FILM_FORMAT_ROUTES['medium-format'].codes],
+  'large-format': [...FILM_FORMAT_ROUTES['large-format'].codes],
+  instant: [...FILM_FORMAT_ROUTES.instant.codes]
 };
 
-function toTitleCase(value: string): string {
-  return value
-    .trim()
-    .toLowerCase()
-    .replace(/\b\w/g, (char) => char.toUpperCase());
+const STATE_METER_COLORS = ['#c49a3c', '#169d9b', '#c15c3c', '#5e5851', '#8f9399', '#57524d', '#b1b4b9', '#7b8c60'];
+
+type MeterValue = {
+  key: string;
+  label: string;
+  value: number;
+  color: string;
+};
+
+function FilmStateMeterGroup({
+  title,
+  href,
+  values
+}: {
+  title: string;
+  href: string;
+  values: MeterValue[];
+}) {
+  const total = values.reduce((sum, item) => sum + item.value, 0);
+  const visibleValues = values.filter((item) => item.value > 0);
+
+  return (
+    <section className="card" style={{ margin: 0 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'baseline', marginBottom: 14 }}>
+        <div>
+          <h2 style={{ margin: 0, fontSize: 16 }}>{title}</h2>
+          <p style={{ margin: '4px 0 0', color: 'var(--muted-ink)', fontSize: 13 }}>{total} films</p>
+        </div>
+        <Link href={href} className="button-link" style={{ fontSize: 13, borderRadius: 8, whiteSpace: 'nowrap' }}>Open</Link>
+      </div>
+
+      <div
+        role="meter"
+        aria-label={`${title} film states`}
+        aria-valuemin={0}
+        aria-valuemax={total}
+        aria-valuenow={total}
+        style={{
+          display: 'flex',
+          height: 16,
+          overflow: 'hidden',
+          borderRadius: 999,
+          background: 'var(--border)'
+        }}
+      >
+        {visibleValues.length > 0 ? visibleValues.map((item) => (
+          <div
+            key={item.key}
+            title={`${item.label}: ${item.value}`}
+            style={{
+              width: `${(item.value / total) * 100}%`,
+              minWidth: item.value > 0 ? 3 : 0,
+              background: item.color
+            }}
+          />
+        )) : null}
+      </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: 8, marginTop: 14 }}>
+        {values.map((item) => (
+          <div key={item.key} style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
+            <span style={{ width: 9, height: 9, borderRadius: 999, background: item.color, flex: '0 0 auto' }} />
+            <span style={{ color: 'var(--muted-ink)', fontSize: 13, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.label}</span>
+            <strong style={{ marginLeft: 'auto', fontSize: 13 }}>{item.value}</strong>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
 }
 
-export function FilmListPage() {
+
+export function FilmDashboardPage() {
+  const { t } = useTranslation();
+  const { api } = useSession();
+  const [films, setFilms] = useState<FilmSummary[]>([]);
+  const [states, setStates] = useState<FilmState[]>([]);
+  const [formats, setFormats] = useState<FilmFormat[]>([]);
+  const [packageTypes, setPackageTypes] = useState<PackageType[]>([]);
+  const [emulsions, setEmulsions] = useState<Emulsion[]>([]);
+  const [suppliers, setSuppliers] = useState<FilmSupplier[]>([]);
+  const [range, setRange] = useState<InsightRange>('365d');
+  const [stats, setStats] = useState<FilmWorkflowInsights | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isCreateOpen, setCreateOpen] = useState(false);
+  const [form, setForm] = useState({
+    name: '',
+    emulsionId: '',
+    packageTypeId: '',
+    filmFormatId: '',
+    expirationDate: '',
+    supplierInput: '',
+    purchaseChannel: '',
+    purchasePrice: '',
+    purchaseCurrencyCode: 'USD',
+    purchaseOrderRef: '',
+    purchaseObtainedDate: todayLocalDate(),
+    rating: ''
+  });
+  const {
+    beginSubmit: beginCreateSubmit,
+    endSubmit: endCreateSubmit,
+    idempotencyKeyRef: createIdempotencyKeyRef,
+    isSubmitting: isCreatingFilm,
+    resetSubmit: resetCreateSubmit
+  } = useIdempotentSubmit();
+
+  useEffect(() => {
+    const load = async () => {
+      setIsLoading(true);
+      setError(null);
+      try {
+        const fetchAllFilms = async () => {
+          const items: FilmSummary[] = [];
+          let afterId: number | undefined;
+
+          do {
+            const response = await api.getFilms({ limit: LIST_MAX_LIMIT, ...(afterId ? { afterId } : {}) });
+            items.push(...response.items);
+            afterId = response.nextCursor ?? undefined;
+          } while (afterId);
+
+          return items;
+        };
+
+        const [items, refs, ems, sups, insights] = await Promise.all([
+          fetchAllFilms(),
+          api.getReferenceTables(),
+          api.getEmulsions(),
+          api.getFilmSuppliers({ limit: LIST_MAX_LIMIT }),
+          api.getFilmInsights({ range })
+        ]);
+        setFilms(items);
+        setStates(refs.filmStates);
+        setFormats(refs.filmFormats);
+        setPackageTypes(refs.packageTypes);
+        setEmulsions(ems);
+        setSuppliers(sups);
+        setStats(insights);
+      } catch (err) {
+        setError(resolveApiError(err, t, t('film.failedToLoad')));
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    void load();
+  }, [api, range, t]);
+
+  useEffect(() => {
+    if (!isCreateOpen) {
+      resetCreateSubmit();
+    }
+  }, [isCreateOpen, resetCreateSubmit]);
+
+  const selectedFormatId = form.filmFormatId ? Number(form.filmFormatId) : null;
+  const packageTypeOptions = selectedFormatId
+    ? packageTypes.filter((pkg) => pkg.filmFormatId === selectedFormatId)
+    : [];
+  const emulsionOptions = selectedFormatId
+    ? emulsions.filter((emulsion) => emulsion.filmFormats.some((fmt) => fmt.id === selectedFormatId))
+    : [];
+
+  const formatMeters = useMemo(() => {
+    return (Object.entries(FILM_FORMAT_ROUTES) as Array<[FilmFormatRouteKey, typeof FILM_FORMAT_ROUTES[FilmFormatRouteKey]]>).map(([key, route]) => {
+      const codes: readonly string[] = route.codes;
+      const formatFilms = films.filter((film) => codes.includes(film.filmFormat.code));
+      const stateValues = states.map((state, index) => ({
+        key: state.code,
+        label: state.label,
+        value: formatFilms.filter((film) => film.currentStateCode === state.code).length,
+        color: STATE_METER_COLORS[index % STATE_METER_COLORS.length] ?? '#8f9399'
+      }));
+      return {
+        key,
+        href: route.href,
+        label: t(route.labelKey),
+        values: stateValues
+      };
+    });
+  }, [films, states, t]);
+
+  return (
+    <main>
+      <PageHeader
+        heading={t('navigation.film')}
+        subtitle={t('film.dashboardSubtitle')}
+        action={
+          <button type="button" onClick={() => setCreateOpen(true)}>{t('film.addFilm')}</button>
+        }
+      />
+
+      {error ? <div className="error-banner" role="alert">{error}</div> : null}
+      <RangeToolbar range={range} onRangeChange={setRange} id="film-dashboard-range" />
+
+      {isLoading ? (
+        <div aria-busy="true" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 12 }}>
+          {[...Array(6)].map((_, i) => <div key={i} className="skeleton" style={{ height: 160 }} />)}
+        </div>
+      ) : (
+        <>
+          <section style={{ marginBottom: 18 }}>
+            <h2 style={{ margin: '0 0 12px', fontSize: 18 }}>{t('film.dashboardFormatsHeading')}</h2>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 12 }}>
+              {formatMeters.map((format) => (
+                <FilmStateMeterGroup key={format.key} title={format.label} href={format.href} values={format.values} />
+              ))}
+            </div>
+          </section>
+
+          {stats ? (
+            <section className="card">
+              <h2 style={{ margin: '0 0 12px', fontSize: 16 }}>{t('film.dashboardWorkflowHeading')}</h2>
+              <div className="table-scroll">
+                <table>
+                  <tbody>
+                    <tr>
+                      <td>{t('film.dashboardStats.removedNotSent')}</td>
+                      <td style={{ textAlign: 'right', fontWeight: 600 }}>{stats.totals.removedNotSent}</td>
+                    </tr>
+                    <tr>
+                      <td>{t('film.dashboardStats.atLab')}</td>
+                      <td style={{ textAlign: 'right', fontWeight: 600 }}>{stats.totals.atLab}</td>
+                    </tr>
+                    <tr>
+                      <td>{t('film.dashboardStats.recentCompletions')}</td>
+                      <td style={{ textAlign: 'right', fontWeight: 600 }}>{stats.totals.recentCompletions}</td>
+                    </tr>
+                    <tr>
+                      <td>{t('film.dashboardStats.oldestRemoved')}</td>
+                      <td style={{ textAlign: 'right', fontWeight: 600 }}>
+                        {stats.oldestWaitingFilm ? `${stats.oldestWaitingFilm.daysWaiting}d · ${stats.oldestWaitingFilm.filmName}` : '—'}
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>{t('film.dashboardStats.oldestLabQueue')}</td>
+                      <td style={{ textAlign: 'right', fontWeight: 600 }}>
+                        {stats.oldestLabQueueItem
+                          ? `${stats.oldestLabQueueItem.daysWaiting}d · ${stats.oldestLabQueueItem.labName ?? 'Unknown lab'} · ${stats.oldestLabQueueItem.filmName}`
+                          : '—'}
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <div style={{ marginTop: 18 }}>
+                <h3 style={{ margin: '0 0 8px', fontSize: 14 }}>{t('film.dashboardStats.byProcess')}</h3>
+                {stats.byDevelopmentProcess.length === 0 ? (
+                  <div className="empty-state"><p>{t('film.dashboardStats.noProcessData')}</p></div>
+                ) : (
+                  <div className="table-scroll">
+                    <table>
+                      <tbody>
+                        {stats.byDevelopmentProcess.map((row) => (
+                          <tr key={row.key}>
+                            <td>{row.label}</td>
+                            <td style={{ textAlign: 'right', fontWeight: 600 }}>{row.count}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+              <p style={{ margin: '12px 0 0', color: 'var(--muted-ink)', fontSize: 13 }}>
+                {t('film.dashboardStats.generatedAt', { date: formatDate(stats.generatedAt) })}
+              </p>
+            </section>
+          ) : null}
+        </>
+      )}
+
+      <FormDrawer open={isCreateOpen} onClose={() => setCreateOpen(false)} title={t('film.addFilmDrawerTitle')}>
+        <form onSubmit={async (e) => {
+          e.preventDefault();
+          if (!beginCreateSubmit()) return;
+          setError(null);
+          try {
+            const payload = filmCreateRequestSchema.parse({
+              name: form.name,
+              emulsionId: Number(form.emulsionId),
+              packageTypeId: Number(form.packageTypeId),
+              filmFormatId: Number(form.filmFormatId),
+              expirationDate: toIsoFromDateInput(form.expirationDate),
+              supplierName: (() => {
+                const supplierName = form.supplierInput.trim();
+                if (!supplierName) return undefined;
+                const existing = suppliers.find((s) => s.name.toLowerCase() === supplierName.toLowerCase());
+                return existing ? undefined : supplierName;
+              })(),
+              purchaseInfo: (() => {
+                const supplierName = form.supplierInput.trim();
+                const existing = supplierName
+                  ? suppliers.find((s) => s.name.toLowerCase() === supplierName.toLowerCase())
+                  : undefined;
+                const channel = form.purchaseChannel.trim();
+                const price = form.purchasePrice.trim();
+                const currencyCode = form.purchaseCurrencyCode.trim().toUpperCase();
+                const orderRef = form.purchaseOrderRef.trim();
+                const obtainedDate = toIsoFromDateInput(form.purchaseObtainedDate);
+                const hasPurchaseInfo = Boolean(existing || supplierName || channel || price || currencyCode || orderRef || obtainedDate);
+                return hasPurchaseInfo
+                  ? {
+                      supplierId: existing?.id,
+                      channel: channel || null,
+                      price: price ? Number(price) : null,
+                      currencyCode: currencyCode || null,
+                      orderRef: orderRef || null,
+                      obtainedDate
+                    }
+                  : undefined;
+              })(),
+              rating: form.rating ? Number(form.rating) : undefined
+            });
+            await api.createFilm(payload, createIdempotencyKeyRef.current);
+            setForm({
+              name: '',
+              emulsionId: '',
+              packageTypeId: '',
+              filmFormatId: '',
+              expirationDate: '',
+              supplierInput: '',
+              purchaseChannel: '',
+              purchasePrice: '',
+              purchaseCurrencyCode: 'USD',
+              purchaseOrderRef: '',
+              purchaseObtainedDate: todayLocalDate(),
+              rating: ''
+            });
+            const fetchAllFilms = async () => {
+              const items: FilmSummary[] = [];
+              let afterId: number | undefined;
+              do {
+                const response = await api.getFilms({ limit: LIST_MAX_LIMIT, ...(afterId ? { afterId } : {}) });
+                items.push(...response.items);
+                afterId = response.nextCursor ?? undefined;
+              } while (afterId);
+              return items;
+            };
+            setFilms(await fetchAllFilms());
+            setCreateOpen(false);
+          } catch (err) {
+            setError(resolveApiError(err, t, t('film.failedToCreate')));
+          } finally {
+            endCreateSubmit();
+          }
+        }}>
+          <fieldset disabled={isCreatingFilm} style={{ margin: 0, padding: 0, border: 'none' }}>
+            <legend className="sr-only">{t('film.form.newLegend')}</legend>
+            <div className="form-field">
+              <label htmlFor="new-film-name">{t('film.form.name')}</label>
+              <input id="new-film-name" value={form.name} onChange={(e) => setForm((prev) => ({ ...prev, name: e.target.value }))} required />
+            </div>
+            <div className="form-field">
+              <label htmlFor="new-film-format">{t('film.form.format')}</label>
+              <select
+                id="new-film-format"
+                value={form.filmFormatId}
+                onChange={(e) => setForm((prev) => ({ ...prev, filmFormatId: e.target.value, emulsionId: '', packageTypeId: '' }))}
+                required
+              >
+                <option value="">{t('film.form.selectFormat')}</option>
+                {formats.map((fmt) => <option key={fmt.id} value={fmt.id}>{fmt.label}</option>)}
+              </select>
+            </div>
+            <div className="form-field">
+              <label htmlFor="new-film-package-type">{t('film.form.packageType')}</label>
+              <select id="new-film-package-type" value={form.packageTypeId} onChange={(e) => setForm((prev) => ({ ...prev, packageTypeId: e.target.value }))} required disabled={!form.filmFormatId}>
+                <option value="">{t('film.form.selectPackageType')}</option>
+                {packageTypeOptions.map((pkg) => <option key={pkg.id} value={pkg.id}>{pkg.label}</option>)}
+              </select>
+            </div>
+            <div className="form-field">
+              <label htmlFor="new-film-emulsion">{t('film.form.emulsion')}</label>
+              <select id="new-film-emulsion" value={form.emulsionId} onChange={(e) => setForm((prev) => ({ ...prev, emulsionId: e.target.value }))} required disabled={!form.filmFormatId}>
+                <option value="">{t('film.form.selectEmulsion')}</option>
+                {emulsionOptions.map((emulsion) => <option key={emulsion.id} value={emulsion.id}>{emulsion.manufacturer} {emulsion.brand} ({emulsion.isoSpeed})</option>)}
+              </select>
+            </div>
+            <div className="form-field">
+              <label htmlFor="new-film-expiration">{t('film.form.expiration')}</label>
+              <input id="new-film-expiration" type="date" value={form.expirationDate} onChange={(e) => setForm((prev) => ({ ...prev, expirationDate: e.target.value }))} />
+            </div>
+            <div className="form-field">
+              <label htmlFor="new-film-supplier">{t('film.form.supplier')}</label>
+              <input
+                id="new-film-supplier"
+                list="film-supplier-options-dashboard"
+                value={form.supplierInput}
+                onChange={(e) => setForm((prev) => ({ ...prev, supplierInput: e.target.value }))}
+                placeholder={t('film.form.supplierPlaceholder')}
+              />
+              <datalist id="film-supplier-options-dashboard">
+                {suppliers.map((s) => <option key={s.id} value={s.name} />)}
+              </datalist>
+            </div>
+            <div className="form-field">
+              <label htmlFor="new-film-purchase-channel">{t('film.form.purchaseChannel')}</label>
+              <input id="new-film-purchase-channel" value={form.purchaseChannel} onChange={(e) => setForm((prev) => ({ ...prev, purchaseChannel: e.target.value }))} />
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 120px', gap: 8 }}>
+              <div className="form-field">
+                <label htmlFor="new-film-purchase-price">{t('film.form.purchasePrice')}</label>
+                <input id="new-film-purchase-price" type="number" min="0" step="0.01" value={form.purchasePrice} onChange={(e) => setForm((prev) => ({ ...prev, purchasePrice: e.target.value }))} />
+              </div>
+              <div className="form-field">
+                <label htmlFor="new-film-purchase-currency">{t('film.form.currency')}</label>
+                <input id="new-film-purchase-currency" value={form.purchaseCurrencyCode} onChange={(e) => setForm((prev) => ({ ...prev, purchaseCurrencyCode: e.target.value }))} maxLength={3} />
+              </div>
+            </div>
+            <div className="form-field">
+              <label htmlFor="new-film-order-ref">{t('film.form.orderRef')}</label>
+              <input id="new-film-order-ref" value={form.purchaseOrderRef} onChange={(e) => setForm((prev) => ({ ...prev, purchaseOrderRef: e.target.value }))} />
+            </div>
+            <div className="form-field">
+              <label htmlFor="new-film-obtained-date">{t('film.form.obtainedDate')}</label>
+              <input id="new-film-obtained-date" type="date" value={form.purchaseObtainedDate} onChange={(e) => setForm((prev) => ({ ...prev, purchaseObtainedDate: e.target.value }))} />
+            </div>
+            <div className="form-field">
+              <label htmlFor="new-film-rating">{t('film.form.rating')}</label>
+              <select id="new-film-rating" value={form.rating} onChange={(e) => setForm((prev) => ({ ...prev, rating: e.target.value }))}>
+                <option value="">{t('film.form.noRating')}</option>
+                {[1, 2, 3, 4, 5].map((rating) => <option key={rating} value={rating}>{rating}</option>)}
+              </select>
+            </div>
+            <div className="form-actions">
+              <button type="submit" disabled={isCreatingFilm}>{isCreatingFilm ? t('film.form.creating') : t('film.form.create')}</button>
+              <button type="button" className="secondary" onClick={() => setCreateOpen(false)}>{t('film.form.cancel')}</button>
+            </div>
+          </fieldset>
+        </form>
+      </FormDrawer>
+    </main>
+  );
+}
+
+export function FilmInventoryPage({ formatKey }: { formatKey: FilmFormatRouteKey }) {
   const { t } = useTranslation();
   const { api } = useSession();
   const searchParams = useSearchParams();
-  const formatFilter = searchParams?.get('format') ?? '';
+  const formatFilter = formatKey;
   const stateCodeFromUrl = searchParams?.get('stateCode') ?? '';
 
   const [films, setFilms] = useState<FilmSummary[]>([]);
@@ -633,7 +1075,6 @@ export function FilmDetailPage() {
 
             {/* Right column: timeline */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-              {frames.length === 0 ? null : null}
               <section className="card" style={{ margin: 0 }}>
                 <h2 style={{ margin: '0 0 12px', fontSize: 16, fontWeight: 600 }}>{t('film.journey.heading')}</h2>
                 {events.length === 0 ? (

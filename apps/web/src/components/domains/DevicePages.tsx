@@ -5,16 +5,30 @@ import { useEffect, useMemo, useState } from 'react';
 import { useParams, useSearchParams } from 'next/navigation';
 import { useTranslation } from '@frollz2/i18n';
 import { createFilmDeviceRequestSchema, filmFormatDefinitions, frameSizeCodeSchema, updateFilmDeviceRequestSchema } from '@frollz2/schema';
-import type { CreateFilmDeviceRequest, DeviceLoadTimelineEvent, DeviceType, FilmDevice, FilmFormat, FilmHolderSlot, FrameSizeCode, HolderType } from '@frollz2/schema';
+import type { CreateFilmDeviceRequest, DeviceLoadTimelineEvent, DeviceType, DeviceUsageInsights, FilmDevice, FilmFormat, FilmHolderSlot, FrameSizeCode, HolderType, InsightRange } from '@frollz2/schema';
 import { useSession } from '../../auth/session';
+import { resolveApiError } from '../../utils/resolve-api-error';
+import { formatDate, toTitleCase } from '../../utils/format';
+import { RangeToolbar } from '../RangeToolbar';
 import { DeleteConfirmationName } from '../DeleteConfirmationName';
 import { FormDrawer } from '../FormDrawer';
 import { PageHeader } from '../PageHeader';
 import { ReferenceTypeaheadInput } from '../ReferenceTypeaheadInput';
 import { useIdempotentSubmit } from '../../hooks/useIdempotentSubmit';
-import { resolveApiError } from '../../utils/resolve-api-error';
 
 type DeviceTypeCode = FilmDevice['deviceTypeCode'];
+
+const DEVICE_TYPE_ROUTES: Record<DeviceTypeCode, string> = {
+  camera: '/devices/cameras',
+  interchangeable_back: '/devices/interchangeable-backs',
+  film_holder: '/devices/film-holders'
+};
+
+const DEVICE_METER_COLORS: Record<DeviceTypeCode, string> = {
+  camera: '#c49a3c',
+  interchangeable_back: '#169d9b',
+  film_holder: '#5e5851'
+};
 
 type DeviceCreateForm = {
   deviceTypeCode: DeviceTypeCode;
@@ -33,13 +47,6 @@ type DeviceCreateForm = {
 
 function deviceDisplayName(device: FilmDevice): string {
   return device.deviceTypeCode === 'camera' ? `${device.make} ${device.model}` : device.name;
-}
-
-function toTitleCase(value: string): string {
-  return value
-    .trim()
-    .toLowerCase()
-    .replace(/\b\w/g, (char) => char.toUpperCase());
 }
 
 function frameSizeCodeToTitle(value: string): string {
@@ -76,6 +83,501 @@ function parseFrameSize(value: string): FrameSizeCode {
   return frameSizeCodeSchema.parse(value);
 }
 
+type DeviceMeterValue = {
+  key: DeviceTypeCode;
+  label: string;
+  value: number;
+  href: string;
+  color: string;
+};
+
+function DeviceTypeMeterGroup({
+  title,
+  values
+}: {
+  title: string;
+  values: DeviceMeterValue[];
+}) {
+  const total = values.reduce((sum, item) => sum + item.value, 0);
+  const visibleValues = values.filter((item) => item.value > 0);
+
+  return (
+    <section className="card" style={{ margin: 0 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'baseline', marginBottom: 14 }}>
+        <div>
+          <h2 style={{ margin: 0, fontSize: 16 }}>{title}</h2>
+          <p style={{ margin: '4px 0 0', color: 'var(--muted-ink)', fontSize: 13 }}>{total} devices</p>
+        </div>
+      </div>
+
+      <div
+        role="meter"
+        aria-label={`${title} device types`}
+        aria-valuemin={0}
+        aria-valuemax={total}
+        aria-valuenow={total}
+        style={{
+          display: 'flex',
+          height: 16,
+          overflow: 'hidden',
+          borderRadius: 999,
+          background: 'var(--border)'
+        }}
+      >
+        {visibleValues.map((item) => (
+          <div
+            key={item.key}
+            title={`${item.label}: ${item.value}`}
+            style={{
+              width: `${(item.value / total) * 100}%`,
+              minWidth: item.value > 0 ? 3 : 0,
+              background: item.color
+            }}
+          />
+        ))}
+      </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 8, marginTop: 14 }}>
+        {values.map((item) => (
+          <Link key={item.key} href={item.href} style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'inherit', textDecoration: 'none', minWidth: 0 }}>
+            <span style={{ width: 9, height: 9, borderRadius: 999, background: item.color, flex: '0 0 auto' }} />
+            <span style={{ color: 'var(--muted-ink)', fontSize: 13, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.label}</span>
+            <strong style={{ marginLeft: 'auto', fontSize: 13 }}>{item.value}</strong>
+          </Link>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+export function DeviceDashboardPage() {
+  const { t } = useTranslation();
+  const { api } = useSession();
+  const [devices, setDevices] = useState<FilmDevice[]>([]);
+  const [deviceTypes, setDeviceTypes] = useState<DeviceType[]>([]);
+  const [filmFormats, setFilmFormats] = useState<FilmFormat[]>([]);
+  const [holderTypes, setHolderTypes] = useState<HolderType[]>([]);
+  const [range, setRange] = useState<InsightRange>('365d');
+  const [stats, setStats] = useState<DeviceUsageInsights | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [isCreateOpen, setCreateOpen] = useState(false);
+
+  const loadDevices = async () => {
+    const list = await api.getDevices();
+    setDevices(list);
+  };
+
+  useEffect(() => {
+    const load = async () => {
+      setIsLoading(true);
+      setError(null);
+      try {
+        const [list, refs] = await Promise.all([
+          api.getDevices(),
+          api.getReferenceTables()
+        ]);
+        setDevices(list);
+        setDeviceTypes(refs.deviceTypes);
+        setFilmFormats(refs.filmFormats);
+        setHolderTypes(refs.holderTypes);
+      } catch (err) {
+        setError(resolveApiError(err, t, t('devices.failedToLoad')));
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    void load();
+  }, [api, t]);
+
+  useEffect(() => {
+    api.getDeviceInsights({ range, limit: 50 })
+      .then(setStats)
+      .catch((err) => setError(resolveApiError(err, t, t('devices.failedToLoad'))));
+  }, [api, range, t]);
+
+  const meters = useMemo(() => {
+    return filmFormats.map((format) => {
+      const formatDevices = devices.filter((device) => device.filmFormatId === format.id);
+      const values = (['camera', 'interchangeable_back', 'film_holder'] as DeviceTypeCode[]).map((typeCode) => ({
+        key: typeCode,
+        label: deviceTypes.find((type) => type.code === typeCode)?.label ?? deviceTypeCodeToLabel(typeCode),
+        value: formatDevices.filter((device) => device.deviceTypeCode === typeCode).length,
+        href: DEVICE_TYPE_ROUTES[typeCode],
+        color: DEVICE_METER_COLORS[typeCode]
+      }));
+      return { key: format.id, title: format.label, values };
+    });
+  }, [devices, deviceTypes, filmFormats]);
+
+  return (
+    <main>
+      <PageHeader
+        heading={t('devices.heading')}
+        subtitle={t('devices.dashboardSubtitle')}
+        action={<button type="button" onClick={() => setCreateOpen(true)}>{t('devices.newDevice')}</button>}
+      />
+
+      {error ? <div className="error-banner" role="alert">{error}</div> : null}
+      <RangeToolbar range={range} onRangeChange={setRange} id="device-dashboard-range" />
+
+      {isLoading ? (
+        <div aria-busy="true" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 12 }}>
+          {[...Array(6)].map((_, i) => <div key={i} className="skeleton" style={{ height: 160 }} />)}
+        </div>
+      ) : (
+        <>
+          <section style={{ marginBottom: 18 }}>
+            <h2 style={{ margin: '0 0 12px', fontSize: 18 }}>{t('devices.dashboardFormatsHeading')}</h2>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 12 }}>
+              {meters.map((meter) => (
+                <DeviceTypeMeterGroup key={meter.key} title={meter.title} values={meter.values} />
+              ))}
+            </div>
+          </section>
+
+          {stats ? (
+            <section className="card">
+              <h2 style={{ margin: '0 0 12px', fontSize: 16 }}>{t('devices.dashboardUsageHeading')}</h2>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 12, marginBottom: 16 }}>
+                <div>
+                  <div style={{ fontSize: 30, fontWeight: 700, lineHeight: 1 }}>{stats.totalDevices}</div>
+                  <p style={{ margin: '6px 0 0', color: 'var(--muted-ink)', fontSize: 13 }}>{t('devices.dashboardStats.totalDevices')}</p>
+                </div>
+                <div>
+                  <div style={{ fontSize: 30, fontWeight: 700, lineHeight: 1 }}>{stats.activeLoads}</div>
+                  <p style={{ margin: '6px 0 0', color: 'var(--muted-ink)', fontSize: 13 }}>{t('devices.dashboardStats.activeLoads')}</p>
+                </div>
+              </div>
+              {stats.rows.length === 0 ? (
+                <div className="empty-state"><p>{t('devices.dashboardStats.noUsageData')}</p></div>
+              ) : (
+                <div className="table-scroll">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>{t('devices.dashboardStats.columns.device')}</th>
+                        <th>{t('devices.dashboardStats.columns.type')}</th>
+                        <th>{t('devices.dashboardStats.columns.format')}</th>
+                        <th>{t('devices.dashboardStats.columns.loads')}</th>
+                        <th>{t('devices.dashboardStats.columns.active')}</th>
+                        <th>{t('devices.dashboardStats.columns.lastLoaded')}</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {stats.rows.map((row) => (
+                        <tr key={row.deviceId}>
+                          <td><Link href={`/devices/${row.deviceId}`}>{row.deviceName}</Link></td>
+                          <td>{deviceTypes.find((type) => type.code === row.deviceTypeCode)?.label ?? deviceTypeCodeToLabel(row.deviceTypeCode)}</td>
+                          <td>{row.filmFormat.label}</td>
+                          <td>{row.loadCount}</td>
+                          <td>{row.activeLoadCount}</td>
+                          <td>{formatDate(row.lastLoadedAt)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+              <p style={{ margin: '12px 0 0', color: 'var(--muted-ink)', fontSize: 13 }}>
+                {t('devices.dashboardStats.generatedAt', { date: formatDate(stats.generatedAt) })}
+              </p>
+            </section>
+          ) : null}
+        </>
+      )}
+      <DeviceCreateDrawer
+        open={isCreateOpen}
+        onClose={() => setCreateOpen(false)}
+        deviceTypes={deviceTypes}
+        filmFormats={filmFormats}
+        holderTypes={holderTypes}
+        onCreated={loadDevices}
+      />
+    </main>
+  );
+}
+
+function DeviceCreateDrawer({
+  open,
+  onClose,
+  deviceTypes,
+  filmFormats,
+  holderTypes,
+  lockedDeviceTypeCode,
+  onCreated
+}: {
+  open: boolean;
+  onClose: () => void;
+  deviceTypes: DeviceType[];
+  filmFormats: FilmFormat[];
+  holderTypes: HolderType[];
+  lockedDeviceTypeCode?: DeviceTypeCode;
+  onCreated: () => Promise<void> | void;
+}) {
+  const { t } = useTranslation();
+  const { api } = useSession();
+  const {
+    beginSubmit,
+    endSubmit,
+    idempotencyKeyRef,
+    isSubmitting,
+    resetSubmit
+  } = useIdempotentSubmit();
+  const [error, setError] = useState<string | null>(null);
+  const [form, setForm] = useState<DeviceCreateForm>({
+    deviceTypeCode: 'camera',
+    deviceTypeId: '',
+    filmFormatId: '',
+    frameSize: '',
+    isDirectLoadable: true,
+    make: '',
+    model: '',
+    name: '',
+    system: '',
+    brand: '',
+    holderTypeId: '',
+    slotCount: '2'
+  });
+
+  useEffect(() => {
+    if (!open) {
+      resetSubmit();
+      setError(null);
+    }
+  }, [open, resetSubmit]);
+
+  useEffect(() => {
+    setForm((prev) => {
+      const selectedType = deviceTypes.find((entry) => entry.code === prev.deviceTypeCode);
+      return { ...prev, deviceTypeId: selectedType ? String(selectedType.id) : prev.deviceTypeId };
+    });
+  }, [deviceTypes]);
+
+  useEffect(() => {
+    if (!lockedDeviceTypeCode) return;
+    const type = deviceTypes.find((entry) => entry.code === lockedDeviceTypeCode);
+    setForm((prev) => ({
+      ...prev,
+      deviceTypeCode: lockedDeviceTypeCode,
+      deviceTypeId: type ? String(type.id) : prev.deviceTypeId
+    }));
+  }, [deviceTypes, lockedDeviceTypeCode]);
+
+  const selectedDeviceType = deviceTypes.find((entry) => entry.code === form.deviceTypeCode);
+  const selectedFilmFormatCode = useMemo(() => {
+    if (!form.filmFormatId) return '';
+    return filmFormats.find((fmt) => String(fmt.id) === String(form.filmFormatId))?.code ?? '';
+  }, [filmFormats, form.filmFormatId]);
+  const availableFrameSizes = useMemo(() => {
+    if (!selectedFilmFormatCode) return [];
+    return filmFormatDefinitions[selectedFilmFormatCode]?.frameSizes ?? [];
+  }, [selectedFilmFormatCode]);
+
+  useEffect(() => {
+    if (!form.frameSize) return;
+    if (!availableFrameSizes.some((entry) => entry.code === form.frameSize)) {
+      setForm((prev) => ({ ...prev, frameSize: '' }));
+    }
+  }, [availableFrameSizes, form.frameSize]);
+
+  const isFrameSizeEnabled = Boolean(form.filmFormatId) && (form.deviceTypeCode !== 'camera' || form.isDirectLoadable);
+
+  useEffect(() => {
+    if (!isFrameSizeEnabled && form.frameSize) {
+      setForm((prev) => ({ ...prev, frameSize: '' }));
+    }
+  }, [form.frameSize, isFrameSizeEnabled]);
+
+  const isMakeEnabled = useMemo(() => {
+    if (form.deviceTypeCode !== 'camera') return false;
+    if (!form.isDirectLoadable) return true;
+    return Boolean(form.filmFormatId);
+  }, [form.deviceTypeCode, form.filmFormatId, form.isDirectLoadable]);
+
+  return (
+    <FormDrawer open={open} onClose={onClose} title={t('devices.newDevice')}>
+      <form onSubmit={async (e) => {
+        e.preventDefault();
+        if (!beginSubmit()) return;
+        setError(null);
+        try {
+          const deviceTypeId = Number(form.deviceTypeId);
+          const filmFormatId = Number(form.filmFormatId);
+          let rawPayload: CreateFilmDeviceRequest;
+          if (form.deviceTypeCode === 'camera') {
+            rawPayload = {
+              deviceTypeCode: 'camera',
+              deviceTypeId,
+              filmFormatId,
+              frameSize: form.isDirectLoadable && form.frameSize ? parseFrameSize(form.frameSize) : null,
+              make: toTitleCase(form.make),
+              model: form.model,
+              loadMode: form.isDirectLoadable ? 'direct' : 'interchangeable_back',
+              canUnload: true
+            };
+          } else if (form.deviceTypeCode === 'interchangeable_back') {
+            rawPayload = {
+              deviceTypeCode: 'interchangeable_back',
+              deviceTypeId,
+              filmFormatId,
+              frameSize: parseFrameSize(form.frameSize),
+              name: form.name,
+              system: form.system
+            };
+          } else {
+            rawPayload = {
+              deviceTypeCode: 'film_holder',
+              deviceTypeId,
+              filmFormatId,
+              frameSize: parseFrameSize(form.frameSize),
+              name: form.name,
+              brand: form.brand,
+              holderTypeId: Number(form.holderTypeId),
+              slotCount: Number(form.slotCount) === 1 ? 1 : 2
+            };
+          }
+          const payload = createFilmDeviceRequestSchema.parse(rawPayload);
+          await api.createDevice(payload, idempotencyKeyRef.current);
+          await onCreated();
+          onClose();
+        } catch (err) {
+          setError(resolveApiError(err, t, t('devices.failedToCreate')));
+        } finally {
+          endSubmit();
+        }
+      }}>
+        {error ? <div className="error-banner" role="alert">{error}</div> : null}
+        <fieldset disabled={isSubmitting} style={{ margin: 0, padding: 0, border: 'none' }}>
+          <legend className="sr-only">{t('devices.form.newLegend')}</legend>
+          <div className="form-field">
+            <label htmlFor="new-device-type">{t('devices.form.deviceType')}</label>
+            <select id="new-device-type" value={form.deviceTypeCode} onChange={(e) => {
+              const nextCode = toDeviceTypeCode(e.target.value);
+              const type = deviceTypes.find((entry) => entry.code === nextCode);
+              setForm((prev) => ({ ...prev, deviceTypeCode: nextCode, deviceTypeId: type ? String(type.id) : '' }));
+            }} disabled={Boolean(lockedDeviceTypeCode)}>
+              {deviceTypes.map((type) => <option key={type.id} value={type.code}>{type.label}</option>)}
+            </select>
+          </div>
+          <div className="form-field">
+            <label htmlFor="new-device-format">{t('devices.form.filmFormat')}</label>
+            <select id="new-device-format" value={form.filmFormatId} onChange={(e) => setForm((prev) => ({ ...prev, filmFormatId: e.target.value }))} required>
+              <option value="">{t('devices.form.selectFilmFormat')}</option>
+              {filmFormats.map((fmt) => <option key={fmt.id} value={fmt.id}>{fmt.label}</option>)}
+            </select>
+          </div>
+          <div className="form-field">
+            <label htmlFor="new-device-frame-size">{t('devices.form.frameSize')}</label>
+            <select
+              id="new-device-frame-size"
+              value={form.frameSize}
+              onChange={(e) => setForm((prev) => ({ ...prev, frameSize: e.target.value }))}
+              disabled={!isFrameSizeEnabled}
+            >
+              <option value="">{t('devices.form.selectFrameSize')}</option>
+              {availableFrameSizes.map((frameSize) => (
+                <option key={frameSize.code} value={frameSize.code}>{frameSize.label}</option>
+              ))}
+            </select>
+          </div>
+          {form.deviceTypeCode === 'camera' ? (
+            <>
+              <div className="form-field form-field-toggle">
+                <label htmlFor="new-device-direct-loadable" className="toggle-control">
+                  <span>{t('devices.form.directLoadable')}</span>
+                  <span className="switch">
+                    <input
+                      id="new-device-direct-loadable"
+                      type="checkbox"
+                      checked={Boolean(form.isDirectLoadable)}
+                      onChange={(e) => setForm((prev) => ({ ...prev, isDirectLoadable: e.target.checked }))}
+                    />
+                    <span className="switch-slider" aria-hidden="true" />
+                  </span>
+                </label>
+              </div>
+              <ReferenceTypeaheadInput
+                id="new-device-make"
+                label={t('devices.form.make')}
+                kind="device_make"
+                value={form.make}
+                onChange={(make) => setForm((prev) => ({ ...prev, make }))}
+                required
+                disabled={!isMakeEnabled}
+              />
+              <ReferenceTypeaheadInput
+                id="new-device-model"
+                label={t('devices.form.model')}
+                kind="device_model"
+                value={form.model}
+                onChange={(model) => setForm((prev) => ({ ...prev, model }))}
+                required
+              />
+            </>
+          ) : null}
+          {form.deviceTypeCode === 'interchangeable_back' ? (
+            <>
+              <div className="form-field">
+                <label htmlFor="new-device-name">{t('devices.form.name')}</label>
+                <input id="new-device-name" value={form.name} onChange={(e) => setForm((prev) => ({ ...prev, name: e.target.value }))} required />
+              </div>
+              <ReferenceTypeaheadInput
+                id="new-device-system"
+                label={t('devices.form.system')}
+                kind="device_system"
+                value={form.system}
+                onChange={(system) => setForm((prev) => ({ ...prev, system }))}
+                required
+              />
+            </>
+          ) : null}
+          {form.deviceTypeCode === 'film_holder' ? (
+            <>
+              <div className="form-field">
+                <label htmlFor="new-holder-name">{t('devices.form.name')}</label>
+                <input id="new-holder-name" value={form.name} onChange={(e) => setForm((prev) => ({ ...prev, name: e.target.value }))} required />
+              </div>
+              <ReferenceTypeaheadInput
+                id="new-holder-brand"
+                label={t('devices.form.brand')}
+                kind="brand"
+                value={form.brand}
+                onChange={(brand) => setForm((prev) => ({ ...prev, brand }))}
+                required
+              />
+              <div className="form-field">
+                <label htmlFor="new-holder-type">{t('devices.form.holderType')}</label>
+                <select id="new-holder-type" value={form.holderTypeId} onChange={(e) => setForm((prev) => ({ ...prev, holderTypeId: e.target.value }))} required>
+                  <option value="">{t('devices.form.selectHolderType')}</option>
+                  {holderTypes.map((ht) => <option key={ht.id} value={ht.id}>{ht.label}</option>)}
+                </select>
+              </div>
+              <div className="form-field">
+                <label htmlFor="new-holder-slot-count">{t('devices.form.slotCount')}</label>
+                <select
+                  id="new-holder-slot-count"
+                  value={form.slotCount}
+                  onChange={(e) => setForm((prev) => ({ ...prev, slotCount: e.target.value }))}
+                  required
+                >
+                  <option value="1">{t('devices.form.slot1')}</option>
+                  <option value="2">{t('devices.form.slot2')}</option>
+                </select>
+              </div>
+            </>
+          ) : null}
+          <div className="form-actions">
+            <button type="submit" disabled={isSubmitting}>{isSubmitting ? t('devices.form.creating') : t('devices.form.create', { type: selectedDeviceType?.label ?? '' })}</button>
+            <button type="button" className="secondary" onClick={onClose}>{t('devices.form.cancel')}</button>
+          </div>
+        </fieldset>
+      </form>
+    </FormDrawer>
+  );
+}
+
 export function DeviceListPage({ lockedDeviceTypeCode }: { lockedDeviceTypeCode?: DeviceTypeCode } = {}) {
   const { t } = useTranslation();
   const { api } = useSession();
@@ -94,27 +596,6 @@ export function DeviceListPage({ lockedDeviceTypeCode }: { lockedDeviceTypeCode?
 
   useEffect(() => { setTypeFilter(effectiveTypeFilter); }, [effectiveTypeFilter]);
   const [isCreateOpen, setCreateOpen] = useState(false);
-  const {
-    beginSubmit: beginCreateSubmit,
-    endSubmit: endCreateSubmit,
-    idempotencyKeyRef: createIdempotencyKeyRef,
-    isSubmitting: isCreating,
-    resetSubmit: resetCreateSubmit
-  } = useIdempotentSubmit();
-  const [form, setForm] = useState<DeviceCreateForm>({
-    deviceTypeCode: 'camera',
-    deviceTypeId: '',
-    filmFormatId: '',
-    frameSize: '',
-    isDirectLoadable: true,
-    make: '',
-    model: '',
-    name: '',
-    system: '',
-    brand: '',
-    holderTypeId: '',
-    slotCount: '2'
-  });
 
   async function load() {
     setIsLoading(true);
@@ -124,11 +605,6 @@ export function DeviceListPage({ lockedDeviceTypeCode }: { lockedDeviceTypeCode?
       setDeviceTypes(refs.deviceTypes);
       setFilmFormats(refs.filmFormats);
       setHolderTypes(refs.holderTypes);
-      setForm((prev) => {
-        if (prev.deviceTypeId) return prev;
-        const selectedType = refs.deviceTypes.find((entry) => entry.code === prev.deviceTypeCode);
-        return { ...prev, deviceTypeId: selectedType ? String(selectedType.id) : '' };
-      });
     } catch (err) {
       setError(resolveApiError(err, t, t('devices.failedToLoad')));
     } finally {
@@ -138,16 +614,6 @@ export function DeviceListPage({ lockedDeviceTypeCode }: { lockedDeviceTypeCode?
 
   useEffect(() => { void load(); }, []);
 
-  useEffect(() => {
-    if (!lockedDeviceTypeCode) return;
-    const type = deviceTypes.find((entry) => entry.code === lockedDeviceTypeCode);
-    setForm((prev) => ({
-      ...prev,
-      deviceTypeCode: lockedDeviceTypeCode,
-      deviceTypeId: type ? String(type.id) : prev.deviceTypeId
-    }));
-  }, [deviceTypes, lockedDeviceTypeCode]);
-
   const visible = useMemo(() => {
     const q = search.trim().toLowerCase();
     return devices.filter((device) => {
@@ -156,45 +622,6 @@ export function DeviceListPage({ lockedDeviceTypeCode }: { lockedDeviceTypeCode?
       return `${deviceDisplayName(device)} ${device.deviceTypeCode}`.toLowerCase().includes(q);
     });
   }, [devices, search, typeFilter]);
-
-  const selectedDeviceType = deviceTypes.find((entry) => entry.code === form.deviceTypeCode);
-  const selectedFilmFormatCode = useMemo(() => {
-    if (!form.filmFormatId) return '';
-    const selected = filmFormats.find((fmt) => String(fmt.id) === String(form.filmFormatId));
-    return selected?.code ?? '';
-  }, [filmFormats, form.filmFormatId]);
-  const availableFrameSizes = useMemo(() => {
-    if (!selectedFilmFormatCode) return [];
-    return filmFormatDefinitions[selectedFilmFormatCode]?.frameSizes ?? [];
-  }, [selectedFilmFormatCode]);
-
-  useEffect(() => {
-    if (!form.frameSize) return;
-    const stillValid = availableFrameSizes.some((entry) => entry.code === form.frameSize);
-    if (!stillValid) {
-      setForm((prev) => ({ ...prev, frameSize: '' }));
-    }
-  }, [availableFrameSizes, form.frameSize]);
-  const isFrameSizeEnabled = Boolean(form.filmFormatId) && (form.deviceTypeCode !== 'camera' || form.isDirectLoadable);
-
-  useEffect(() => {
-    if (isFrameSizeEnabled) return;
-    if (!form.frameSize) return;
-    setForm((prev) => ({ ...prev, frameSize: '' }));
-  }, [form.frameSize, isFrameSizeEnabled]);
-
-  const isMakeEnabled = useMemo(() => {
-    if (form.deviceTypeCode !== 'camera') return false;
-    if (!form.deviceTypeCode) return false;
-    if (!form.isDirectLoadable) return true;
-    return Boolean(form.filmFormatId);
-  }, [form.deviceTypeCode, form.filmFormatId, form.isDirectLoadable]);
-
-  useEffect(() => {
-    if (!isCreateOpen) {
-      resetCreateSubmit();
-    }
-  }, [isCreateOpen, resetCreateSubmit]);
 
   const typeLabel = typeFilter
     ? deviceTypes.find((t) => t.code === typeFilter)?.label ?? deviceTypeCodeToLabel(typeFilter)
@@ -274,188 +701,15 @@ export function DeviceListPage({ lockedDeviceTypeCode }: { lockedDeviceTypeCode?
         ) : null}
       </section>
 
-      <FormDrawer open={isCreateOpen} onClose={() => setCreateOpen(false)} title={t('devices.newDevice')}>
-        <form onSubmit={async (e) => {
-          e.preventDefault();
-          if (!beginCreateSubmit()) return;
-          setError(null);
-          try {
-            const deviceTypeId = Number(form.deviceTypeId);
-            const filmFormatId = Number(form.filmFormatId);
-            let rawPayload: CreateFilmDeviceRequest;
-            if (form.deviceTypeCode === 'camera') {
-              rawPayload = {
-                deviceTypeCode: 'camera',
-                deviceTypeId,
-                filmFormatId,
-                frameSize: form.isDirectLoadable && form.frameSize ? parseFrameSize(form.frameSize) : null,
-                make: toTitleCase(form.make),
-                model: form.model,
-                loadMode: form.isDirectLoadable ? 'direct' : 'interchangeable_back',
-                canUnload: true
-              };
-            } else if (form.deviceTypeCode === 'interchangeable_back') {
-              rawPayload = {
-                deviceTypeCode: 'interchangeable_back',
-                deviceTypeId,
-                filmFormatId,
-                frameSize: parseFrameSize(form.frameSize),
-                name: form.name,
-                system: form.system
-              };
-            } else {
-              rawPayload = {
-                deviceTypeCode: 'film_holder',
-                deviceTypeId,
-                filmFormatId,
-                frameSize: parseFrameSize(form.frameSize),
-                name: form.name,
-                brand: form.brand,
-                holderTypeId: Number(form.holderTypeId),
-                slotCount: Number(form.slotCount) === 1 ? 1 : 2
-              };
-            }
-
-            const payload = createFilmDeviceRequestSchema.parse(rawPayload);
-            await api.createDevice(payload, createIdempotencyKeyRef.current);
-            await load();
-            setCreateOpen(false);
-          } catch (err) {
-            setError(resolveApiError(err, t, t('devices.failedToCreate')));
-          } finally {
-            endCreateSubmit();
-          }
-        }}>
-          <fieldset disabled={isCreating} style={{ margin: 0, padding: 0, border: 'none' }}>
-          <legend className="sr-only">{t('devices.form.newLegend')}</legend>
-          <div className="form-field">
-            <label htmlFor="new-device-type">{t('devices.form.deviceType')}</label>
-            <select id="new-device-type" value={form.deviceTypeCode} onChange={(e) => {
-              const nextCode = toDeviceTypeCode(e.target.value);
-              const type = deviceTypes.find((entry) => entry.code === nextCode);
-              setForm((prev) => ({ ...prev, deviceTypeCode: nextCode, deviceTypeId: type ? String(type.id) : '' }));
-            }} disabled={Boolean(lockedDeviceTypeCode)}>
-              {deviceTypes.map((type) => <option key={type.id} value={type.code}>{type.label}</option>)}
-            </select>
-          </div>
-          <div className="form-field">
-            <label htmlFor="new-device-format">{t('devices.form.filmFormat')}</label>
-            <select id="new-device-format" value={form.filmFormatId} onChange={(e) => setForm((prev) => ({ ...prev, filmFormatId: e.target.value }))} required>
-              <option value="">{t('devices.form.selectFilmFormat')}</option>
-              {filmFormats.map((fmt) => <option key={fmt.id} value={fmt.id}>{fmt.label}</option>)}
-            </select>
-          </div>
-          <div className="form-field">
-            <label htmlFor="new-device-frame-size">{t('devices.form.frameSize')}</label>
-            <select
-              id="new-device-frame-size"
-              value={form.frameSize}
-              onChange={(e) => setForm((prev) => ({ ...prev, frameSize: e.target.value }))}
-              disabled={!isFrameSizeEnabled}
-            >
-              <option value="">{t('devices.form.selectFrameSize')}</option>
-              {availableFrameSizes.map((frameSize) => (
-                <option key={frameSize.code} value={frameSize.code}>{frameSize.label}</option>
-              ))}
-            </select>
-          </div>
-
-          {form.deviceTypeCode === 'camera' ? (
-            <>
-              <div className="form-field form-field-toggle">
-                <label htmlFor="new-device-direct-loadable" className="toggle-control">
-                  <span>{t('devices.form.directLoadable')}</span>
-                  <span className="switch">
-                    <input
-                      id="new-device-direct-loadable"
-                      type="checkbox"
-                      checked={Boolean(form.isDirectLoadable)}
-                      onChange={(e) => setForm((prev) => ({ ...prev, isDirectLoadable: e.target.checked }))}
-                    />
-                    <span className="switch-slider" aria-hidden="true" />
-                  </span>
-                </label>
-              </div>
-              <ReferenceTypeaheadInput
-                id="new-device-make"
-                label={t('devices.form.make')}
-                kind="device_make"
-                value={form.make}
-                onChange={(make) => setForm((prev) => ({ ...prev, make }))}
-                required
-                disabled={!isMakeEnabled}
-              />
-              <ReferenceTypeaheadInput
-                id="new-device-model"
-                label={t('devices.form.model')}
-                kind="device_model"
-                value={form.model}
-                onChange={(model) => setForm((prev) => ({ ...prev, model }))}
-                required
-              />
-            </>
-          ) : null}
-
-          {form.deviceTypeCode === 'interchangeable_back' ? (
-            <>
-              <div className="form-field">
-                <label htmlFor="new-device-name">{t('devices.form.name')}</label>
-                <input id="new-device-name" value={form.name} onChange={(e) => setForm((prev) => ({ ...prev, name: e.target.value }))} required />
-              </div>
-              <ReferenceTypeaheadInput
-                id="new-device-system"
-                label={t('devices.form.system')}
-                kind="device_system"
-                value={form.system}
-                onChange={(system) => setForm((prev) => ({ ...prev, system }))}
-                required
-              />
-            </>
-          ) : null}
-
-          {form.deviceTypeCode === 'film_holder' ? (
-            <>
-              <div className="form-field">
-                <label htmlFor="new-holder-name">{t('devices.form.name')}</label>
-                <input id="new-holder-name" value={form.name} onChange={(e) => setForm((prev) => ({ ...prev, name: e.target.value }))} required />
-              </div>
-              <ReferenceTypeaheadInput
-                id="new-holder-brand"
-                label={t('devices.form.brand')}
-                kind="brand"
-                value={form.brand}
-                onChange={(brand) => setForm((prev) => ({ ...prev, brand }))}
-                required
-              />
-              <div className="form-field">
-                <label htmlFor="new-holder-type">{t('devices.form.holderType')}</label>
-                <select id="new-holder-type" value={form.holderTypeId} onChange={(e) => setForm((prev) => ({ ...prev, holderTypeId: e.target.value }))} required>
-                  <option value="">{t('devices.form.selectHolderType')}</option>
-                  {holderTypes.map((ht) => <option key={ht.id} value={ht.id}>{ht.label}</option>)}
-                </select>
-              </div>
-              <div className="form-field">
-                <label htmlFor="new-holder-slot-count">{t('devices.form.slotCount')}</label>
-                <select
-                  id="new-holder-slot-count"
-                  value={form.slotCount}
-                  onChange={(e) => setForm((prev) => ({ ...prev, slotCount: e.target.value }))}
-                  required
-                >
-                  <option value="1">{t('devices.form.slot1')}</option>
-                  <option value="2">{t('devices.form.slot2')}</option>
-                </select>
-              </div>
-            </>
-          ) : null}
-
-          <div className="form-actions">
-            <button type="submit" disabled={isCreating}>{isCreating ? t('devices.form.creating') : t('devices.form.create', { type: selectedDeviceType?.label ?? '' })}</button>
-            <button type="button" className="secondary" onClick={() => setCreateOpen(false)}>{t('devices.form.cancel')}</button>
-          </div>
-          </fieldset>
-        </form>
-      </FormDrawer>
+      <DeviceCreateDrawer
+        open={isCreateOpen}
+        onClose={() => setCreateOpen(false)}
+        deviceTypes={deviceTypes}
+        filmFormats={filmFormats}
+        holderTypes={holderTypes}
+        {...(lockedDeviceTypeCode ? { lockedDeviceTypeCode } : {})}
+        onCreated={load}
+      />
     </main>
   );
 }

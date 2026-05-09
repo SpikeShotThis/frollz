@@ -13,22 +13,31 @@ import {
   filmDeviceSchema,
   filmFrameSchema,
   filmJourneyEventSchema,
+  filmLabActivitySchema,
   filmListQuerySchema,
   filmLotCreateRequestSchema,
   filmLabSchema,
   filmListResponseSchema,
   filmSummarySchema,
+  filmSupplierActivitySchema,
   filmSupplierSchema,
   importDataRequestSchema,
   importDataResponseSchema,
   listFilmLabsQuerySchema,
   listReferenceValuesQuerySchema,
   listFilmSuppliersQuerySchema,
+  dashboardInsightsSchema,
+  deviceUsageInsightsSchema,
+  filmDashboardStatsSchema,
+  filmWorkflowInsightsSchema,
+  insightsQuerySchema,
+  labPerformanceInsightsSchema,
   loginRequestSchema,
   refreshRequestSchema,
   referenceValueSchema,
   referenceTablesSchema,
   registerRequestSchema,
+  supplierPerformanceInsightsSchema,
   tokenPairSchema,
   updateEmulsionRequestSchema,
   updateFilmDeviceRequestSchema,
@@ -51,16 +60,24 @@ import {
   type FilmFrame,
   type FilmJourneyEvent,
   type FilmLab,
+  type FilmLabActivity,
   type FilmListResponse,
   type FilmSummary,
   type FilmSupplier,
+  type FilmSupplierActivity,
   type ImportDataResponse,
   type ImportDataRequest,
+  type DashboardInsights,
+  type DeviceUsageInsights,
+  type FilmDashboardStats,
+  type FilmWorkflowInsights,
+  type LabPerformanceInsights,
   type LoginRequest,
   type ReferenceTables,
   type ReferenceValue,
   type RefreshRequest,
   type RegisterRequest,
+  type SupplierPerformanceInsights,
   type TokenPair,
   type UpdateEmulsionRequest,
   type UpdateFilmDeviceRequest,
@@ -75,6 +92,7 @@ export type FilmListQuery = z.input<typeof filmListQuerySchema>;
 export type ListFilmLabsQuery = z.input<typeof listFilmLabsQuerySchema>;
 export type ListFilmSuppliersQuery = z.input<typeof listFilmSuppliersQuerySchema>;
 export type ListReferenceValuesQuery = z.input<typeof listReferenceValuesQuerySchema>;
+export type InsightsQuery = z.input<typeof insightsQuerySchema>;
 
 export type ApiErrorMsg = {
   en: string;
@@ -328,6 +346,14 @@ export class ApiClient {
     return this.request(`/film-labs${toQuery(payload)}`, {}, z.array(filmLabSchema));
   }
 
+  async getFilmLab(id: number): Promise<FilmLab> {
+    return this.request(`/film-labs/${id}`, {}, filmLabSchema);
+  }
+
+  async getFilmLabActivity(id: number): Promise<FilmLabActivity> {
+    return this.request(`/film-labs/${id}/activity`, {}, filmLabActivitySchema);
+  }
+
   async createFilmLab(input: CreateFilmLabRequest, idempotencyKey?: string): Promise<FilmLab> {
     const payload = createFilmLabRequestSchema.parse(input);
     return this.request('/film-labs', {
@@ -351,6 +377,14 @@ export class ApiClient {
     return this.request(`/film-suppliers${toQuery(payload)}`, {}, z.array(filmSupplierSchema));
   }
 
+  async getFilmSupplier(id: number): Promise<FilmSupplier> {
+    return this.request(`/film-suppliers/${id}`, {}, filmSupplierSchema);
+  }
+
+  async getFilmSupplierActivity(id: number): Promise<FilmSupplierActivity> {
+    return this.request(`/film-suppliers/${id}/activity`, {}, filmSupplierActivitySchema);
+  }
+
   async createFilmSupplier(input: CreateFilmSupplierRequest, idempotencyKey?: string): Promise<FilmSupplier> {
     const payload = createFilmSupplierRequestSchema.parse(input);
     return this.request('/film-suppliers', {
@@ -367,6 +401,35 @@ export class ApiClient {
       ...(idempotencyKey ? { headers: { 'idempotency-key': idempotencyKey } } : {}),
       body: JSON.stringify(payload)
     }, filmSupplierSchema);
+  }
+
+  async getFilmInsights(query: InsightsQuery = {}): Promise<FilmWorkflowInsights> {
+    const payload = insightsQuerySchema.parse(query);
+    return this.request(`/insights/film${toQuery(payload)}`, {}, filmWorkflowInsightsSchema);
+  }
+
+  async getFilmOverviewStats(): Promise<FilmDashboardStats> {
+    return this.request('/insights/film/overview', {}, filmDashboardStatsSchema);
+  }
+
+  async getLabInsights(query: InsightsQuery = {}): Promise<LabPerformanceInsights> {
+    const payload = insightsQuerySchema.parse(query);
+    return this.request(`/insights/admin/labs${toQuery(payload)}`, {}, labPerformanceInsightsSchema);
+  }
+
+  async getSupplierInsights(query: InsightsQuery = {}): Promise<SupplierPerformanceInsights> {
+    const payload = insightsQuerySchema.parse(query);
+    return this.request(`/insights/admin/suppliers${toQuery(payload)}`, {}, supplierPerformanceInsightsSchema);
+  }
+
+  async getDeviceInsights(query: InsightsQuery = {}): Promise<DeviceUsageInsights> {
+    const payload = insightsQuerySchema.parse(query);
+    return this.request(`/insights/devices/summary${toQuery(payload)}`, {}, deviceUsageInsightsSchema);
+  }
+
+  async getDashboardInsights(query: InsightsQuery = {}): Promise<DashboardInsights> {
+    const payload = insightsQuerySchema.parse(query);
+    return this.request(`/insights/dashboard${toQuery(payload)}`, {}, dashboardInsightsSchema);
   }
 
   async exportData(): Promise<ExportData> {

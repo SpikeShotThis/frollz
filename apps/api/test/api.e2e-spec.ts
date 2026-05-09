@@ -9,10 +9,13 @@ import {
   filmJourneyEventSchema,
   filmFrameSchema,
   filmFormatSchema,
+  filmWorkflowInsightsSchema,
+  labPerformanceInsightsSchema,
   filmDeviceSchema,
   filmSupplierSchema,
   holderTypeSchema,
   packageTypeSchema,
+  supplierPerformanceInsightsSchema,
   deviceTypeSchema,
   storageLocationSchema,
   tokenPairSchema
@@ -536,6 +539,157 @@ describe('API integration', () => {
     if (finalDevice.deviceTypeCode === 'film_holder') {
       expect(finalDevice.slots[0]?.slotStateCode).toBe('removed');
     }
+  });
+
+  it('returns focused insight metrics for workflow, labs, and supplier prices', async () => {
+    const email = `insights-${Date.now()}@example.com`;
+    const tokens = await registerUser(email);
+    const authHeaders = { authorization: `Bearer ${tokens.accessToken}` };
+    const refs = await loadCoreReferenceData(authHeaders);
+    const daysAgo = (days: number) => new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString();
+
+    const firstLotResponse = await harness.app.inject({
+      method: 'POST',
+      url: '/api/v1/film/lots',
+      headers: { ...authHeaders, 'content-type': 'application/json' },
+      payload: {
+        emulsionId: refs.emulsion.id,
+        packageTypeId: refs.packageType.id,
+        filmFormatId: refs.filmFormat.id,
+        quantity: 2,
+        supplierName: 'Budget Film Shop',
+        purchaseInfo: {
+          price: 20,
+          currencyCode: 'USD',
+          obtainedDate: daysAgo(20)
+        },
+        films: [{ name: 'Insight priced A' }, { name: 'Insight priced B' }]
+      }
+    });
+    expect(firstLotResponse.statusCode).toBe(201);
+
+    const secondLotResponse = await harness.app.inject({
+      method: 'POST',
+      url: '/api/v1/film/lots',
+      headers: { ...authHeaders, 'content-type': 'application/json' },
+      payload: {
+        emulsionId: refs.emulsion.id,
+        packageTypeId: refs.packageType.id,
+        filmFormatId: refs.filmFormat.id,
+        quantity: 1,
+        supplierName: 'Corner Camera',
+        purchaseInfo: {
+          price: 12,
+          currencyCode: 'USD',
+          obtainedDate: daysAgo(10)
+        },
+        films: [{ name: 'Insight journey film' }]
+      }
+    });
+    expect(secondLotResponse.statusCode).toBe(201);
+    const journeyFilm = filmLotDetailSchema.parse(secondLotResponse.json()).films[0]!;
+
+    const cameraResponse = await harness.app.inject({
+      method: 'POST',
+      url: '/api/v1/devices',
+      headers: { ...authHeaders, 'content-type': 'application/json' },
+      payload: {
+        deviceTypeCode: 'camera',
+        deviceTypeId: refs.cameraType.id,
+        filmFormatId: refs.filmFormat.id,
+        frameSize: 'full_frame',
+        make: 'Nikon',
+        model: 'F3',
+        loadMode: 'direct',
+        canUnload: true
+      }
+    });
+    expect(cameraResponse.statusCode).toBe(201);
+    const camera = filmDeviceSchema.parse(cameraResponse.json());
+
+    const labResponse = await harness.app.inject({
+      method: 'POST',
+      url: '/api/v1/film-labs',
+      headers: { ...authHeaders, 'content-type': 'application/json' },
+      payload: { name: 'Process Lab' }
+    });
+    expect(labResponse.statusCode).toBe(201);
+    const lab = labResponse.json();
+
+    for (const payload of [
+      {
+        filmStateCode: 'loaded',
+        occurredAt: daysAgo(14),
+        eventData: { loadTargetType: 'camera_direct', cameraId: camera.id, intendedPushPull: null }
+      },
+      { filmStateCode: 'exposed', occurredAt: daysAgo(13), eventData: {} },
+      { filmStateCode: 'removed', occurredAt: daysAgo(12), eventData: {} },
+      {
+        filmStateCode: 'sent_for_dev',
+        occurredAt: daysAgo(10),
+        eventData: { labId: lab.id, actualPushPull: null, cost: { amount: 18, currencyCode: 'USD' } }
+      },
+      {
+        filmStateCode: 'developed',
+        occurredAt: daysAgo(4),
+        eventData: { labId: lab.id, actualPushPull: null }
+      }
+    ]) {
+      const eventResponse = await harness.app.inject({
+        method: 'POST',
+        url: `/api/v1/film/${journeyFilm.id}/events`,
+        headers: { ...authHeaders, 'content-type': 'application/json' },
+        payload
+      });
+      expect(eventResponse.statusCode).toBe(201);
+    }
+
+    const filmInsightsResponse = await harness.app.inject({
+      method: 'GET',
+      url: '/api/v1/insights/film?range=30d',
+      headers: authHeaders
+    });
+    expect(filmInsightsResponse.statusCode).toBe(200);
+    const filmInsights = filmWorkflowInsightsSchema.parse(filmInsightsResponse.json());
+    expect(filmInsights.totals.recentCompletions).toBe(1);
+    expect(filmInsights.byDevelopmentProcess.some((row) => row.label === refs.developmentProcess.label)).toBe(true);
+
+    const labInsightsResponse = await harness.app.inject({
+      method: 'GET',
+      url: '/api/v1/insights/admin/labs?range=30d',
+      headers: authHeaders
+    });
+    expect(labInsightsResponse.statusCode).toBe(200);
+    const labInsights = labPerformanceInsightsSchema.parse(labInsightsResponse.json());
+    expect(labInsights.rows[0]).toMatchObject({
+      labId: lab.id,
+      labName: 'Process Lab',
+      completedCount: 1,
+      medianTurnaroundDays: 6
+    });
+    expect(labInsights.rows[0]?.developmentCostByCurrency[0]).toMatchObject({
+      currencyCode: 'USD',
+      medianAmount: 18
+    });
+
+    const supplierInsightsResponse = await harness.app.inject({
+      method: 'GET',
+      url: '/api/v1/insights/admin/suppliers?range=30d',
+      headers: authHeaders
+    });
+    expect(supplierInsightsResponse.statusCode).toBe(200);
+    const supplierInsights = supplierPerformanceInsightsSchema.parse(supplierInsightsResponse.json());
+    expect(supplierInsights.rows).toHaveLength(1);
+    expect(supplierInsights.rows[0]).toMatchObject({
+      purchaseCount: 2,
+      totalUnitsPurchased: 3,
+      lowestPackagePrice: 12,
+      medianPackagePrice: 16,
+      medianUnitPrice: 11
+    });
+    expect(supplierInsights.rows[0]?.emulsion.id).toBe(refs.emulsion.id);
+    expect(supplierInsights.rows[0]?.packageType.id).toBe(refs.packageType.id);
+    expect(supplierInsights.rows[0]?.filmFormat.id).toBe(refs.filmFormat.id);
   });
 
   it('returns 409 when loading into an already occupied holder slot', async () => {

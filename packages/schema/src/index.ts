@@ -6,4 +6,5 @@ export * from './film-lab.js';
 export * from './film-supplier.js';
 export * from './film-format-definition.js';
 export * from './admin.js';
+export * from './insights.js';
 export { };

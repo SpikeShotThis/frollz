@@ -106,13 +106,16 @@ const packageTypes = [
 
 const emulsions = [
   { brand: 'Gold', manufacturer: 'Kodak', isoSpeed: 200, developmentProcessCode: 'C41', balance: 'daylight', filmFormatCodes: ['35mm', '120'] },
+  { brand: 'Portra', manufacturer: 'Kodak', isoSpeed: 160, developmentProcessCode: 'C41', balance: 'daylight', filmFormatCodes: ['35mm', '120', '4x5', '5x7'] },
   { brand: 'Portra', manufacturer: 'Kodak', isoSpeed: 400, developmentProcessCode: 'C41', balance: 'daylight', filmFormatCodes: ['35mm', '120'] },
-  { brand: 'Ektar', manufacturer: 'Kodak', isoSpeed: 100, developmentProcessCode: 'C41', balance: 'daylight', filmFormatCodes: ['35mm', '120'] },
-  { brand: 'Tri-X', manufacturer: 'Kodak', isoSpeed: 400, developmentProcessCode: 'BW', balance: 'daylight', filmFormatCodes: ['35mm', '120'] },
-  { brand: 'HP5 Plus', manufacturer: 'Ilford', isoSpeed: 400, developmentProcessCode: 'BW', balance: 'daylight', filmFormatCodes: ['35mm', '120'] },
+  { brand: 'Ektar', manufacturer: 'Kodak', isoSpeed: 100, developmentProcessCode: 'C41', balance: 'daylight', filmFormatCodes: ['35mm', '120', '4x5'] },
+  { brand: 'T-Max', manufacturer: 'Kodak', isoSpeed: 100, developmentProcessCode: 'BW', balance: 'daylight', filmFormatCodes: ['35mm', '120', '4x5', '5x7', '8x10'] },
+  { brand: 'Tri-X', manufacturer: 'Kodak', isoSpeed: 400, developmentProcessCode: 'BW', balance: 'daylight', filmFormatCodes: ['35mm', '120', '4x5'] },
+  { brand: 'FP4 Plus', manufacturer: 'Ilford', isoSpeed: 125, developmentProcessCode: 'BW', balance: 'daylight', filmFormatCodes: ['35mm', '120', '4x5', '5x7', '8x10'] },
+  { brand: 'HP5 Plus', manufacturer: 'Ilford', isoSpeed: 400, developmentProcessCode: 'BW', balance: 'daylight', filmFormatCodes: ['35mm', '120', '4x5', '5x7', '8x10'] },
   { brand: 'Delta', manufacturer: 'Ilford', isoSpeed: 100, developmentProcessCode: 'BW', balance: 'daylight', filmFormatCodes: ['35mm', '120'] },
   { brand: 'Velvia', manufacturer: 'Fujifilm', isoSpeed: 50, developmentProcessCode: 'E6', balance: 'daylight', filmFormatCodes: ['35mm', '120', '4x5'] },
-  { brand: 'Provia', manufacturer: 'Fujifilm', isoSpeed: 100, developmentProcessCode: 'E6', balance: 'daylight', filmFormatCodes: ['35mm', '120'] },
+  { brand: 'Provia', manufacturer: 'Fujifilm', isoSpeed: 100, developmentProcessCode: 'E6', balance: 'daylight', filmFormatCodes: ['35mm', '120', '4x5'] },
   { brand: '800T', manufacturer: 'CineStill', isoSpeed: 800, developmentProcessCode: 'ECN2', balance: 'tungsten', filmFormatCodes: ['35mm', '120'] },
   { brand: 'Monochrome', manufacturer: 'Fujifilm', isoSpeed: 800, developmentProcessCode: 'Instant', balance: 'daylight', filmFormatCodes: ['InstaxMini'] }
 ];
